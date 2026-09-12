@@ -121,7 +121,7 @@ class _JobsScreenState extends ConsumerState<JobsScreen> {
             // Logo Branding (clickable to go to home)
             GestureDetector(
               onTap: () => context.go('/home'),
-              child: Image.asset('assets/images/logo.jpg', height: 32),
+              child: Image.asset('assets/images/logo.png', height: 32),
             ),
 
             const SizedBox(width: 10),

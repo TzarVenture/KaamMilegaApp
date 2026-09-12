@@ -113,7 +113,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 }
               },
               child: Image.asset(
-                'assets/images/logo.jpg',
+                'assets/images/logo.png',
                 height: 32,
                 fit: BoxFit.contain,
               ),
@@ -748,7 +748,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               crossAxisCount: 2,
               mainAxisSpacing: 10,
               crossAxisSpacing: 10,
-              childAspectRatio: 2.3,
+              childAspectRatio: 1.95,
             ),
             itemBuilder: (context, index) {
               final item = roles[index];
@@ -756,7 +756,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 borderRadius: BorderRadius.circular(16),
                 onTap: () => _selectRoleAndGo(item['role'] as String),
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(16),
@@ -765,7 +765,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   child: Row(
                     children: [
                       Container(
-                        padding: const EdgeInsets.all(8),
+                        padding: const EdgeInsets.all(7),
                         decoration: BoxDecoration(
                           color: AppColors.primaryLight,
                           borderRadius: BorderRadius.circular(10),
@@ -776,7 +776,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           color: AppColors.primary,
                         ),
                       ),
-                      const SizedBox(width: 10),
+                      const SizedBox(width: 8),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -801,6 +801,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                 fontWeight: FontWeight.w500,
                               ),
                               maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ],
                         ),
@@ -859,7 +860,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               crossAxisCount: 3,
               mainAxisSpacing: 10,
               crossAxisSpacing: 10,
-              childAspectRatio: 1.1,
+              childAspectRatio: 0.9,
             ),
             itemBuilder: (context, index) {
               final q = qualifications[index];
@@ -867,7 +868,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 borderRadius: BorderRadius.circular(18),
                 onTap: () => _selectQualificationAndGo(q['label']!),
                 child: Container(
-                  padding: const EdgeInsets.all(10),
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(18),
@@ -882,9 +883,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   ),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      Text(q['icon']!, style: const TextStyle(fontSize: 24)),
-                      const SizedBox(height: 6),
+                      Text(q['icon']!, style: const TextStyle(fontSize: 22)),
+                      const SizedBox(height: 4),
                       Text(
                         q['label']!,
                         style: const TextStyle(
@@ -904,6 +906,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           color: AppColors.textSecondary,
                           fontWeight: FontWeight.w500,
                         ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ],
                   ),
@@ -1053,12 +1057,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             children: const [
               Icon(Icons.star_rounded, color: Colors.amber, size: 16),
               SizedBox(width: 4),
-              Text(
-                '4.2 / 5.0 Workplace Rating',
-                style: TextStyle(
-                  color: Colors.white70,
-                  fontSize: 11,
-                  fontWeight: FontWeight.w600,
+              Flexible(
+                child: Text(
+                  '4.2 / 5.0 Workplace Rating',
+                  style: TextStyle(
+                    color: Colors.white70,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
             ],
@@ -1211,7 +1219,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               }
             },
             child: Image.asset(
-              'assets/images/logo.jpg',
+              'assets/images/logo.png',
               height: 36,
               fit: BoxFit.contain,
             ),
@@ -1228,8 +1236,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           const SizedBox(height: 20),
           const Divider(color: Colors.white12),
           const SizedBox(height: 14),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          Wrap(
+            alignment: WrapAlignment.spaceBetween,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            spacing: 12,
+            runSpacing: 6,
             children: const [
               Text(
                 'HR Helpline: 1800 123 456',
