@@ -72,11 +72,46 @@ class AuthNotifier extends Notifier<AuthState> {
     }
   }
 
-  /// Verify OTP
-  Future<bool> verifyOtp(String mobile, String code) async {
+  /// Verify OTP and return result including isRegistered status
+  Future<AuthVerificationResult> verifyOtp(String mobile, String code) async {
     state = state.copyWith(isLoading: true, error: null);
     try {
-      final user = await _repository.verifyOtp(mobile, code);
+      final result = await _repository.verifyOtp(mobile, code);
+      state = state.copyWith(
+        isLoading: false,
+        isAuthenticated: true,
+        user: result.user,
+      );
+      return result;
+    } catch (e) {
+      state = state.copyWith(isLoading: false, error: e.toString());
+      return const AuthVerificationResult();
+    }
+  }
+
+  /// Register Candidate Profile
+  Future<bool> registerCandidate({
+    required String name,
+    required String gender,
+    required String educationLevel,
+    required String workExperience,
+    required String city,
+    required List<String> jobCategories,
+    String experienceDetail = '',
+    String email = '',
+  }) async {
+    state = state.copyWith(isLoading: true, error: null);
+    try {
+      final user = await _repository.registerCandidate(
+        name: name,
+        gender: gender,
+        educationLevel: educationLevel,
+        workExperience: workExperience,
+        city: city,
+        jobCategories: jobCategories,
+        experienceDetail: experienceDetail,
+        email: email,
+      );
       state = state.copyWith(
         isLoading: false,
         isAuthenticated: true,
@@ -85,6 +120,33 @@ class AuthNotifier extends Notifier<AuthState> {
       return true;
     } catch (e) {
       state = state.copyWith(isLoading: false, error: e.toString());
+      return false;
+    }
+  }
+
+  /// Update Candidate Profile (headline, about, city, experience, etc.)
+  Future<bool> updateProfile(Map<String, dynamic> updates) async {
+    state = state.copyWith(isLoading: true, error: null);
+    try {
+      final updatedUser = await _repository.updateProfile(updates);
+      state = state.copyWith(
+        isLoading: false,
+        user: updatedUser,
+      );
+      return true;
+    } catch (e) {
+      state = state.copyWith(isLoading: false, error: e.toString());
+      return false;
+    }
+  }
+
+  /// Add skill tag
+  Future<bool> addSkill(String skill) async {
+    try {
+      final updatedUser = await _repository.addSkill(skill);
+      state = state.copyWith(user: updatedUser);
+      return true;
+    } catch (e) {
       return false;
     }
   }

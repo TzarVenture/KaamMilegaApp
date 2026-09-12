@@ -50,17 +50,17 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
 
     setState(() => _isLoading = true);
 
-    final success = await ref
+    final result = await ref
         .read(authProvider.notifier)
         .verifyOtp(widget.phone, otp);
 
     if (mounted) {
       setState(() => _isLoading = false);
-      if (success) {
-        context.go('/jobs');
+      if (result.isRegistered) {
+        context.go('/home');
       } else {
-        // In local/demo mode allow fallback transition to jobs
-        context.go('/jobs');
+        // New candidate -> complete candidate onboarding
+        context.go('/register');
       }
     }
   }

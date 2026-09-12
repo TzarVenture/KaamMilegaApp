@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import '../features/applications/presentation/my_applications_screen.dart';
 import '../features/auth/presentation/login_screen.dart';
 import '../features/auth/presentation/otp_screen.dart';
+import '../features/auth/presentation/register_screen.dart';
 import '../features/jobs/presentation/job_detail_screen.dart';
 import '../features/navigation/presentation/main_navigation_shell.dart';
 import '../features/profile/presentation/profile_screen.dart';
@@ -21,6 +22,20 @@ class AppRouter {
         builder: (context, state) => const SplashScreen(),
       ),
       GoRoute(
+        path: '/',
+        redirect: (context, state) => '/home',
+      ),
+      GoRoute(
+        path: '/home',
+        name: 'home',
+        builder: (context, state) => const MainNavigationShell(initialIndex: 0),
+      ),
+      GoRoute(
+        path: '/jobs',
+        name: 'jobs',
+        builder: (context, state) => const MainNavigationShell(initialIndex: 1),
+      ),
+      GoRoute(
         path: '/login',
         name: 'login',
         builder: (context, state) => const LoginScreen(),
@@ -34,9 +49,9 @@ class AppRouter {
         },
       ),
       GoRoute(
-        path: '/jobs',
-        name: 'jobs',
-        builder: (context, state) => const MainNavigationShell(initialIndex: 0),
+        path: '/register',
+        name: 'register',
+        builder: (context, state) => const RegisterScreen(),
       ),
       GoRoute(
         path: '/jobs/:id',
@@ -55,10 +70,6 @@ class AppRouter {
         path: '/profile',
         name: 'profile',
         builder: (context, state) => const ProfileScreen(),
-      ),
-      GoRoute(
-        path: '/home',
-        redirect: (context, state) => '/jobs',
       ),
     ],
   );

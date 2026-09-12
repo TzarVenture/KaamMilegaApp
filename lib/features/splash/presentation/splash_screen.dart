@@ -29,9 +29,9 @@ class _SplashScreenState extends State<SplashScreen> {
       if (mounted) {
         final token = LocalStorage.getToken();
         if (token != null && token.isNotEmpty) {
-          context.go('/jobs');
+          context.go('/home');
         } else {
-          context.go('/jobs'); // Allow guest browsing jobs directly, just like website
+          context.go('/home'); // Allow guest browsing the website landing page directly
         }
       }
     });

@@ -13,15 +13,19 @@ class ApiConstants {
   static const String userProfile = '/user/profile';
   static const String userRegister = '/user/register';
 
-  // --- Jobs Endpoints ---
+  // --- Jobs Endpoints (Candidate Discovery) ---
   static const String jobs = '/jobs';
   static const String jobDetail = '/jobs/'; // append :id
-  static const String myJobs = '/jobs/my';
 
   // --- Cities Endpoints ---
   static const String cities = '/cities';
 
-  // --- Applications Endpoints ---
+  // --- Applications Endpoints (Candidate Tracking) ---
   static const String applications = '/applications';
   static const String myApplications = '/applications/my';
+
+  // --- User Profile Endpoints ---
+  static const String userSkill = '/user/skill';
+  static const String userEducation = '/user/education';
+  static const String userExperience = '/user/experience';
 }

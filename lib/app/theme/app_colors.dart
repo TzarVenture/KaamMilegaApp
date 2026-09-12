@@ -14,6 +14,15 @@ class AppColors {
   // Deep header purple (used in Job Details & navbar)
   static const Color deepPurpleHeader = Color(0xFF2D1B4E);
 
+  // Website Landing Page tokens matching kaammilega.com
+  static const Color heroBg = Color(0xFF3B1641); // Signature deep plum purple
+  static const Color heroAccent = Color(0xFFC084FC); // Light lilac purple highlight
+  static const Color heroButton = Color(0xFFA855F7); // CTA purple button
+  static const Color heroButtonHover = Color(0xFF9333EA);
+  static const Color tickerBg = Color(0xFFFDF4FF); // Very light purple ticker background
+  static const Color tickerBorder = Color(0xFFF3E8FF); // Ticker border
+  static const Color cardLightBg = Color(0xFFF9FAFB);
+
   // Top Match & Highlight Gold/Yellow
   static const Color topMatchGold = Color(0xFFFBBF24);
   static const Color topMatchCardBg = Color(0xFFFFFDF2);

@@ -117,29 +117,10 @@ class _JobsScreenState extends ConsumerState<JobsScreen> {
         titleSpacing: 16,
         title: Row(
           children: [
-            // Logo Branding
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-              decoration: BoxDecoration(
-                color: AppColors.primary,
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: const Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.work_rounded, color: Colors.white, size: 16),
-                  SizedBox(width: 6),
-                  Text(
-                    'KaamMilega',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: 0.5,
-                    ),
-                  ),
-                ],
-              ),
+            // Logo Branding (clickable to go to home)
+            GestureDetector(
+              onTap: () => context.go('/home'),
+              child: Image.asset('assets/images/logo.jpg', height: 32),
             ),
 
             const SizedBox(width: 10),

@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import '../../../app/theme/app_colors.dart';
 import '../../applications/presentation/my_applications_screen.dart';
+import '../../home/presentation/home_screen.dart';
 import '../../jobs/presentation/jobs_screen.dart';
 import '../../profile/presentation/profile_screen.dart';
 
-/// Main navigation shell holding the bottom navigation tabs
+/// Main navigation shell holding the 4 primary tabs: Home, Jobs, Applied, Profile
 class MainNavigationShell extends StatefulWidget {
   final int initialIndex;
 
@@ -20,11 +21,11 @@ class MainNavigationShell extends StatefulWidget {
 class _MainNavigationShellState extends State<MainNavigationShell> {
   late int _currentIndex;
 
-  final List<Widget> _screens = const [
-    JobsScreen(),
-    MyApplicationsScreen(),
-    ProfileScreen(),
-  ];
+  void _navigateToTab(int index) {
+    if (mounted) {
+      setState(() => _currentIndex = index);
+    }
+  }
 
   @override
   void initState() {
@@ -34,10 +35,17 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
 
   @override
   Widget build(BuildContext context) {
+    final screens = [
+      HomeScreen(onNavigateTab: _navigateToTab),
+      const JobsScreen(),
+      const MyApplicationsScreen(),
+      const ProfileScreen(),
+    ];
+
     return Scaffold(
       body: IndexedStack(
         index: _currentIndex,
-        children: _screens,
+        children: screens,
       ),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _currentIndex,
@@ -48,6 +56,11 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
           setState(() => _currentIndex = index);
         },
         destinations: const [
+          NavigationDestination(
+            icon: Icon(Icons.home_outlined),
+            selectedIcon: Icon(Icons.home_rounded, color: AppColors.primary),
+            label: 'Home',
+          ),
           NavigationDestination(
             icon: Icon(Icons.work_outline_rounded),
             selectedIcon: Icon(Icons.work_rounded, color: AppColors.primary),

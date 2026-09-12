@@ -5,7 +5,19 @@ import '../../../core/storage/local_storage.dart';
 import '../../cities/repositories/city_repository.dart';
 import '../models/user_profile.dart';
 
-/// Authentication repository connecting with km-backend auth endpoints
+class AuthVerificationResult {
+  final UserProfile? user;
+  final bool isRegistered;
+  final String? token;
+
+  const AuthVerificationResult({
+    this.user,
+    this.isRegistered = false,
+    this.token,
+  });
+}
+
+/// Authentication repository connecting with km-backend auth endpoints (Candidate-only)
 class AuthRepository {
   final ApiClient _client;
 
@@ -23,7 +35,7 @@ class AuthRepository {
   }
 
   /// Verify OTP and store JWT auth token
-  Future<UserProfile?> verifyOtp(String mobile, String code) async {
+  Future<AuthVerificationResult> verifyOtp(String mobile, String code) async {
     final response = await _client.post(
       ApiConstants.verifyOtp,
       data: {
@@ -35,18 +47,82 @@ class AuthRepository {
 
     final data = response.data as Map<String, dynamic>? ?? {};
     final token = data['token']?.toString();
+    final isRegistered = data['is_registered'] == true;
 
     if (token != null && token.isNotEmpty) {
       await LocalStorage.saveToken(token);
     }
 
+    UserProfile? user;
     if (data['user'] is Map<String, dynamic>) {
-      final user = UserProfile.fromJson(data['user'] as Map<String, dynamic>);
+      user = UserProfile.fromJson(data['user'] as Map<String, dynamic>);
       await LocalStorage.saveUser(user.toJson());
-      return user;
     }
 
-    return null;
+    return AuthVerificationResult(
+      user: user,
+      isRegistered: isRegistered,
+      token: token,
+    );
+  }
+
+  /// Register Candidate Profile on km-backend
+  Future<UserProfile> registerCandidate({
+    required String name,
+    required String gender,
+    required String educationLevel,
+    required String workExperience,
+    required String city,
+    required List<String> jobCategories,
+    String experienceDetail = '',
+    String email = '',
+  }) async {
+    final response = await _client.post(
+      ApiConstants.userRegister,
+      data: {
+        'roles': ['user'],
+        'name': name.trim(),
+        'gender': gender,
+        'education_level': educationLevel,
+        'work_experience': workExperience,
+        'city': city,
+        'job_categories': jobCategories,
+        'experience_detail': experienceDetail.trim(),
+        'email': email.trim(),
+        'is_email_verified': false,
+      },
+    );
+
+    final data = response.data as Map<String, dynamic>? ?? {};
+    final user = UserProfile.fromJson(data);
+    await LocalStorage.saveUser(user.toJson());
+    return user;
+  }
+
+  /// Update Candidate Profile
+  Future<UserProfile> updateProfile(Map<String, dynamic> updates) async {
+    final response = await _client.patch(
+      ApiConstants.userProfile,
+      data: updates,
+    );
+
+    final data = response.data as Map<String, dynamic>? ?? {};
+    final user = UserProfile.fromJson(data);
+    await LocalStorage.saveUser(user.toJson());
+    return user;
+  }
+
+  /// Add a Skill tag to Candidate profile
+  Future<UserProfile> addSkill(String skillName) async {
+    final response = await _client.post(
+      '/user/skill',
+      data: {'skill_name': skillName.trim()},
+    );
+
+    final data = response.data as Map<String, dynamic>? ?? {};
+    final user = UserProfile.fromJson(data);
+    await LocalStorage.saveUser(user.toJson());
+    return user;
   }
 
   /// Fetch user profile
