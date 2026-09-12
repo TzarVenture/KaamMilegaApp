@@ -230,6 +230,25 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     final applicationsAsync = ref.watch(myApplicationsProvider);
     final applicationCount = applicationsAsync.asData?.value.length ?? 0;
 
+    if (authState.isLoading) {
+      return Scaffold(
+        backgroundColor: AppColors.background,
+        appBar: AppBar(
+          backgroundColor: Colors.white,
+          elevation: 0.5,
+          title: const Text(
+            'Candidate Profile',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w800,
+              color: AppColors.textPrimary,
+            ),
+          ),
+        ),
+        body: const ProfileSkeleton(),
+      );
+    }
+
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
