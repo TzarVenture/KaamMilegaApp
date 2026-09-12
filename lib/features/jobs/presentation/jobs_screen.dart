@@ -6,6 +6,7 @@ import '../../../app/theme/app_colors.dart';
 import '../../applications/presentation/apply_modal.dart';
 import '../../cities/presentation/city_selector_sheet.dart';
 import '../providers/jobs_provider.dart';
+import '../../../shared/widgets/shimmer_loading.dart';
 import 'widgets/filter_modal.dart';
 import 'widgets/job_card.dart';
 import 'widgets/pagination_bar.dart';
@@ -306,19 +307,11 @@ class _JobsScreenState extends ConsumerState<JobsScreen> {
             if (jobsState.isLoading)
               SliverList(
                 delegate: SliverChildBuilderDelegate(
-                  (context, index) => Container(
-                    height: 180,
-                    margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(24),
-                      border: Border.all(color: AppColors.borderLight),
-                    ),
-                    child: const Center(
-                      child: CircularProgressIndicator(color: AppColors.primary),
-                    ),
+                  (context, index) => const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 16),
+                    child: JobCardSkeleton(),
                   ),
-                  childCount: 3,
+                  childCount: 4,
                 ),
               )
             else if (jobsState.jobs.isEmpty)

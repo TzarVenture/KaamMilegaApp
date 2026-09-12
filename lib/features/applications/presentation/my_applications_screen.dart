@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../app/theme/app_colors.dart';
+import '../../../shared/widgets/shimmer_loading.dart';
 import '../models/application.dart';
 import '../repositories/application_repository.dart';
 
@@ -90,9 +91,7 @@ class MyApplicationsScreen extends ConsumerWidget {
             },
           );
         },
-        loading: () => const Center(
-          child: CircularProgressIndicator(color: AppColors.primary),
-        ),
+        loading: () => const MyApplicationsSkeleton(),
         error: (err, _) => Center(
           child: Text('Error: $err'),
         ),

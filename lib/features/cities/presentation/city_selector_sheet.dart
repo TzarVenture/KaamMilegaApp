@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../app/theme/app_colors.dart';
+import '../../../shared/widgets/shimmer_loading.dart';
 import '../models/city.dart';
 import '../repositories/city_repository.dart';
 
@@ -232,8 +233,20 @@ class _CitySelectorSheetState extends ConsumerState<CitySelectorSheet> {
                   },
                 );
               },
-              loading: () => const Center(
-                child: CircularProgressIndicator(color: AppColors.primary),
+              loading: () => AppShimmer(
+                child: ListView.builder(
+                  itemCount: 8,
+                  itemBuilder: (_, __) => const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                    child: Row(
+                      children: [
+                        ShimmerCircle(size: 20),
+                        SizedBox(width: 14),
+                        ShimmerBox(width: 140, height: 16, borderRadius: 4),
+                      ],
+                    ),
+                  ),
+                ),
               ),
               error: (err, _) => Center(
                 child: Text(
