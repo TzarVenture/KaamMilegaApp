@@ -236,7 +236,7 @@ class _CitySelectorSheetState extends ConsumerState<CitySelectorSheet> {
               loading: () => AppShimmer(
                 child: ListView.builder(
                   itemCount: 8,
-                  itemBuilder: (_, __) => const Padding(
+                  itemBuilder: (_, index) => const Padding(
                     padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                     child: Row(
                       children: [
