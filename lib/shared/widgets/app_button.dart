@@ -43,10 +43,7 @@ class AppButton extends StatelessWidget {
                   valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                 ),
               )
-            : Text(
-                text,
-                style: AppTextStyles.button,
-              ),
+            : Text(text, style: AppTextStyles.button),
       ),
     );
   }

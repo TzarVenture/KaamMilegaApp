@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../../../app/theme/app_colors.dart';
 import '../../applications/presentation/my_applications_screen.dart';
 import '../../home/presentation/home_screen.dart';
@@ -9,10 +10,7 @@ import '../../profile/presentation/profile_screen.dart';
 class MainNavigationShell extends StatefulWidget {
   final int initialIndex;
 
-  const MainNavigationShell({
-    super.key,
-    this.initialIndex = 0,
-  });
+  const MainNavigationShell({super.key, this.initialIndex = 0});
 
   @override
   State<MainNavigationShell> createState() => _MainNavigationShellState();
@@ -43,10 +41,7 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
     ];
 
     return Scaffold(
-      body: IndexedStack(
-        index: _currentIndex,
-        children: screens,
-      ),
+      body: IndexedStack(index: _currentIndex, children: screens),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _currentIndex,
         backgroundColor: Colors.white,
@@ -68,7 +63,10 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
           ),
           NavigationDestination(
             icon: Icon(Icons.bookmark_border_rounded),
-            selectedIcon: Icon(Icons.bookmark_rounded, color: AppColors.primary),
+            selectedIcon: Icon(
+              Icons.bookmark_rounded,
+              color: AppColors.primary,
+            ),
             label: 'Applied',
           ),
           NavigationDestination(

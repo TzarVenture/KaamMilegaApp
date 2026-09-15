@@ -1,4 +1,6 @@
+import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../../../core/constants/api_constants.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/storage/local_storage.dart';
@@ -17,7 +19,7 @@ class AuthVerificationResult {
   });
 }
 
-/// Authentication repository connecting with km-backend auth endpoints (Candidate-only)
+/// Authentication & Candidate Profile repository connecting with km-backend auth endpoints
 class AuthRepository {
   final ApiClient _client;
 
@@ -27,10 +29,7 @@ class AuthRepository {
   Future<void> sendOtp(String mobile) async {
     await _client.post(
       ApiConstants.sendOtp,
-      data: {
-        'mobile': mobile,
-        'role': 'user',
-      },
+      data: {'mobile': mobile, 'role': 'user'},
     );
   }
 
@@ -38,11 +37,7 @@ class AuthRepository {
   Future<AuthVerificationResult> verifyOtp(String mobile, String code) async {
     final response = await _client.post(
       ApiConstants.verifyOtp,
-      data: {
-        'mobile': mobile,
-        'code': code,
-        'role': 'user',
-      },
+      data: {'mobile': mobile, 'code': code, 'role': 'user'},
     );
 
     final data = response.data as Map<String, dynamic>? ?? {};
@@ -99,11 +94,67 @@ class AuthRepository {
     return user;
   }
 
-  /// Update Candidate Profile
+  /// Update Candidate Profile (headline, about, city, gender, profile photo, etc.)
   Future<UserProfile> updateProfile(Map<String, dynamic> updates) async {
     final response = await _client.patch(
       ApiConstants.userProfile,
       data: updates,
+    );
+
+    final data = response.data as Map<String, dynamic>? ?? {};
+    final user = UserProfile.fromJson(data);
+    await LocalStorage.saveUser(user.toJson());
+    return user;
+  }
+
+  /// Add Education record to Candidate profile
+  Future<UserProfile> addEducation({
+    required String schoolName,
+    required String degree,
+    required String fieldOfStudy,
+    required String startDate,
+    required String endDate,
+    String description = '',
+  }) async {
+    final response = await _client.post(
+      '/user/education',
+      data: {
+        'school_name': schoolName.trim(),
+        'degree': degree.trim(),
+        'field_of_study': fieldOfStudy.trim(),
+        'start_date': startDate.trim(),
+        'end_date': endDate.trim(),
+        'description': description.trim(),
+      },
+    );
+
+    final data = response.data as Map<String, dynamic>? ?? {};
+    final user = UserProfile.fromJson(data);
+    await LocalStorage.saveUser(user.toJson());
+    return user;
+  }
+
+  /// Add Work Experience record to Candidate profile
+  Future<UserProfile> addExperience({
+    required String title,
+    required String companyName,
+    required String employmentType,
+    required String location,
+    required String startDate,
+    required String endDate,
+    String description = '',
+  }) async {
+    final response = await _client.post(
+      '/user/experience',
+      data: {
+        'title': title.trim(),
+        'company_name': companyName.trim(),
+        'employment_type': employmentType.trim(),
+        'location': location.trim(),
+        'start_date': startDate.trim(),
+        'end_date': endDate.trim(),
+        'description': description.trim(),
+      },
     );
 
     final data = response.data as Map<String, dynamic>? ?? {};
@@ -125,12 +176,36 @@ class AuthRepository {
     return user;
   }
 
-  /// Fetch user profile
+  /// Upload file to backend file service (Profile photo, Resume document)
+  Future<String?> uploadFile(List<int> bytes, String filename) async {
+    final formData = FormData.fromMap({
+      'file': MultipartFile.fromBytes(bytes, filename: filename),
+    });
+
+    final response = await _client.post('/files/upload', data: formData);
+
+    if (response.data is Map<String, dynamic>) {
+      final data = response.data as Map<String, dynamic>;
+      final url = data['url']?.toString() ?? data['file_url']?.toString();
+      if (url != null && url.isNotEmpty) {
+        if (!url.startsWith('http')) {
+          final host = ApiConstants.baseUrl.replaceAll('/api', '');
+          return '$host$url';
+        }
+        return url;
+      }
+    }
+    return null;
+  }
+
+  /// Fetch user profile from km-backend
   Future<UserProfile?> getProfile() async {
     try {
       final response = await _client.get(ApiConstants.userProfile);
       if (response.data is Map<String, dynamic>) {
-        final user = UserProfile.fromJson(response.data as Map<String, dynamic>);
+        final user = UserProfile.fromJson(
+          response.data as Map<String, dynamic>,
+        );
         await LocalStorage.saveUser(user.toJson());
         return user;
       }

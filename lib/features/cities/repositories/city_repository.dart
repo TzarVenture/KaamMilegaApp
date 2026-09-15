@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../../../core/constants/api_constants.dart';
 import '../../../core/network/api_client.dart';
 import '../models/city.dart';
@@ -12,10 +13,7 @@ class CityRepository {
   /// Fetch list of cities
   Future<List<City>> getCities({String? search}) async {
     try {
-      final queryParams = <String, dynamic>{
-        'active': 'true',
-        'limit': 100,
-      };
+      final queryParams = <String, dynamic>{'active': 'true', 'limit': 100};
       if (search != null && search.isNotEmpty) {
         queryParams['search'] = search;
       }

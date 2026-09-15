@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../../../app/theme/app_colors.dart';
 import '../../../shared/widgets/shimmer_loading.dart';
 import '../models/city.dart';
@@ -25,10 +26,8 @@ class CitySelectorSheet extends ConsumerStatefulWidget {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (_) => CitySelectorSheet(
-        currentCity: currentCity,
-        onSelected: onSelected,
-      ),
+      builder: (_) =>
+          CitySelectorSheet(currentCity: currentCity, onSelected: onSelected),
     );
   }
 
@@ -123,7 +122,10 @@ class _CitySelectorSheetState extends ConsumerState<CitySelectorSheet> {
                     : null,
                 filled: true,
                 fillColor: AppColors.background,
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(16),
                   borderSide: BorderSide.none,
@@ -138,34 +140,48 @@ class _CitySelectorSheetState extends ConsumerState<CitySelectorSheet> {
             child: SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               child: Row(
-                children: ['All', 'Mumbai', 'Delhi', 'Bengaluru', 'Pune', 'Hyderabad', 'Ahmedabad']
-                    .map((city) {
-                  final isSelected = widget.currentCity.toLowerCase() == city.toLowerCase();
-                  return Padding(
-                    padding: const EdgeInsets.only(right: 8),
-                    child: ChoiceChip(
-                      label: Text(city),
-                      selected: isSelected,
-                      selectedColor: AppColors.primary,
-                      labelStyle: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: isSelected ? Colors.white : AppColors.textSecondary,
-                      ),
-                      backgroundColor: AppColors.background,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20),
-                        side: BorderSide(
-                          color: isSelected ? AppColors.primary : AppColors.border,
+                children:
+                    [
+                      'All',
+                      'Mumbai',
+                      'Delhi',
+                      'Bengaluru',
+                      'Pune',
+                      'Hyderabad',
+                      'Ahmedabad',
+                    ].map((city) {
+                      final isSelected =
+                          widget.currentCity.toLowerCase() ==
+                          city.toLowerCase();
+                      return Padding(
+                        padding: const EdgeInsets.only(right: 8),
+                        child: ChoiceChip(
+                          label: Text(city),
+                          selected: isSelected,
+                          selectedColor: AppColors.primary,
+                          labelStyle: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: isSelected
+                                ? Colors.white
+                                : AppColors.textSecondary,
+                          ),
+                          backgroundColor: AppColors.background,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20),
+                            side: BorderSide(
+                              color: isSelected
+                                  ? AppColors.primary
+                                  : AppColors.border,
+                            ),
+                          ),
+                          onSelected: (_) {
+                            widget.onSelected(city);
+                            Navigator.pop(context);
+                          },
                         ),
-                      ),
-                      onSelected: (_) {
-                        widget.onSelected(city);
-                        Navigator.pop(context);
-                      },
-                    ),
-                  );
-                }).toList(),
+                      );
+                    }).toList(),
               ),
             ),
           ),
@@ -182,7 +198,8 @@ class _CitySelectorSheetState extends ConsumerState<CitySelectorSheet> {
                 }).toList();
 
                 // Ensure "All" option is at the top if not searching
-                if (_searchQuery.isEmpty && !filtered.any((c) => c.name.toLowerCase() == 'all')) {
+                if (_searchQuery.isEmpty &&
+                    !filtered.any((c) => c.name.toLowerCase() == 'all')) {
                   filtered.insert(0, const City(id: 'all', name: 'All'));
                 }
 
@@ -197,11 +214,13 @@ class _CitySelectorSheetState extends ConsumerState<CitySelectorSheet> {
 
                 return ListView.separated(
                   itemCount: filtered.length,
-                  separatorBuilder: (_, index) => const Divider(height: 1, indent: 20),
+                  separatorBuilder: (_, index) =>
+                      const Divider(height: 1, indent: 20),
                   itemBuilder: (context, index) {
                     final city = filtered[index];
                     final isSelected =
-                        widget.currentCity.toLowerCase() == city.name.toLowerCase();
+                        widget.currentCity.toLowerCase() ==
+                        city.name.toLowerCase();
 
                     return Material(
                       color: Colors.transparent,
@@ -210,19 +229,28 @@ class _CitySelectorSheetState extends ConsumerState<CitySelectorSheet> {
                         leading: Icon(
                           Icons.apartment_rounded,
                           size: 20,
-                          color: isSelected ? AppColors.primary : AppColors.textLight,
+                          color: isSelected
+                              ? AppColors.primary
+                              : AppColors.textLight,
                         ),
                         title: Text(
                           city.name,
                           style: TextStyle(
                             fontSize: 14,
-                            fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                            color: isSelected ? AppColors.primary : AppColors.textPrimary,
+                            fontWeight: isSelected
+                                ? FontWeight.w700
+                                : FontWeight.w500,
+                            color: isSelected
+                                ? AppColors.primary
+                                : AppColors.textPrimary,
                           ),
                         ),
                         trailing: isSelected
-                            ? const Icon(Icons.check_circle_rounded,
-                                color: AppColors.primary, size: 20)
+                            ? const Icon(
+                                Icons.check_circle_rounded,
+                                color: AppColors.primary,
+                                size: 20,
+                              )
                             : null,
                         onTap: () {
                           widget.onSelected(city.name);

@@ -41,10 +41,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     'Post Graduate',
   ];
 
-  final List<String> _experienceTypeOptions = [
-    'Fresher',
-    'Experienced',
-  ];
+  final List<String> _experienceTypeOptions = ['Fresher', 'Experienced'];
 
   final List<String> _popularCities = [
     'Delhi',
@@ -123,14 +120,18 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
     if (_selectedCategories.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select at least one job category')),
+        const SnackBar(
+          content: Text('Please select at least one job category'),
+        ),
       );
       return;
     }
 
     setState(() => _isLoading = true);
 
-    final success = await ref.read(authProvider.notifier).registerCandidate(
+    final success = await ref
+        .read(authProvider.notifier)
+        .registerCandidate(
           name: name,
           gender: _gender,
           educationLevel: _educationLevel,
@@ -146,7 +147,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       if (success) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Profile registered successfully! Welcome to KaamMilega.'),
+            content: Text(
+              'Profile registered successfully! Welcome to KaamMilega.',
+            ),
             backgroundColor: AppColors.primary,
           ),
         );
@@ -246,7 +249,10 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 AppTextField(
                   controller: _nameController,
                   hintText: 'e.g. Rahul Sharma',
-                  prefixIcon: const Icon(Icons.person_outline_rounded, color: AppColors.textSecondary),
+                  prefixIcon: const Icon(
+                    Icons.person_outline_rounded,
+                    color: AppColors.textSecondary,
+                  ),
                 ),
 
                 const SizedBox(height: 20),
@@ -264,7 +270,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                       selectedColor: AppColors.primary,
                       backgroundColor: Colors.grey.shade100,
                       labelStyle: TextStyle(
-                        color: isSelected ? Colors.white : AppColors.textPrimary,
+                        color: isSelected
+                            ? Colors.white
+                            : AppColors.textPrimary,
                         fontWeight: FontWeight.w700,
                       ),
                       onSelected: (selected) {
@@ -277,7 +285,10 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 const SizedBox(height: 20),
 
                 // 3. Education Level
-                const Text('Highest Education *', style: AppTextStyles.heading3),
+                const Text(
+                  'Highest Education *',
+                  style: AppTextStyles.heading3,
+                ),
                 const SizedBox(height: 8),
                 Wrap(
                   spacing: 8,
@@ -290,7 +301,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                       selectedColor: AppColors.primary,
                       backgroundColor: Colors.grey.shade100,
                       labelStyle: TextStyle(
-                        color: isSelected ? Colors.white : AppColors.textPrimary,
+                        color: isSelected
+                            ? Colors.white
+                            : AppColors.textPrimary,
                         fontWeight: FontWeight.w600,
                         fontSize: 12,
                       ),
@@ -313,11 +326,16 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                       child: Padding(
                         padding: const EdgeInsets.only(right: 8),
                         child: OutlinedButton(
-                          onPressed: () => setState(() => _workExperience = exp),
+                          onPressed: () =>
+                              setState(() => _workExperience = exp),
                           style: OutlinedButton.styleFrom(
-                            backgroundColor: isSelected ? AppColors.primaryLight : Colors.white,
+                            backgroundColor: isSelected
+                                ? AppColors.primaryLight
+                                : Colors.white,
                             side: BorderSide(
-                              color: isSelected ? AppColors.primary : AppColors.border,
+                              color: isSelected
+                                  ? AppColors.primary
+                                  : AppColors.border,
                               width: isSelected ? 2 : 1,
                             ),
                             padding: const EdgeInsets.symmetric(vertical: 14),
@@ -328,7 +346,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                           child: Text(
                             exp,
                             style: TextStyle(
-                              color: isSelected ? AppColors.primary : AppColors.textPrimary,
+                              color: isSelected
+                                  ? AppColors.primary
+                                  : AppColors.textPrimary,
                               fontWeight: FontWeight.w700,
                             ),
                           ),
@@ -341,12 +361,18 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 const SizedBox(height: 20),
 
                 // 5. Preferred City
-                const Text('Preferred City to Work in *', style: AppTextStyles.heading3),
+                const Text(
+                  'Preferred City to Work in *',
+                  style: AppTextStyles.heading3,
+                ),
                 const SizedBox(height: 8),
                 AppTextField(
                   controller: _cityController,
                   hintText: 'e.g. Delhi, Mumbai, Pune',
-                  prefixIcon: const Icon(Icons.location_on_outlined, color: AppColors.primary),
+                  prefixIcon: const Icon(
+                    Icons.location_on_outlined,
+                    color: AppColors.primary,
+                  ),
                 ),
                 const SizedBox(height: 8),
                 SingleChildScrollView(
@@ -357,9 +383,13 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                         padding: const EdgeInsets.only(right: 6),
                         child: ActionChip(
                           label: Text(c),
-                          labelStyle: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600),
+                          labelStyle: const TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                          ),
                           backgroundColor: Colors.grey.shade100,
-                          onPressed: () => setState(() => _cityController.text = c),
+                          onPressed: () =>
+                              setState(() => _cityController.text = c),
                         ),
                       );
                     }).toList(),
@@ -372,7 +402,10 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text('Interested Job Roles *', style: AppTextStyles.heading3),
+                    const Text(
+                      'Interested Job Roles *',
+                      style: AppTextStyles.heading3,
+                    ),
                     Text(
                       '${_selectedCategories.length} selected',
                       style: const TextStyle(
@@ -401,11 +434,17 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                       checkmarkColor: AppColors.primary,
                       backgroundColor: Colors.white,
                       side: BorderSide(
-                        color: isSelected ? AppColors.primary : AppColors.border,
+                        color: isSelected
+                            ? AppColors.primary
+                            : AppColors.border,
                       ),
                       labelStyle: TextStyle(
-                        color: isSelected ? AppColors.primary : AppColors.textPrimary,
-                        fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
+                        color: isSelected
+                            ? AppColors.primary
+                            : AppColors.textPrimary,
+                        fontWeight: isSelected
+                            ? FontWeight.w700
+                            : FontWeight.w600,
                         fontSize: 12,
                       ),
                       onSelected: (selected) {
@@ -426,7 +465,10 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 const SizedBox(height: 20),
 
                 // 7. Summary / Experience Details
-                const Text('Past Experience / Skills (Optional)', style: AppTextStyles.heading3),
+                const Text(
+                  'Past Experience / Skills (Optional)',
+                  style: AppTextStyles.heading3,
+                ),
                 const SizedBox(height: 8),
                 AppTextField(
                   controller: _expDetailController,
@@ -437,13 +479,19 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 const SizedBox(height: 20),
 
                 // 8. Email (Optional)
-                const Text('Email Address (Optional)', style: AppTextStyles.heading3),
+                const Text(
+                  'Email Address (Optional)',
+                  style: AppTextStyles.heading3,
+                ),
                 const SizedBox(height: 8),
                 AppTextField(
                   controller: _emailController,
                   hintText: 'e.g. rahul.sharma@example.com',
                   keyboardType: TextInputType.emailAddress,
-                  prefixIcon: const Icon(Icons.email_outlined, color: AppColors.textSecondary),
+                  prefixIcon: const Icon(
+                    Icons.email_outlined,
+                    color: AppColors.textSecondary,
+                  ),
                 ),
 
                 const SizedBox(height: 32),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../../../../app/theme/app_colors.dart';
 
 /// Pagination Bar with page numbers and next/prev controls
@@ -25,7 +26,9 @@ class PaginationBar extends StatelessWidget {
         children: [
           // Previous button
           IconButton(
-            onPressed: currentPage > 1 ? () => onPageChanged(currentPage - 1) : null,
+            onPressed: currentPage > 1
+                ? () => onPageChanged(currentPage - 1)
+                : null,
             icon: const Icon(Icons.chevron_left_rounded),
             color: AppColors.textPrimary,
             disabledColor: AppColors.textLight.withValues(alpha: 0.4),
@@ -50,14 +53,20 @@ class PaginationBar extends StatelessWidget {
                     child: ElevatedButton(
                       onPressed: () => onPageChanged(page),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: isSelected ? AppColors.primary : AppColors.white,
-                        foregroundColor: isSelected ? Colors.white : AppColors.textSecondary,
+                        backgroundColor: isSelected
+                            ? AppColors.primary
+                            : AppColors.white,
+                        foregroundColor: isSelected
+                            ? Colors.white
+                            : AppColors.textSecondary,
                         elevation: isSelected ? 2 : 0,
                         padding: EdgeInsets.zero,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                           side: BorderSide(
-                            color: isSelected ? AppColors.primary : AppColors.border,
+                            color: isSelected
+                                ? AppColors.primary
+                                : AppColors.border,
                           ),
                         ),
                       ),
@@ -65,7 +74,9 @@ class PaginationBar extends StatelessWidget {
                         '$page',
                         style: TextStyle(
                           fontSize: 13,
-                          fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
+                          fontWeight: isSelected
+                              ? FontWeight.w800
+                              : FontWeight.w600,
                         ),
                       ),
                     ),
@@ -77,7 +88,9 @@ class PaginationBar extends StatelessWidget {
 
           // Next button
           IconButton(
-            onPressed: currentPage < totalPages ? () => onPageChanged(currentPage + 1) : null,
+            onPressed: currentPage < totalPages
+                ? () => onPageChanged(currentPage + 1)
+                : null,
             icon: const Icon(Icons.chevron_right_rounded),
             color: AppColors.textPrimary,
             disabledColor: AppColors.textLight.withValues(alpha: 0.4),

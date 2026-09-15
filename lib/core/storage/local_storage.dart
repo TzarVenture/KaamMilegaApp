@@ -1,4 +1,5 @@
 import 'dart:convert';
+
 import 'package:shared_preferences/shared_preferences.dart';
 
 /// Helper service for persisting Auth tokens and user state in SharedPreferences

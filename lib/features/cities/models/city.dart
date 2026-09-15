@@ -3,10 +3,7 @@ class City {
   final String id;
   final String name;
 
-  const City({
-    required this.id,
-    required this.name,
-  });
+  const City({required this.id, required this.name});
 
   factory City.fromJson(Map<String, dynamic> json) {
     return City(
@@ -15,10 +12,7 @@ class City {
     );
   }
 
-  Map<String, dynamic> toJson() => {
-        'id': id,
-        'name': name,
-      };
+  Map<String, dynamic> toJson() => {'id': id, 'name': name};
 
   @override
   bool operator ==(Object other) =>

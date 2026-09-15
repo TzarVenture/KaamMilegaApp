@@ -1,4 +1,5 @@
 import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -31,7 +32,9 @@ class _SplashScreenState extends State<SplashScreen> {
         if (token != null && token.isNotEmpty) {
           context.go('/home');
         } else {
-          context.go('/home'); // Allow guest browsing the website landing page directly
+          context.go(
+            '/home',
+          ); // Allow guest browsing the website landing page directly
         }
       }
     });
@@ -53,10 +56,7 @@ class _SplashScreenState extends State<SplashScreen> {
           children: [
             const AppLogo(size: 100),
             const SizedBox(height: 24),
-            const Text(
-              'KaamMilega',
-              style: AppTextStyles.heading1,
-            ),
+            const Text('KaamMilega', style: AppTextStyles.heading1),
             const SizedBox(height: 8),
             Text(
               'Kaam Bhi, Kamai Bhi',

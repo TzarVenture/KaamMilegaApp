@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../../../app/theme/app_colors.dart';
 import '../../jobs/models/job.dart';
 import '../repositories/application_repository.dart';
@@ -24,10 +25,7 @@ class ApplyModalSheet extends ConsumerStatefulWidget {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (_) => ApplyModalSheet(
-        job: job,
-        onSuccess: onSuccess,
-      ),
+      builder: (_) => ApplyModalSheet(job: job, onSuccess: onSuccess),
     );
   }
 
@@ -49,10 +47,14 @@ class _ApplyModalSheetState extends ConsumerState<ApplyModalSheet> {
     setState(() => _isLoading = true);
 
     try {
-      await ref.read(applicationRepositoryProvider).applyToJob(
+      await ref
+          .read(applicationRepositoryProvider)
+          .applyToJob(
             widget.job.id,
             coverLetter: _coverLetterController.text.trim(),
           );
+
+      ref.invalidate(myApplicationsProvider);
 
       if (mounted) {
         Navigator.pop(context);
@@ -73,11 +75,12 @@ class _ApplyModalSheetState extends ConsumerState<ApplyModalSheet> {
     } catch (e) {
       if (mounted) {
         setState(() => _isLoading = false);
+        final errStr = e.toString();
+        final displayMsg = errStr.contains('already applied')
+            ? 'You have already applied for this job.'
+            : errStr;
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            backgroundColor: AppColors.error,
-            content: Text(e.toString()),
-          ),
+          SnackBar(backgroundColor: AppColors.error, content: Text(displayMsg)),
         );
       }
     }
@@ -147,8 +150,7 @@ class _ApplyModalSheetState extends ConsumerState<ApplyModalSheet> {
               controller: _coverLetterController,
               maxLines: 4,
               decoration: InputDecoration(
-                hintText:
-                    'Briefly tell the recruiter why you are a great match for this role...',
+                hintText: 'Briefly tell the recruiter why you are a great match for this role...',
                 filled: true,
                 fillColor: AppColors.background,
                 border: OutlineInputBorder(

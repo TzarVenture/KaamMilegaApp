@@ -4,8 +4,12 @@ import '../features/applications/presentation/my_applications_screen.dart';
 import '../features/auth/presentation/login_screen.dart';
 import '../features/auth/presentation/otp_screen.dart';
 import '../features/auth/presentation/register_screen.dart';
+import '../features/chat/presentation/chat_detail_screen.dart';
+import '../features/chat/presentation/chat_list_screen.dart';
+import '../features/interviews/presentation/interviews_screen.dart';
 import '../features/jobs/presentation/job_detail_screen.dart';
 import '../features/navigation/presentation/main_navigation_shell.dart';
+import '../features/network/presentation/network_screen.dart';
 import '../features/profile/presentation/profile_screen.dart';
 import '../features/splash/presentation/splash_screen.dart';
 
@@ -21,10 +25,7 @@ class AppRouter {
         name: 'splash',
         builder: (context, state) => const SplashScreen(),
       ),
-      GoRoute(
-        path: '/',
-        redirect: (context, state) => '/home',
-      ),
+      GoRoute(path: '/', redirect: (context, state) => '/home'),
       GoRoute(
         path: '/home',
         name: 'home',
@@ -65,6 +66,36 @@ class AppRouter {
         path: '/my-applications',
         name: 'my_applications',
         builder: (context, state) => const MyApplicationsScreen(),
+      ),
+      GoRoute(
+        path: '/interviews',
+        name: 'interviews',
+        builder: (context, state) => const InterviewsScreen(),
+      ),
+      GoRoute(
+        path: '/network',
+        name: 'network',
+        builder: (context, state) => const NetworkScreen(),
+      ),
+      GoRoute(
+        path: '/chats',
+        name: 'chats',
+        builder: (context, state) => const ChatListScreen(),
+      ),
+      GoRoute(
+        path: '/chats/:id',
+        name: 'chat_detail',
+        builder: (context, state) {
+          final id = state.pathParameters['id'] ?? '';
+          final extraMap = state.extra as Map<String, String>?;
+          final receiverId = extraMap?['receiverId'] ?? id;
+          final title = extraMap?['title'] ?? 'Chat';
+          return ChatDetailScreen(
+            conversationId: id,
+            receiverId: receiverId,
+            title: title,
+          );
+        },
       ),
       GoRoute(
         path: '/profile',

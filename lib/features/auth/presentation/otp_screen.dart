@@ -11,18 +11,17 @@ import '../providers/auth_provider.dart';
 class OtpScreen extends ConsumerStatefulWidget {
   final String phone;
 
-  const OtpScreen({
-    super.key,
-    required this.phone,
-  });
+  const OtpScreen({super.key, required this.phone});
 
   @override
   ConsumerState<OtpScreen> createState() => _OtpScreenState();
 }
 
 class _OtpScreenState extends ConsumerState<OtpScreen> {
-  final List<TextEditingController> _controllers =
-      List.generate(4, (_) => TextEditingController());
+  final List<TextEditingController> _controllers = List.generate(
+    4,
+    (_) => TextEditingController(),
+  );
   final List<FocusNode> _focusNodes = List.generate(4, (_) => FocusNode());
   bool _isLoading = false;
 
@@ -41,9 +40,7 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
     final otp = _controllers.map((e) => e.text).join();
     if (otp.length < 4) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please enter a valid 4-digit OTP'),
-        ),
+        const SnackBar(content: Text('Please enter a valid 4-digit OTP')),
       );
       return;
     }
@@ -81,10 +78,7 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 16),
-              const Text(
-                'Verify Phone',
-                style: AppTextStyles.heading1,
-              ),
+              const Text('Verify Phone', style: AppTextStyles.heading1),
               const SizedBox(height: 8),
               Text(
                 'Enter the 4-digit code sent to +91 ${widget.phone.isNotEmpty ? widget.phone : "XXXXXXXXXX"}',
@@ -108,9 +102,7 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
                         fontWeight: FontWeight.w700,
                         color: AppColors.textPrimary,
                       ),
-                      inputFormatters: [
-                        FilteringTextInputFormatter.digitsOnly,
-                      ],
+                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                       decoration: InputDecoration(
                         counterText: '',
                         contentPadding: EdgeInsets.zero,
@@ -184,4 +176,3 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
     );
   }
 }
-

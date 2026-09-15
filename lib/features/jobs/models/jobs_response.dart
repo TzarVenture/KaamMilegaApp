@@ -16,7 +16,9 @@ class JobsResponse {
 
   factory JobsResponse.fromJson(Map<String, dynamic> json) {
     final jobsRaw = json['jobs'] as List<dynamic>? ?? [];
-    final jobsList = jobsRaw.map((e) => Job.fromJson(e as Map<String, dynamic>)).toList();
+    final jobsList = jobsRaw
+        .map((e) => Job.fromJson(e as Map<String, dynamic>))
+        .toList();
 
     return JobsResponse(
       jobs: jobsList,

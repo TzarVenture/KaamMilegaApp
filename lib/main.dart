@@ -9,9 +9,5 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await LocalStorage.init();
 
-  runApp(
-    const ProviderScope(
-      child: KaamMilegaApp(),
-    ),
-  );
+  runApp(const ProviderScope(child: KaamMilegaApp()));
 }

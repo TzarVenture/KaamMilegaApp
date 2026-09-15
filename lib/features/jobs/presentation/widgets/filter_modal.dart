@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../../../../app/theme/app_colors.dart';
 import '../../models/job_filter.dart';
 
@@ -22,10 +23,8 @@ class FilterModalSheet extends StatefulWidget {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (_) => FilterModalSheet(
-        initialFilter: initialFilter,
-        onApply: onApply,
-      ),
+      builder: (_) =>
+          FilterModalSheet(initialFilter: initialFilter, onApply: onApply),
     );
   }
 
@@ -65,7 +64,7 @@ class _FilterModalSheetState extends State<FilterModalSheet> {
     {'label': '> 5 Years', 'value': '30'},
   ];
 
-  static const List<String> kGenders = ['Male', 'Female'];
+  static const List<String> kGenders = ['Male', 'Female', 'Any'];
 
   static const List<String> kQualifications = [
     '10th Pass',
@@ -187,12 +186,19 @@ class _FilterModalSheetState extends State<FilterModalSheet> {
                       onTap: () => setState(() => _salaryRange = sal['value']!),
                       borderRadius: BorderRadius.circular(8),
                       child: Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 8,
+                          horizontal: 4,
+                        ),
                         child: Row(
                           children: [
                             Icon(
-                              isSelected ? Icons.radio_button_checked_rounded : Icons.radio_button_off_rounded,
-                              color: isSelected ? AppColors.primary : AppColors.textLight,
+                              isSelected
+                                  ? Icons.radio_button_checked_rounded
+                                  : Icons.radio_button_off_rounded,
+                              color: isSelected
+                                  ? AppColors.primary
+                                  : AppColors.textLight,
                               size: 20,
                             ),
                             const SizedBox(width: 12),
@@ -200,8 +206,12 @@ class _FilterModalSheetState extends State<FilterModalSheet> {
                               sal['label']!,
                               style: TextStyle(
                                 fontSize: 14,
-                                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                                color: isSelected ? AppColors.primary : AppColors.textPrimary,
+                                fontWeight: isSelected
+                                    ? FontWeight.w700
+                                    : FontWeight.w500,
+                                color: isSelected
+                                    ? AppColors.primary
+                                    : AppColors.textPrimary,
                               ),
                             ),
                           ],
@@ -221,12 +231,19 @@ class _FilterModalSheetState extends State<FilterModalSheet> {
                       onTap: () => setState(() => _experience = exp['value']!),
                       borderRadius: BorderRadius.circular(8),
                       child: Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 8,
+                          horizontal: 4,
+                        ),
                         child: Row(
                           children: [
                             Icon(
-                              isSelected ? Icons.radio_button_checked_rounded : Icons.radio_button_off_rounded,
-                              color: isSelected ? AppColors.primary : AppColors.textLight,
+                              isSelected
+                                  ? Icons.radio_button_checked_rounded
+                                  : Icons.radio_button_off_rounded,
+                              color: isSelected
+                                  ? AppColors.primary
+                                  : AppColors.textLight,
                               size: 20,
                             ),
                             const SizedBox(width: 12),
@@ -234,8 +251,12 @@ class _FilterModalSheetState extends State<FilterModalSheet> {
                               exp['label']!,
                               style: TextStyle(
                                 fontSize: 14,
-                                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                                color: isSelected ? AppColors.primary : AppColors.textPrimary,
+                                fontWeight: isSelected
+                                    ? FontWeight.w700
+                                    : FontWeight.w500,
+                                color: isSelected
+                                    ? AppColors.primary
+                                    : AppColors.textPrimary,
                               ),
                             ),
                           ],
@@ -256,8 +277,12 @@ class _FilterModalSheetState extends State<FilterModalSheet> {
                         type,
                         style: TextStyle(
                           fontSize: 14,
-                          fontWeight: isChecked ? FontWeight.w700 : FontWeight.w500,
-                          color: isChecked ? AppColors.primary : AppColors.textPrimary,
+                          fontWeight: isChecked
+                              ? FontWeight.w700
+                              : FontWeight.w500,
+                          color: isChecked
+                              ? AppColors.primary
+                              : AppColors.textPrimary,
                         ),
                       ),
                       value: isChecked,
@@ -288,8 +313,12 @@ class _FilterModalSheetState extends State<FilterModalSheet> {
                         gender,
                         style: TextStyle(
                           fontSize: 14,
-                          fontWeight: isChecked ? FontWeight.w700 : FontWeight.w500,
-                          color: isChecked ? AppColors.primary : AppColors.textPrimary,
+                          fontWeight: isChecked
+                              ? FontWeight.w700
+                              : FontWeight.w500,
+                          color: isChecked
+                              ? AppColors.primary
+                              : AppColors.textPrimary,
                         ),
                       ),
                       value: isChecked,
@@ -320,8 +349,12 @@ class _FilterModalSheetState extends State<FilterModalSheet> {
                         q,
                         style: TextStyle(
                           fontSize: 14,
-                          fontWeight: isChecked ? FontWeight.w700 : FontWeight.w500,
-                          color: isChecked ? AppColors.primary : AppColors.textPrimary,
+                          fontWeight: isChecked
+                              ? FontWeight.w700
+                              : FontWeight.w500,
+                          color: isChecked
+                              ? AppColors.primary
+                              : AppColors.textPrimary,
                         ),
                       ),
                       value: isChecked,
@@ -364,7 +397,10 @@ class _FilterModalSheetState extends State<FilterModalSheet> {
                     onPressed: _clearAll,
                     style: OutlinedButton.styleFrom(
                       foregroundColor: AppColors.primary,
-                      side: const BorderSide(color: AppColors.primary, width: 1.5),
+                      side: const BorderSide(
+                        color: AppColors.primary,
+                        width: 1.5,
+                      ),
                       padding: const EdgeInsets.symmetric(vertical: 14),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(16),

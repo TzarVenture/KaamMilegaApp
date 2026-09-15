@@ -24,8 +24,29 @@ class ApiConstants {
   static const String applications = '/applications';
   static const String myApplications = '/applications/my';
 
+  // --- Interviews Endpoints ---
+  static const String myInterviews = '/interviews/my';
+
+  // --- Skills Endpoints ---
+  static const String skills = '/skills';
+
   // --- User Profile Endpoints ---
   static const String userSkill = '/user/skill';
   static const String userEducation = '/user/education';
   static const String userExperience = '/user/experience';
+
+  // --- Network / Connections Endpoints ---
+  static const String networkConnect = '/network/connect';
+  static const String networkAccept = '/network/accept';
+  static const String networkIgnore = '/network/ignore';
+  static const String networkPending = '/network/pending';
+  static const String networkConnections = '/network/connections';
+  static const String networkDelete = '/network/connections/';
+  static const String networkStatus = '/network/status/';
+
+  // --- Real-Time Chat & Messaging Endpoints ---
+  static const String chats = '/chats';
+  static const String chatMessages = '/chats/messages';
+  static const String chatMessagesList = '/chats/';
+  static const String wsChats = '/ws/chats';
 }

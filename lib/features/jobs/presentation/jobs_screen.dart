@@ -1,9 +1,13 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
+
 import '../../../app/theme/app_colors.dart';
 import '../../applications/presentation/apply_modal.dart';
+import '../../applications/repositories/application_repository.dart';
 import '../../cities/presentation/city_selector_sheet.dart';
 import '../providers/jobs_provider.dart';
 import '../../../shared/widgets/shimmer_loading.dart';
@@ -24,6 +28,7 @@ class JobsScreen extends ConsumerStatefulWidget {
 class _JobsScreenState extends ConsumerState<JobsScreen> {
   final TextEditingController _searchController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
+  Timer? _debounceTimer;
   String? _applyingJobId;
 
   @override
@@ -37,9 +42,17 @@ class _JobsScreenState extends ConsumerState<JobsScreen> {
 
   @override
   void dispose() {
+    _debounceTimer?.cancel();
     _searchController.dispose();
     _scrollController.dispose();
     super.dispose();
+  }
+
+  void _onSearchChanged(String query) {
+    _debounceTimer?.cancel();
+    _debounceTimer = Timer(const Duration(milliseconds: 400), () {
+      ref.read(jobsProvider.notifier).setSearchQuery(query.trim());
+    });
   }
 
   void _openCitySelector(String currentCity) {
@@ -109,6 +122,9 @@ class _JobsScreenState extends ConsumerState<JobsScreen> {
     final jobsState = ref.watch(jobsProvider);
     final filter = jobsState.filter;
     final activeFilters = filter.activeFilterCount;
+    final myApplicationsAsync = ref.watch(myApplicationsProvider);
+    final appliedJobIds =
+        myApplicationsAsync.value?.map((a) => a.jobId).toSet() ?? {};
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -130,7 +146,10 @@ class _JobsScreenState extends ConsumerState<JobsScreen> {
             GestureDetector(
               onTap: () => _openCitySelector(filter.city),
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 6,
+                ),
                 decoration: BoxDecoration(
                   color: AppColors.background,
                   borderRadius: BorderRadius.circular(20),
@@ -172,7 +191,10 @@ class _JobsScreenState extends ConsumerState<JobsScreen> {
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.bookmark_outline_rounded, color: AppColors.textPrimary),
+            icon: const Icon(
+              Icons.bookmark_outline_rounded,
+              color: AppColors.textPrimary,
+            ),
             onPressed: () => context.push('/my-applications'),
             tooltip: 'My Applications',
           ),
@@ -195,18 +217,28 @@ class _JobsScreenState extends ConsumerState<JobsScreen> {
                     // Search Bar
                     TextField(
                       controller: _searchController,
+                      onChanged: _onSearchChanged,
                       onSubmitted: (val) {
-                        ref.read(jobsProvider.notifier).setSearchQuery(val.trim());
+                        _debounceTimer?.cancel();
+                        ref
+                            .read(jobsProvider.notifier)
+                            .setSearchQuery(val.trim());
                       },
                       decoration: InputDecoration(
                         hintText: 'Search jobs, role, or company...',
-                        prefixIcon: const Icon(Icons.search_rounded, color: AppColors.primary),
+                        prefixIcon: const Icon(
+                          Icons.search_rounded,
+                          color: AppColors.primary,
+                        ),
                         suffixIcon: _searchController.text.isNotEmpty
                             ? IconButton(
                                 icon: const Icon(Icons.clear_rounded, size: 18),
                                 onPressed: () {
+                                  _debounceTimer?.cancel();
                                   _searchController.clear();
-                                  ref.read(jobsProvider.notifier).setSearchQuery('');
+                                  ref
+                                      .read(jobsProvider.notifier)
+                                      .setSearchQuery('');
                                 },
                               )
                             : null,
@@ -220,7 +252,10 @@ class _JobsScreenState extends ConsumerState<JobsScreen> {
                           borderRadius: BorderRadius.circular(16),
                           borderSide: const BorderSide(color: AppColors.border),
                         ),
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 14,
+                        ),
                       ),
                     ),
 
@@ -261,15 +296,23 @@ class _JobsScreenState extends ConsumerState<JobsScreen> {
                             backgroundColor: Colors.white,
                             foregroundColor: AppColors.primary,
                             elevation: 1,
-                            side: const BorderSide(color: AppColors.primary, width: 1.5),
-                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                            side: const BorderSide(
+                              color: AppColors.primary,
+                              width: 1.5,
+                            ),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 14,
+                              vertical: 8,
+                            ),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(20),
                             ),
                           ),
                           icon: const Icon(Icons.tune_rounded, size: 16),
                           label: Text(
-                            activeFilters > 0 ? 'Filters ($activeFilters)' : 'Filters',
+                            activeFilters > 0
+                                ? 'Filters ($activeFilters)'
+                                : 'Filters',
                             style: const TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w800,
@@ -299,19 +342,121 @@ class _JobsScreenState extends ConsumerState<JobsScreen> {
             ),
 
             // Top Match Banner
-            const SliverToBoxAdapter(
-              child: TopMatchBanner(),
-            ),
+            const SliverToBoxAdapter(child: TopMatchBanner()),
 
-            // Jobs List or Loading/Empty State
+            // Inline Error Banner if jobs exist but last action failed
+            if (jobsState.errorMessage != null && jobsState.jobs.isNotEmpty)
+              SliverToBoxAdapter(
+                child: Container(
+                  margin: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 6,
+                  ),
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: AppColors.error.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(
+                      color: AppColors.error.withValues(alpha: 0.3),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(
+                        Icons.error_outline_rounded,
+                        color: AppColors.error,
+                        size: 20,
+                      ),
+                      const SizedBox(width: 8),
+                      const Expanded(
+                        child: Text(
+                          'Failed to update job feed. Pull down or retry.',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: AppColors.error,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: () =>
+                            ref.read(jobsProvider.notifier).fetchJobs(),
+                        child: const Text(
+                          'Retry',
+                          style: TextStyle(fontWeight: FontWeight.w800),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+            // Jobs List or Loading/Error/Empty State
             if (jobsState.isLoading)
               SliverList(
                 delegate: SliverChildBuilderDelegate(
-                  (context, index) => const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 16),
-                    child: JobCardSkeleton(),
-                  ),
+                  (context, index) => const JobCardSkeleton(),
                   childCount: 4,
+                ),
+              )
+            else if (jobsState.errorMessage != null && jobsState.jobs.isEmpty)
+              SliverToBoxAdapter(
+                child: Container(
+                  margin: const EdgeInsets.all(24),
+                  padding: const EdgeInsets.all(32),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(24),
+                    border: Border.all(color: AppColors.border),
+                  ),
+                  child: Column(
+                    children: [
+                      const Icon(
+                        Icons.wifi_off_rounded,
+                        size: 48,
+                        color: AppColors.error,
+                      ),
+                      const SizedBox(height: 12),
+                      const Text(
+                        'Unable to load jobs',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w800,
+                          color: AppColors.textPrimary,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      const Text(
+                        'Please check your internet connection or try again in a few moments.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                      const SizedBox(height: 18),
+                      ElevatedButton.icon(
+                        onPressed: () =>
+                            ref.read(jobsProvider.notifier).fetchJobs(),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primary,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 24,
+                            vertical: 12,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                        ),
+                        icon: const Icon(Icons.refresh_rounded, size: 18),
+                        label: const Text(
+                          'Retry Connection',
+                          style: TextStyle(fontWeight: FontWeight.w800),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               )
             else if (jobsState.jobs.isEmpty)
@@ -352,6 +497,7 @@ class _JobsScreenState extends ConsumerState<JobsScreen> {
                       const SizedBox(height: 16),
                       OutlinedButton(
                         onPressed: () {
+                          _debounceTimer?.cancel();
                           _searchController.clear();
                           ref.read(jobsProvider.notifier).clearAllFilters();
                         },
@@ -370,29 +516,25 @@ class _JobsScreenState extends ConsumerState<JobsScreen> {
               )
             else
               SliverList(
-                delegate: SliverChildBuilderDelegate(
-                  (context, index) {
-                    final job = jobsState.jobs[index];
-                    final isTopMatch = filter.page == 1 && index < 3;
+                delegate: SliverChildBuilderDelegate((context, index) {
+                  final job = jobsState.jobs[index];
+                  final isTopMatch = filter.page == 1 && index < 3;
 
-                    return JobCard(
-                      job: job,
-                      isTopMatch: isTopMatch,
-                      isApplying: _applyingJobId == job.id,
-                      onTap: () => context.push('/jobs/${job.id}'),
-                      onApply: () => _handleApply(job.id),
-                      onChat: _handleChat,
-                      onCall: _handleCall,
-                    );
-                  },
-                  childCount: jobsState.jobs.length,
-                ),
+                  return JobCard(
+                    job: job,
+                    isTopMatch: isTopMatch,
+                    isApplying: _applyingJobId == job.id,
+                    isApplied: appliedJobIds.contains(job.id),
+                    onTap: () => context.push('/jobs/${job.id}'),
+                    onApply: () => _handleApply(job.id),
+                    onChat: _handleChat,
+                    onCall: _handleCall,
+                  );
+                }, childCount: jobsState.jobs.length),
               ),
 
             // Promo Banner ("Waiting to get a job?")
-            const SliverToBoxAdapter(
-              child: PromoBanner(),
-            ),
+            const SliverToBoxAdapter(child: PromoBanner()),
 
             // Pagination Controls
             SliverToBoxAdapter(
@@ -403,9 +545,7 @@ class _JobsScreenState extends ConsumerState<JobsScreen> {
               ),
             ),
 
-            const SliverToBoxAdapter(
-              child: SizedBox(height: 24),
-            ),
+            const SliverToBoxAdapter(child: SizedBox(height: 24)),
           ],
         ),
       ),

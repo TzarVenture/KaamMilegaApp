@@ -77,7 +77,8 @@ class UserProfile {
           ? const ['user']
           : parseStringList(json['roles']),
       isRegistered: json['is_registered'] == true,
-      name: json['name']?.toString() ??
+      name:
+          json['name']?.toString() ??
           json['first_name']?.toString() ??
           'Candidate',
       email: json['email']?.toString() ?? '',
@@ -98,26 +99,26 @@ class UserProfile {
   }
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'mobile': mobile,
-        'roles': roles,
-        'is_registered': isRegistered,
-        'name': name,
-        'email': email,
-        'gender': gender,
-        'city': city,
-        'state': state,
-        'headline': headline,
-        'about': about,
-        'education_level': educationLevel,
-        'work_experience': workExperience,
-        'job_categories': jobCategories,
-        'experience_detail': experienceDetail,
-        'skills': skills,
-        'education': education.map((e) => e.toJson()).toList(),
-        'experience': experience.map((e) => e.toJson()).toList(),
-        'profile_image': profileImage,
-      };
+    'id': id,
+    'mobile': mobile,
+    'roles': roles,
+    'is_registered': isRegistered,
+    'name': name,
+    'email': email,
+    'gender': gender,
+    'city': city,
+    'state': state,
+    'headline': headline,
+    'about': about,
+    'education_level': educationLevel,
+    'work_experience': workExperience,
+    'job_categories': jobCategories,
+    'experience_detail': experienceDetail,
+    'skills': skills,
+    'education': education.map((e) => e.toJson()).toList(),
+    'experience': experience.map((e) => e.toJson()).toList(),
+    'profile_image': profileImage,
+  };
 
   UserProfile copyWith({
     String? name,
@@ -183,26 +184,26 @@ class EducationItem {
   });
 
   factory EducationItem.fromJson(Map<String, dynamic> json) => EducationItem(
-        id: json['id']?.toString() ?? '',
-        schoolName: json['school_name']?.toString() ?? '',
-        degree: json['degree']?.toString() ?? '',
-        fieldOfStudy: json['field_of_study']?.toString() ?? '',
-        startDate: json['start_date']?.toString() ?? '',
-        endDate: json['end_date']?.toString() ?? '',
-        grade: json['grade']?.toString() ?? '',
-        description: json['description']?.toString() ?? '',
-      );
+    id: json['id']?.toString() ?? '',
+    schoolName: json['school_name']?.toString() ?? '',
+    degree: json['degree']?.toString() ?? '',
+    fieldOfStudy: json['field_of_study']?.toString() ?? '',
+    startDate: json['start_date']?.toString() ?? '',
+    endDate: json['end_date']?.toString() ?? '',
+    grade: json['grade']?.toString() ?? '',
+    description: json['description']?.toString() ?? '',
+  );
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'school_name': schoolName,
-        'degree': degree,
-        'field_of_study': fieldOfStudy,
-        'start_date': startDate,
-        'end_date': endDate,
-        'grade': grade,
-        'description': description,
-      };
+    'id': id,
+    'school_name': schoolName,
+    'degree': degree,
+    'field_of_study': fieldOfStudy,
+    'start_date': startDate,
+    'end_date': endDate,
+    'grade': grade,
+    'description': description,
+  };
 }
 
 class ExperienceItem {
@@ -250,14 +251,14 @@ class ExperienceItem {
   }
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'title': title,
-        'employment_type': employmentType,
-        'company_name': companyName,
-        'location': location,
-        'start_date': startDate,
-        'end_date': endDate,
-        'description': description,
-        'skills': skills,
-      };
+    'id': id,
+    'title': title,
+    'employment_type': employmentType,
+    'company_name': companyName,
+    'location': location,
+    'start_date': startDate,
+    'end_date': endDate,
+    'description': description,
+    'skills': skills,
+  };
 }

@@ -34,7 +34,10 @@ class JobFilter {
   }
 
   /// Check if any filter is active
-  bool get hasActiveFilters => activeFilterCount > 0 || (city.isNotEmpty && city != 'All') || searchQuery.isNotEmpty;
+  bool get hasActiveFilters =>
+      activeFilterCount > 0 ||
+      (city.isNotEmpty && city != 'All') ||
+      searchQuery.isNotEmpty;
 
   JobFilter copyWith({
     String? searchQuery,
@@ -62,10 +65,7 @@ class JobFilter {
 
   /// Convert filter to query parameters expected by km-backend
   Map<String, dynamic> toQueryParams() {
-    final params = <String, dynamic>{
-      'page': page,
-      'limit': limit,
-    };
+    final params = <String, dynamic>{'page': page, 'limit': limit};
 
     if (searchQuery.isNotEmpty) {
       params['search'] = searchQuery;

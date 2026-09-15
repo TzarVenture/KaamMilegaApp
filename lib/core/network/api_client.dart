@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+
 import '../constants/api_constants.dart';
 import '../storage/local_storage.dart';
 
@@ -29,16 +30,23 @@ class ApiClient {
           }
           return handler.next(options);
         },
-        onError: (DioException error, handler) {
-          // Extract backend message if present
+        onError: (DioException error, handler) async {
+          // Handle 401 Unauthorized / Token Expiration
+          if (error.response?.statusCode == 401) {
+            await LocalStorage.clearSession();
+          }
+
+          // Extract backend error message if present
           String readableMessage = 'Something went wrong. Please try again.';
 
           if (error.response?.data is Map) {
             final data = error.response!.data as Map<String, dynamic>;
-            readableMessage = data['error'] ?? data['message'] ?? readableMessage;
+            readableMessage =
+                data['error'] ?? data['message'] ?? readableMessage;
           } else if (error.type == DioExceptionType.connectionTimeout ||
               error.type == DioExceptionType.receiveTimeout) {
-            readableMessage = 'Connection timed out. Please check your internet.';
+            readableMessage =
+                'Connection timed out. Please check your internet.';
           } else if (error.type == DioExceptionType.connectionError) {
             readableMessage = 'No internet connection or server unreachable.';
           }

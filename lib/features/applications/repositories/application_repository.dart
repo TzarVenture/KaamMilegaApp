@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../../../core/constants/api_constants.dart';
 import '../../../core/network/api_client.dart';
 import '../../cities/repositories/city_repository.dart';
@@ -14,10 +15,7 @@ class ApplicationRepository {
   Future<void> applyToJob(String jobId, {String coverLetter = ''}) async {
     await _client.post(
       ApiConstants.applications,
-      data: {
-        'job_id': jobId,
-        'cover_letter': coverLetter,
-      },
+      data: {'job_id': jobId, 'cover_letter': coverLetter},
     );
   }
 

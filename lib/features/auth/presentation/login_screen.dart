@@ -65,16 +65,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             children: [
               const SizedBox(height: 40),
 
-              const Center(
-                child: AppLogo(size: 90),
-              ),
+              const Center(child: AppLogo(size: 90)),
 
               const SizedBox(height: 40),
 
-              const Text(
-                'Find Your Next Job',
-                style: AppTextStyles.heading1,
-              ),
+              const Text('Find Your Next Job', style: AppTextStyles.heading1),
 
               const SizedBox(height: 8),
 
@@ -85,10 +80,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
               const SizedBox(height: 32),
 
-              const Text(
-                'Mobile Number',
-                style: AppTextStyles.heading3,
-              ),
+              const Text('Mobile Number', style: AppTextStyles.heading3),
 
               const SizedBox(height: 10),
 
@@ -137,4 +129,3 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     );
   }
 }
-
