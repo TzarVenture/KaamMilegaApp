@@ -1472,125 +1472,279 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   // -------------------------------------------------------------------
   void _openAddSkillDialog() {
     final skillCtrl = TextEditingController();
-    final suggestedSkills = [
-      'Bike Driving',
+
+    final predefinedSkills = [
+      'React',
+      'React Native',
+      'Go',
+      'Golang',
+      'Project Management',
+      'Flutter',
+      'Dart',
+      'Python',
+      'JavaScript',
+      'TypeScript',
+      'Node.js',
+      'Java',
+      'Spring Boot',
+      'C++',
+      'C#',
+      '.NET',
+      'PHP',
+      'Laravel',
+      'Swift',
+      'Kotlin',
+      'SQL',
+      'PostgreSQL',
+      'MySQL',
+      'MongoDB',
+      'Redis',
+      'Docker',
+      'Kubernetes',
+      'AWS',
+      'Azure',
+      'GCP',
+      'DevOps',
+      'CI/CD',
+      'Git',
+      'GraphQL',
+      'REST API',
+      'Microservices',
+      'UI/UX Design',
+      'Figma',
+      'HTML/CSS',
+      'Tailwind CSS',
+      'System Architecture',
+      'Agile / Scrum',
+      'Data Analysis',
+      'Machine Learning',
+      'Data Science',
+      'Cybersecurity',
+      'Digital Marketing',
+      'SEO',
+      'Content Writing',
+      'Sales Management',
+      'Business Development',
       'Customer Support',
-      'Hindi Fluency',
-      'Packaging',
-      'Sales',
-      'Security',
-      'Warehouse Operation',
-      'AC Repair',
-      'Data Entry',
+      'Financial Analysis',
+      'Accounting',
+      'Operations Management',
+      'Supply Chain Management',
+      'Human Resources (HR)',
+      'Recruitment',
+      'Product Management',
     ];
 
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (ctx) => Container(
-        padding: EdgeInsets.only(
-          bottom: MediaQuery.of(ctx).viewInsets.bottom + 20,
-          top: 24,
-          left: 20,
-          right: 20,
-        ),
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
-        ),
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (modalCtx, setModalState) {
+            final query = skillCtrl.text.trim();
+            final filteredSkills = query.length >= 2
+                ? predefinedSkills
+                    .where((s) => s.toLowerCase().contains(query.toLowerCase()))
+                    .toList()
+                : <String>[];
+
+            return Container(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(ctx).viewInsets.bottom + 20,
+                top: 24,
+                left: 20,
+                right: 20,
+              ),
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        'Add Skill',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w800,
+                          color: AppColors.textPrimary,
+                        ),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.close, color: AppColors.textSecondary),
+                        onPressed: () => Navigator.pop(ctx),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
                   const Text(
-                    'Add Skill Tag',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+                    'Search for a skill to add to your profile. (Pre-defined skills only)',
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: AppColors.textSecondary,
+                    ),
                   ),
-                  IconButton(
-                    icon: const Icon(Icons.close),
-                    onPressed: () => Navigator.pop(ctx),
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: skillCtrl,
+                    onChanged: (_) => setModalState(() {}),
+                    decoration: InputDecoration(
+                      hintText: 'Ex: React, Go, Project Management...',
+                      hintStyle: TextStyle(
+                        color: Colors.grey.shade400,
+                        fontSize: 14,
+                      ),
+                      prefixIcon: const Icon(
+                        Icons.search_rounded,
+                        color: AppColors.textSecondary,
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 14,
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        borderSide: const BorderSide(color: AppColors.border),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        borderSide: const BorderSide(color: AppColors.border),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        borderSide: const BorderSide(
+                          color: AppColors.primary,
+                          width: 1.5,
+                        ),
+                      ),
+                    ),
                   ),
+                  const SizedBox(height: 24),
+                  if (query.length < 2) ...[
+                    const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 36),
+                      child: Center(
+                        child: Text(
+                          'Type at least 2 characters to search',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: AppColors.textLight,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ] else if (filteredSkills.isEmpty) ...[
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 24),
+                      child: Center(
+                        child: Column(
+                          children: [
+                            const Text(
+                              'No matching pre-defined skill found.',
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: AppColors.textSecondary,
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            ElevatedButton.icon(
+                              onPressed: () async {
+                                final customSkill = skillCtrl.text.trim();
+                                Navigator.pop(ctx);
+                                final ok = await ref
+                                    .read(authProvider.notifier)
+                                    .addSkill(customSkill);
+                                if (mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                        ok
+                                            ? 'Skill "$customSkill" added successfully!'
+                                            : 'Failed to add skill.',
+                                      ),
+                                      backgroundColor: ok
+                                          ? AppColors.success
+                                          : AppColors.error,
+                                    ),
+                                  );
+                                }
+                              },
+                              icon: const Icon(Icons.add_rounded, size: 18),
+                              label: Text('Add "$query" to Profile'),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppColors.primary,
+                                foregroundColor: Colors.white,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ] else ...[
+                    ConstrainedBox(
+                      constraints: const BoxConstraints(maxHeight: 220),
+                      child: SingleChildScrollView(
+                        child: Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: filteredSkills.map((skillName) {
+                            return ActionChip(
+                              label: Text(skillName),
+                              backgroundColor: AppColors.primaryLight,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              side: const BorderSide(
+                                color: AppColors.primary,
+                                width: 0.5,
+                              ),
+                              labelStyle: const TextStyle(
+                                color: AppColors.primary,
+                                fontWeight: FontWeight.w700,
+                                fontSize: 13,
+                              ),
+                              onPressed: () async {
+                                Navigator.pop(ctx);
+                                final ok = await ref
+                                    .read(authProvider.notifier)
+                                    .addSkill(skillName);
+                                if (mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                        ok
+                                            ? 'Skill "$skillName" added successfully!'
+                                            : 'Failed to add skill.',
+                                      ),
+                                      backgroundColor: ok
+                                          ? AppColors.success
+                                          : AppColors.error,
+                                    ),
+                                  );
+                                }
+                              },
+                            );
+                          }).toList(),
+                        ),
+                      ),
+                    ),
+                  ],
+                  const SizedBox(height: 12),
                 ],
               ),
-              const SizedBox(height: 14),
-              TextField(
-                controller: skillCtrl,
-                decoration: InputDecoration(
-                  labelText: 'Enter Skill Name',
-                  hintText: 'e.g. Delivery, Customer Support',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 14),
-              const Text(
-                'Popular Skills',
-                style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
-              ),
-              const SizedBox(height: 8),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: suggestedSkills.map((s) {
-                  return ActionChip(
-                    label: Text(s),
-                    backgroundColor: AppColors.primaryLight,
-                    labelStyle: const TextStyle(
-                      color: AppColors.primary,
-                      fontWeight: FontWeight.w700,
-                    ),
-                    onPressed: () {
-                      skillCtrl.text = s;
-                    },
-                  );
-                }).toList(),
-              ),
-              const SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: () async {
-                  if (skillCtrl.text.trim().isEmpty) return;
-                  Navigator.pop(ctx);
-                  final ok = await ref
-                      .read(authProvider.notifier)
-                      .addSkill(skillCtrl.text);
-                  if (mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(
-                          ok
-                              ? 'Skill added successfully!'
-                              : 'Failed to add skill.',
-                        ),
-                        backgroundColor: ok
-                            ? AppColors.success
-                            : AppColors.error,
-                      ),
-                    );
-                  }
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  foregroundColor: Colors.white,
-                  minimumSize: const Size(double.infinity, 50),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                ),
-                child: const Text(
-                  'Add Skill Tag',
-                  style: TextStyle(fontWeight: FontWeight.w800),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
+            );
+          },
+        );
+      },
     );
   }
 
@@ -4413,14 +4567,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         ),
         backgroundColor: Colors.white,
         elevation: 0.5,
-        actions: [
-          if (authState.isAuthenticated && user != null)
-            IconButton(
-              icon: const Icon(Icons.edit_outlined, color: AppColors.primary),
-              tooltip: 'Edit Profile',
-              onPressed: () => _openEditProfileDialog(user),
-            ),
-        ],
       ),
       body: authState.isLoading
           ? const ShimmerLoadingList(count: 3)
@@ -4966,38 +5112,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       ),
                     ),
 
-                    const SizedBox(height: 24),
-
-                    // 7. Auth Button (Sign In / Logout)
-                    if (authState.isAuthenticated)
-                      OutlinedButton.icon(
-                        onPressed: () async {
-                          await ref.read(authProvider.notifier).logout();
-                          if (mounted && context.mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Logged out successfully.'),
-                                backgroundColor: AppColors.primary,
-                              ),
-                            );
-                            context.go('/home');
-                          }
-                        },
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: AppColors.error,
-                          side: const BorderSide(color: AppColors.error),
-                          minimumSize: const Size(double.infinity, 50),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                        ),
-                        icon: const Icon(Icons.logout_rounded, size: 20),
-                        label: const Text(
-                          'Logout',
-                          style: TextStyle(fontWeight: FontWeight.w700),
-                        ),
-                      )
-                    else
+                    if (!authState.isAuthenticated) ...[
+                      const SizedBox(height: 24),
                       ElevatedButton.icon(
                         onPressed: () => context.push('/login'),
                         style: ElevatedButton.styleFrom(
@@ -5014,6 +5130,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                           style: TextStyle(fontWeight: FontWeight.w700),
                         ),
                       ),
+                    ],
 
                     const SizedBox(height: 32),
                   ],

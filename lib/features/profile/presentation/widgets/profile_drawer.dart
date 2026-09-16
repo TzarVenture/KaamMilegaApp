@@ -32,11 +32,16 @@ class ProfileDrawer extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final authState = ref.watch(authProvider);
+    final isAuth = authState.isAuthenticated && authState.user != null;
     final user = authState.user;
-    final userName = user?.name.isNotEmpty == true ? user!.name : 'Suny verma';
-    final userHeadline =
-        user?.headline.isNotEmpty == true ? user!.headline : 'User';
-    final userAvatar = user?.profileImage ?? '';
+
+    final userName = isAuth
+        ? (user!.name.isNotEmpty ? user.name : 'Candidate User')
+        : 'Guest User';
+    final userHeadline = isAuth
+        ? (user!.headline.isNotEmpty ? user.headline : 'Job Seeker')
+        : 'Sign in to access your profile';
+    final userAvatar = isAuth ? user!.profileImage : '';
 
     return Drawer(
       backgroundColor: Colors.white,
@@ -115,7 +120,11 @@ class ProfileDrawer extends ConsumerWidget {
                       child: OutlinedButton(
                         onPressed: () {
                           Navigator.pop(context);
-                          context.push('/profile');
+                          if (isAuth) {
+                            context.push('/profile');
+                          } else {
+                            context.push('/login');
+                          }
                         },
                         style: OutlinedButton.styleFrom(
                           foregroundColor: const Color(0xFF8E24AA),
@@ -128,9 +137,9 @@ class ProfileDrawer extends ConsumerWidget {
                           ),
                           padding: const EdgeInsets.symmetric(vertical: 10),
                         ),
-                        child: const Text(
-                          'View Profile',
-                          style: TextStyle(
+                        child: Text(
+                          isAuth ? 'View Profile' : 'Sign In / Register',
+                          style: const TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w800,
                           ),
@@ -240,15 +249,27 @@ class ProfileDrawer extends ConsumerWidget {
                     const Divider(height: 1, color: Color(0xFFF3F4F6)),
                     const SizedBox(height: 16),
 
-                    // 3. Sign Out Action
+                    // 3. Sign Out / Sign In Action
                     _DrawerMenuItem(
-                      title: 'Sign Out',
-                      textColor: const Color(0xFF6B7280),
+                      title: isAuth ? 'Sign Out' : 'Sign In',
+                      textColor: isAuth
+                          ? const Color(0xFFE11D48)
+                          : const Color(0xFF8E24AA),
                       onTap: () async {
                         Navigator.pop(context);
-                        await ref.read(authProvider.notifier).logout();
-                        if (context.mounted) {
-                          context.go('/login');
+                        if (isAuth) {
+                          await ref.read(authProvider.notifier).logout();
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Logged out successfully.'),
+                                backgroundColor: AppColors.primary,
+                              ),
+                            );
+                            context.go('/login');
+                          }
+                        } else {
+                          context.push('/login');
                         }
                       },
                     ),
