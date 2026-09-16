@@ -791,34 +791,38 @@ class _JobDetailScreenState extends ConsumerState<JobDetailScreen> {
             Expanded(
               flex: 3,
               child: hasAlreadyApplied
-                  ? Container(
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      decoration: BoxDecoration(
-                        color: AppColors.success.withValues(alpha: 0.12),
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(
-                          color: AppColors.success.withValues(alpha: 0.3),
+                  ? InkWell(
+                      onTap: () => context.push('/applications/${widget.jobId}'),
+                      borderRadius: BorderRadius.circular(16),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        decoration: BoxDecoration(
+                          color: AppColors.success.withValues(alpha: 0.12),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: AppColors.success.withValues(alpha: 0.3),
+                          ),
                         ),
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: const [
-                          Icon(
-                            Icons.check_circle_rounded,
-                            color: AppColors.success,
-                            size: 18,
-                          ),
-                          SizedBox(width: 6),
-                          Text(
-                            'APPLIED',
-                            style: TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w900,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: const [
+                            Icon(
+                              Icons.check_circle_rounded,
                               color: AppColors.success,
-                              letterSpacing: 1,
+                              size: 18,
                             ),
-                          ),
-                        ],
+                            SizedBox(width: 6),
+                            Text(
+                              'APPLIED',
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w900,
+                                color: AppColors.success,
+                                letterSpacing: 1,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     )
                   : Container(

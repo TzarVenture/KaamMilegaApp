@@ -18,6 +18,7 @@ class UserProfile {
   final List<String> skills;
   final List<EducationItem> education;
   final List<ExperienceItem> experience;
+  final List<ProjectItem> projects;
   final String profileImage;
   final String coverImage;
   final bool isEmailVerified;
@@ -29,6 +30,8 @@ class UserProfile {
   final int profileViewsCount;
   final int postImpressionsCount;
   final int searchAppearancesCount;
+  final String portfolioUrl;
+  final String portfolioText;
 
   const UserProfile({
     required this.id,
@@ -49,6 +52,7 @@ class UserProfile {
     this.skills = const [],
     this.education = const [],
     this.experience = const [],
+    this.projects = const [],
     this.profileImage = '',
     this.coverImage = '',
     this.isEmailVerified = false,
@@ -60,6 +64,8 @@ class UserProfile {
     this.profileViewsCount = 0,
     this.postImpressionsCount = 0,
     this.searchAppearancesCount = 0,
+    this.portfolioUrl = '',
+    this.portfolioText = '',
   });
 
   factory UserProfile.fromJson(Map<String, dynamic> json) {
@@ -90,6 +96,16 @@ class UserProfile {
       return [];
     }
 
+    List<ProjectItem> parseProjects(dynamic val) {
+      if (val is List) {
+        return val
+            .whereType<Map<String, dynamic>>()
+            .map(ProjectItem.fromJson)
+            .toList();
+      }
+      return [];
+    }
+
     return UserProfile(
       id: json['id']?.toString() ?? json['_id']?.toString() ?? '',
       mobile: json['mobile']?.toString() ?? '',
@@ -114,6 +130,7 @@ class UserProfile {
       skills: parseStringList(json['skills']),
       education: parseEducation(json['education']),
       experience: parseExperience(json['experience']),
+      projects: parseProjects(json['projects']),
       profileImage: json['profile_image']?.toString() ?? '',
       coverImage:
           json['cover_image']?.toString() ??
@@ -135,6 +152,17 @@ class UserProfile {
           (json['post_impressions_count'] as num?)?.toInt() ?? 0,
       searchAppearancesCount:
           (json['search_appearances_count'] as num?)?.toInt() ?? 0,
+      portfolioUrl:
+          json['portfolio_url']?.toString() ??
+          json['portfolioUrl']?.toString() ??
+          json['portfolio_link']?.toString() ??
+          json['website']?.toString() ??
+          '',
+      portfolioText:
+          json['portfolio_text']?.toString() ??
+          json['portfolioText']?.toString() ??
+          json['portfolio_label']?.toString() ??
+          '',
     );
   }
 
@@ -157,6 +185,7 @@ class UserProfile {
     'skills': skills,
     'education': education.map((e) => e.toJson()).toList(),
     'experience': experience.map((e) => e.toJson()).toList(),
+    'projects': projects.map((e) => e.toJson()).toList(),
     'profile_image': profileImage,
     'cover_image': coverImage,
     'is_email_verified': isEmailVerified,
@@ -168,6 +197,8 @@ class UserProfile {
     'profile_views_count': profileViewsCount,
     'post_impressions_count': postImpressionsCount,
     'search_appearances_count': searchAppearancesCount,
+    'portfolio_url': portfolioUrl,
+    'portfolio_text': portfolioText,
   };
 
   UserProfile copyWith({
@@ -185,6 +216,7 @@ class UserProfile {
     List<String>? skills,
     List<EducationItem>? education,
     List<ExperienceItem>? experience,
+    List<ProjectItem>? projects,
     bool? isRegistered,
     String? profileImage,
     String? coverImage,
@@ -197,6 +229,8 @@ class UserProfile {
     int? profileViewsCount,
     int? postImpressionsCount,
     int? searchAppearancesCount,
+    String? portfolioUrl,
+    String? portfolioText,
   }) {
     return UserProfile(
       id: id,
@@ -217,6 +251,7 @@ class UserProfile {
       skills: skills ?? this.skills,
       education: education ?? this.education,
       experience: experience ?? this.experience,
+      projects: projects ?? this.projects,
       profileImage: profileImage ?? this.profileImage,
       coverImage: coverImage ?? this.coverImage,
       isEmailVerified: isEmailVerified ?? this.isEmailVerified,
@@ -229,6 +264,8 @@ class UserProfile {
       postImpressionsCount: postImpressionsCount ?? this.postImpressionsCount,
       searchAppearancesCount:
           searchAppearancesCount ?? this.searchAppearancesCount,
+      portfolioUrl: portfolioUrl ?? this.portfolioUrl,
+      portfolioText: portfolioText ?? this.portfolioText,
     );
   }
 }
@@ -332,4 +369,40 @@ class ExperienceItem {
     'description': description,
     'skills': skills,
   };
+}
+
+class ProjectItem {
+  final String id;
+  final String title;
+  final String description;
+  final String link;
+  final String startDate;
+  final String endDate;
+
+  const ProjectItem({
+    this.id = '',
+    required this.title,
+    this.description = '',
+    this.link = '',
+    this.startDate = '',
+    this.endDate = '',
+  });
+
+  factory ProjectItem.fromJson(Map<String, dynamic> json) => ProjectItem(
+        id: json['id']?.toString() ?? json['_id']?.toString() ?? '',
+        title: json['title']?.toString() ?? json['name']?.toString() ?? '',
+        description: json['description']?.toString() ?? '',
+        link: json['link']?.toString() ?? json['url']?.toString() ?? '',
+        startDate: json['start_date']?.toString() ?? '',
+        endDate: json['end_date']?.toString() ?? '',
+      );
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'title': title,
+        'description': description,
+        'link': link,
+        'start_date': startDate,
+        'end_date': endDate,
+      };
 }

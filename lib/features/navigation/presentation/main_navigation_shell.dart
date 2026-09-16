@@ -9,7 +9,7 @@ import '../../network/presentation/network_screen.dart';
 import '../../notifications/presentation/notifications_screen.dart';
 import '../../notifications/providers/notification_provider.dart';
 
-/// Full LinkedIn-Style 5-Tab Navigation Shell
+/// Full KaamMilega™ 5-Tab Navigation Shell
 class MainNavigationShell extends ConsumerStatefulWidget {
   final int initialIndex;
 
@@ -27,6 +27,16 @@ class _MainNavigationShellState extends ConsumerState<MainNavigationShell> {
   void initState() {
     super.initState();
     _currentIndex = widget.initialIndex;
+  }
+
+  @override
+  void didUpdateWidget(MainNavigationShell oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.initialIndex != widget.initialIndex) {
+      setState(() {
+        _currentIndex = widget.initialIndex;
+      });
+    }
   }
 
   @override
@@ -72,15 +82,23 @@ class _MainNavigationShellState extends ConsumerState<MainNavigationShell> {
           ),
           NavigationDestination(
             icon: Container(
-              padding: const EdgeInsets.all(6),
-              decoration: const BoxDecoration(
-                color: AppColors.primary,
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: AppColors.brandBlue,
                 shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF1A2B8C).withValues(alpha: 0.4),
+                    blurRadius: 8,
+                    offset: const Offset(0, 3),
+                  ),
+                ],
               ),
               child: const Icon(
                 Icons.add_rounded,
                 color: Colors.white,
-                size: 22,
+                size: 26,
               ),
             ),
             label: 'Post',

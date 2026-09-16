@@ -6,9 +6,9 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../app/theme/app_colors.dart';
 import '../../../shared/widgets/shimmer_loading.dart';
 import '../../auth/providers/auth_provider.dart';
+import '../../profile/presentation/widgets/profile_drawer.dart';
 import '../models/feed_post.dart';
 import '../providers/feed_provider.dart';
-import 'create_post_modal.dart';
 
 class FeedScreen extends ConsumerStatefulWidget {
   const FeedScreen({super.key});
@@ -56,56 +56,63 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
     final userAvatar = user?.profileImage ?? '';
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF4F2EE), // LinkedIn grey background
+      backgroundColor: const Color(0xFFF4F2EE), // Community feed background
+      drawer: const ProfileDrawer(),
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         backgroundColor: Colors.white,
         elevation: 0.5,
         titleSpacing: 16,
         title: Row(
           children: [
-            GestureDetector(
-              onTap: () => context.push('/profile'),
-              child: CircleAvatar(
-                radius: 18,
-                backgroundColor: AppColors.heroBg,
-                backgroundImage: userAvatar.isNotEmpty
-                    ? NetworkImage(userAvatar)
-                    : null,
-                child: userAvatar.isEmpty
-                    ? const Icon(
-                        Icons.person_rounded,
-                        size: 20,
-                        color: Colors.white,
-                      )
-                    : null,
+            Builder(
+              builder: (ctx) => GestureDetector(
+                onTap: () => Scaffold.of(ctx).openDrawer(),
+                child: CircleAvatar(
+                  radius: 18,
+                  backgroundColor: AppColors.heroBg,
+                  backgroundImage: userAvatar.isNotEmpty
+                      ? NetworkImage(userAvatar)
+                      : null,
+                  child: userAvatar.isEmpty
+                      ? const Icon(
+                          Icons.person_rounded,
+                          size: 20,
+                          color: Colors.white,
+                        )
+                      : null,
+                ),
               ),
             ),
             const SizedBox(width: 12),
             Expanded(
-              child: Container(
-                height: 38,
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFEEF3F8),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const Row(
-                  children: [
-                    Icon(
-                      Icons.search_rounded,
-                      color: AppColors.textSecondary,
-                      size: 20,
-                    ),
-                    SizedBox(width: 8),
-                    Text(
-                      'Search jobs, posts, people...',
-                      style: TextStyle(
-                        fontSize: 13,
+              child: GestureDetector(
+                onTap: () => context.go('/jobs'),
+                child: Container(
+                  height: 38,
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFEEF3F8),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Row(
+                    children: [
+                      Icon(
+                        Icons.search_rounded,
                         color: AppColors.textSecondary,
-                        fontWeight: FontWeight.w500,
+                        size: 20,
                       ),
-                    ),
-                  ],
+                      SizedBox(width: 8),
+                      Text(
+                        'Search jobs, posts, people...',
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: AppColors.textSecondary,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -128,82 +135,6 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
           physics: const AlwaysScrollableScrollPhysics(),
           child: Column(
             children: [
-              // Start a Post Card
-              Container(
-                color: Colors.white,
-                padding: const EdgeInsets.all(16),
-                margin: const EdgeInsets.only(bottom: 8),
-                child: Column(
-                  children: [
-                    Row(
-                      children: [
-                        CircleAvatar(
-                          radius: 20,
-                          backgroundColor: AppColors.heroBg,
-                          backgroundImage: userAvatar.isNotEmpty
-                              ? NetworkImage(userAvatar)
-                              : null,
-                          child: userAvatar.isEmpty
-                              ? const Icon(
-                                  Icons.person_rounded,
-                                  color: Colors.white,
-                                )
-                              : null,
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: GestureDetector(
-                            onTap: () => CreatePostModal.show(context),
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                                vertical: 12,
-                              ),
-                              decoration: BoxDecoration(
-                                border: Border.all(color: Colors.grey.shade300),
-                                borderRadius: BorderRadius.circular(24),
-                              ),
-                              child: const Text(
-                                'Start a post...',
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  color: AppColors.textSecondary,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: [
-                        _buildPostActionChip(
-                          icon: Icons.image_rounded,
-                          color: const Color(0xFF378FE9),
-                          label: 'Media',
-                          onTap: () => CreatePostModal.show(context),
-                        ),
-                        _buildPostActionChip(
-                          icon: Icons.picture_as_pdf_rounded,
-                          color: const Color(0xFF70B5F9),
-                          label: 'Document',
-                          onTap: () => CreatePostModal.show(context),
-                        ),
-                        _buildPostActionChip(
-                          icon: Icons.work_outline_rounded,
-                          color: const Color(0xFFA05EAB),
-                          label: 'Job Alert',
-                          onTap: () => CreatePostModal.show(context),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-
               // Async Posts List
               asyncPosts.when(
                 data: (posts) {
@@ -267,35 +198,6 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
               ),
             ],
           ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildPostActionChip({
-    required IconData icon,
-    required Color color,
-    required String label,
-    required VoidCallback onTap,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(8),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-        child: Row(
-          children: [
-            Icon(icon, color: color, size: 20),
-            const SizedBox(width: 6),
-            Text(
-              label,
-              style: const TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w700,
-                color: AppColors.textSecondary,
-              ),
-            ),
-          ],
         ),
       ),
     );

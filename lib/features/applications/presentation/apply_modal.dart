@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../app/theme/app_colors.dart';
 import '../../jobs/models/job.dart';
@@ -57,6 +58,7 @@ class _ApplyModalSheetState extends ConsumerState<ApplyModalSheet> {
       ref.invalidate(myApplicationsProvider);
 
       if (mounted) {
+        final jobId = widget.job.id;
         Navigator.pop(context);
         widget.onSuccess();
         ScaffoldMessenger.of(context).showSnackBar(
@@ -71,6 +73,7 @@ class _ApplyModalSheetState extends ConsumerState<ApplyModalSheet> {
             ),
           ),
         );
+        context.push('/applications/$jobId');
       }
     } catch (e) {
       if (mounted) {

@@ -6,9 +6,11 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../app/theme/app_colors.dart';
 import '../../../app/theme/app_text_styles.dart';
 import '../../applications/presentation/apply_modal.dart';
+import '../../auth/providers/auth_provider.dart';
 import '../../cities/presentation/city_selector_sheet.dart';
 import '../../jobs/presentation/widgets/job_card.dart';
 import '../../jobs/providers/jobs_provider.dart';
+import '../../profile/presentation/widgets/profile_drawer.dart';
 
 /// Modern native mobile application Home Screen with cross-platform
 /// responsiveness for iOS, Android, Tablet, and Desktop displays.
@@ -100,14 +102,40 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final isDesktop = screenWidth >= 900;
     final isTablet = screenWidth >= 600 && screenWidth < 900;
 
+    final user = ref.watch(authProvider).user;
+    final userAvatar = user?.profileImage ?? '';
+
     return Scaffold(
       backgroundColor: AppColors.background,
+      drawer: const ProfileDrawer(),
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         backgroundColor: Colors.white,
         elevation: 0.5,
         titleSpacing: 16,
         title: Row(
           children: [
+            // Top Left Profile Icon (opens Drawer without three-lines hamburger button)
+            Builder(
+              builder: (ctx) => GestureDetector(
+                onTap: () => Scaffold.of(ctx).openDrawer(),
+                child: CircleAvatar(
+                  radius: 16,
+                  backgroundColor: AppColors.heroBg,
+                  backgroundImage: userAvatar.isNotEmpty
+                      ? NetworkImage(userAvatar)
+                      : null,
+                  child: userAvatar.isEmpty
+                      ? const Icon(
+                          Icons.person_rounded,
+                          size: 18,
+                          color: Colors.white,
+                        )
+                      : null,
+                ),
+              ),
+            ),
+            const SizedBox(width: 10),
             // App Logo (clickable to scroll top)
             GestureDetector(
               onTap: () {
@@ -121,7 +149,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               },
               child: Image.asset(
                 'assets/images/logo.png',
-                height: 30,
+                height: 28,
                 fit: BoxFit.contain,
               ),
             ),

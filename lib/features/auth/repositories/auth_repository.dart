@@ -60,6 +60,41 @@ class AuthRepository {
     );
   }
 
+  /// Login with Email and Password
+  Future<AuthVerificationResult> loginWithPassword(
+    String email,
+    String password,
+  ) async {
+    final response = await _client.post(
+      ApiConstants.loginPassword,
+      data: {
+        'email': email.trim(),
+        'password': password,
+        'role': 'user',
+      },
+    );
+
+    final data = response.data as Map<String, dynamic>? ?? {};
+    final token = data['token']?.toString();
+    final isRegistered = data['is_registered'] == true || data['user'] != null;
+
+    if (token != null && token.isNotEmpty) {
+      await LocalStorage.saveToken(token);
+    }
+
+    UserProfile? user;
+    if (data['user'] is Map<String, dynamic>) {
+      user = UserProfile.fromJson(data['user'] as Map<String, dynamic>);
+      await LocalStorage.saveUser(user.toJson());
+    }
+
+    return AuthVerificationResult(
+      user: user,
+      isRegistered: isRegistered,
+      token: token,
+    );
+  }
+
   /// Register Candidate Profile on km-backend
   Future<UserProfile> registerCandidate({
     required String name,
@@ -244,6 +279,31 @@ class AuthRepository {
     } catch (_) {
       return false;
     }
+  }
+
+  /// Add Project record to Candidate profile
+  Future<UserProfile> addProject({
+    required String title,
+    String description = '',
+    String link = '',
+    String startDate = '',
+    String endDate = '',
+  }) async {
+    final response = await _client.post(
+      '/user/project',
+      data: {
+        'title': title.trim(),
+        'description': description.trim(),
+        'link': link.trim(),
+        'start_date': startDate.trim(),
+        'end_date': endDate.trim(),
+      },
+    );
+
+    final data = response.data as Map<String, dynamic>? ?? {};
+    final user = UserProfile.fromJson(data);
+    await LocalStorage.saveUser(user.toJson());
+    return user;
   }
 
   /// Logout

@@ -10,6 +10,7 @@ class ApiConstants {
   // --- Auth Endpoints ---
   static const String sendOtp = '/auth/otp/send';
   static const String verifyOtp = '/auth/otp/verify';
+  static const String loginPassword = '/auth/login';
   static const String otpEmailSend = '/auth/otp/email/send';
   static const String otpEmailVerify = '/auth/otp/email/verify';
   static const String userProfile = '/user/profile';

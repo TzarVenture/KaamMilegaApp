@@ -238,35 +238,34 @@ class _ApplicationCard extends StatelessWidget {
 
   const _ApplicationCard({required this.application});
 
-  Color _getStatusColor(String status) {
-    switch (status.toLowerCase()) {
-      case 'shortlisted':
-      case 'interviewing':
-        return AppColors.verifiedBlue;
-      case 'hired':
-        return AppColors.success;
-      case 'rejected':
-        return AppColors.error;
-      default:
-        return AppColors.primary;
+  String _formatAppliedBadgeTime(DateTime? date) {
+    if (date == null) return 'Applied recently';
+    final diff = DateTime.now().difference(date);
+    if (diff.inMinutes < 60) {
+      final mins = diff.inMinutes <= 1 ? 1 : diff.inMinutes;
+      return 'Applied $mins ${mins == 1 ? "min" : "mins"} ago';
+    } else if (diff.inHours < 24) {
+      return 'Applied ${diff.inHours} ${diff.inHours == 1 ? "hour" : "hours"} ago';
+    } else {
+      return 'Applied ${diff.inDays} ${diff.inDays == 1 ? "day" : "days"} ago';
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final statusColor = _getStatusColor(application.status);
+    final appliedBadgeStr = _formatAppliedBadgeTime(application.createdAt);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 14),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.borderLight),
+        border: Border.all(color: const Color(0xFFFFEBEE), width: 1.5),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.02),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
           ),
         ],
       ),
@@ -276,100 +275,107 @@ class _ApplicationCard extends StatelessWidget {
         child: InkWell(
           borderRadius: BorderRadius.circular(20),
           onTap: () {
-            if (application.jobId.isNotEmpty) {
-              context.push('/jobs/${application.jobId}');
-            }
+            context.push('/applications/${application.id}');
           },
           child: Padding(
             padding: const EdgeInsets.all(18),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // Title
+                Text(
+                  application.jobTitle,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w900,
+                    color: AppColors.textPrimary,
+                    letterSpacing: -0.3,
+                  ),
+                ),
+
+                const SizedBox(height: 6),
+
+                // Rating & Reviews row
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    // Company
-                    Text(
-                      application.companyName.toUpperCase(),
-                      style: const TextStyle(
-                        fontSize: 11,
+                    const Icon(
+                      Icons.star_rounded,
+                      size: 16,
+                      color: Color(0xFFFFB800),
+                    ),
+                    const SizedBox(width: 4),
+                    const Text(
+                      '4.2',
+                      style: TextStyle(
+                        fontSize: 12,
                         fontWeight: FontWeight.w800,
-                        color: AppColors.textSecondary,
-                        letterSpacing: 0.5,
+                        color: AppColors.textPrimary,
                       ),
                     ),
-                    // Status Badge
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 4,
-                      ),
-                      decoration: BoxDecoration(
-                        color: statusColor.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(
-                          color: statusColor.withValues(alpha: 0.2),
-                        ),
-                      ),
-                      child: Text(
-                        application.status.toUpperCase(),
-                        style: TextStyle(
-                          fontSize: 10,
-                          fontWeight: FontWeight.w900,
-                          color: statusColor,
-                          letterSpacing: 0.5,
-                        ),
+                    const SizedBox(width: 6),
+                    const Text(
+                      '|   4.4K+ Reviews',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.textSecondary,
                       ),
                     ),
                   ],
                 ),
 
-                const SizedBox(height: 8),
+                const SizedBox(height: 14),
 
-                // Title
-                Text(
-                  application.jobTitle,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w800,
-                    color: AppColors.textPrimary,
-                  ),
-                ),
-
-                const SizedBox(height: 12),
-
-                // Salary & City
+                // Applied Badge & Recruiter Last Active Row
                 Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Icon(
-                      Icons.location_on_outlined,
-                      size: 14,
-                      color: AppColors.textLight,
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      application.cityName.isNotEmpty
-                          ? application.cityName
-                          : 'All India',
-                      style: const TextStyle(
-                        fontSize: 12,
-                        color: AppColors.textSecondary,
-                        fontWeight: FontWeight.w500,
+                    // Green Applied Badge
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 5,
+                      ),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFE8F5E9),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Container(
+                            width: 14,
+                            height: 14,
+                            decoration: const BoxDecoration(
+                              color: Color(0xFF2E7D32),
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(
+                              Icons.check_rounded,
+                              size: 10,
+                              color: Colors.white,
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            appliedBadgeStr,
+                            style: const TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w800,
+                              color: Color(0xFF2E7D32),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                    const SizedBox(width: 14),
-                    const Icon(
-                      Icons.currency_rupee_rounded,
-                      size: 14,
-                      color: AppColors.textLight,
-                    ),
-                    const SizedBox(width: 2),
-                    Text(
-                      application.formattedSalary,
-                      style: const TextStyle(
-                        fontSize: 12,
-                        color: AppColors.textSecondary,
-                        fontWeight: FontWeight.w700,
+
+                    // Recruiter Last Active
+                    const Text(
+                      'Recruiter last active 5w ago',
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: AppColors.textLight,
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
                   ],

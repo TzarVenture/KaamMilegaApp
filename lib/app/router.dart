@@ -1,5 +1,6 @@
 import 'package:go_router/go_router.dart';
 
+import '../features/applications/presentation/application_detail_screen.dart';
 import '../features/applications/presentation/my_applications_screen.dart';
 import '../features/auth/presentation/login_screen.dart';
 import '../features/auth/presentation/otp_screen.dart';
@@ -12,6 +13,7 @@ import '../features/interviews/presentation/interviews_screen.dart';
 import '../features/jobs/presentation/job_detail_screen.dart';
 import '../features/navigation/presentation/main_navigation_shell.dart';
 import '../features/profile/presentation/profile_screen.dart';
+import '../features/profile/presentation/settings_screen.dart';
 import '../features/splash/presentation/splash_screen.dart';
 
 /// Central GoRouter configuration for the KaamMilega app
@@ -92,6 +94,14 @@ class AppRouter {
         builder: (context, state) => const MyApplicationsScreen(),
       ),
       GoRoute(
+        path: '/applications/:id',
+        name: 'application_detail',
+        builder: (context, state) {
+          final id = state.pathParameters['id'] ?? '';
+          return ApplicationDetailScreen(applicationId: id);
+        },
+      ),
+      GoRoute(
         path: '/interviews',
         name: 'interviews',
         builder: (context, state) => const InterviewsScreen(),
@@ -125,6 +135,11 @@ class AppRouter {
         path: '/profile',
         name: 'profile',
         builder: (context, state) => const ProfileScreen(),
+      ),
+      GoRoute(
+        path: '/settings',
+        name: 'settings',
+        builder: (context, state) => const SettingsScreen(),
       ),
     ],
   );

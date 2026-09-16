@@ -93,6 +93,23 @@ class AuthNotifier extends Notifier<AuthState> {
     }
   }
 
+  /// Login with Password
+  Future<bool> loginWithPassword(String email, String password) async {
+    state = state.copyWith(isLoading: true, error: null);
+    try {
+      final result = await _repository.loginWithPassword(email, password);
+      state = state.copyWith(
+        isLoading: false,
+        isAuthenticated: true,
+        user: result.user,
+      );
+      return true;
+    } catch (e) {
+      state = state.copyWith(isLoading: false, error: e.toString());
+      return false;
+    }
+  }
+
   /// Register Candidate Profile
   Future<bool> registerCandidate({
     required String name,
@@ -335,6 +352,47 @@ class AuthNotifier extends Notifier<AuthState> {
       }
     }
     return success;
+  }
+
+  /// Add Project item to candidate profile
+  Future<bool> addProject({
+    required String title,
+    String description = '',
+    String link = '',
+    String startDate = '',
+    String endDate = '',
+  }) async {
+    state = state.copyWith(isLoading: true, error: null);
+    try {
+      final updatedUser = await _repository.addProject(
+        title: title,
+        description: description,
+        link: link,
+        startDate: startDate,
+        endDate: endDate,
+      );
+      state = state.copyWith(isLoading: false, user: updatedUser);
+      return true;
+    } catch (e) {
+      if (state.user != null) {
+        final newProject = ProjectItem(
+          id: DateTime.now().millisecondsSinceEpoch.toString(),
+          title: title,
+          description: description,
+          link: link,
+          startDate: startDate,
+          endDate: endDate,
+        );
+        final updatedList = List<ProjectItem>.from(state.user!.projects)
+          ..add(newProject);
+        final updatedUser = state.user!.copyWith(projects: updatedList);
+        state = state.copyWith(isLoading: false, user: updatedUser);
+        await LocalStorage.saveUser(updatedUser.toJson());
+        return true;
+      }
+      state = state.copyWith(isLoading: false, error: e.toString());
+      return false;
+    }
   }
 
   /// Logout candidate session
