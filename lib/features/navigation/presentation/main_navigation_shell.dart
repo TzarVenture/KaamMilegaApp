@@ -1,29 +1,27 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../app/theme/app_colors.dart';
-import '../../applications/presentation/my_applications_screen.dart';
-import '../../home/presentation/home_screen.dart';
+import '../../feed/presentation/create_post_modal.dart';
+import '../../feed/presentation/feed_screen.dart';
 import '../../jobs/presentation/jobs_screen.dart';
-import '../../profile/presentation/profile_screen.dart';
+import '../../network/presentation/network_screen.dart';
+import '../../notifications/presentation/notifications_screen.dart';
+import '../../notifications/providers/notification_provider.dart';
 
-/// Main navigation shell holding the 4 primary tabs: Home, Jobs, Applied, Profile
-class MainNavigationShell extends StatefulWidget {
+/// Full LinkedIn-Style 5-Tab Navigation Shell
+class MainNavigationShell extends ConsumerStatefulWidget {
   final int initialIndex;
 
   const MainNavigationShell({super.key, this.initialIndex = 0});
 
   @override
-  State<MainNavigationShell> createState() => _MainNavigationShellState();
+  ConsumerState<MainNavigationShell> createState() =>
+      _MainNavigationShellState();
 }
 
-class _MainNavigationShellState extends State<MainNavigationShell> {
+class _MainNavigationShellState extends ConsumerState<MainNavigationShell> {
   late int _currentIndex;
-
-  void _navigateToTab(int index) {
-    if (mounted) {
-      setState(() => _currentIndex = index);
-    }
-  }
 
   @override
   void initState() {
@@ -33,46 +31,82 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
 
   @override
   Widget build(BuildContext context) {
+    final unreadCount = ref.watch(unreadNotificationsCountProvider);
+
     final screens = [
-      HomeScreen(onNavigateTab: _navigateToTab),
+      const FeedScreen(),
+      const NetworkScreen(),
+      const SizedBox.shrink(), // Index 2 reserved for Post (+) modal trigger
+      const NotificationsScreen(),
       const JobsScreen(),
-      const MyApplicationsScreen(),
-      const ProfileScreen(),
     ];
 
     return Scaffold(
-      body: IndexedStack(index: _currentIndex, children: screens),
+      body: IndexedStack(
+        index: _currentIndex == 2 ? 0 : _currentIndex,
+        children: screens,
+      ),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _currentIndex,
         backgroundColor: Colors.white,
         elevation: 8,
         indicatorColor: AppColors.primaryLight,
         onDestinationSelected: (index) {
-          setState(() => _currentIndex = index);
+          if (index == 2) {
+            // Center Post (+) action trigger
+            CreatePostModal.show(context);
+          } else {
+            setState(() => _currentIndex = index);
+          }
         },
-        destinations: const [
-          NavigationDestination(
+        destinations: [
+          const NavigationDestination(
             icon: Icon(Icons.home_outlined),
             selectedIcon: Icon(Icons.home_rounded, color: AppColors.primary),
             label: 'Home',
           ),
+          const NavigationDestination(
+            icon: Icon(Icons.people_outline_rounded),
+            selectedIcon: Icon(Icons.people_rounded, color: AppColors.primary),
+            label: 'My Network',
+          ),
           NavigationDestination(
+            icon: Container(
+              padding: const EdgeInsets.all(6),
+              decoration: const BoxDecoration(
+                color: AppColors.primary,
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.add_rounded,
+                color: Colors.white,
+                size: 22,
+              ),
+            ),
+            label: 'Post',
+          ),
+          NavigationDestination(
+            icon: Badge(
+              label: unreadCount > 0 ? Text('$unreadCount') : null,
+              isLabelVisible: unreadCount > 0,
+              backgroundColor: AppColors.primary,
+              child: const Icon(Icons.notifications_none_rounded),
+            ),
+            selectedIcon: Badge(
+              label: unreadCount > 0 ? Text('$unreadCount') : null,
+              isLabelVisible: unreadCount > 0,
+              backgroundColor: AppColors.primary,
+              child: const Icon(
+                Icons.notifications_rounded,
+                color: AppColors.primary,
+              ),
+            ),
+            label: 'Notifications',
+          ),
+          const NavigationDestination(
             icon: Icon(Icons.work_outline_rounded),
             selectedIcon: Icon(Icons.work_rounded, color: AppColors.primary),
-            label: 'Jobs',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.bookmark_border_rounded),
-            selectedIcon: Icon(
-              Icons.bookmark_rounded,
-              color: AppColors.primary,
-            ),
-            label: 'Applied',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.person_outline_rounded),
-            selectedIcon: Icon(Icons.person_rounded, color: AppColors.primary),
-            label: 'Profile',
+            label: 'Jobs & CV',
           ),
         ],
       ),

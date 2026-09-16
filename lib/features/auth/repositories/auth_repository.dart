@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/constants/api_constants.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/storage/local_storage.dart';
-import '../../cities/repositories/city_repository.dart';
 import '../models/user_profile.dart';
 
 class AuthVerificationResult {
@@ -189,8 +188,12 @@ class AuthRepository {
       final url = data['url']?.toString() ?? data['file_url']?.toString();
       if (url != null && url.isNotEmpty) {
         if (!url.startsWith('http')) {
-          final host = ApiConstants.baseUrl.replaceAll('/api', '');
-          return '$host$url';
+          final base = ApiConstants.baseUrl;
+          final host = base.endsWith('/api')
+              ? base.substring(0, base.length - 4)
+              : base;
+          final formattedUrl = url.startsWith('/') ? url : '/$url';
+          return '$host$formattedUrl';
         }
         return url;
       }
@@ -215,6 +218,32 @@ class AuthRepository {
       if (cached != null) return UserProfile.fromJson(cached);
     }
     return null;
+  }
+
+  /// Send OTP to candidate's email address
+  Future<bool> sendEmailOtp(String email) async {
+    try {
+      await _client.post(
+        ApiConstants.otpEmailSend,
+        data: {'email': email.trim()},
+      );
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  /// Verify Email OTP
+  Future<bool> verifyEmailOtp(String email, String otp) async {
+    try {
+      await _client.post(
+        ApiConstants.otpEmailVerify,
+        data: {'email': email.trim(), 'otp': otp.trim()},
+      );
+      return true;
+    } catch (_) {
+      return false;
+    }
   }
 
   /// Logout

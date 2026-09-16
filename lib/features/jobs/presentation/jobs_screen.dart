@@ -525,6 +525,9 @@ class _JobsScreenState extends ConsumerState<JobsScreen> {
                     isTopMatch: isTopMatch,
                     isApplying: _applyingJobId == job.id,
                     isApplied: appliedJobIds.contains(job.id),
+                    isSaved: jobsState.savedJobIds.contains(job.id),
+                    onBookmarkToggle: () =>
+                        ref.read(jobsProvider.notifier).toggleSaveJob(job.id),
                     onTap: () => context.push('/jobs/${job.id}'),
                     onApply: () => _handleApply(job.id),
                     onChat: _handleChat,

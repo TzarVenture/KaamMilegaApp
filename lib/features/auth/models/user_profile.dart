@@ -19,6 +19,16 @@ class UserProfile {
   final List<EducationItem> education;
   final List<ExperienceItem> experience;
   final String profileImage;
+  final String coverImage;
+  final bool isEmailVerified;
+  final String resumeUrl;
+  final String openToWork;
+  final String providingServices;
+  final bool isAvailableForGigs;
+  final int walletBalance;
+  final int profileViewsCount;
+  final int postImpressionsCount;
+  final int searchAppearancesCount;
 
   const UserProfile({
     required this.id,
@@ -40,6 +50,16 @@ class UserProfile {
     this.education = const [],
     this.experience = const [],
     this.profileImage = '',
+    this.coverImage = '',
+    this.isEmailVerified = false,
+    this.resumeUrl = '',
+    this.openToWork = '',
+    this.providingServices = '',
+    this.isAvailableForGigs = true,
+    this.walletBalance = 0,
+    this.profileViewsCount = 0,
+    this.postImpressionsCount = 0,
+    this.searchAppearancesCount = 0,
   });
 
   factory UserProfile.fromJson(Map<String, dynamic> json) {
@@ -95,6 +115,26 @@ class UserProfile {
       education: parseEducation(json['education']),
       experience: parseExperience(json['experience']),
       profileImage: json['profile_image']?.toString() ?? '',
+      coverImage:
+          json['cover_image']?.toString() ??
+          json['background_image']?.toString() ??
+          '',
+      isEmailVerified:
+          json['is_email_verified'] == true || json['email_verified'] == true,
+      resumeUrl:
+          json['resume_url']?.toString() ??
+          json['resume']?.toString() ??
+          json['cv_url']?.toString() ??
+          '',
+      openToWork: json['open_to_work']?.toString() ?? '',
+      providingServices: json['providing_services']?.toString() ?? '',
+      isAvailableForGigs: json['is_available_for_gigs'] != false,
+      walletBalance: (json['wallet_balance'] as num?)?.toInt() ?? 0,
+      profileViewsCount: (json['profile_views_count'] as num?)?.toInt() ?? 0,
+      postImpressionsCount:
+          (json['post_impressions_count'] as num?)?.toInt() ?? 0,
+      searchAppearancesCount:
+          (json['search_appearances_count'] as num?)?.toInt() ?? 0,
     );
   }
 
@@ -118,6 +158,16 @@ class UserProfile {
     'education': education.map((e) => e.toJson()).toList(),
     'experience': experience.map((e) => e.toJson()).toList(),
     'profile_image': profileImage,
+    'cover_image': coverImage,
+    'is_email_verified': isEmailVerified,
+    'resume_url': resumeUrl,
+    'open_to_work': openToWork,
+    'providing_services': providingServices,
+    'is_available_for_gigs': isAvailableForGigs,
+    'wallet_balance': walletBalance,
+    'profile_views_count': profileViewsCount,
+    'post_impressions_count': postImpressionsCount,
+    'search_appearances_count': searchAppearancesCount,
   };
 
   UserProfile copyWith({
@@ -137,6 +187,16 @@ class UserProfile {
     List<ExperienceItem>? experience,
     bool? isRegistered,
     String? profileImage,
+    String? coverImage,
+    bool? isEmailVerified,
+    String? resumeUrl,
+    String? openToWork,
+    String? providingServices,
+    bool? isAvailableForGigs,
+    int? walletBalance,
+    int? profileViewsCount,
+    int? postImpressionsCount,
+    int? searchAppearancesCount,
   }) {
     return UserProfile(
       id: id,
@@ -158,6 +218,17 @@ class UserProfile {
       education: education ?? this.education,
       experience: experience ?? this.experience,
       profileImage: profileImage ?? this.profileImage,
+      coverImage: coverImage ?? this.coverImage,
+      isEmailVerified: isEmailVerified ?? this.isEmailVerified,
+      resumeUrl: resumeUrl ?? this.resumeUrl,
+      openToWork: openToWork ?? this.openToWork,
+      providingServices: providingServices ?? this.providingServices,
+      isAvailableForGigs: isAvailableForGigs ?? this.isAvailableForGigs,
+      walletBalance: walletBalance ?? this.walletBalance,
+      profileViewsCount: profileViewsCount ?? this.profileViewsCount,
+      postImpressionsCount: postImpressionsCount ?? this.postImpressionsCount,
+      searchAppearancesCount:
+          searchAppearancesCount ?? this.searchAppearancesCount,
     );
   }
 }

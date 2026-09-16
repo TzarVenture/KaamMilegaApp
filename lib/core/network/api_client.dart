@@ -1,7 +1,10 @@
 import 'package:dio/dio.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../constants/api_constants.dart';
 import '../storage/local_storage.dart';
+
+final apiClientProvider = Provider<ApiClient>((ref) => ApiClient());
 
 /// Network client powered by Dio for smooth, fast, and secure API requests
 class ApiClient {

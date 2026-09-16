@@ -13,6 +13,8 @@ class JobCard extends StatelessWidget {
   final VoidCallback onCall;
   final bool isApplying;
   final bool isApplied;
+  final bool isSaved;
+  final VoidCallback? onBookmarkToggle;
 
   const JobCard({
     super.key,
@@ -24,6 +26,8 @@ class JobCard extends StatelessWidget {
     required this.onCall,
     this.isApplying = false,
     this.isApplied = false,
+    this.isSaved = false,
+    this.onBookmarkToggle,
   });
 
   @override
@@ -86,17 +90,39 @@ class JobCard extends StatelessWidget {
                     ),
                   ),
 
-                // Job Title
-                Text(
-                  job.title,
-                  style: const TextStyle(
-                    fontSize: 17,
-                    fontWeight: FontWeight.w800,
-                    color: AppColors.textPrimary,
-                    height: 1.25,
-                  ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
+                // Job Title & Bookmark Save Button
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        job.title,
+                        style: const TextStyle(
+                          fontSize: 17,
+                          fontWeight: FontWeight.w800,
+                          color: AppColors.textPrimary,
+                          height: 1.25,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    if (onBookmarkToggle != null)
+                      IconButton(
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
+                        icon: Icon(
+                          isSaved
+                              ? Icons.bookmark_rounded
+                              : Icons.bookmark_outline_rounded,
+                          color: isSaved
+                              ? AppColors.primary
+                              : AppColors.textSecondary,
+                          size: 22,
+                        ),
+                        onPressed: onBookmarkToggle,
+                      ),
+                  ],
                 ),
 
                 const SizedBox(height: 4),

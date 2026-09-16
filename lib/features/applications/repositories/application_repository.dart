@@ -2,7 +2,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/constants/api_constants.dart';
 import '../../../core/network/api_client.dart';
-import '../../cities/repositories/city_repository.dart';
 import '../models/application.dart';
 
 /// Repository for handling candidate applications

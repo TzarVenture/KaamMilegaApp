@@ -8,6 +8,7 @@ import '../../../shared/widgets/shimmer_loading.dart';
 import '../../applications/presentation/apply_modal.dart';
 import '../../applications/repositories/application_repository.dart';
 import '../models/job.dart';
+import '../providers/jobs_provider.dart';
 import '../repositories/job_repository.dart';
 
 /// Job Detail Screen mirroring https://kaammilega.com/jobs/:id
@@ -194,6 +195,8 @@ class _JobDetailScreenState extends ConsumerState<JobDetailScreen> {
         _isApplied ||
         (myApplicationsAsync.value?.any((a) => a.jobId == widget.jobId) ??
             false);
+    final savedJobIds = ref.watch(jobsProvider).savedJobIds;
+    final isSaved = savedJobIds.contains(widget.jobId);
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -227,29 +230,62 @@ class _JobDetailScreenState extends ConsumerState<JobDetailScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Back Button Row
-                    GestureDetector(
-                      onTap: () => context.pop(),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: const [
-                          Icon(
-                            Icons.arrow_back_rounded,
-                            color: Colors.white70,
-                            size: 18,
+                    // Back Button & Bookmark Save Button Row
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        GestureDetector(
+                          onTap: () => context.pop(),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: const [
+                              Icon(
+                                Icons.arrow_back_rounded,
+                                color: Colors.white70,
+                                size: 18,
+                              ),
+                              SizedBox(width: 6),
+                              Text(
+                                'BACK TO SEARCH',
+                                style: TextStyle(
+                                  color: Colors.white70,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w900,
+                                  letterSpacing: 1.5,
+                                ),
+                              ),
+                            ],
                           ),
-                          SizedBox(width: 6),
-                          Text(
-                            'BACK TO SEARCH',
-                            style: TextStyle(
-                              color: Colors.white70,
-                              fontSize: 11,
-                              fontWeight: FontWeight.w900,
-                              letterSpacing: 1.5,
-                            ),
+                        ),
+                        IconButton(
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(),
+                          icon: Icon(
+                            isSaved
+                                ? Icons.bookmark_rounded
+                                : Icons.bookmark_outline_rounded,
+                            color: isSaved
+                                ? AppColors.primaryGradientStart
+                                : Colors.white70,
+                            size: 24,
                           ),
-                        ],
-                      ),
+                          onPressed: () {
+                            ref
+                                .read(jobsProvider.notifier)
+                                .toggleSaveJob(widget.jobId);
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  isSaved
+                                      ? 'Job removed from saved list.'
+                                      : 'Job saved to your bookmarks!',
+                                ),
+                                duration: const Duration(seconds: 2),
+                              ),
+                            );
+                          },
+                        ),
+                      ],
                     ),
 
                     const SizedBox(height: 18),
@@ -519,12 +555,14 @@ class _JobDetailScreenState extends ConsumerState<JobDetailScreen> {
                                   color: AppColors.primary,
                                 ),
                                 const SizedBox(width: 6),
-                                Text(
-                                  skill,
-                                  style: const TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w700,
-                                    color: AppColors.primaryDark,
+                                Flexible(
+                                  child: Text(
+                                    skill,
+                                    style: const TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w700,
+                                      color: AppColors.primaryDark,
+                                    ),
                                   ),
                                 ),
                               ],

@@ -6,10 +6,11 @@ import '../features/auth/presentation/otp_screen.dart';
 import '../features/auth/presentation/register_screen.dart';
 import '../features/chat/presentation/chat_detail_screen.dart';
 import '../features/chat/presentation/chat_list_screen.dart';
+import '../features/company/presentation/company_screen.dart';
+import '../features/events/presentation/events_screen.dart';
 import '../features/interviews/presentation/interviews_screen.dart';
 import '../features/jobs/presentation/job_detail_screen.dart';
 import '../features/navigation/presentation/main_navigation_shell.dart';
-import '../features/network/presentation/network_screen.dart';
 import '../features/profile/presentation/profile_screen.dart';
 import '../features/splash/presentation/splash_screen.dart';
 
@@ -32,9 +33,32 @@ class AppRouter {
         builder: (context, state) => const MainNavigationShell(initialIndex: 0),
       ),
       GoRoute(
+        path: '/feed',
+        name: 'feed',
+        builder: (context, state) => const MainNavigationShell(initialIndex: 0),
+      ),
+      GoRoute(
         path: '/jobs',
         name: 'jobs',
-        builder: (context, state) => const MainNavigationShell(initialIndex: 1),
+        builder: (context, state) => const MainNavigationShell(initialIndex: 4),
+      ),
+      GoRoute(
+        path: '/notifications',
+        name: 'notifications',
+        builder: (context, state) => const MainNavigationShell(initialIndex: 3),
+      ),
+      GoRoute(
+        path: '/events',
+        name: 'events',
+        builder: (context, state) => const EventsScreen(),
+      ),
+      GoRoute(
+        path: '/company/:id',
+        name: 'company_detail',
+        builder: (context, state) {
+          final id = state.pathParameters['id'] ?? '';
+          return CompanyScreen(companyId: id);
+        },
       ),
       GoRoute(
         path: '/login',
@@ -75,7 +99,7 @@ class AppRouter {
       GoRoute(
         path: '/network',
         name: 'network',
-        builder: (context, state) => const NetworkScreen(),
+        builder: (context, state) => const MainNavigationShell(initialIndex: 1),
       ),
       GoRoute(
         path: '/chats',

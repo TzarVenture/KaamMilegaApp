@@ -11,6 +11,7 @@ class JobsState {
   final bool isLoading;
   final String? errorMessage;
   final JobFilter filter;
+  final Set<String> savedJobIds;
 
   const JobsState({
     this.jobs = const [],
@@ -18,6 +19,7 @@ class JobsState {
     this.isLoading = false,
     this.errorMessage,
     this.filter = const JobFilter(),
+    this.savedJobIds = const {},
   });
 
   JobsState copyWith({
@@ -26,6 +28,7 @@ class JobsState {
     bool? isLoading,
     String? errorMessage,
     JobFilter? filter,
+    Set<String>? savedJobIds,
   }) {
     return JobsState(
       jobs: jobs ?? this.jobs,
@@ -33,6 +36,7 @@ class JobsState {
       isLoading: isLoading ?? this.isLoading,
       errorMessage: errorMessage,
       filter: filter ?? this.filter,
+      savedJobIds: savedJobIds ?? this.savedJobIds,
     );
   }
 
@@ -49,6 +53,17 @@ class JobsNotifier extends Notifier<JobsState> {
     _repository = ref.watch(jobRepositoryProvider);
     Future.microtask(() => fetchJobs());
     return const JobsState();
+  }
+
+  /// Toggle saving / bookmarking a job
+  void toggleSaveJob(String jobId) {
+    final current = Set<String>.from(state.savedJobIds);
+    if (current.contains(jobId)) {
+      current.remove(jobId);
+    } else {
+      current.add(jobId);
+    }
+    state = state.copyWith(savedJobIds: current);
   }
 
   /// Fetch jobs with current filter

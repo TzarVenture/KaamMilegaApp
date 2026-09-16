@@ -231,6 +231,112 @@ class AuthNotifier extends Notifier<AuthState> {
     }
   }
 
+  /// Delete / Remove Profile Photo
+  Future<bool> deleteProfilePhoto() async {
+    state = state.copyWith(isLoading: true, error: null);
+    try {
+      final updatedUser = await _repository.updateProfile({
+        'profile_image': '',
+        'profile_picture': '',
+      });
+      state = state.copyWith(
+        isLoading: false,
+        user: updatedUser.copyWith(profileImage: ''),
+      );
+      return true;
+    } catch (e) {
+      state = state.copyWith(isLoading: false, error: e.toString());
+      return false;
+    }
+  }
+
+  /// Upload Cover Photo and update profile
+  Future<bool> uploadCoverPhoto(List<int> bytes, String filename) async {
+    state = state.copyWith(isLoading: true, error: null);
+    try {
+      final url = await _repository.uploadFile(bytes, filename);
+      if (url != null && url.isNotEmpty) {
+        final updatedUser = await _repository.updateProfile({
+          'cover_image': url,
+          'background_image': url,
+        });
+        state = state.copyWith(isLoading: false, user: updatedUser);
+        return true;
+      }
+      state = state.copyWith(
+        isLoading: false,
+        error: 'Failed to upload cover image.',
+      );
+      return false;
+    } catch (e) {
+      state = state.copyWith(isLoading: false, error: e.toString());
+      return false;
+    }
+  }
+
+  /// Delete / Remove Cover / Background Photo
+  Future<bool> deleteCoverPhoto() async {
+    state = state.copyWith(isLoading: true, error: null);
+    try {
+      final updatedUser = await _repository.updateProfile({
+        'cover_image': '',
+        'background_image': '',
+      });
+      state = state.copyWith(
+        isLoading: false,
+        user: updatedUser.copyWith(coverImage: ''),
+      );
+      return true;
+    } catch (e) {
+      state = state.copyWith(isLoading: false, error: e.toString());
+      return false;
+    }
+  }
+
+  /// Upload Resume PDF/DOC and update profile resume_url
+  Future<bool> uploadResumePdf(List<int> bytes, String filename) async {
+    state = state.copyWith(isLoading: true, error: null);
+    try {
+      final url = await _repository.uploadFile(bytes, filename);
+      if (url != null && url.isNotEmpty) {
+        final updatedUser = await _repository.updateProfile({
+          'resume_url': url,
+          'resume': url,
+        });
+        state = state.copyWith(isLoading: false, user: updatedUser);
+        return true;
+      }
+      state = state.copyWith(
+        isLoading: false,
+        error: 'Failed to upload resume document.',
+      );
+      return false;
+    } catch (e) {
+      state = state.copyWith(isLoading: false, error: e.toString());
+      return false;
+    }
+  }
+
+  /// Send Email Verification OTP
+  Future<bool> sendEmailOtp(String email) async {
+    return _repository.sendEmailOtp(email);
+  }
+
+  /// Verify Email OTP and update profile status
+  Future<bool> verifyEmailOtp(String email, String otp) async {
+    final success = await _repository.verifyEmailOtp(email, otp);
+    if (success) {
+      if (state.user != null) {
+        final updatedUser = state.user!.copyWith(isEmailVerified: true);
+        state = state.copyWith(user: updatedUser);
+        await LocalStorage.saveUser(updatedUser.toJson());
+      } else {
+        await refreshProfile();
+      }
+    }
+    return success;
+  }
+
   /// Logout candidate session
   Future<void> logout() async {
     await _repository.logout();

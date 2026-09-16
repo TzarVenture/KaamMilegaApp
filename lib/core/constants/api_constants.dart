@@ -10,6 +10,8 @@ class ApiConstants {
   // --- Auth Endpoints ---
   static const String sendOtp = '/auth/otp/send';
   static const String verifyOtp = '/auth/otp/verify';
+  static const String otpEmailSend = '/auth/otp/email/send';
+  static const String otpEmailVerify = '/auth/otp/email/verify';
   static const String userProfile = '/user/profile';
   static const String userRegister = '/user/register';
 
@@ -49,4 +51,18 @@ class ApiConstants {
   static const String chatMessages = '/chats/messages';
   static const String chatMessagesList = '/chats/';
   static const String wsChats = '/ws/chats';
+
+  // --- Feed & Posts Endpoints ---
+  static const String posts = '/posts';
+  static const String feed = '/feed';
+
+  // --- Notifications Endpoints ---
+  static const String notifications = '/notifications';
+
+  // --- Events & Mentorship Endpoints ---
+  static const String events = '/events';
+  static const String mentorship = '/mentorship';
+
+  // --- Company Hub Endpoints ---
+  static const String adminCompanies = '/admin/companies';
 }

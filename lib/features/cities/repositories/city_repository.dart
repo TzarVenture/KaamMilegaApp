@@ -55,8 +55,6 @@ class CityRepository {
   }
 }
 
-final apiClientProvider = Provider<ApiClient>((ref) => ApiClient());
-
 final cityRepositoryProvider = Provider<CityRepository>((ref) {
   return CityRepository(ref.watch(apiClientProvider));
 });
