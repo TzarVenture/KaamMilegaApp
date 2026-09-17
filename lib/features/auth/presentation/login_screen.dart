@@ -367,16 +367,19 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           : const Color(0xFF64748B),
                     ),
                     const SizedBox(width: 6),
-                    Text(
-                      'Login with OTP',
-                      style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: _activeTab == LoginTab.otp
-                            ? FontWeight.w800
-                            : FontWeight.w600,
-                        color: _activeTab == LoginTab.otp
-                            ? const Color(0xFF9333EA)
-                            : const Color(0xFF64748B),
+                    Flexible(
+                      child: Text(
+                        'Login with OTP',
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: _activeTab == LoginTab.otp
+                              ? FontWeight.w800
+                              : FontWeight.w600,
+                          color: _activeTab == LoginTab.otp
+                              ? const Color(0xFF9333EA)
+                              : const Color(0xFF64748B),
+                        ),
                       ),
                     ),
                   ],
@@ -420,16 +423,19 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           : const Color(0xFF64748B),
                     ),
                     const SizedBox(width: 6),
-                    Text(
-                      'Login with Password',
-                      style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: _activeTab == LoginTab.password
-                            ? FontWeight.w800
-                            : FontWeight.w600,
-                        color: _activeTab == LoginTab.password
-                            ? const Color(0xFF9333EA)
-                            : const Color(0xFF64748B),
+                    Flexible(
+                      child: Text(
+                        'Login with Password',
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: _activeTab == LoginTab.password
+                              ? FontWeight.w800
+                              : FontWeight.w600,
+                          color: _activeTab == LoginTab.password
+                              ? const Color(0xFF9333EA)
+                              : const Color(0xFF64748B),
+                        ),
                       ),
                     ),
                   ],

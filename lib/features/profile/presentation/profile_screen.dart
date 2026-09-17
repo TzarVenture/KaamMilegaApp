@@ -1316,153 +1316,264 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   // -------------------------------------------------------------------
   // ADD WORK EXPERIENCE DIALOG
   // -------------------------------------------------------------------
-  void _openAddExperienceDialog() {
-    final titleCtrl = TextEditingController();
-    final companyCtrl = TextEditingController();
-    final locationCtrl = TextEditingController();
-    final startCtrl = TextEditingController();
-    final endCtrl = TextEditingController();
+  void _openAddExperienceDialog([ExperienceItem? existingExp]) {
+    final titleCtrl = TextEditingController(text: existingExp?.title ?? '');
+    final companyCtrl = TextEditingController(text: existingExp?.companyName ?? '');
+    final locationCtrl = TextEditingController(text: existingExp?.location ?? '');
+    final startCtrl = TextEditingController(text: existingExp?.startDate ?? '');
+    final endCtrl = TextEditingController(text: existingExp?.endDate ?? '');
+    final descCtrl = TextEditingController(text: existingExp?.description ?? '');
+    
+    String selectedEmpType = (existingExp?.employmentType != null && existingExp!.employmentType.isNotEmpty) 
+        ? existingExp.employmentType 
+        : 'Full-time';
+
+    Widget buildLabeledField(String label, Widget child) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: const TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: AppColors.textPrimary,
+            ),
+          ),
+          const SizedBox(height: 8),
+          child,
+        ],
+      );
+    }
+
+    Future<void> pickDate(TextEditingController controller) async {
+      final DateTime? picked = await showDatePicker(
+        context: context,
+        initialDate: DateTime.now(),
+        firstDate: DateTime(1950),
+        lastDate: DateTime.now().add(const Duration(days: 365 * 10)),
+        builder: (context, child) {
+          return Theme(
+            data: Theme.of(context).copyWith(
+              colorScheme: const ColorScheme.light(
+                primary: AppColors.primary,
+                onPrimary: Colors.white,
+                onSurface: Colors.black,
+              ),
+            ),
+            child: child!,
+          );
+        },
+      );
+      if (picked != null) {
+        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        controller.text = '${months[picked.month - 1]}, ${picked.year}';
+      }
+    }
+
+    final inputDec = InputDecoration(
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(color: Colors.grey.shade300),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(color: Colors.grey.shade300),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: AppColors.primary),
+      ),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 14),
+    );
 
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (ctx) => Container(
-        padding: EdgeInsets.only(
-          bottom: MediaQuery.of(ctx).viewInsets.bottom + 20,
-          top: 24,
-          left: 20,
-          right: 20,
-        ),
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
-        ),
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    'Add Work Experience',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.close),
-                    onPressed: () => Navigator.pop(ctx),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 14),
-              TextField(
-                controller: titleCtrl,
-                decoration: InputDecoration(
-                  labelText: 'Job Title*',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(14),
-                  ),
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setModalState) {
+          return Container(
+            height: MediaQuery.of(ctx).size.height * 0.9,
+            padding: EdgeInsets.only(
+              bottom: MediaQuery.of(ctx).viewInsets.bottom + 20,
+              top: 24,
+              left: 20,
+              right: 20,
+            ),
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+            ),
+            child: Column(
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      existingExp != null ? 'Edit Experience' : 'Add Experience',
+                      style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.close, color: AppColors.textSecondary),
+                      onPressed: () => Navigator.pop(ctx),
+                    ),
+                  ],
                 ),
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: companyCtrl,
-                decoration: InputDecoration(
-                  labelText: 'Company Name*',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: locationCtrl,
-                decoration: InputDecoration(
-                  labelText: 'City / Location',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 12),
-              Row(
-                children: [
-                  Expanded(
-                    child: TextField(
-                      controller: startCtrl,
-                      decoration: InputDecoration(
-                        labelText: 'Start Date',
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(14),
+                const Divider(),
+                Expanded(
+                  child: SingleChildScrollView(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const SizedBox(height: 12),
+                        buildLabeledField(
+                          'Title',
+                          TextField(
+                            controller: titleCtrl,
+                            decoration: inputDec.copyWith(hintText: 'Ex: Retail Sales Manager'),
+                          ),
                         ),
-                      ),
+                        const SizedBox(height: 16),
+                        buildLabeledField(
+                          'Employment Type',
+                          DropdownButtonFormField<String>(
+                            value: selectedEmpType,
+                            decoration: inputDec,
+                            icon: const Icon(Icons.keyboard_arrow_down_rounded),
+                            items: [
+                              'Full-time',
+                              'Part-time',
+                              'Self-employed',
+                              'Freelance',
+                              'Contract',
+                              'Internship',
+                            ].map((type) => DropdownMenuItem(value: type, child: Text(type))).toList(),
+                            onChanged: (val) {
+                              if (val != null) setModalState(() => selectedEmpType = val);
+                            },
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        buildLabeledField(
+                          'Company Name',
+                          TextField(
+                            controller: companyCtrl,
+                            decoration: inputDec.copyWith(hintText: 'Ex: Microsoft'),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        buildLabeledField(
+                          'Location',
+                          TextField(
+                            controller: locationCtrl,
+                            decoration: inputDec.copyWith(hintText: 'Ex: Bangalore, India'),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: buildLabeledField(
+                                'Start Date',
+                                TextField(
+                                  controller: startCtrl,
+                                  readOnly: true,
+                                  onTap: () => pickDate(startCtrl),
+                                  decoration: inputDec.copyWith(
+                                    hintText: '---------, ----',
+                                    suffixIcon: const Icon(Icons.calendar_today_outlined, size: 18),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: buildLabeledField(
+                                'End Date (or Present)',
+                                TextField(
+                                  controller: endCtrl,
+                                  readOnly: true,
+                                  onTap: () => pickDate(endCtrl),
+                                  decoration: inputDec.copyWith(
+                                    hintText: '---------, ----',
+                                    suffixIcon: const Icon(Icons.calendar_today_outlined, size: 18),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+                        buildLabeledField(
+                          'Description',
+                          TextField(
+                            controller: descCtrl,
+                            maxLines: 4,
+                            decoration: inputDec.copyWith(
+                              hintText: 'Describe your responsibilities and achievements.',
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 24),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: OutlinedButton(
+                                onPressed: () => Navigator.pop(ctx),
+                                style: OutlinedButton.styleFrom(
+                                  foregroundColor: AppColors.textPrimary,
+                                  side: BorderSide(color: Colors.grey.shade300),
+                                  minimumSize: const Size(double.infinity, 50),
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                ),
+                                child: const Text('Cancel', style: TextStyle(fontWeight: FontWeight.w700)),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: ElevatedButton(
+                                onPressed: () async {
+                                  if (titleCtrl.text.trim().isEmpty || companyCtrl.text.trim().isEmpty) return;
+                                  Navigator.pop(ctx);
+                                  final ok = await ref.read(authProvider.notifier).addExperience(
+                                        title: titleCtrl.text,
+                                        companyName: companyCtrl.text,
+                                        employmentType: selectedEmpType,
+                                        location: locationCtrl.text,
+                                        startDate: startCtrl.text,
+                                        endDate: endCtrl.text,
+                                        description: descCtrl.text,
+                                      );
+                                  if (mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text(ok ? 'Experience saved successfully!' : 'Failed to save experience.'),
+                                        backgroundColor: ok ? AppColors.success : AppColors.error,
+                                      ),
+                                    );
+                                  }
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: AppColors.primary,
+                                  foregroundColor: Colors.white,
+                                  minimumSize: const Size(double.infinity, 50),
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                ),
+                                child: const Text('Save', style: TextStyle(fontWeight: FontWeight.w800)),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
                   ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: TextField(
-                      controller: endCtrl,
-                      decoration: InputDecoration(
-                        labelText: 'End Date / Present',
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: () async {
-                  if (titleCtrl.text.trim().isEmpty ||
-                      companyCtrl.text.trim().isEmpty) {
-                    return;
-                  }
-                  Navigator.pop(ctx);
-                  final ok = await ref
-                      .read(authProvider.notifier)
-                      .addExperience(
-                        title: titleCtrl.text,
-                        companyName: companyCtrl.text,
-                        employmentType: 'Full-time',
-                        location: locationCtrl.text,
-                        startDate: startCtrl.text,
-                        endDate: endCtrl.text,
-                      );
-                  if (mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(
-                          ok
-                              ? 'Experience added successfully!'
-                              : 'Failed to add experience.',
-                        ),
-                        backgroundColor: ok
-                            ? AppColors.success
-                            : AppColors.error,
-                      ),
-                    );
-                  }
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  foregroundColor: Colors.white,
-                  minimumSize: const Size(double.infinity, 50),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
                 ),
-                child: const Text(
-                  'Add Experience',
-                  style: TextStyle(fontWeight: FontWeight.w800),
-                ),
-              ),
-            ],
-          ),
-        ),
+              ],
+            ),
+          );
+        },
       ),
     );
   }
@@ -2896,24 +3007,27 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'Wallet Credits',
-                style: TextStyle(color: Colors.white70, fontSize: 12),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                '₹${user?.walletBalance ?? 0}',
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 22,
-                  fontWeight: FontWeight.w900,
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Wallet Credits',
+                  style: TextStyle(color: Colors.white70, fontSize: 12),
                 ),
-              ),
-            ],
+                const SizedBox(height: 4),
+                Text(
+                  '₹${user?.walletBalance ?? 0}',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 22,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ],
+            ),
           ),
+          const SizedBox(width: 12),
           ElevatedButton.icon(
             onPressed: _showRefillWalletModal,
             icon: const Icon(Icons.currency_rupee_rounded, size: 14),
@@ -2943,7 +3057,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       children: [
         Expanded(
           child: Container(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
             decoration: BoxDecoration(
               color: Colors.purple.shade50.withValues(alpha: 0.5),
               borderRadius: BorderRadius.circular(20),
@@ -2955,30 +3069,38 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text(
-                      'Open To Work',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w800,
-                        color: AppColors.primary,
+                    const Expanded(
+                      child: Text(
+                        'Open To Work',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w800,
+                          color: AppColors.primary,
+                        ),
                       ),
                     ),
                     if (user != null)
-                      IconButton(
-                        padding: EdgeInsets.zero,
-                        constraints: const BoxConstraints(),
-                        icon: const Icon(
-                          Icons.edit_outlined,
-                          size: 16,
-                          color: AppColors.primary,
+                      InkWell(
+                        onTap: () => _showOpenToModal(user),
+                        borderRadius: BorderRadius.circular(12),
+                        child: const Padding(
+                          padding: EdgeInsets.all(4),
+                          child: Icon(
+                            Icons.edit_outlined,
+                            size: 16,
+                            color: AppColors.primary,
+                          ),
                         ),
-                        onPressed: () => _showOpenToModal(user),
                       ),
                   ],
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  user?.openToWork.isNotEmpty == true ? user!.openToWork : 'Computer Science roles, Software Engineering Internships...',
+                  user?.openToWork.isNotEmpty == true
+                      ? user!.openToWork
+                      : 'Computer Science roles, Software Engineering Internships...',
                   maxLines: 3,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
@@ -2990,10 +3112,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             ),
           ),
         ),
-        const SizedBox(width: 12),
+        const SizedBox(width: 10),
         Expanded(
           child: Container(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
             decoration: BoxDecoration(
               color: Colors.purple.shade50.withValues(alpha: 0.5),
               borderRadius: BorderRadius.circular(20),
@@ -3005,24 +3127,30 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text(
-                      'Providing Services',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w800,
-                        color: AppColors.primary,
+                    const Expanded(
+                      child: Text(
+                        'Providing Services',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w800,
+                          color: AppColors.primary,
+                        ),
                       ),
                     ),
                     if (user != null)
-                      IconButton(
-                        padding: EdgeInsets.zero,
-                        constraints: const BoxConstraints(),
-                        icon: const Icon(
-                          Icons.edit_outlined,
-                          size: 16,
-                          color: AppColors.primary,
+                      InkWell(
+                        onTap: () => _showOpenToModal(user),
+                        borderRadius: BorderRadius.circular(12),
+                        child: const Padding(
+                          padding: EdgeInsets.all(4),
+                          child: Icon(
+                            Icons.edit_outlined,
+                            size: 16,
+                            color: AppColors.primary,
+                          ),
                         ),
-                        onPressed: () => _showOpenToModal(user),
                       ),
                   ],
                 ),
@@ -3082,14 +3210,19 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
-                'Profile Completeness',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w900,
-                  color: AppColors.textPrimary,
+              const Expanded(
+                child: Text(
+                  'Profile Completeness',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w900,
+                    color: AppColors.textPrimary,
+                  ),
                 ),
               ),
+              const SizedBox(width: 8),
               RichText(
                 text: TextSpan(
                   children: [
@@ -4696,7 +4829,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                         color: AppColors.primary,
                                         size: 18,
                                       ),
-                                      onPressed: () => _openEditProfileDialog(user),
+                                      onPressed: () => _openAddExperienceDialog(),
                                     ),
                                 ],
                               ),
