@@ -3,7 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../app/theme/app_colors.dart';
+import '../../../core/constants/api_constants.dart';
 import '../../../shared/widgets/shimmer_loading.dart';
+import '../../auth/providers/auth_provider.dart';
 import '../models/notification_item.dart';
 import '../providers/notification_provider.dart';
 
@@ -20,6 +22,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isAuthenticated = ref.watch(authProvider).isAuthenticated;
     final asyncNotifs = ref.watch(notificationsProvider);
 
     return Scaffold(
@@ -34,23 +37,24 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
           ),
         ),
         actions: [
-          TextButton(
-            onPressed: () {
-              ref.read(notificationsProvider.notifier).markAllAsRead();
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('All notifications marked as read.'),
+          if (isAuthenticated)
+            TextButton(
+              onPressed: () {
+                ref.read(notificationsProvider.notifier).markAllAsRead();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('All notifications marked as read.'),
+                  ),
+                );
+              },
+              child: const Text(
+                'Mark all read',
+                style: TextStyle(
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.primary,
                 ),
-              );
-            },
-            child: const Text(
-              'Mark all read',
-              style: TextStyle(
-                fontWeight: FontWeight.w700,
-                color: AppColors.primary,
               ),
             ),
-          ),
           const SizedBox(width: 8),
         ],
       ),
@@ -87,68 +91,134 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
           ),
           const Divider(height: 1),
 
-          // Notifications ListView
+          // Notifications ListView or Guest Prompt
           Expanded(
-            child: RefreshIndicator(
-              onRefresh: () =>
-                  ref.read(notificationsProvider.notifier).refresh(),
-              child: asyncNotifs.when(
-                data: (items) {
-                  final filteredItems = items.where((item) {
-                    if (_selectedFilter == 'Jobs') {
-                      return item.type == 'job_alert' ||
-                          item.type == 'application';
-                    } else if (_selectedFilter == 'My Posts') {
-                      return item.type == 'reaction';
-                    }
-                    return true;
-                  }).toList();
-
-                  if (filteredItems.isEmpty) {
-                    return const Center(
+            child: !isAuthenticated
+                ? Center(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24),
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(
-                            Icons.notifications_off_outlined,
-                            size: 48,
-                            color: AppColors.textSecondary,
+                          Container(
+                            padding: const EdgeInsets.all(18),
+                            decoration: const BoxDecoration(
+                              color: Color(0xFFEDE9FE),
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(
+                              Icons.lock_outline_rounded,
+                              size: 44,
+                              color: Color(0xFF6A0DAD),
+                            ),
                           ),
-                          SizedBox(height: 12),
-                          Text(
-                            'No notifications found',
+                          const SizedBox(height: 18),
+                          const Text(
+                            'Sign in to view notifications',
                             style: TextStyle(
-                              fontSize: 16,
+                              fontSize: 18,
                               fontWeight: FontWeight.w800,
                               color: AppColors.textPrimary,
                             ),
                           ),
+                          const SizedBox(height: 8),
+                          const Text(
+                            'Get real-time job alerts, application updates, and network notifications by signing in.',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 13.5,
+                              color: AppColors.textSecondary,
+                              height: 1.4,
+                            ),
+                          ),
+                          const SizedBox(height: 22),
+                          ElevatedButton(
+                            onPressed: () => context.push('/login'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.primary,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 28,
+                                vertical: 12,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(14),
+                              ),
+                              elevation: 0,
+                            ),
+                            child: const Text(
+                              'Sign In',
+                              style: TextStyle(
+                                fontWeight: FontWeight.w800,
+                                fontSize: 14,
+                              ),
+                            ),
+                          ),
                         ],
                       ),
-                    );
-                  }
+                    ),
+                  )
+                : RefreshIndicator(
+                    onRefresh: () =>
+                        ref.read(notificationsProvider.notifier).refresh(),
+                    child: asyncNotifs.when(
+                      data: (items) {
+                        final filteredItems = items.where((item) {
+                          if (_selectedFilter == 'Jobs') {
+                            return item.type == 'job_alert' ||
+                                item.type == 'application';
+                          } else if (_selectedFilter == 'My Posts') {
+                            return item.type == 'reaction';
+                          }
+                          return true;
+                        }).toList();
 
-                  return ListView.separated(
-                    itemCount: filteredItems.length,
-                    separatorBuilder: (context, index) =>
-                        const Divider(height: 1),
-                    itemBuilder: (context, index) {
-                      final item = filteredItems[index];
-                      return _buildNotificationTile(item);
-                    },
-                  );
-                },
-                loading: () => ListView.builder(
-                  itemCount: 4,
-                  itemBuilder: (context, index) => const Padding(
-                    padding: EdgeInsets.all(16),
-                    child: ShimmerBox(width: double.infinity, height: 70),
+                        if (filteredItems.isEmpty) {
+                          return const Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.notifications_off_outlined,
+                                  size: 48,
+                                  color: AppColors.textSecondary,
+                                ),
+                                SizedBox(height: 12),
+                                Text(
+                                  'No notifications found',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w800,
+                                    color: AppColors.textPrimary,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        }
+
+                        return ListView.separated(
+                          itemCount: filteredItems.length,
+                          separatorBuilder: (context, index) =>
+                              const Divider(height: 1),
+                          itemBuilder: (context, index) {
+                            final item = filteredItems[index];
+                            return _buildNotificationTile(item);
+                          },
+                        );
+                      },
+                      loading: () => ListView.builder(
+                        itemCount: 4,
+                        itemBuilder: (context, index) => const Padding(
+                          padding: EdgeInsets.all(16),
+                          child: ShimmerBox(width: double.infinity, height: 70),
+                        ),
+                      ),
+                      error: (err, stack) => Center(
+                        child: Text('Error loading notifications: $err'),
+                      ),
+                    ),
                   ),
-                ),
-                error: (err, stack) =>
-                    Center(child: Text('Error loading notifications: $err')),
-              ),
-            ),
           ),
         ],
       ),
@@ -156,6 +226,10 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
   }
 
   Widget _buildNotificationTile(NotificationItem item) {
+    final avatarUrl = ApiConstants.resolveImageUrl(item.avatarUrl);
+    final hasAvatar = avatarUrl.isNotEmpty &&
+        (avatarUrl.startsWith('http://') || avatarUrl.startsWith('https://'));
+
     return InkWell(
       onTap: () {
         ref.read(notificationsProvider.notifier).markAsRead(item.id);
@@ -175,10 +249,11 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                 CircleAvatar(
                   radius: 24,
                   backgroundColor: AppColors.heroBg,
-                  backgroundImage: item.avatarUrl.isNotEmpty
-                      ? NetworkImage(item.avatarUrl)
+                  backgroundImage: hasAvatar
+                      ? NetworkImage(avatarUrl)
                       : null,
-                  child: item.avatarUrl.isEmpty
+                  onBackgroundImageError: hasAvatar ? (_, _) {} : null,
+                  child: !hasAvatar
                       ? Icon(
                           _getIconForType(item.type),
                           color: Colors.white,

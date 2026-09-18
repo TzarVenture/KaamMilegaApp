@@ -1,11 +1,14 @@
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../app/theme/app_colors.dart';
+import '../../../core/constants/api_constants.dart';
+import '../../../shared/widgets/auth_prompt_dialog.dart';
 import '../../../shared/widgets/shimmer_loading.dart';
 import '../../auth/models/user_profile.dart';
 import '../../auth/providers/auth_provider.dart';
@@ -33,13 +36,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   ]) async {
     if (!ref.read(authProvider).isAuthenticated) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Please sign in to upload your profile photo.'),
-            backgroundColor: AppColors.primary,
-          ),
+        showAuthPromptDialog(
+          context,
+          title: 'Sign In Required',
+          message: 'Please sign in to upload your profile photo.',
         );
-        context.push('/login');
       }
       return;
     }
@@ -162,13 +163,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   ]) async {
     if (!ref.read(authProvider).isAuthenticated) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Please sign in to customize your background photo.'),
-            backgroundColor: AppColors.primary,
-          ),
+        showAuthPromptDialog(
+          context,
+          title: 'Sign In Required',
+          message: 'Please sign in to customize your background photo.',
         );
-        context.push('/login');
       }
       return;
     }
@@ -285,9 +284,19 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   }
 
   void _showAddBackgroundPhotoModal() {
+    if (!ref.read(authProvider).isAuthenticated) {
+      showAuthPromptDialog(
+        context,
+        title: 'Sign In Required',
+        message: 'Please sign in to update your background photo.',
+      );
+      return;
+    }
+
     final user = ref.read(authProvider).user;
-    final coverImage = user?.coverImage ?? '';
-    final hasCover = coverImage.isNotEmpty;
+    final coverImage = ApiConstants.resolveImageUrl(user?.coverImage ?? '');
+    final hasCover = coverImage.isNotEmpty &&
+        (coverImage.startsWith('http://') || coverImage.startsWith('https://'));
 
     showDialog(
       context: context,
@@ -335,6 +344,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                         ? DecorationImage(
                             image: NetworkImage(coverImage),
                             fit: BoxFit.cover,
+                            onError: (_, _) {},
                           )
                         : null,
                   ),
@@ -450,9 +460,19 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   }
 
   void _showAddProfilePhotoModal() {
+    if (!ref.read(authProvider).isAuthenticated) {
+      showAuthPromptDialog(
+        context,
+        title: 'Sign In Required',
+        message: 'Please sign in to update your profile photo.',
+      );
+      return;
+    }
+
     final user = ref.read(authProvider).user;
-    final profileImage = user?.profileImage ?? '';
-    final hasAvatar = profileImage.isNotEmpty;
+    final profileImage = ApiConstants.resolveImageUrl(user?.profileImage ?? '');
+    final hasAvatar = profileImage.isNotEmpty &&
+        (profileImage.startsWith('http://') || profileImage.startsWith('https://'));
 
     showDialog(
       context: context,
@@ -501,6 +521,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                           ? DecorationImage(
                               image: NetworkImage(profileImage),
                               fit: BoxFit.cover,
+                              onError: (_, _) {},
                             )
                           : null,
                     ),
@@ -606,6 +627,15 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   // EDIT PERSONAL & PROFESSIONAL INFO DIALOG
   // -------------------------------------------------------------------
   void _openEditProfileDialog(UserProfile user) {
+    if (!ref.read(authProvider).isAuthenticated) {
+      showAuthPromptDialog(
+        context,
+        title: 'Sign In Required',
+        message: 'Please sign in to edit your profile information.',
+      );
+      return;
+    }
+
     final nameParts = user.name.trim().split(' ');
     final initialFirstName = nameParts.isNotEmpty ? nameParts.first : '';
     final initialLastName = nameParts.length > 1
@@ -886,6 +916,15 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   // CUSTOM PORTFOLIO LINK DIALOG
   // -------------------------------------------------------------------
   void _showCustomPortfolioDialog(UserProfile user) {
+    if (!ref.read(authProvider).isAuthenticated) {
+      showAuthPromptDialog(
+        context,
+        title: 'Sign In Required',
+        message: 'Please sign in to add your portfolio link.',
+      );
+      return;
+    }
+
     final urlCtrl = TextEditingController(text: user.portfolioUrl);
     final textCtrl = TextEditingController(text: user.portfolioText);
 
@@ -1132,9 +1171,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                               backgroundColor: ok
                                   ? AppColors.success
                                   : AppColors.error,
-                              ),
-                            );
-                          }
+                            ),
+                          );
+                        }
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF9333EA),
@@ -1167,6 +1206,15 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   // ADD EDUCATION DIALOG
   // -------------------------------------------------------------------
   void _openAddEducationDialog() {
+    if (!ref.read(authProvider).isAuthenticated) {
+      showAuthPromptDialog(
+        context,
+        title: 'Sign In Required',
+        message: 'Please sign in to add your education history.',
+      );
+      return;
+    }
+
     final schoolCtrl = TextEditingController();
     final degreeCtrl = TextEditingController();
     final fieldCtrl = TextEditingController();
@@ -1317,15 +1365,32 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   // ADD WORK EXPERIENCE DIALOG
   // -------------------------------------------------------------------
   void _openAddExperienceDialog([ExperienceItem? existingExp]) {
+    if (!ref.read(authProvider).isAuthenticated) {
+      showAuthPromptDialog(
+        context,
+        title: 'Sign In Required',
+        message: 'Please sign in to add your work experience.',
+      );
+      return;
+    }
+
     final titleCtrl = TextEditingController(text: existingExp?.title ?? '');
-    final companyCtrl = TextEditingController(text: existingExp?.companyName ?? '');
-    final locationCtrl = TextEditingController(text: existingExp?.location ?? '');
+    final companyCtrl = TextEditingController(
+      text: existingExp?.companyName ?? '',
+    );
+    final locationCtrl = TextEditingController(
+      text: existingExp?.location ?? '',
+    );
     final startCtrl = TextEditingController(text: existingExp?.startDate ?? '');
     final endCtrl = TextEditingController(text: existingExp?.endDate ?? '');
-    final descCtrl = TextEditingController(text: existingExp?.description ?? '');
-    
-    String selectedEmpType = (existingExp?.employmentType != null && existingExp!.employmentType.isNotEmpty) 
-        ? existingExp.employmentType 
+    final descCtrl = TextEditingController(
+      text: existingExp?.description ?? '',
+    );
+
+    String selectedEmpType =
+        (existingExp?.employmentType != null &&
+            existingExp!.employmentType.isNotEmpty)
+        ? existingExp.employmentType
         : 'Full-time';
 
     Widget buildLabeledField(String label, Widget child) {
@@ -1366,7 +1431,20 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         },
       );
       if (picked != null) {
-        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        const months = [
+          'Jan',
+          'Feb',
+          'Mar',
+          'Apr',
+          'May',
+          'Jun',
+          'Jul',
+          'Aug',
+          'Sep',
+          'Oct',
+          'Nov',
+          'Dec',
+        ];
         controller.text = '${months[picked.month - 1]}, ${picked.year}';
       }
     }
@@ -1412,11 +1490,19 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      existingExp != null ? 'Edit Experience' : 'Add Experience',
-                      style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
+                      existingExp != null
+                          ? 'Edit Experience'
+                          : 'Add Experience',
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w800,
+                      ),
                     ),
                     IconButton(
-                      icon: const Icon(Icons.close, color: AppColors.textSecondary),
+                      icon: const Icon(
+                        Icons.close,
+                        color: AppColors.textSecondary,
+                      ),
                       onPressed: () => Navigator.pop(ctx),
                     ),
                   ],
@@ -1432,26 +1518,38 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                           'Title',
                           TextField(
                             controller: titleCtrl,
-                            decoration: inputDec.copyWith(hintText: 'Ex: Retail Sales Manager'),
+                            decoration: inputDec.copyWith(
+                              hintText: 'Ex: Retail Sales Manager',
+                            ),
                           ),
                         ),
                         const SizedBox(height: 16),
                         buildLabeledField(
                           'Employment Type',
                           DropdownButtonFormField<String>(
-                            value: selectedEmpType,
+                            initialValue: selectedEmpType,
                             decoration: inputDec,
                             icon: const Icon(Icons.keyboard_arrow_down_rounded),
-                            items: [
-                              'Full-time',
-                              'Part-time',
-                              'Self-employed',
-                              'Freelance',
-                              'Contract',
-                              'Internship',
-                            ].map((type) => DropdownMenuItem(value: type, child: Text(type))).toList(),
+                            items:
+                                [
+                                      'Full-time',
+                                      'Part-time',
+                                      'Self-employed',
+                                      'Freelance',
+                                      'Contract',
+                                      'Internship',
+                                    ]
+                                    .map(
+                                      (type) => DropdownMenuItem(
+                                        value: type,
+                                        child: Text(type),
+                                      ),
+                                    )
+                                    .toList(),
                             onChanged: (val) {
-                              if (val != null) setModalState(() => selectedEmpType = val);
+                              if (val != null) {
+                                setModalState(() => selectedEmpType = val);
+                              }
                             },
                           ),
                         ),
@@ -1460,7 +1558,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                           'Company Name',
                           TextField(
                             controller: companyCtrl,
-                            decoration: inputDec.copyWith(hintText: 'Ex: Microsoft'),
+                            decoration: inputDec.copyWith(
+                              hintText: 'Ex: Microsoft',
+                            ),
                           ),
                         ),
                         const SizedBox(height: 16),
@@ -1468,7 +1568,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                           'Location',
                           TextField(
                             controller: locationCtrl,
-                            decoration: inputDec.copyWith(hintText: 'Ex: Bangalore, India'),
+                            decoration: inputDec.copyWith(
+                              hintText: 'Ex: Bangalore, India',
+                            ),
                           ),
                         ),
                         const SizedBox(height: 16),
@@ -1483,7 +1585,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                   onTap: () => pickDate(startCtrl),
                                   decoration: inputDec.copyWith(
                                     hintText: '---------, ----',
-                                    suffixIcon: const Icon(Icons.calendar_today_outlined, size: 18),
+                                    suffixIcon: const Icon(
+                                      Icons.calendar_today_outlined,
+                                      size: 18,
+                                    ),
                                   ),
                                 ),
                               ),
@@ -1498,7 +1603,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                   onTap: () => pickDate(endCtrl),
                                   decoration: inputDec.copyWith(
                                     hintText: '---------, ----',
-                                    suffixIcon: const Icon(Icons.calendar_today_outlined, size: 18),
+                                    suffixIcon: const Icon(
+                                      Icons.calendar_today_outlined,
+                                      size: 18,
+                                    ),
                                   ),
                                 ),
                               ),
@@ -1526,18 +1634,28 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                   foregroundColor: AppColors.textPrimary,
                                   side: BorderSide(color: Colors.grey.shade300),
                                   minimumSize: const Size(double.infinity, 50),
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(16),
+                                  ),
                                 ),
-                                child: const Text('Cancel', style: TextStyle(fontWeight: FontWeight.w700)),
+                                child: const Text(
+                                  'Cancel',
+                                  style: TextStyle(fontWeight: FontWeight.w700),
+                                ),
                               ),
                             ),
                             const SizedBox(width: 12),
                             Expanded(
                               child: ElevatedButton(
                                 onPressed: () async {
-                                  if (titleCtrl.text.trim().isEmpty || companyCtrl.text.trim().isEmpty) return;
+                                  if (titleCtrl.text.trim().isEmpty ||
+                                      companyCtrl.text.trim().isEmpty) {
+                                    return;
+                                  }
                                   Navigator.pop(ctx);
-                                  final ok = await ref.read(authProvider.notifier).addExperience(
+                                  final ok = await ref
+                                      .read(authProvider.notifier)
+                                      .addExperience(
                                         title: titleCtrl.text,
                                         companyName: companyCtrl.text,
                                         employmentType: selectedEmpType,
@@ -1549,8 +1667,14 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                   if (mounted) {
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       SnackBar(
-                                        content: Text(ok ? 'Experience saved successfully!' : 'Failed to save experience.'),
-                                        backgroundColor: ok ? AppColors.success : AppColors.error,
+                                        content: Text(
+                                          ok
+                                              ? 'Experience saved successfully!'
+                                              : 'Failed to save experience.',
+                                        ),
+                                        backgroundColor: ok
+                                            ? AppColors.success
+                                            : AppColors.error,
                                       ),
                                     );
                                   }
@@ -1559,9 +1683,14 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                   backgroundColor: AppColors.primary,
                                   foregroundColor: Colors.white,
                                   minimumSize: const Size(double.infinity, 50),
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(16),
+                                  ),
                                 ),
-                                child: const Text('Save', style: TextStyle(fontWeight: FontWeight.w800)),
+                                child: const Text(
+                                  'Save',
+                                  style: TextStyle(fontWeight: FontWeight.w800),
+                                ),
                               ),
                             ),
                           ],
@@ -1582,6 +1711,15 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   // ADD SKILL DIALOG
   // -------------------------------------------------------------------
   void _openAddSkillDialog() {
+    if (!ref.read(authProvider).isAuthenticated) {
+      showAuthPromptDialog(
+        context,
+        title: 'Sign In Required',
+        message: 'Please sign in to add skills to your profile.',
+      );
+      return;
+    }
+
     final skillCtrl = TextEditingController();
 
     final predefinedSkills = [
@@ -1656,8 +1794,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             final query = skillCtrl.text.trim();
             final filteredSkills = query.length >= 2
                 ? predefinedSkills
-                    .where((s) => s.toLowerCase().contains(query.toLowerCase()))
-                    .toList()
+                      .where(
+                        (s) => s.toLowerCase().contains(query.toLowerCase()),
+                      )
+                      .toList()
                 : <String>[];
 
             return Container(
@@ -1687,7 +1827,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                         ),
                       ),
                       IconButton(
-                        icon: const Icon(Icons.close, color: AppColors.textSecondary),
+                        icon: const Icon(
+                          Icons.close,
+                          color: AppColors.textSecondary,
+                        ),
                         onPressed: () => Navigator.pop(ctx),
                       ),
                     ],
@@ -1864,6 +2007,15 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   // -------------------------------------------------------------------
 
   Future<void> _pickAndUploadResumePdf() async {
+    if (!ref.read(authProvider).isAuthenticated) {
+      showAuthPromptDialog(
+        context,
+        title: 'Sign In Required',
+        message: 'Please sign in to upload your resume document.',
+      );
+      return;
+    }
+
     try {
       final result = await FilePicker.platform.pickFiles(
         type: FileType.custom,
@@ -1924,6 +2076,15 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   // EMAIL OTP VERIFICATION DIALOG
   // -------------------------------------------------------------------
   void _showEmailOtpDialog(String currentEmail) {
+    if (!ref.read(authProvider).isAuthenticated) {
+      showAuthPromptDialog(
+        context,
+        title: 'Sign In Required',
+        message: 'Please sign in to verify your email address.',
+      );
+      return;
+    }
+
     final emailCtrl = TextEditingController(text: currentEmail);
     final otpCtrl = TextEditingController();
     bool otpSent = false;
@@ -2036,9 +2197,17 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   TextField(
                     controller: otpCtrl,
                     keyboardType: TextInputType.number,
-                    maxLength: 6,
+                    maxLength: 4,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 8,
+                    ),
+                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                     decoration: InputDecoration(
-                      labelText: '6-Digit OTP Code',
+                      labelText: '4-Digit OTP Code',
+                      hintText: '• • • •',
                       prefixIcon: const Icon(Icons.mark_email_read_outlined),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(14),
@@ -2050,13 +2219,22 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     onPressed: isVerifying
                         ? null
                         : () async {
+                            final otp = otpCtrl.text.trim();
+                            if (otp.length != 4) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text(
+                                    'Please enter a valid 4-digit OTP code.',
+                                  ),
+                                  backgroundColor: AppColors.error,
+                                ),
+                              );
+                              return;
+                            }
                             setModalState(() => isVerifying = true);
                             final ok = await ref
                                 .read(authProvider.notifier)
-                                .verifyEmailOtp(
-                                  emailCtrl.text.trim(),
-                                  otpCtrl.text.trim(),
-                                );
+                                .verifyEmailOtp(emailCtrl.text.trim(), otp);
                             setModalState(() => isVerifying = false);
                             if (mounted && context.mounted) {
                               Navigator.pop(ctx);
@@ -2109,6 +2287,15 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   // OPEN TO WORK & PROVIDING SERVICES MODAL
   // -------------------------------------------------------------------
   void _showOpenToModal(UserProfile user) {
+    if (!ref.read(authProvider).isAuthenticated) {
+      showAuthPromptDialog(
+        context,
+        title: 'Sign In Required',
+        message: 'Please sign in to update your career preferences.',
+      );
+      return;
+    }
+
     final workCtrl = TextEditingController(
       text: user.openToWork.isNotEmpty
           ? user.openToWork
@@ -2288,6 +2475,15 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   // REFILL WALLET CREDITS MODAL
   // -------------------------------------------------------------------
   void _showRefillWalletModal() {
+    if (!ref.read(authProvider).isAuthenticated) {
+      showAuthPromptDialog(
+        context,
+        title: 'Sign In Required',
+        message: 'Please sign in to access wallet credits.',
+      );
+      return;
+    }
+
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
@@ -2396,6 +2592,15 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   // ADD PROFILE SECTION SHEET
   // -------------------------------------------------------------------
   void _showAddSectionSheet() {
+    if (!ref.read(authProvider).isAuthenticated) {
+      showAuthPromptDialog(
+        context,
+        title: 'Sign In Required',
+        message: 'Please sign in to customize your profile sections.',
+      );
+      return;
+    }
+
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
@@ -2565,10 +2770,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   // HERO COVER BANNER WIDGET
   // -------------------------------------------------------------------
   Widget _buildHeroBanner(UserProfile? user, int connectionsCount) {
-    final coverImage = user?.coverImage ?? '';
-    final profileImage = user?.profileImage ?? '';
-    final hasCover = coverImage.isNotEmpty;
-    final hasAvatar = profileImage.isNotEmpty;
+    final coverImage = ApiConstants.resolveImageUrl(user?.coverImage ?? '');
+    final profileImage = ApiConstants.resolveImageUrl(user?.profileImage ?? '');
+    final hasCover = coverImage.isNotEmpty &&
+        (coverImage.startsWith('http://') || coverImage.startsWith('https://'));
+    final hasAvatar = profileImage.isNotEmpty &&
+        (profileImage.startsWith('http://') || profileImage.startsWith('https://'));
     final isAuth = ref.watch(authProvider).isAuthenticated;
 
     return Container(
@@ -2606,6 +2813,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                           ? DecorationImage(
                               image: NetworkImage(coverImage),
                               fit: BoxFit.cover,
+                              onError: (_, _) {},
                             )
                           : null,
                     ),
@@ -2658,6 +2866,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                             backgroundImage: hasAvatar
                                 ? NetworkImage(profileImage)
                                 : null,
+                            onBackgroundImageError:
+                                hasAvatar ? (_, _) {} : null,
                             child: !hasAvatar
                                 ? const Icon(
                                     Icons.person_rounded,
@@ -2831,8 +3041,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                         Text(
                           user != null && user.portfolioUrl.isNotEmpty
                               ? (user.portfolioText.isNotEmpty
-                                  ? user.portfolioText
-                                  : user.portfolioUrl)
+                                    ? user.portfolioText
+                                    : user.portfolioUrl)
                               : '+ Add Portfolio / Website Link',
                           style: const TextStyle(
                             fontSize: 12.5,
@@ -2862,62 +3072,101 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
                 const SizedBox(height: 12),
 
-                // Email Unverified Warning Banner
-                if (user != null && !user.isEmailVerified) ...[
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 8,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.amber.shade50,
-                      borderRadius: BorderRadius.circular(14),
-                      border: Border.all(color: Colors.amber.shade300),
-                    ),
-                    child: Row(
-                      children: [
-                        const Icon(
-                          Icons.warning_amber_rounded,
-                          color: Colors.amber,
-                          size: 20,
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            'Email Unverified (${user.email.isNotEmpty ? user.email : 'sunnyVerma12@gmail.com'})',
-                            style: const TextStyle(
-                              fontSize: 11,
-                              fontWeight: FontWeight.w700,
-                              color: AppColors.textPrimary,
+                // Email Verification Status Banner (Dynamic from backend)
+                if (user != null) ...[
+                  if (!user.isEmailVerified) ...[
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 8,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.amber.shade50,
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(color: Colors.amber.shade300),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(
+                            Icons.warning_amber_rounded,
+                            color: Colors.amber,
+                            size: 20,
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              user.email.isNotEmpty
+                                  ? 'Email Unverified: ${user.email}'
+                                  : 'Email Unverified',
+                              style: const TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.textPrimary,
+                              ),
                             ),
                           ),
-                        ),
-                        ElevatedButton(
-                          onPressed: () => _showEmailOtpDialog(user.email),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.amber.shade800,
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 10,
-                              vertical: 6,
+                          ElevatedButton(
+                            onPressed: () => _showEmailOtpDialog(user.email),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.amber.shade800,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 6,
+                              ),
+                              minimumSize: Size.zero,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
                             ),
-                            minimumSize: Size.zero,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
+                            child: const Text(
+                              'Verify Email Now',
+                              style: TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.w800,
+                              ),
                             ),
                           ),
-                          child: const Text(
-                            'Verify Email Now',
-                            style: TextStyle(
-                              fontSize: 10,
-                              fontWeight: FontWeight.w800,
-                            ),
-                          ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 14),
+                    const SizedBox(height: 14),
+                  ] else ...[
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 8,
+                      ),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF0FDF4),
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(color: const Color(0xFFBBF7D0)),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(
+                            Icons.check_circle_rounded,
+                            color: Color(0xFF16A34A),
+                            size: 20,
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              user.email.isNotEmpty
+                                  ? 'Email Verified: ${user.email}'
+                                  : 'Email Verified',
+                              style: const TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w700,
+                                color: Color(0xFF15803D),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+                  ],
                 ],
 
                 // Action Buttons Row: Open To, Add Profile Section, More
@@ -3098,9 +3347,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  user?.openToWork.isNotEmpty == true
-                      ? user!.openToWork
-                      : 'Computer Science roles, Software Engineering Internships...',
+                  user?.openToWork.isNotEmpty == true ? user!.openToWork : 'Computer Science roles, Software Engineering Internships...',
                   maxLines: 3,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
@@ -3250,10 +3497,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           const SizedBox(height: 4),
           const Text(
             'Complete the recommended sections below to help recruiters discover and evaluate your profile.',
-            style: TextStyle(
-              fontSize: 11.5,
-              color: AppColors.textSecondary,
-            ),
+            style: TextStyle(fontSize: 11.5, color: AppColors.textSecondary),
           ),
           const SizedBox(height: 12),
           ClipRRect(
@@ -3262,8 +3506,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               value: percentage / 100.0,
               minHeight: 8,
               backgroundColor: const Color(0xFFF3E8FF),
-              valueColor:
-                  const AlwaysStoppedAnimation<Color>(Color(0xFF9333EA)),
+              valueColor: const AlwaysStoppedAnimation<Color>(
+                Color(0xFF9333EA),
+              ),
             ),
           ),
           const SizedBox(height: 16),
@@ -3402,8 +3647,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 ),
                 _buildBreakdownCard(
                   title: 'Email Verification',
-                  subtitle:
-                      'Verify your registered email for direct recruiter messages',
+                  subtitle: 'Verify your registered email for direct recruiter messages',
                   isCompleted: hasEmail,
                   onTap: () => _showEmailOtpDialog(user.email),
                 ),
@@ -3490,8 +3734,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   ),
                 ),
                 Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 5,
+                    vertical: 2,
+                  ),
                   decoration: BoxDecoration(
                     color: isCompleted
                         ? Colors.green.shade100
@@ -4055,6 +4301,15 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   // ADD PROJECT DIALOG & WIDGET (web-matched media_1789560057895.png)
   // -------------------------------------------------------------------
   void _openAddProjectDialog() {
+    if (!ref.read(authProvider).isAuthenticated) {
+      showAuthPromptDialog(
+        context,
+        title: 'Sign In Required',
+        message: 'Please sign in to add projects to your profile.',
+      );
+      return;
+    }
+
     final titleCtrl = TextEditingController();
     final descCtrl = TextEditingController();
     final linkCtrl = TextEditingController();
@@ -4111,7 +4366,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 maxLines: 3,
                 decoration: InputDecoration(
                   labelText: 'Description',
-                  hintText: 'Describe key technologies, features, and your role',
+                  hintText:
+                      'Describe key technologies, features, and your role',
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(14),
                   ),
@@ -4181,8 +4437,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                               ? 'Project added successfully!'
                               : 'Failed to add project.',
                         ),
-                        backgroundColor:
-                            ok ? AppColors.success : AppColors.error,
+                        backgroundColor: ok
+                            ? AppColors.success
+                            : AppColors.error,
                       ),
                     );
                   }
@@ -4242,8 +4499,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 style: OutlinedButton.styleFrom(
                   foregroundColor: const Color(0xFF9333EA),
                   side: const BorderSide(color: Color(0xFF9333EA)),
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
                   minimumSize: Size.zero,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
@@ -4255,23 +4514,17 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           const SizedBox(height: 4),
           const Text(
             'Showcase your practical work, assignments, or client projects',
-            style: TextStyle(
-              fontSize: 11.5,
-              color: AppColors.textSecondary,
-            ),
+            style: TextStyle(fontSize: 11.5, color: AppColors.textSecondary),
           ),
           const SizedBox(height: 14),
           if (!hasProjects)
             Container(
               width: double.infinity,
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
               decoration: BoxDecoration(
                 color: const Color(0xFFFAFAFA),
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(
-                  color: Colors.grey.shade300,
-                ),
+                border: Border.all(color: Colors.grey.shade300),
               ),
               child: Column(
                 children: [
@@ -4512,6 +4765,15 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                         ),
                         ElevatedButton(
                           onPressed: () {
+                            if (!ref.read(authProvider).isAuthenticated) {
+                              showAuthPromptDialog(
+                                context,
+                                title: 'Sign In Required',
+                                message:
+                                    'Please sign in to follow companies and receive job updates.',
+                              );
+                              return;
+                            }
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
                                 content: Text(
@@ -4770,9 +5032,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                           ),
                           const Divider(height: 12),
                           Text(
-                            user != null && user.about.isNotEmpty
-                                ? user.about
-                                : 'Add a summary to highlight your personality and work history.',
+                            user != null && user.about.isNotEmpty ? user.about : 'Add a summary to highlight your personality and work history.',
                             style: TextStyle(
                               fontSize: 12.5,
                               color: user != null && user.about.isNotEmpty
@@ -4829,7 +5089,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                         color: AppColors.primary,
                                         size: 18,
                                       ),
-                                      onPressed: () => _openAddExperienceDialog(),
+                                      onPressed: () =>
+                                          _openAddExperienceDialog(),
                                     ),
                                 ],
                               ),
@@ -4938,7 +5199,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                         color: AppColors.primary,
                                         size: 18,
                                       ),
-                                      onPressed: () => _openEditProfileDialog(user),
+                                      onPressed: () =>
+                                          _openEditProfileDialog(user),
                                     ),
                                 ],
                               ),
@@ -5158,94 +5420,37 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     // 17. Resume PDF Card
                     _buildResumeCard(user),
 
-                    const SizedBox(height: 16),
-
-                    // 6. Candidate Activity & Networking (Applications, Interviews, Connections, Chats)
-                    Container(
-                      padding: const EdgeInsets.all(18),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: AppColors.border),
+                    if (authState.isAuthenticated || user != null) ...[
+                      const SizedBox(height: 20),
+                      OutlinedButton.icon(
+                        onPressed: _showLogoutConfirmationDialog,
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: const Color(0xFFDC2626),
+                          side: const BorderSide(
+                            color: Color(0xFFFCA5A5),
+                            width: 1.5,
+                          ),
+                          backgroundColor: const Color(0xFFFEF2F2),
+                          minimumSize: const Size(double.infinity, 50),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                        ),
+                        icon: const Icon(
+                          Icons.logout_rounded,
+                          size: 20,
+                          color: Color(0xFFDC2626),
+                        ),
+                        label: const Text(
+                          'Log Out',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w800,
+                            fontSize: 15,
+                            color: Color(0xFFDC2626),
+                          ),
+                        ),
                       ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            'My Job Activity & Network',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w800,
-                            ),
-                          ),
-                          const SizedBox(height: 12),
-                          _buildSupportTile(
-                            icon: Icons.work_history_rounded,
-                            title: 'Applied Jobs',
-                            subtitle:
-                                'Track status of your submitted applications',
-                            onTap: () => context.push('/my-applications'),
-                          ),
-                          const Divider(height: 20),
-                          _buildSupportTile(
-                            icon: Icons.event_available_rounded,
-                            title: 'Interview Schedule',
-                            subtitle:
-                                'View upcoming recruiter interviews & calls',
-                            onTap: () => context.push('/interviews'),
-                          ),
-                          const Divider(height: 20),
-                          _buildSupportTile(
-                            icon: Icons.people_alt_rounded,
-                            title: 'My Network & Connections',
-                            subtitle:
-                                'Manage connections & pending invitations',
-                            onTap: () => context.push('/network'),
-                          ),
-                          const Divider(height: 20),
-                          _buildSupportTile(
-                            icon: Icons.chat_bubble_rounded,
-                            title: 'Messages & Chats',
-                            subtitle:
-                                '1-on-1 real-time messaging with recruiters',
-                            onTap: () => context.push('/chats'),
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    const SizedBox(height: 16),
-
-                    // 7. Support & Helpline Card
-                    Container(
-                      padding: const EdgeInsets.all(18),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: AppColors.border),
-                      ),
-                      child: Column(
-                        children: [
-                          _buildSupportTile(
-                            icon: Icons.headset_mic_rounded,
-                            title: 'Call HR Helpline',
-                            subtitle:
-                                'Toll-free candidate support: 1800-123-456',
-                            onTap: _callHR,
-                          ),
-                          const Divider(height: 20),
-                          _buildSupportTile(
-                            icon: Icons.shield_outlined,
-                            title: '100% Free Job Guarantee',
-                            subtitle:
-                                'Never pay any money for any job application',
-                            onTap: () {},
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    if (!authState.isAuthenticated) ...[
+                    ] else ...[
                       const SizedBox(height: 24),
                       ElevatedButton.icon(
                         onPressed: () => context.push('/login'),
@@ -5299,48 +5504,66 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     );
   }
 
-  Widget _buildSupportTile({
-    required IconData icon,
-    required String title,
-    required String subtitle,
-    required VoidCallback onTap,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: AppColors.primaryLight,
-              borderRadius: BorderRadius.circular(12),
+  void _showLogoutConfirmationDialog() {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Row(
+          children: const [
+            Icon(Icons.logout_rounded, color: Color(0xFFDC2626), size: 24),
+            SizedBox(width: 10),
+            Text(
+              'Log Out',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w800,
+                color: AppColors.textPrimary,
+              ),
             ),
-            child: Icon(icon, color: AppColors.primary, size: 20),
-          ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w700,
-                    fontSize: 14,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  subtitle,
-                  style: const TextStyle(
-                    color: AppColors.textSecondary,
-                    fontSize: 11,
-                  ),
-                ),
-              ],
+          ],
+        ),
+        content: const Text(
+          'Are you sure you want to log out of your KaamMilega account?',
+          style: TextStyle(fontSize: 14, color: AppColors.textSecondary),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text(
+              'Cancel',
+              style: TextStyle(
+                fontWeight: FontWeight.w700,
+                color: AppColors.textSecondary,
+              ),
             ),
           ),
-          const Icon(Icons.chevron_right_rounded, color: AppColors.textLight),
+          ElevatedButton(
+            onPressed: () async {
+              Navigator.pop(ctx);
+              await ref.read(authProvider.notifier).logout();
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Logged out successfully.'),
+                    backgroundColor: AppColors.primary,
+                  ),
+                );
+                context.go('/login');
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFDC2626),
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            child: const Text(
+              'Log Out',
+              style: TextStyle(fontWeight: FontWeight.w800),
+            ),
+          ),
         ],
       ),
     );

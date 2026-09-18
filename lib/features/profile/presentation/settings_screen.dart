@@ -561,8 +561,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   // TAB 3: ACCOUNT SECURITY (media_1789558055533.png)
   // ==========================================
   Widget _buildSecurityCard(UserProfile? user) {
-    final mobileNum = user?.mobile.isNotEmpty == true ? user!.mobile : '8600166200';
-    final emailAddr = user?.email.isNotEmpty == true ? user!.email : 'sunnyVerma12@gmail.com';
+    final mobileNum = user?.mobile.isNotEmpty == true ? user!.mobile : 'Not provided';
+    final emailAddr = user?.email.isNotEmpty == true ? user!.email : 'Not provided';
     final isEmailVerified = user?.isEmailVerified == true;
 
     return Column(

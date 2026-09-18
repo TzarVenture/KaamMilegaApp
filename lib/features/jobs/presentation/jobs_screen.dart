@@ -6,16 +6,19 @@ import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../app/theme/app_colors.dart';
+import '../../../shared/widgets/auth_prompt_dialog.dart';
+import '../../../shared/widgets/shimmer_loading.dart';
 import '../../applications/presentation/apply_modal.dart';
 import '../../applications/repositories/application_repository.dart';
+import '../../auth/providers/auth_provider.dart';
 import '../../cities/presentation/city_selector_sheet.dart';
+import '../../notifications/providers/notification_provider.dart';
+import '../../profile/presentation/widgets/profile_drawer.dart';
 import '../providers/jobs_provider.dart';
-import '../../../shared/widgets/shimmer_loading.dart';
 import 'widgets/filter_modal.dart';
 import 'widgets/job_card.dart';
 import 'widgets/pagination_bar.dart';
 import 'widgets/promo_banner.dart';
-import 'widgets/top_match_banner.dart';
 
 /// Main Jobs Screen matching https://kaammilega.com/jobs
 class JobsScreen extends ConsumerStatefulWidget {
@@ -26,10 +29,14 @@ class JobsScreen extends ConsumerStatefulWidget {
 }
 
 class _JobsScreenState extends ConsumerState<JobsScreen> {
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final TextEditingController _searchController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   Timer? _debounceTimer;
   String? _applyingJobId;
+  bool _isSearchVisible = false;
+  String _selectedSort = 'Newest First';
+  bool _filterSavedOnly = false;
 
   @override
   void initState() {
@@ -37,6 +44,7 @@ class _JobsScreenState extends ConsumerState<JobsScreen> {
     final currentSearch = ref.read(jobsProvider).filter.searchQuery;
     if (currentSearch.isNotEmpty) {
       _searchController.text = currentSearch;
+      _isSearchVisible = true;
     }
   }
 
@@ -77,6 +85,15 @@ class _JobsScreenState extends ConsumerState<JobsScreen> {
   }
 
   void _handleApply(String jobId) {
+    if (!ref.read(authProvider).isAuthenticated) {
+      showAuthPromptDialog(
+        context,
+        title: 'Sign In to Apply',
+        message:
+            'Please sign in or register to apply for jobs and connect with recruiters.',
+      );
+      return;
+    }
     final jobs = ref.read(jobsProvider).jobs;
     final job = jobs.firstWhere((j) => j.id == jobId);
 
@@ -125,79 +142,102 @@ class _JobsScreenState extends ConsumerState<JobsScreen> {
     final myApplicationsAsync = ref.watch(myApplicationsProvider);
     final appliedJobIds =
         myApplicationsAsync.value?.map((a) => a.jobId).toSet() ?? {};
+    final unreadNotifs = ref.watch(unreadNotificationsCountProvider);
+
+    // Apply sorting and saved filter if requested
+    var displayedJobs = List.of(jobsState.jobs);
+    if (_filterSavedOnly) {
+      displayedJobs = displayedJobs
+          .where((j) => jobsState.savedJobIds.contains(j.id))
+          .toList();
+    }
+    if (_selectedSort == 'Highest Salary') {
+      displayedJobs.sort((a, b) => b.salaryMax.compareTo(a.salaryMax));
+    } else if (_selectedSort == 'Lowest Salary') {
+      displayedJobs.sort((a, b) => a.salaryMin.compareTo(b.salaryMin));
+    } else if (_selectedSort == 'Most Vacancies') {
+      displayedJobs.sort((a, b) => b.vacancies.compareTo(a.vacancies));
+    }
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      key: _scaffoldKey,
+      backgroundColor: const Color(0xFFF8FAFC),
+      endDrawer: const ProfileDrawer(),
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0.5,
+        automaticallyImplyLeading: false,
         titleSpacing: 16,
-        title: Row(
-          children: [
-            // Logo Branding (clickable to go to home)
-            GestureDetector(
-              onTap: () => context.go('/home'),
-              child: Image.asset('assets/images/logo.png', height: 32),
-            ),
-
-            const SizedBox(width: 10),
-
-            // City Selector Pill
-            GestureDetector(
-              onTap: () => _openCitySelector(filter.city),
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 6,
-                ),
-                decoration: BoxDecoration(
-                  color: AppColors.background,
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: AppColors.border),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(
-                      Icons.location_on_rounded,
-                      size: 14,
-                      color: AppColors.primary,
-                    ),
-                    const SizedBox(width: 4),
-                    ConstrainedBox(
-                      constraints: const BoxConstraints(maxWidth: 80),
-                      child: Text(
-                        filter.city,
-                        style: const TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.textPrimary,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                    const SizedBox(width: 2),
-                    const Icon(
-                      Icons.keyboard_arrow_down_rounded,
-                      size: 16,
-                      color: AppColors.textSecondary,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
+        title: Image.asset(
+          'assets/images/logo.png',
+          height: 28,
+          fit: BoxFit.contain,
         ),
         actions: [
+          // 1. Search Icon
+          IconButton(
+            icon: Icon(
+              _isSearchVisible ? Icons.search_off_rounded : Icons.search_rounded,
+              color: const Color(0xFF1E293B),
+              size: 22,
+            ),
+            splashRadius: 20,
+            tooltip: 'Search Jobs',
+            onPressed: () {
+              setState(() {
+                _isSearchVisible = !_isSearchVisible;
+                if (!_isSearchVisible && _searchController.text.isNotEmpty) {
+                  _searchController.clear();
+                  ref.read(jobsProvider.notifier).setSearchQuery('');
+                }
+              });
+            },
+          ),
+
+          // 2. Notification Bell with Badge
+          IconButton(
+            icon: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                const Icon(
+                  Icons.notifications_none_rounded,
+                  color: Color(0xFF1E293B),
+                  size: 24,
+                ),
+                if (unreadNotifs > 0)
+                  Positioned(
+                    top: -1,
+                    right: -1,
+                    child: Container(
+                      width: 8,
+                      height: 8,
+                      decoration: const BoxDecoration(
+                        color: Color(0xFFEF4444),
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+            splashRadius: 20,
+            tooltip: 'Notifications',
+            onPressed: () => context.push('/notifications'),
+          ),
+
+          // 3. Hamburger Menu (Drawer)
           IconButton(
             icon: const Icon(
-              Icons.bookmark_outline_rounded,
-              color: AppColors.textPrimary,
+              Icons.menu_rounded,
+              color: Color(0xFF1E293B),
+              size: 24,
             ),
-            onPressed: () => context.push('/my-applications'),
-            tooltip: 'My Applications',
+            splashRadius: 20,
+            tooltip: 'Menu',
+            onPressed: () {
+              _scaffoldKey.currentState?.openEndDrawer();
+            },
           ),
+          const SizedBox(width: 6),
         ],
       ),
 
@@ -207,142 +247,434 @@ class _JobsScreenState extends ConsumerState<JobsScreen> {
         child: CustomScrollView(
           controller: _scrollController,
           slivers: [
-            // Search & Filter Header
+            // Expandable Sleek Search Bar (When search icon is clicked)
+            if (_isSearchVisible)
+              SliverToBoxAdapter(
+                child: Container(
+                  color: Colors.white,
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+                  child: TextField(
+                    controller: _searchController,
+                    autofocus: true,
+                    onChanged: _onSearchChanged,
+                    onSubmitted: (val) {
+                      _debounceTimer?.cancel();
+                      ref
+                          .read(jobsProvider.notifier)
+                          .setSearchQuery(val.trim());
+                    },
+                    decoration: InputDecoration(
+                      hintText: 'Search jobs, role, or company...',
+                      prefixIcon: const Icon(
+                        Icons.search_rounded,
+                        color: AppColors.primary,
+                      ),
+                      suffixIcon: _searchController.text.isNotEmpty
+                          ? IconButton(
+                              icon: const Icon(Icons.clear_rounded, size: 18),
+                              onPressed: () {
+                                _debounceTimer?.cancel();
+                                _searchController.clear();
+                                ref
+                                    .read(jobsProvider.notifier)
+                                    .setSearchQuery('');
+                              },
+                            )
+                          : null,
+                      filled: true,
+                      fillColor: const Color(0xFFF1F5F9),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        borderSide: BorderSide.none,
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 12,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+
+            // ============================================================
+            // 1. HERO HEADER CARD (Matching Web Screenshot)
+            // ============================================================
             SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+              child: Container(
+                margin: const EdgeInsets.fromLTRB(16, 14, 16, 12),
+                padding: const EdgeInsets.all(22),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      Color(0xFF030712),
+                      Color(0xFF0F172A),
+                      Color(0xFF0B193D),
+                    ],
+                  ),
+                  borderRadius: BorderRadius.circular(24),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFF030712).withValues(alpha: 0.25),
+                      blurRadius: 16,
+                      offset: const Offset(0, 6),
+                    ),
+                  ],
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Search Bar
-                    TextField(
-                      controller: _searchController,
-                      onChanged: _onSearchChanged,
-                      onSubmitted: (val) {
-                        _debounceTimer?.cancel();
-                        ref
-                            .read(jobsProvider.notifier)
-                            .setSearchQuery(val.trim());
+                    // Top Pill: ✨ Verified Indian Employment Portal
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF1E293B).withValues(alpha: 0.7),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: const Color(0xFF38BDF8).withValues(alpha: 0.3),
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: const [
+                          Icon(
+                            Icons.auto_awesome,
+                            color: Color(0xFFFBBF24),
+                            size: 14,
+                          ),
+                          SizedBox(width: 6),
+                          Text(
+                            'Verified Indian Employment Portal',
+                            style: TextStyle(
+                              color: Color(0xFFE2E8F0),
+                              fontSize: 11.5,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    // Main Headline: Find Jobs & Connect Direct
+                    const Text(
+                      'Find Jobs & Connect Direct',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 24,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: -0.5,
+                        height: 1.2,
+                      ),
+                    ),
+
+                    const SizedBox(height: 10),
+
+                    // Subtitle
+                    const Text(
+                      'Direct candidate-to-recruiter hiring with 1-click apply and real-time interview management.',
+                      style: TextStyle(
+                        color: Color(0xFF94A3B8),
+                        fontSize: 12.5,
+                        height: 1.45,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+
+                    const SizedBox(height: 18),
+
+                    // 3 Metric Badges
+                    Wrap(
+                      spacing: 16,
+                      runSpacing: 10,
+                      children: [
+                        _buildHeroMetric(
+                          icon: Icons.trending_up_rounded,
+                          color: const Color(0xFF34D399),
+                          text: '1,250+ Active Listings',
+                        ),
+                        _buildHeroMetric(
+                          icon: Icons.apartment_rounded,
+                          color: const Color(0xFF60A5FA),
+                          text: '450+ Verified Companies',
+                        ),
+                        _buildHeroMetric(
+                          icon: Icons.bolt_rounded,
+                          color: const Color(0xFFFBBF24),
+                          text: 'Instant Application',
+                        ),
+                      ],
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // Saved Jobs Button
+                    InkWell(
+                      onTap: () {
+                        setState(() {
+                          _filterSavedOnly = !_filterSavedOnly;
+                        });
+                        if (_filterSavedOnly && jobsState.savedJobIds.isEmpty) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('No saved jobs yet. Tap the bookmark icon on any job to save it!'),
+                              backgroundColor: Color(0xFFF59E0B),
+                            ),
+                          );
+                        }
                       },
-                      decoration: InputDecoration(
-                        hintText: 'Search jobs, role, or company...',
-                        prefixIcon: const Icon(
-                          Icons.search_rounded,
-                          color: AppColors.primary,
-                        ),
-                        suffixIcon: _searchController.text.isNotEmpty
-                            ? IconButton(
-                                icon: const Icon(Icons.clear_rounded, size: 18),
-                                onPressed: () {
-                                  _debounceTimer?.cancel();
-                                  _searchController.clear();
-                                  ref
-                                      .read(jobsProvider.notifier)
-                                      .setSearchQuery('');
-                                },
-                              )
-                            : null,
-                        filled: true,
-                        fillColor: Colors.white,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(16),
-                          borderSide: const BorderSide(color: AppColors.border),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(16),
-                          borderSide: const BorderSide(color: AppColors.border),
-                        ),
-                        contentPadding: const EdgeInsets.symmetric(
+                      borderRadius: BorderRadius.circular(12),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
                           horizontal: 16,
-                          vertical: 14,
+                          vertical: 10,
                         ),
+                        decoration: BoxDecoration(
+                          color: _filterSavedOnly
+                              ? const Color(0xFFF59E0B).withValues(alpha: 0.25)
+                              : const Color(0xFF1E293B).withValues(alpha: 0.8),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: _filterSavedOnly
+                                ? const Color(0xFFF59E0B)
+                                : const Color(0xFF475569),
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(
+                              Icons.bookmark_rounded,
+                              color: Color(0xFFF59E0B),
+                              size: 18,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              'Saved Jobs (${jobsState.savedJobIds.length})',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 13,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            if (_filterSavedOnly) ...[
+                              const SizedBox(width: 6),
+                              const Icon(
+                                Icons.check_circle_rounded,
+                                color: Color(0xFFF59E0B),
+                                size: 14,
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+            // ============================================================
+            // 2. POSITIONS COUNT & FILTER CARD (Matching Web Screenshot)
+            // ============================================================
+            SliverToBoxAdapter(
+              child: Container(
+                margin: const EdgeInsets.fromLTRB(16, 0, 16, 10),
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: const Color(0xFFE2E8F0)),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.02),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // "Showing [N] Available Positions"
+                    RichText(
+                      text: TextSpan(
+                        style: const TextStyle(
+                          fontSize: 16.5,
+                          color: Color(0xFF0F172A),
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: -0.3,
+                        ),
+                        children: [
+                          const TextSpan(text: 'Showing  '),
+                          TextSpan(
+                            text: jobsState.isLoading
+                                ? '...'
+                                : '${displayedJobs.length} Available Positions',
+                            style: const TextStyle(
+                              color: Color(0xFF1E3A8A),
+                              fontWeight: FontWeight.w900,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
 
                     const SizedBox(height: 14),
 
-                    // Results Counter & Filter Trigger Row
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    // Sort & Filter Action Pills (Responsive Wrap to prevent any overflow)
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      crossAxisAlignment: WrapCrossAlignment.center,
                       children: [
-                        // Jobs Count
-                        Row(
-                          children: [
-                            const Text(
-                              'Showing ',
-                              style: TextStyle(
-                                fontSize: 17,
-                                fontWeight: FontWeight.w800,
-                                color: AppColors.textPrimary,
-                              ),
+                        // 1. Sort Dropdown Pill
+                        PopupMenuButton<String>(
+                          onSelected: (val) {
+                            setState(() => _selectedSort = val);
+                          },
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          itemBuilder: (ctx) => [
+                            const PopupMenuItem(
+                              value: 'Newest First',
+                              child: Text('Newest First', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13)),
                             ),
-                            Text(
-                              jobsState.isLoading
-                                  ? '...'
-                                  : '${jobsState.totalJobs} Jobs',
-                              style: const TextStyle(
-                                fontSize: 17,
-                                fontWeight: FontWeight.w900,
-                                color: AppColors.primaryGradientStart,
-                              ),
+                            const PopupMenuItem(
+                              value: 'Highest Salary',
+                              child: Text('Highest Salary', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13)),
+                            ),
+                            const PopupMenuItem(
+                              value: 'Lowest Salary',
+                              child: Text('Lowest Salary', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13)),
+                            ),
+                            const PopupMenuItem(
+                              value: 'Most Vacancies',
+                              child: Text('Most Vacancies', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13)),
                             ),
                           ],
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 8,
+                            ),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFF8FAFC),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: const Color(0xFFE2E8F0)),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(
+                                  Icons.swap_vert_rounded,
+                                  size: 16,
+                                  color: Color(0xFF334155),
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  'Sort: $_selectedSort',
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w700,
+                                    color: Color(0xFF334155),
+                                  ),
+                                ),
+                                const SizedBox(width: 4),
+                                const Icon(
+                                  Icons.keyboard_arrow_down_rounded,
+                                  size: 16,
+                                  color: Color(0xFF64748B),
+                                ),
+                              ],
+                            ),
+                          ),
                         ),
 
-                        // Filters button
-                        ElevatedButton.icon(
-                          onPressed: _openFilters,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.white,
-                            foregroundColor: AppColors.primary,
-                            elevation: 1,
-                            side: const BorderSide(
-                              color: AppColors.primary,
-                              width: 1.5,
-                            ),
+                        // 2. Filters Pill Button
+                        InkWell(
+                          onTap: _openFilters,
+                          borderRadius: BorderRadius.circular(12),
+                          child: Container(
                             padding: const EdgeInsets.symmetric(
                               horizontal: 14,
                               vertical: 8,
                             ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(20),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFEFF6FF),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: const Color(0xFFBFDBFE)),
                             ),
-                          ),
-                          icon: const Icon(Icons.tune_rounded, size: 16),
-                          label: Text(
-                            activeFilters > 0
-                                ? 'Filters ($activeFilters)'
-                                : 'Filters',
-                            style: const TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w800,
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(
+                                  Icons.tune_rounded,
+                                  size: 15,
+                                  color: Color(0xFF2563EB),
+                                ),
+                                const SizedBox(width: 5),
+                                Text(
+                                  activeFilters > 0
+                                      ? 'Filters ($activeFilters)'
+                                      : 'Filters',
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w800,
+                                    color: Color(0xFF2563EB),
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         ),
                       ],
                     ),
 
-                    // Active Search/City Subtitle
-                    if (filter.searchQuery.isNotEmpty || filter.city != 'All')
+                    // City / Search Indicator if active
+                    if (filter.searchQuery.isNotEmpty || filter.city != 'All' || _filterSavedOnly)
                       Padding(
-                        padding: const EdgeInsets.only(top: 6),
-                        child: Text(
-                          'Results for ${filter.searchQuery.isNotEmpty ? '"${filter.searchQuery}"' : 'all roles'}'
-                          '${filter.city != 'All' ? ' in ${filter.city}' : ''}',
-                          style: const TextStyle(
-                            fontSize: 12,
-                            color: AppColors.textSecondary,
-                            fontWeight: FontWeight.w500,
-                          ),
+                        padding: const EdgeInsets.only(top: 10),
+                        child: Wrap(
+                          crossAxisAlignment: WrapCrossAlignment.center,
+                          spacing: 6,
+                          children: [
+                            Text(
+                              'Filtered by: '
+                              '${filter.searchQuery.isNotEmpty ? '"${filter.searchQuery}" ' : ''}'
+                              '${filter.city != 'All' ? 'in ${filter.city} ' : ''}'
+                              '${_filterSavedOnly ? '• Saved Only' : ''}',
+                              style: const TextStyle(
+                                fontSize: 11.5,
+                                color: AppColors.textSecondary,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            if (filter.city != 'All')
+                              GestureDetector(
+                                onTap: () => _openCitySelector(filter.city),
+                                child: const Text(
+                                  '(Change City)',
+                                  style: TextStyle(
+                                    fontSize: 11.5,
+                                    fontWeight: FontWeight.w800,
+                                    color: AppColors.primary,
+                                  ),
+                                ),
+                              ),
+                          ],
                         ),
                       ),
                   ],
                 ),
               ),
             ),
-
-            // Top Match Banner
-            const SliverToBoxAdapter(child: TopMatchBanner()),
 
             // Inline Error Banner if jobs exist but last action failed
             if (jobsState.errorMessage != null && jobsState.jobs.isNotEmpty)
@@ -459,7 +791,7 @@ class _JobsScreenState extends ConsumerState<JobsScreen> {
                   ),
                 ),
               )
-            else if (jobsState.jobs.isEmpty)
+            else if (displayedJobs.isEmpty)
               SliverToBoxAdapter(
                 child: Container(
                   margin: const EdgeInsets.all(24),
@@ -477,19 +809,21 @@ class _JobsScreenState extends ConsumerState<JobsScreen> {
                         color: AppColors.textLight,
                       ),
                       const SizedBox(height: 12),
-                      const Text(
-                        'No jobs found',
-                        style: TextStyle(
+                      Text(
+                        _filterSavedOnly ? 'No saved jobs' : 'No jobs found',
+                        style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w800,
                           color: AppColors.textPrimary,
                         ),
                       ),
                       const SizedBox(height: 6),
-                      const Text(
-                        'Try adjusting your search query or removing filters',
+                      Text(
+                        _filterSavedOnly
+                            ? 'Bookmark jobs to easily view them here'
+                            : 'Try adjusting your search query or removing filters',
                         textAlign: TextAlign.center,
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontSize: 13,
                           color: AppColors.textSecondary,
                         ),
@@ -499,6 +833,10 @@ class _JobsScreenState extends ConsumerState<JobsScreen> {
                         onPressed: () {
                           _debounceTimer?.cancel();
                           _searchController.clear();
+                          setState(() {
+                            _filterSavedOnly = false;
+                            _selectedSort = 'Newest First';
+                          });
                           ref.read(jobsProvider.notifier).clearAllFilters();
                         },
                         style: OutlinedButton.styleFrom(
@@ -517,8 +855,8 @@ class _JobsScreenState extends ConsumerState<JobsScreen> {
             else
               SliverList(
                 delegate: SliverChildBuilderDelegate((context, index) {
-                  final job = jobsState.jobs[index];
-                  final isTopMatch = filter.page == 1 && index < 3;
+                  final job = displayedJobs[index];
+                  final isTopMatch = filter.page == 1 && index == 0;
 
                   return JobCard(
                     job: job,
@@ -533,7 +871,7 @@ class _JobsScreenState extends ConsumerState<JobsScreen> {
                     onChat: _handleChat,
                     onCall: _handleCall,
                   );
-                }, childCount: jobsState.jobs.length),
+                }, childCount: displayedJobs.length),
               ),
 
             // Promo Banner ("Waiting to get a job?")
@@ -552,6 +890,28 @@ class _JobsScreenState extends ConsumerState<JobsScreen> {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildHeroMetric({
+    required IconData icon,
+    required Color color,
+    required String text,
+  }) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon, color: color, size: 16),
+        const SizedBox(width: 6),
+        Text(
+          text,
+          style: const TextStyle(
+            color: Color(0xFFF1F5F9),
+            fontSize: 12.5,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ],
     );
   }
 }

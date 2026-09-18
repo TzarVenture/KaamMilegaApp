@@ -2,19 +2,23 @@ import 'package:go_router/go_router.dart';
 
 import '../features/applications/presentation/application_detail_screen.dart';
 import '../features/applications/presentation/my_applications_screen.dart';
+import '../features/auth/presentation/forgot_password_screen.dart';
 import '../features/auth/presentation/login_screen.dart';
 import '../features/auth/presentation/otp_screen.dart';
 import '../features/auth/presentation/register_screen.dart';
 import '../features/chat/presentation/chat_detail_screen.dart';
-import '../features/chat/presentation/chat_list_screen.dart';
 import '../features/company/presentation/company_screen.dart';
 import '../features/events/presentation/events_screen.dart';
+import '../features/experts/presentation/apply_expert_screen.dart';
 import '../features/interviews/presentation/interviews_screen.dart';
 import '../features/jobs/presentation/job_detail_screen.dart';
 import '../features/navigation/presentation/main_navigation_shell.dart';
-import '../features/profile/presentation/profile_screen.dart';
 import '../features/profile/presentation/settings_screen.dart';
 import '../features/splash/presentation/splash_screen.dart';
+
+import '../features/feed/presentation/feed_screen.dart';
+import '../features/network/presentation/network_screen.dart';
+import '../features/notifications/presentation/notifications_screen.dart';
 
 /// Central GoRouter configuration for the KaamMilega app
 class AppRouter {
@@ -37,17 +41,17 @@ class AppRouter {
       GoRoute(
         path: '/feed',
         name: 'feed',
-        builder: (context, state) => const MainNavigationShell(initialIndex: 0),
+        builder: (context, state) => const FeedScreen(),
       ),
       GoRoute(
         path: '/jobs',
         name: 'jobs',
-        builder: (context, state) => const MainNavigationShell(initialIndex: 4),
+        builder: (context, state) => const MainNavigationShell(initialIndex: 1),
       ),
       GoRoute(
         path: '/notifications',
         name: 'notifications',
-        builder: (context, state) => const MainNavigationShell(initialIndex: 3),
+        builder: (context, state) => const NotificationsScreen(),
       ),
       GoRoute(
         path: '/events',
@@ -66,6 +70,14 @@ class AppRouter {
         path: '/login',
         name: 'login',
         builder: (context, state) => const LoginScreen(),
+      ),
+      GoRoute(
+        path: '/forgot-password',
+        name: 'forgot_password',
+        builder: (context, state) {
+          final email = state.extra as String?;
+          return ForgotPasswordScreen(initialEmail: email);
+        },
       ),
       GoRoute(
         path: '/otp',
@@ -109,12 +121,12 @@ class AppRouter {
       GoRoute(
         path: '/network',
         name: 'network',
-        builder: (context, state) => const MainNavigationShell(initialIndex: 1),
+        builder: (context, state) => const NetworkScreen(),
       ),
       GoRoute(
         path: '/chats',
         name: 'chats',
-        builder: (context, state) => const ChatListScreen(),
+        builder: (context, state) => const MainNavigationShell(initialIndex: 3),
       ),
       GoRoute(
         path: '/chats/:id',
@@ -132,9 +144,14 @@ class AppRouter {
         },
       ),
       GoRoute(
+        path: '/apply-expert',
+        name: 'apply_expert',
+        builder: (context, state) => const ApplyExpertScreen(),
+      ),
+      GoRoute(
         path: '/profile',
         name: 'profile',
-        builder: (context, state) => const ProfileScreen(),
+        builder: (context, state) => const MainNavigationShell(initialIndex: 4),
       ),
       GoRoute(
         path: '/settings',

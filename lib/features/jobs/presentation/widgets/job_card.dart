@@ -63,25 +63,34 @@ class JobCard extends StatelessWidget {
                 // Top Match Badge
                 if (isTopMatch)
                   Container(
-                    margin: const EdgeInsets.only(bottom: 12),
+                    margin: const EdgeInsets.only(bottom: 14),
                     padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 4,
+                      horizontal: 12,
+                      vertical: 5,
                     ),
                     decoration: BoxDecoration(
-                      color: AppColors.topMatchGold,
-                      borderRadius: BorderRadius.circular(6),
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFFF59E0B), Color(0xFFD97706)],
+                      ),
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFFF59E0B).withValues(alpha: 0.3),
+                          blurRadius: 6,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: const [
                         Icon(Icons.star_rounded, color: Colors.white, size: 14),
-                        SizedBox(width: 4),
+                        SizedBox(width: 5),
                         Text(
-                          'TOP MATCH',
+                          'TOP RECOMMENDED MATCH',
                           style: TextStyle(
                             color: Colors.white,
-                            fontSize: 10,
+                            fontSize: 10.5,
                             fontWeight: FontWeight.w900,
                             letterSpacing: 0.5,
                           ),
@@ -90,23 +99,98 @@ class JobCard extends StatelessWidget {
                     ),
                   ),
 
-                // Job Title & Bookmark Save Button
+                // Company Logo, Title & Bookmark Row
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Expanded(
-                      child: Text(
-                        job.title,
-                        style: const TextStyle(
-                          fontSize: 17,
-                          fontWeight: FontWeight.w800,
-                          color: AppColors.textPrimary,
-                          height: 1.25,
+                    // Company Logo Dark Box
+                    Container(
+                      width: 44,
+                      height: 44,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF0F172A),
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.08),
+                            blurRadius: 4,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Center(
+                        child: Text(
+                          job.company.trim().isNotEmpty
+                              ? job.company.trim()[0].toUpperCase()
+                              : 'K',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 19,
+                            fontWeight: FontWeight.w900,
+                          ),
                         ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
+
+                    const SizedBox(width: 12),
+
+                    // Title & Hiring Now Subtitle
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            job.title.toUpperCase(),
+                            style: const TextStyle(
+                              fontSize: 16.5,
+                              fontWeight: FontWeight.w900,
+                              color: Color(0xFF0F172A),
+                              height: 1.2,
+                              letterSpacing: -0.2,
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 4),
+                          Row(
+                            children: [
+                              Container(
+                                width: 6,
+                                height: 6,
+                                decoration: const BoxDecoration(
+                                  color: Color(0xFF4F46E5),
+                                  shape: BoxShape.circle,
+                                ),
+                              ),
+                              const SizedBox(width: 6),
+                              const Text(
+                                'HIRING NOW',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w900,
+                                  color: Color(0xFF4F46E5),
+                                  fontStyle: FontStyle.italic,
+                                  letterSpacing: 0.5,
+                                ),
+                              ),
+                              const SizedBox(width: 6),
+                              Text(
+                                '• ${job.company}',
+                                style: const TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w600,
+                                  color: AppColors.textSecondary,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    // Bookmark Save Button
                     if (onBookmarkToggle != null)
                       IconButton(
                         padding: EdgeInsets.zero,
@@ -116,52 +200,12 @@ class JobCard extends StatelessWidget {
                               ? Icons.bookmark_rounded
                               : Icons.bookmark_outline_rounded,
                           color: isSaved
-                              ? AppColors.primary
+                              ? const Color(0xFFF59E0B)
                               : AppColors.textSecondary,
-                          size: 22,
+                          size: 24,
                         ),
                         onPressed: onBookmarkToggle,
                       ),
-                  ],
-                ),
-
-                const SizedBox(height: 4),
-
-                // Company Name + Hiring Now badge
-                Row(
-                  children: [
-                    Flexible(
-                      child: Text(
-                        job.company.toUpperCase(),
-                        style: const TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.textSecondary,
-                          letterSpacing: 0.5,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Container(
-                      width: 4,
-                      height: 4,
-                      decoration: const BoxDecoration(
-                        color: AppColors.border,
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    const Text(
-                      'Hiring Now',
-                      style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.primary,
-                        fontStyle: FontStyle.italic,
-                      ),
-                    ),
                   ],
                 ),
 

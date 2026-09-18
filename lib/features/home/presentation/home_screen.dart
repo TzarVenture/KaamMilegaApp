@@ -1,19 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import '../../../app/theme/app_colors.dart';
-import '../../../app/theme/app_text_styles.dart';
+import '../../../shared/widgets/auth_prompt_dialog.dart';
 import '../../applications/presentation/apply_modal.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../cities/presentation/city_selector_sheet.dart';
-import '../../jobs/presentation/widgets/job_card.dart';
+import '../../jobs/models/job.dart';
 import '../../jobs/providers/jobs_provider.dart';
+import '../../notifications/providers/notification_provider.dart';
 import '../../profile/presentation/widgets/profile_drawer.dart';
 
-/// Modern native mobile application Home Screen with cross-platform
-/// responsiveness for iOS, Android, Tablet, and Desktop displays.
+/// KaamMilega™ Home Screen
+/// Pixel-perfect implementation matching official design specification.
 class HomeScreen extends ConsumerStatefulWidget {
   final void Function(int tabIndex)? onNavigateTab;
 
@@ -24,6 +24,7 @@ class HomeScreen extends ConsumerStatefulWidget {
 }
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final ScrollController _scrollController = ScrollController();
   final TextEditingController _searchController = TextEditingController();
 
@@ -44,27 +45,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
-  void _selectCityAndGo(String city) {
-    ref.read(jobsProvider.notifier).setCity(city);
-    _goToJobsTab();
-  }
-
-  void _selectRoleAndGo(String role) {
-    ref.read(jobsProvider.notifier).setSearchQuery(role);
-    _goToJobsTab();
-  }
-
-  void _selectJobTypeAndGo(String jobType) {
-    ref.read(jobsProvider.notifier).toggleJobType(jobType);
-    _goToJobsTab();
-  }
-
-  void _selectQualificationAndGo(String qual) {
-    ref.read(jobsProvider.notifier).toggleQualification(qual);
-    _goToJobsTab();
-  }
-
-  void _goToJobsTab() {
+  void _goToJobsTabWithQuery([String query = '']) {
+    if (query.isNotEmpty) {
+      ref.read(jobsProvider.notifier).setSearchQuery(query);
+    }
     if (widget.onNavigateTab != null) {
       widget.onNavigateTab!(1);
     } else {
@@ -72,548 +56,915 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     }
   }
 
-  void _handleCallHR() async {
-    final uri = Uri(scheme: 'tel', path: '1800123456');
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri);
-    } else {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('HR Support Helpline: 1800 123 456'),
-            backgroundColor: AppColors.primary,
-          ),
-        );
-      }
-    }
-  }
-
-  void _handleChat() {
-    context.push('/chats');
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final jobsState = ref.watch(jobsProvider);
-    final currentCity = jobsState.filter.city;
-    final recommendedJobs = jobsState.jobs.take(3).toList();
-
-    final screenWidth = MediaQuery.of(context).size.width;
-    final isDesktop = screenWidth >= 900;
-    final isTablet = screenWidth >= 600 && screenWidth < 900;
-
-    final user = ref.watch(authProvider).user;
-    final userAvatar = user?.profileImage ?? '';
-
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      drawer: const ProfileDrawer(),
-      appBar: AppBar(
-        automaticallyImplyLeading: false,
-        backgroundColor: Colors.white,
-        elevation: 0.5,
-        titleSpacing: 16,
-        title: Row(
+  void _showInstantWorkModal() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => Container(
+        padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Top Left Profile Icon (opens Drawer without three-lines hamburger button)
-            Builder(
-              builder: (ctx) => GestureDetector(
-                onTap: () => Scaffold.of(ctx).openDrawer(),
-                child: CircleAvatar(
-                  radius: 16,
-                  backgroundColor: AppColors.heroBg,
-                  backgroundImage: userAvatar.isNotEmpty
-                      ? NetworkImage(userAvatar)
-                      : null,
-                  child: userAvatar.isEmpty
-                      ? const Icon(
-                          Icons.person_rounded,
-                          size: 18,
-                          color: Colors.white,
-                        )
-                      : null,
-                ),
-              ),
-            ),
-            const SizedBox(width: 10),
-            // App Logo (clickable to scroll top)
-            GestureDetector(
-              onTap: () {
-                if (_scrollController.hasClients) {
-                  _scrollController.animateTo(
-                    0,
-                    duration: const Duration(milliseconds: 300),
-                    curve: Curves.easeInOut,
-                  );
-                }
-              },
-              child: Image.asset(
-                'assets/images/logo.png',
-                height: 28,
-                fit: BoxFit.contain,
-              ),
-            ),
-            const SizedBox(width: 10),
-            // City Selector Pill
-            GestureDetector(
-              onTap: () => _openCitySelector(currentCity),
+            Center(
               child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 6,
-                ),
+                width: 44,
+                height: 4,
                 decoration: BoxDecoration(
-                  color: AppColors.primaryLight.withValues(alpha: 0.5),
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(
-                    color: AppColors.primary.withValues(alpha: 0.2),
+                  color: Colors.grey.shade300,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+            const SizedBox(height: 18),
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFEDD5),
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: const Icon(
+                    Icons.bolt_rounded,
+                    color: Color(0xFFEA580C),
+                    size: 26,
                   ),
                 ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
+                const SizedBox(width: 12),
+                const Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Icon(
-                      Icons.location_on_rounded,
-                      size: 14,
-                      color: AppColors.primary,
-                    ),
-                    const SizedBox(width: 4),
-                    ConstrainedBox(
-                      constraints: const BoxConstraints(maxWidth: 80),
-                      child: Text(
-                        currentCity,
-                        style: const TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.primary,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+                    Text(
+                      'InstantMilega™ Work',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w900,
+                        color: AppColors.textPrimary,
                       ),
                     ),
-                    const SizedBox(width: 2),
-                    const Icon(
-                      Icons.keyboard_arrow_down_rounded,
-                      size: 16,
-                      color: AppColors.primary,
+                    Text(
+                      'Work in Minutes. Anywhere, Anytime!',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: AppColors.textSecondary,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ],
+                ),
+              ],
+            ),
+            const SizedBox(height: 18),
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF8FAFC),
+                borderRadius: BorderRadius.circular(18),
+                border: Border.all(color: const Color(0xFFE2E8F0)),
+              ),
+              child: Column(
+                children: [
+                  Row(
+                    children: [
+                      const Icon(
+                        Icons.check_circle_rounded,
+                        color: Color(0xFF16A34A),
+                        size: 20,
+                      ),
+                      const SizedBox(width: 10),
+                      const Expanded(
+                        child: Text(
+                          'Direct spot-hiring for delivery, repair, technician & domestic help gigs',
+                          style: TextStyle(
+                            fontSize: 12.5,
+                            color: AppColors.textPrimary,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  Row(
+                    children: [
+                      const Icon(
+                        Icons.check_circle_rounded,
+                        color: Color(0xFF16A34A),
+                        size: 20,
+                      ),
+                      const SizedBox(width: 10),
+                      const Expanded(
+                        child: Text(
+                          'Instant payouts directly credited upon task verification',
+                          style: TextStyle(
+                            fontSize: 12.5,
+                            color: AppColors.textPrimary,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pop(ctx);
+                _goToJobsTabWithQuery('Instant Work');
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF6A0DAD),
+                foregroundColor: Colors.white,
+                minimumSize: const Size(double.infinity, 50),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                elevation: 0,
+              ),
+              child: const Text(
+                'Browse Instant Work',
+                style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _show99AccessModal() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => Container(
+        padding: const EdgeInsets.fromLTRB(22, 16, 22, 34),
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Container(
+                width: 44,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade300,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+            const SizedBox(height: 18),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  '₹99 One-Time Access',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w900,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFDCFCE7),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: const Text(
+                    'LIFETIME UNLOCK',
+                    style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w900,
+                      color: Color(0xFF16A34A),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 14),
+            const Text(
+              'Unlock full candidate power with ₹99 lifetime access:',
+              style: TextStyle(
+                fontSize: 13,
+                color: AppColors.textSecondary,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            const SizedBox(height: 14),
+            _buildBenefitRow(
+              Icons.work_rounded,
+              'Unlimited Job Applications without daily limits',
+            ),
+            _buildBenefitRow(
+              Icons.search_rounded,
+              'Priority Search ranking for recruiter discovery',
+            ),
+            _buildBenefitRow(
+              Icons.people_rounded,
+              'Directly connect and chat with verified providers',
+            ),
+            _buildBenefitRow(
+              Icons.auto_awesome_rounded,
+              'AI Profile Resume and Score Enhancement',
+            ),
+            _buildBenefitRow(
+              Icons.bolt_rounded,
+              'Full InstantMilega™ on-demand spot gig dispatch',
+            ),
+            _buildBenefitRow(
+              Icons.card_giftcard_rounded,
+              'Earn more reward coins & cashback vouchers',
+            ),
+            const SizedBox(height: 22),
+            Container(
+              width: double.infinity,
+              height: 52,
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Color(0xFFFF7A00), Color(0xFFFF0066)],
+                ),
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFFFF0066).withValues(alpha: 0.35),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: ElevatedButton(
+                onPressed: () {
+                  Navigator.pop(ctx);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text(
+                        '₹99 Access successfully activated on your profile!',
+                      ),
+                      backgroundColor: Color(0xFF16A34A),
+                    ),
+                  );
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.transparent,
+                  shadowColor: Colors.transparent,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                ),
+                child: const Text(
+                  'Get ₹99 Access Now →',
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w900,
+                    color: Colors.white,
+                  ),
                 ),
               ),
             ),
           ],
         ),
-        actions: [
-          IconButton(
-            icon: const Icon(
-              Icons.chat_bubble_outline_rounded,
-              color: AppColors.primary,
+      ),
+    );
+  }
+
+  Widget _buildBenefitRow(IconData icon, String text) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(6),
+            decoration: BoxDecoration(
+              color: const Color(0xFFEDE9FE),
+              borderRadius: BorderRadius.circular(8),
             ),
-            tooltip: 'Messages & Chats',
-            onPressed: _handleChat,
+            child: Icon(icon, color: const Color(0xFF6A0DAD), size: 16),
           ),
-          IconButton(
-            icon: const Icon(
-              Icons.headset_mic_rounded,
-              color: AppColors.primary,
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              text,
+              style: const TextStyle(
+                fontSize: 12.5,
+                fontWeight: FontWeight.w600,
+                color: AppColors.textPrimary,
+              ),
             ),
-            tooltip: 'Call HR Helpline',
-            onPressed: _handleCallHR,
-          ),
-          IconButton(
-            icon: const Icon(
-              Icons.notifications_none_rounded,
-              color: AppColors.textPrimary,
-            ),
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('No new notifications')),
-              );
-            },
           ),
         ],
       ),
-      body: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 960),
-          child: SingleChildScrollView(
-            controller: _scrollController,
-            physics: const BouncingScrollPhysics(),
-            padding: const EdgeInsets.only(bottom: 30),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                // 1. STICKY MOBILE SEARCH BAR WIDGET
-                _buildMobileSearchBar(),
-
-                // 2. HORIZONTAL QUICK CATEGORY CHIPS
-                _buildQuickCategoryChips(),
-
-                const SizedBox(height: 16),
-
-                // 3. PROMO HERO BANNER (Native App Card)
-                _buildNativeHeroCard(),
-
-                // 4. LIVE INTERVIEW TICKER
-                _buildLiveInterviewTicker(),
-
-                const SizedBox(height: 24),
-
-                // 5. RECOMMENDED JOBS FEED (Native Mobile Feed)
-                _buildRecommendedJobsFeed(recommendedJobs, jobsState.isLoading),
-
-                const SizedBox(height: 24),
-
-                // 6. POPULAR JOB ROLES GRID (Responsive)
-                _buildPopularJobRoles(isDesktop, isTablet),
-
-                const SizedBox(height: 24),
-
-                // 7. WHERE DO YOU WANT TO WORK? (CITIES CAROUSEL)
-                _buildLocationSection(),
-
-                const SizedBox(height: 24),
-
-                // 8. SEARCH BY QUALIFICATION (Responsive)
-                _buildQualificationSection(isDesktop, isTablet),
-
-                const SizedBox(height: 24),
-
-                // 9. WHAT TYPE OF JOB DO YOU WANT?
-                _buildJobTypeSection(),
-              ],
-            ),
-          ),
-        ),
-      ),
     );
   }
 
-  // ==========================================
-  // 1. MOBILE SEARCH BAR WIDGET
-  // ==========================================
-  Widget _buildMobileSearchBar() {
-    return Container(
-      color: Colors.white,
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 10),
-      child: GestureDetector(
-        onTap: _goToJobsTab,
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-          decoration: BoxDecoration(
-            color: AppColors.background,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: AppColors.border),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.02),
-                blurRadius: 6,
-                offset: const Offset(0, 2),
-              ),
-            ],
-          ),
-          child: Row(
-            children: const [
-              Icon(Icons.search_rounded, color: AppColors.primary, size: 22),
-              SizedBox(width: 10),
-              Expanded(
-                child: Text(
-                  'Search jobs by title, company, or skill...',
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: AppColors.textSecondary,
-                    fontWeight: FontWeight.w500,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-              Icon(Icons.tune_rounded, color: AppColors.textLight, size: 20),
-            ],
-          ),
+  void _showMoreServicesModal() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => Container(
+        padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
         ),
-      ),
-    );
-  }
-
-  // ==========================================
-  // 2. HORIZONTAL QUICK CATEGORY CHIPS
-  // ==========================================
-  Widget _buildQuickCategoryChips() {
-    final categories = [
-      {'label': '🔥 All Jobs', 'role': ''},
-      {'label': '🚚 Delivery', 'role': 'Delivery'},
-      {'label': '🚗 Driver', 'role': 'Driver'},
-      {'label': '🏢 Work From Home', 'jobType': 'Work From Home'},
-      {'label': '⏰ Part Time', 'jobType': 'Part Time'},
-      {'label': '🎓 Freshers', 'jobType': 'Fresher Jobs'},
-      {'label': '📦 Warehouse', 'role': 'Warehouse / Logistics'},
-      {'label': '🛠️ Technician', 'role': 'Technician'},
-    ];
-
-    return Container(
-      color: Colors.white,
-      padding: const EdgeInsets.only(bottom: 12),
-      child: SizedBox(
-        height: 38,
-        child: ListView.separated(
-          scrollDirection: Axis.horizontal,
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          itemCount: categories.length,
-          separatorBuilder: (_, _) => const SizedBox(width: 8),
-          itemBuilder: (context, index) {
-            final cat = categories[index];
-            final label = cat['label']!;
-            final isFirst = index == 0;
-
-            return InkWell(
-              borderRadius: BorderRadius.circular(20),
-              onTap: () {
-                if (cat.containsKey('role') && cat['role']!.isNotEmpty) {
-                  _selectRoleAndGo(cat['role']!);
-                } else if (cat.containsKey('jobType')) {
-                  _selectJobTypeAndGo(cat['jobType']!);
-                } else {
-                  _goToJobsTab();
-                }
-              },
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
               child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 14,
-                  vertical: 8,
-                ),
+                width: 40,
+                height: 4,
                 decoration: BoxDecoration(
-                  color: isFirst ? AppColors.primary : AppColors.cardLightBg,
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(
-                    color: isFirst ? AppColors.primary : AppColors.border,
-                  ),
-                ),
-                child: Center(
-                  child: Text(
-                    label,
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w700,
-                      color: isFirst ? Colors.white : AppColors.textPrimary,
-                    ),
-                  ),
+                  color: Colors.grey.shade300,
+                  borderRadius: BorderRadius.circular(2),
                 ),
               ),
-            );
-          },
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              'All Platform Services',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w800,
+                color: AppColors.textPrimary,
+              ),
+            ),
+            const SizedBox(height: 14),
+            _buildServiceListTile(
+              icon: Icons.event_available_rounded,
+              color: const Color(0xFF2563EB),
+              title: 'Events & Webinars',
+              subtitle: 'Join job fairs, training sessions & career summits',
+              onTap: () {
+                Navigator.pop(ctx);
+                context.push('/events');
+              },
+            ),
+            _buildServiceListTile(
+              icon: Icons.assignment_turned_in_rounded,
+              color: const Color(0xFF16A34A),
+              title: 'My Applications',
+              subtitle: 'Track status of applied jobs and interviews',
+              onTap: () {
+                Navigator.pop(ctx);
+                context.push('/my-applications');
+              },
+            ),
+            _buildServiceListTile(
+              icon: Icons.calendar_month_rounded,
+              color: const Color(0xFFEA580C),
+              title: 'Interviews Schedule',
+              subtitle: 'View upcoming recruiter interview appointments',
+              onTap: () {
+                Navigator.pop(ctx);
+                context.push('/interviews');
+              },
+            ),
+            _buildServiceListTile(
+              icon: Icons.people_rounded,
+              color: const Color(0xFF9333EA),
+              title: 'Professional Network',
+              subtitle: 'Connect with workers, hiring managers & colleagues',
+              onTap: () {
+                Navigator.pop(ctx);
+                context.push('/network');
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildServiceListTile({
+    required IconData icon,
+    required Color color,
+    required String title,
+    required String subtitle,
+    required VoidCallback onTap,
+  }) {
+    return ListTile(
+      contentPadding: EdgeInsets.zero,
+      leading: Container(
+        padding: const EdgeInsets.all(10),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.12),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Icon(icon, color: color, size: 22),
+      ),
+      title: Text(
+        title,
+        style: const TextStyle(
+          fontSize: 14,
+          fontWeight: FontWeight.w800,
+          color: AppColors.textPrimary,
+        ),
+      ),
+      subtitle: Text(
+        subtitle,
+        style: const TextStyle(fontSize: 11, color: AppColors.textSecondary),
+      ),
+      trailing: const Icon(
+        Icons.chevron_right_rounded,
+        color: AppColors.textLight,
+      ),
+      onTap: onTap,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final jobsState = ref.watch(jobsProvider);
+    final currentCity = jobsState.filter.city.isNotEmpty
+        ? jobsState.filter.city
+        : 'Delhi, India';
+    final unreadCount = ref.watch(unreadNotificationsCountProvider);
+
+    return Scaffold(
+      key: _scaffoldKey,
+      backgroundColor: Colors.white,
+      endDrawer: ProfileDrawer(onNavigateTab: widget.onNavigateTab),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          controller: _scrollController,
+          physics: const BouncingScrollPhysics(),
+          padding: const EdgeInsets.only(bottom: 24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // 1. TOP APP BAR (Logo + Search, Notification Bell with red dot, Three-line Menu)
+              _buildTopHeader(currentCity, unreadCount),
+
+              const SizedBox(height: 10),
+
+              // 2. INSTANTMILEGA™ PROMO BANNER (Purple Card)
+              _buildInstantMilegaBanner(),
+
+              const SizedBox(height: 18),
+
+              // 3. QUICK ACTION CIRCULAR ICONS ROW (Jobs, Instant Work, Skills, Experts, Services, More)
+              _buildQuickActionIcons(),
+
+              const SizedBox(height: 22),
+
+              // 4. POPULAR CATEGORIES SECTION
+              _buildPopularCategories(),
+
+              const SizedBox(height: 22),
+
+              // 5. RECOMMENDED FOR YOU SECTION (Side by side cards)
+              _buildRecommendedSection(jobsState.jobs, jobsState.isLoading),
+
+              const SizedBox(height: 22),
+
+              // 6. UNLOCK ALL BENEFITS WITH ₹99 ACCESS BANNER
+              _build99AccessBanner(),
+
+              const SizedBox(height: 22),
+
+              // 7. TOP PICKS SECTION (Vertical List Card)
+              _buildTopPicksSection(jobsState.jobs),
+            ],
+          ),
         ),
       ),
     );
   }
 
   // ==========================================
-  // 3. PROMO HERO CARD (Native App Banner)
+  // 1. TOP APP BAR & CITY SELECTOR
   // ==========================================
-  Widget _buildNativeHeroCard() {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: AppColors.heroBg,
-        borderRadius: BorderRadius.circular(24),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.heroBg.withValues(alpha: 0.3),
-            blurRadius: 16,
-            offset: const Offset(0, 6),
-          ),
-        ],
-      ),
+  Widget _buildTopHeader(String currentCity, int unreadCount) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 10, 16, 8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 4,
-                ),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: const Row(
-                  children: [
-                    Icon(
-                      Icons.verified_rounded,
-                      color: AppColors.heroAccent,
-                      size: 14,
+              // Logo (Kept unchanged without modification)
+              Image.asset(
+                'assets/images/logo.png',
+                height: 30,
+                fit: BoxFit.contain,
+              ),
+
+              // Right Action Icons Row: Search + Notification Bell + Three-line Hamburger
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Search Icon Button (Left of Notification Bell)
+                  IconButton(
+                    onPressed: () => _goToJobsTabWithQuery(''),
+                    icon: const Icon(
+                      Icons.search_rounded,
+                      color: Color(0xFF1E293B),
+                      size: 24,
                     ),
-                    SizedBox(width: 4),
-                    Text(
-                      '100% FREE & VERIFIED',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 10,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: 0.5,
-                      ),
+                    splashRadius: 22,
+                    padding: const EdgeInsets.all(6),
+                    constraints: const BoxConstraints(),
+                  ),
+                  const SizedBox(width: 8),
+
+                  // Notification Bell with dynamic unread indicator dot
+                  GestureDetector(
+                    onTap: () => context.push('/notifications'),
+                    child: Stack(
+                      clipBehavior: Clip.none,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(6),
+                          child: const Icon(
+                            Icons.notifications_none_rounded,
+                            color: Color(0xFF1E293B),
+                            size: 24,
+                          ),
+                        ),
+                        if (unreadCount > 0)
+                          Positioned(
+                            top: 4,
+                            right: 4,
+                            child: Container(
+                              width: 8,
+                              height: 8,
+                              decoration: const BoxDecoration(
+                                color: Color(0xFFEF4444),
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                          ),
+                      ],
                     ),
-                  ],
-                ),
+                  ),
+                  const SizedBox(width: 8),
+
+                  // Three-line Hamburger Option Button (Right of Notification Bell)
+                  IconButton(
+                    onPressed: () {
+                      _scaffoldKey.currentState?.openEndDrawer();
+                    },
+                    icon: const Icon(
+                      Icons.menu_rounded,
+                      color: Color(0xFF1E293B),
+                      size: 24,
+                    ),
+                    splashRadius: 22,
+                    padding: const EdgeInsets.all(6),
+                    constraints: const BoxConstraints(),
+                  ),
+                ],
               ),
             ],
-          ),
-          const SizedBox(height: 12),
-          const Text(
-            'Find Local Jobs With Better Salary!',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.w900,
-              color: Colors.white,
-              height: 1.25,
-            ),
           ),
           const SizedBox(height: 6),
-          Text(
-            'Connect directly with hiring managers without any fees',
-            style: TextStyle(
-              fontSize: 12,
-              color: Colors.white.withValues(alpha: 0.85),
+          // Location Selector
+          GestureDetector(
+            onTap: () => _openCitySelector(currentCity),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(
+                  Icons.location_on_rounded,
+                  color: Color(0xFF6A0DAD),
+                  size: 16,
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  currentCity,
+                  style: const TextStyle(
+                    fontSize: 13.5,
+                    fontWeight: FontWeight.w800,
+                    color: Color(0xFF0F172A),
+                  ),
+                ),
+                const SizedBox(width: 2),
+                const Icon(
+                  Icons.keyboard_arrow_down_rounded,
+                  color: Color(0xFF0F172A),
+                  size: 18,
+                ),
+              ],
             ),
-          ),
-          const SizedBox(height: 16),
-          Wrap(
-            spacing: 10,
-            runSpacing: 8,
-            children: [
-              ElevatedButton.icon(
-                onPressed: _handleCallHR,
-                icon: const Icon(Icons.chat_bubble_rounded, size: 15),
-                label: const Text(
-                  'Chat With HR',
-                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800),
-                ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.heroButton,
-                  foregroundColor: Colors.white,
-                  elevation: 2,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 18,
-                    vertical: 11,
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                ),
-              ),
-              OutlinedButton(
-                onPressed: _goToJobsTab,
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: Colors.white,
-                  side: const BorderSide(color: Colors.white, width: 1.5),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 18,
-                    vertical: 11,
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                ),
-                child: const Text(
-                  'Explore Jobs',
-                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800),
-                ),
-              ),
-            ],
           ),
         ],
       ),
     );
   }
 
-  // ==========================================
-  // 4. LIVE INTERVIEW TICKER
-  // ==========================================
-  Widget _buildLiveInterviewTicker() {
-    final candidateNames = [
-      'Dharmender',
-      'Priya Sharma',
-      'Rahul Verma',
-      'Amit Patel',
-      'Sunita Roy',
-      'Vikram Singh',
-    ];
 
-    return Container(
-      margin: const EdgeInsets.only(top: 14),
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      decoration: const BoxDecoration(
-        color: AppColors.tickerBg,
-        border: Border.symmetric(
-          horizontal: BorderSide(color: AppColors.tickerBorder),
+  // ==========================================
+  // 3. INSTANTMILEGA™ PROMO BANNER (Purple Card)
+  // ==========================================
+  Widget _buildInstantMilegaBanner() {
+    return GestureDetector(
+      onTap: _show99AccessModal,
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 16),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: [Color(0xFF1B0748), Color(0xFF3B1078)],
+            begin: Alignment.centerLeft,
+            end: Alignment.centerRight,
+          ),
+          borderRadius: BorderRadius.circular(18),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFF3B1078).withValues(alpha: 0.35),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            ),
+          ],
         ),
-      ),
-      child: SizedBox(
-        height: 42,
-        child: ListView.separated(
-          scrollDirection: Axis.horizontal,
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          itemCount: candidateNames.length,
-          separatorBuilder: (_, _) => const SizedBox(width: 20),
-          itemBuilder: (context, index) {
-            final name = candidateNames[index];
-            return Row(
+        child: Row(
+          children: [
+            // Left: Glowing Stopwatch/Lightning Badge
+            Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: const Color(0xFF0F042A),
+                border: Border.all(
+                  color: const Color(0xFFEAB308).withValues(alpha: 0.6),
+                  width: 1.5,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFFEAB308).withValues(alpha: 0.3),
+                    blurRadius: 8,
+                  ),
+                ],
+              ),
+              child: const Icon(
+                Icons.bolt_rounded,
+                color: Color(0xFFFBBF24),
+                size: 26,
+              ),
+            ),
+            const SizedBox(width: 12),
+
+            // Middle: Copy
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  RichText(
+                    text: const TextSpan(
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: -0.2,
+                      ),
+                      children: [
+                        TextSpan(
+                          text: 'Instant',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                        TextSpan(
+                          text: 'Milega™',
+                          style: TextStyle(color: Color(0xFFF97316)),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  const Text(
+                    'Work in Minutes.\nAnywhere, Anytime!',
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: Color(0xFFE2E8F0),
+                      fontWeight: FontWeight.w500,
+                      height: 1.2,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            // Right: ONE TIME ACCESS ₹99 ONLY >
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
               mainAxisSize: MainAxisSize.min,
               children: [
                 Container(
-                  width: 32,
-                  height: 32,
-                  decoration: const BoxDecoration(
-                    color: AppColors.heroBg,
-                    shape: BoxShape.circle,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 6,
+                    vertical: 2,
                   ),
-                  child: const Center(
-                    child: Icon(
-                      Icons.arrow_upward_rounded,
-                      color: Colors.white,
-                      size: 16,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFBBF24),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: const Text(
+                    'ONE TIME ACCESS',
+                    style: TextStyle(
+                      fontSize: 8.5,
+                      fontWeight: FontWeight.w900,
+                      color: Color(0xFF0F172A),
                     ),
                   ),
                 ),
-                const SizedBox(width: 8),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.center,
+                const SizedBox(height: 4),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Text(
-                      'HAS FIXED AN INTERVIEW',
-                      style: TextStyle(
-                        fontSize: 8.5,
-                        fontWeight: FontWeight.w800,
-                        color: AppColors.textSecondary,
-                        letterSpacing: 0.5,
+                    RichText(
+                      text: const TextSpan(
+                        children: [
+                          TextSpan(
+                            text: '₹99 ',
+                            style: TextStyle(
+                              fontSize: 17,
+                              fontWeight: FontWeight.w900,
+                              color: Colors.white,
+                            ),
+                          ),
+                          TextSpan(
+                            text: 'ONLY ',
+                            style: TextStyle(
+                              fontSize: 8.5,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.white70,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                    Text(
-                      name,
-                      style: const TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w800,
-                        color: AppColors.textPrimary,
+                    Container(
+                      width: 22,
+                      height: 22,
+                      decoration: const BoxDecoration(
+                        color: Color(0xFFF97316),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.chevron_right_rounded,
+                        color: Colors.white,
+                        size: 16,
                       ),
                     ),
                   ],
                 ),
               ],
-            );
-          },
+            ),
+          ],
         ),
       ),
     );
   }
 
   // ==========================================
-  // 5. RECOMMENDED JOBS FEED (Native Mobile Cards)
+  // 4. QUICK ACTION CIRCULAR ICONS ROW
   // ==========================================
-  Widget _buildRecommendedJobsFeed(List recommendedJobs, bool isLoading) {
+  Widget _buildQuickActionIcons() {
+    final actions = [
+      {
+        'label': 'Jobs',
+        'icon': Icons.work_outline_rounded,
+        'bg': const Color(0xFFEDE9FE),
+        'color': const Color(0xFF6D28D9),
+        'onTap': () => _goToJobsTabWithQuery(''),
+      },
+      {
+        'label': 'Instant Work',
+        'icon': Icons.bolt_rounded,
+        'bg': const Color(0xFFFFEDD5),
+        'color': const Color(0xFFEA580C),
+        'onTap': _showInstantWorkModal,
+      },
+      {
+        'label': 'Skills',
+        'icon': Icons.school_outlined,
+        'bg': const Color(0xFFDCFCE7),
+        'color': const Color(0xFF16A34A),
+        'onTap': () => context.push('/events'),
+      },
+      {
+        'label': 'Experts',
+        'icon': Icons.person_search_outlined,
+        'bg': const Color(0xFFE0E7FF),
+        'color': const Color(0xFF4338CA),
+        'onTap': _showMoreServicesModal,
+      },
+      {
+        'label': 'Services',
+        'icon': Icons.home_repair_service_outlined,
+        'bg': const Color(0xFFFFE4E6),
+        'color': const Color(0xFFE11D48),
+        'onTap': () => _goToJobsTabWithQuery('Services'),
+      },
+      {
+        'label': 'More',
+        'icon': Icons.more_horiz_rounded,
+        'bg': const Color(0xFFF1F5F9),
+        'color': const Color(0xFF475569),
+        'onTap': _showMoreServicesModal,
+      },
+    ];
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: actions.map((item) {
+          final label = item['label'] as String;
+          final icon = item['icon'] as IconData;
+          final bg = item['bg'] as Color;
+          final color = item['color'] as Color;
+          final onTap = item['onTap'] as VoidCallback;
+
+          return GestureDetector(
+            onTap: onTap,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 46,
+                  height: 46,
+                  decoration: BoxDecoration(color: bg, shape: BoxShape.circle),
+                  child: Icon(icon, color: color, size: 22),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  label,
+                  style: const TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFF0F172A),
+                  ),
+                ),
+              ],
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
+
+  // ==========================================
+  // 5. POPULAR CATEGORIES SECTION
+  // ==========================================
+  Widget _buildPopularCategories() {
+    final categories = [
+      {
+        'name': 'Delivery',
+        'icon': Icons.electric_moped_rounded,
+        'bg': const Color(0xFFFFF7ED),
+        'color': const Color(0xFFEA580C),
+      },
+      {
+        'name': 'Electrician',
+        'icon': Icons.electrical_services_rounded,
+        'bg': const Color(0xFFFEF2F2),
+        'color': const Color(0xFFDC2626),
+      },
+      {
+        'name': 'AC Repair',
+        'icon': Icons.ac_unit_rounded,
+        'bg': const Color(0xFFEFF6FF),
+        'color': const Color(0xFF2563EB),
+      },
+      {
+        'name': 'House Help',
+        'icon': Icons.cleaning_services_rounded,
+        'bg': const Color(0xFFFFFBEB),
+        'color': const Color(0xFFD97706),
+      },
+      {
+        'name': 'Data Entry',
+        'icon': Icons.assignment_rounded,
+        'bg': const Color(0xFFFAF5FF),
+        'color': const Color(0xFF9333EA),
+      },
+      {
+        'name': 'Driver',
+        'icon': Icons.directions_car_rounded,
+        'bg': const Color(0xFFF1F5F9),
+        'color': const Color(0xFF1E293B),
+      },
+    ];
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -622,388 +973,262 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Row(
-                children: [
-                  const Text(
-                    'Recommended Jobs',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w900,
-                      color: AppColors.textPrimary,
-                    ),
-                  ),
-                  const SizedBox(width: 6),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 6,
-                      vertical: 2,
-                    ),
-                    decoration: const BoxDecoration(
-                      color: AppColors.successLight,
-                      borderRadius: BorderRadius.all(Radius.circular(6)),
-                    ),
-                    child: const Text(
-                      'LIVE',
-                      style: TextStyle(
-                        fontSize: 9,
-                        fontWeight: FontWeight.w900,
-                        color: AppColors.success,
-                      ),
-                    ),
-                  ),
-                ],
+              const Text(
+                'Popular Categories',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w900,
+                  color: Color(0xFF0F172A),
+                ),
               ),
-              TextButton(
-                onPressed: _goToJobsTab,
-                child: Row(
-                  children: const [
-                    Text(
-                      'View All',
-                      style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.primary,
-                      ),
-                    ),
-                    SizedBox(width: 2),
-                    Icon(
-                      Icons.arrow_forward_rounded,
-                      size: 14,
-                      color: AppColors.primary,
-                    ),
-                  ],
+              GestureDetector(
+                onTap: () => _goToJobsTabWithQuery(''),
+                child: const Text(
+                  'View All',
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFF2563EB),
+                  ),
                 ),
               ),
             ],
           ),
         ),
-        const SizedBox(height: 6),
-        if (isLoading && recommendedJobs.isEmpty)
-          const Padding(
-            padding: EdgeInsets.all(24),
-            child: Center(
-              child: CircularProgressIndicator(color: AppColors.primary),
-            ),
-          )
-        else if (recommendedJobs.isEmpty)
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            child: Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: AppColors.border),
-              ),
-              child: Row(
-                children: [
-                  const Icon(
-                    Icons.work_outline_rounded,
-                    color: AppColors.primary,
-                    size: 28,
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: const [
-                        Text(
-                          'Explore Active Jobs Near You',
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w800,
-                          ),
+        const SizedBox(height: 12),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: categories.map((cat) {
+              final name = cat['name'] as String;
+              final icon = cat['icon'] as IconData;
+              final bg = cat['bg'] as Color;
+              final color = cat['color'] as Color;
+
+              return GestureDetector(
+                onTap: () => _goToJobsTabWithQuery(name),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 44,
+                      height: 44,
+                      decoration: BoxDecoration(
+                        color: bg,
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: color.withValues(alpha: 0.15),
                         ),
-                        SizedBox(height: 2),
-                        Text(
-                          'Browse thousands of verified job openings',
-                          style: TextStyle(
-                            fontSize: 11,
-                            color: AppColors.textSecondary,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  ElevatedButton(
-                    onPressed: _goToJobsTab,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primary,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 14,
-                        vertical: 8,
                       ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
+                      child: Icon(icon, color: color, size: 20),
+                    ),
+                    const SizedBox(height: 5),
+                    Text(
+                      name,
+                      style: const TextStyle(
+                        fontSize: 10.5,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF0F172A),
                       ),
                     ),
-                    child: const Text(
-                      'Browse',
-                      style: TextStyle(fontSize: 12, color: Colors.white),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          )
-        else
-          Column(
-            children: recommendedJobs.map((job) {
-              return JobCard(
-                job: job,
-                isTopMatch: job.id == recommendedJobs.first.id,
-                onTap: () => context.push('/jobs/${job.id}'),
-                onApply: () =>
-                    ApplyModalSheet.show(context, job: job, onSuccess: () {}),
-                onChat: _handleChat,
-                onCall: _handleCallHR,
+                  ],
+                ),
               );
             }).toList(),
           ),
+        ),
       ],
     );
   }
 
-  // ==========================================
-  // 6. POPULAR JOB ROLES (Responsive Grid)
-  // ==========================================
-  Widget _buildPopularJobRoles(bool isDesktop, bool isTablet) {
-    final roles = [
-      {
-        'role': 'Delivery',
-        'vacancies': '5,50,000+ Vacancies',
-        'icon': Icons.electric_moped_rounded,
-      },
-      {
-        'role': 'Driver',
-        'vacancies': '2,10,000+ Vacancies',
-        'icon': Icons.directions_car_filled_rounded,
-      },
-      {
-        'role': 'Warehouse / Logistics',
-        'vacancies': '1,80,000+ Vacancies',
-        'icon': Icons.warehouse_rounded,
-      },
-      {
-        'role': 'Manufacturer',
-        'vacancies': '90,000+ Vacancies',
-        'icon': Icons.factory_rounded,
-      },
-      {
-        'role': 'Housekeeping / Peon',
-        'vacancies': '1,20,000+ Vacancies',
-        'icon': Icons.cleaning_services_rounded,
-      },
-      {
-        'role': 'Security Guard',
-        'vacancies': '95,000+ Vacancies',
-        'icon': Icons.shield_rounded,
-      },
-    ];
+  // Category Icon & Color Helpers
+  IconData _getJobCategoryIcon(String title, String jobType) {
+    final t = title.toLowerCase();
+    if (t.contains('deliver') ||
+        t.contains('rider') ||
+        t.contains('courier') ||
+        t.contains('zomato') ||
+        t.contains('swiggy') ||
+        t.contains('zepto') ||
+        t.contains('blinkit')) {
+      return Icons.delivery_dining_rounded;
+    }
+    if (t.contains('design') ||
+        t.contains('graphic') ||
+        t.contains('ui') ||
+        t.contains('ux') ||
+        t.contains('creative') ||
+        t.contains('video') ||
+        t.contains('editor')) {
+      return Icons.design_services_rounded;
+    }
+    if (t.contains('dev') ||
+        t.contains('tech') ||
+        t.contains('software') ||
+        t.contains('engineer') ||
+        t.contains('it ') ||
+        t.contains('programmer') ||
+        t.contains('web')) {
+      return Icons.code_rounded;
+    }
+    if (t.contains('electr') ||
+        t.contains('technician') ||
+        t.contains('plumb') ||
+        t.contains('repair') ||
+        t.contains('carpenter') ||
+        t.contains('mechanic')) {
+      return Icons.engineering_rounded;
+    }
+    if (t.contains('drive') ||
+        t.contains('chauffeur') ||
+        t.contains('cab') ||
+        t.contains('uber') ||
+        t.contains('ola')) {
+      return Icons.directions_car_rounded;
+    }
+    if (t.contains('clean') ||
+        t.contains('maid') ||
+        t.contains('housekeep') ||
+        t.contains('cook') ||
+        t.contains('chef')) {
+      return Icons.cleaning_services_rounded;
+    }
+    if (t.contains('sale') ||
+        t.contains('market') ||
+        t.contains('bpo') ||
+        t.contains('call') ||
+        t.contains('tele') ||
+        t.contains('customer')) {
+      return Icons.headset_mic_rounded;
+    }
+    if (t.contains('account') ||
+        t.contains('finance') ||
+        t.contains('audit') ||
+        t.contains('data entry') ||
+        t.contains('back office')) {
+      return Icons.assignment_rounded;
+    }
+    if (t.contains('secur') || t.contains('guard')) {
+      return Icons.security_rounded;
+    }
+    if (t.contains('teach') ||
+        t.contains('tutor') ||
+        t.contains('faculty') ||
+        t.contains('trainer')) {
+      return Icons.school_rounded;
+    }
+    return Icons.work_rounded;
+  }
 
-    final crossAxisCount = isDesktop ? 4 : (isTablet ? 3 : 2);
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Popular Job Categories',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w900,
-              color: AppColors.textPrimary,
-            ),
-          ),
-          const SizedBox(height: 4),
-          const Text(
-            'Top hiring categories with high response rates',
-            style: AppTextStyles.bodySecondary,
-          ),
-          const SizedBox(height: 12),
-          GridView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: roles.length,
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: crossAxisCount,
-              mainAxisSpacing: 10,
-              crossAxisSpacing: 10,
-              childAspectRatio: isDesktop ? 2.3 : 1.95,
-            ),
-            itemBuilder: (context, index) {
-              final item = roles[index];
-              return InkWell(
-                borderRadius: BorderRadius.circular(16),
-                onTap: () => _selectRoleAndGo(item['role'] as String),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 8,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: AppColors.border),
-                  ),
-                  child: Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(7),
-                        decoration: BoxDecoration(
-                          color: AppColors.primaryLight,
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: Icon(
-                          item['icon'] as IconData,
-                          size: 18,
-                          color: AppColors.primary,
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              item['role'] as String,
-                              style: const TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w800,
-                                color: AppColors.textPrimary,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            const SizedBox(height: 2),
-                            Text(
-                              item['vacancies'] as String,
-                              style: const TextStyle(
-                                fontSize: 9,
-                                color: AppColors.textSecondary,
-                                fontWeight: FontWeight.w500,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            },
-          ),
-        ],
-      ),
-    );
+  Color _getJobCategoryColor(String title) {
+    final t = title.toLowerCase();
+    if (t.contains('deliver') || t.contains('rider')) {
+      return const Color(0xFFEF4444);
+    }
+    if (t.contains('design') || t.contains('graphic')) {
+      return const Color(0xFF2563EB);
+    }
+    if (t.contains('dev') || t.contains('tech') || t.contains('software')) {
+      return const Color(0xFF7C3AED);
+    }
+    if (t.contains('electr') ||
+        t.contains('technician') ||
+        t.contains('mechanic')) {
+      return const Color(0xFFD97706);
+    }
+    if (t.contains('drive')) {
+      return const Color(0xFF1E293B);
+    }
+    if (t.contains('clean') || t.contains('maid')) {
+      return const Color(0xFF0D9488);
+    }
+    if (t.contains('sale') || t.contains('market') || t.contains('tele')) {
+      return const Color(0xFFEA580C);
+    }
+    if (t.contains('account') || t.contains('finance') || t.contains('data')) {
+      return const Color(0xFF9333EA);
+    }
+    return const Color(0xFF2563EB);
   }
 
   // ==========================================
-  // 7. WHERE DO YOU WANT TO WORK? (CITIES)
+  // 6. RECOMMENDED FOR YOU SECTION
   // ==========================================
-  Widget _buildLocationSection() {
-    final topCities = [
-      {'name': 'Mumbai', 'count': '55,000+'},
-      {'name': 'Bangalore', 'count': '42,000+'},
-      {'name': 'Delhi', 'count': '68,000+'},
-      {'name': 'Pune', 'count': '31,000+'},
-      {'name': 'Hyderabad', 'count': '28,000+'},
-      {'name': 'Chennai', 'count': '22,000+'},
-    ];
+  Widget _buildRecommendedSection(List<Job> jobs, bool isLoading) {
+    if (isLoading && jobs.isEmpty) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: SizedBox(
+          height: 145,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            itemCount: 2,
+            separatorBuilder: (context, index) => const SizedBox(width: 12),
+            itemBuilder: (context, index) => Container(
+              width: 260,
+              decoration: BoxDecoration(
+                color: const Color(0xFFF8FAFC),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: const Color(0xFFE2E8F0)),
+              ),
+              child: const Center(
+                child: CircularProgressIndicator(strokeWidth: 2),
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    if (jobs.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    final recommendedJobs = jobs.take(8).toList();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: const Text(
-            'Explore Jobs By City',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w900,
-              color: AppColors.textPrimary,
-            ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                'Recommended for You',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w900,
+                  color: Color(0xFF0F172A),
+                ),
+              ),
+              GestureDetector(
+                onTap: () => _goToJobsTabWithQuery(''),
+                child: const Text(
+                  'View All',
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFF2563EB),
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
         const SizedBox(height: 12),
         SizedBox(
-          height: 100,
+          height: 145,
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
+            physics: const BouncingScrollPhysics(),
             padding: const EdgeInsets.symmetric(horizontal: 16),
-            itemCount: topCities.length,
-            separatorBuilder: (_, _) => const SizedBox(width: 10),
+            itemCount: recommendedJobs.length,
+            separatorBuilder: (context, index) => const SizedBox(width: 12),
             itemBuilder: (context, index) {
-              final city = topCities[index];
-              return InkWell(
-                borderRadius: BorderRadius.circular(18),
-                onTap: () => _selectCityAndGo(city['name']!),
-                child: Container(
-                  width: 130,
-                  padding: const EdgeInsets.all(14),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(18),
-                    border: Border.all(color: AppColors.borderLight),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.03),
-                        blurRadius: 8,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        city['name']!,
-                        style: const TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w900,
-                          color: AppColors.textPrimary,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        '${city['count']} Jobs',
-                        style: const TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.primary,
-                        ),
-                      ),
-                      const Spacer(),
-                      Row(
-                        children: const [
-                          Text(
-                            'VIEW JOBS',
-                            style: TextStyle(
-                              fontSize: 9,
-                              fontWeight: FontWeight.w800,
-                              color: AppColors.textLight,
-                              letterSpacing: 0.5,
-                            ),
-                          ),
-                          SizedBox(width: 2),
-                          Icon(
-                            Icons.arrow_forward_rounded,
-                            size: 10,
-                            color: AppColors.textLight,
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              );
+              final job = recommendedJobs[index];
+              return _buildRecommendedCard(job);
             },
           ),
         ),
@@ -1011,90 +1236,66 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
-  // ==========================================
-  // 8. SEARCH BY QUALIFICATION (Responsive)
-  // ==========================================
-  Widget _buildQualificationSection(bool isDesktop, bool isTablet) {
-    final qualifications = [
-      {'label': 'Below 10th', 'icon': '✏️', 'count': '9,30,000+'},
-      {'label': '10th Pass', 'icon': '📖', 'count': '4,00,000+'},
-      {'label': '12th Pass', 'icon': '📚', 'count': '9,00,000+'},
-      {'label': 'Diploma', 'icon': '📜', 'count': '50,000+'},
-      {'label': 'Graduate', 'icon': '🎓', 'count': '7,30,000+'},
-      {'label': 'Post Graduate', 'icon': '🎓', 'count': '25,000+'},
-    ];
+  Widget _buildRecommendedCard(Job job) {
+    final icon = _getJobCategoryIcon(job.title, job.jobType);
+    final iconColor = _getJobCategoryColor(job.title);
 
-    final crossAxisCount = isDesktop ? 6 : (isTablet ? 4 : 3);
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Jobs By Qualification',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w900,
-              color: AppColors.textPrimary,
+    return GestureDetector(
+      onTap: () {
+        if (job.id.isNotEmpty) {
+          context.push('/jobs/${job.id}');
+        }
+      },
+      child: Container(
+        width: 260,
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: const Color(0xFFE2E8F0)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.03),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
             ),
-          ),
-          const SizedBox(height: 12),
-          GridView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: qualifications.length,
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: crossAxisCount,
-              mainAxisSpacing: 10,
-              crossAxisSpacing: 10,
-              childAspectRatio: 0.95,
-            ),
-            itemBuilder: (context, index) {
-              final q = qualifications[index];
-              return InkWell(
-                borderRadius: BorderRadius.circular(16),
-                onTap: () => _selectQualificationAndGo(q['label']!),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 6,
-                    vertical: 8,
-                  ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Row(
+              children: [
+                Container(
+                  width: 36,
+                  height: 36,
                   decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: AppColors.borderLight),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.02),
-                        blurRadius: 6,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
+                    color: iconColor,
+                    borderRadius: BorderRadius.circular(10),
                   ),
+                  child: Icon(icon, color: Colors.white, size: 20),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
                   child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(q['icon']!, style: const TextStyle(fontSize: 20)),
-                      const SizedBox(height: 4),
                       Text(
-                        q['label']!,
+                        job.title,
                         style: const TextStyle(
-                          fontSize: 11,
+                          fontSize: 13.5,
                           fontWeight: FontWeight.w800,
-                          color: AppColors.textPrimary,
+                          color: Color(0xFF0F172A),
                         ),
-                        textAlign: TextAlign.center,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
-                      const SizedBox(height: 2),
                       Text(
-                        q['count']!,
+                        job.company,
                         style: const TextStyle(
-                          fontSize: 9,
-                          color: AppColors.textSecondary,
+                          fontSize: 11,
+                          color: Color(0xFF64748B),
                           fontWeight: FontWeight.w500,
                         ),
                         maxLines: 1,
@@ -1103,8 +1304,238 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     ],
                   ),
                 ),
+              ],
+            ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                RichText(
+                  text: TextSpan(
+                    children: [
+                      TextSpan(
+                        text: job.formattedSalary,
+                        style: const TextStyle(
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.w800,
+                          color: Color(0xFF0F172A),
+                        ),
+                      ),
+                      const TextSpan(
+                        text: ' /month',
+                        style: TextStyle(
+                          fontSize: 10,
+                          color: Color(0xFF64748B),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  job.formattedLocation,
+                  style: const TextStyle(
+                    fontSize: 11,
+                    color: Color(0xFF64748B),
+                    fontWeight: FontWeight.w500,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: const [
+                    Icon(
+                      Icons.star_rounded,
+                      color: Color(0xFFFBBF24),
+                      size: 16,
+                    ),
+                    SizedBox(width: 3),
+                    Text(
+                      '4.8',
+                      style: TextStyle(
+                        fontSize: 11.5,
+                        fontWeight: FontWeight.w800,
+                        color: Color(0xFF0F172A),
+                      ),
+                    ),
+                  ],
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    if (!ref.read(authProvider).isAuthenticated) {
+                      showAuthPromptDialog(
+                        context,
+                        title: 'Sign In to Apply',
+                        message:
+                            'Please sign in to your KaamMilega account to apply for ${job.title} at ${job.company}.',
+                      );
+                      return;
+                    }
+                    ApplyModalSheet.show(
+                      context,
+                      job: job,
+                      onSuccess: () {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              'Applied for ${job.title} successfully!',
+                            ),
+                            backgroundColor: const Color(0xFF16A34A),
+                          ),
+                        );
+                      },
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF6A0DAD),
+                    foregroundColor: Colors.white,
+                    elevation: 0,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 4,
+                    ),
+                    minimumSize: const Size(0, 28),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                  ),
+                  child: const Text(
+                    'Apply Now',
+                    style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ==========================================
+  // 7. UNLOCK ALL BENEFITS WITH ₹99 ACCESS BANNER
+  // ==========================================
+  Widget _build99AccessBanner() {
+    final benefits = [
+      {'icon': Icons.work_outline_rounded, 'label': 'Unlimited\nApplications'},
+      {'icon': Icons.search_rounded, 'label': 'Priority in\nSearch'},
+      {
+        'icon': Icons.people_outline_rounded,
+        'label': 'Connect with\nProviders',
+      },
+      {'icon': Icons.auto_awesome_rounded, 'label': 'AI Profile\nBoost'},
+      {'icon': Icons.security_outlined, 'label': 'InstantMilega™\nAccess'},
+      {'icon': Icons.timer_outlined, 'label': 'Earn More\nRewards'},
+    ];
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: const Color(0xFF0F083B),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF0F083B).withValues(alpha: 0.4),
+            blurRadius: 14,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          // Title
+          RichText(
+            textAlign: TextAlign.center,
+            text: const TextSpan(
+              style: TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w800,
+                color: Colors.white,
+              ),
+              children: [
+                TextSpan(text: 'Unlock All Benefits with '),
+                TextSpan(
+                  text: '₹99 Access',
+                  style: TextStyle(color: Color(0xFFFBBF24)),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+
+          // 6 Feature Items Row
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: benefits.map((b) {
+              final icon = b['icon'] as IconData;
+              final label = b['label'] as String;
+
+              return Expanded(
+                child: Column(
+                  children: [
+                    Container(
+                      width: 36,
+                      height: 36,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF281966),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Icon(icon, color: Colors.white, size: 18),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      label,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        fontSize: 8.5,
+                        color: Color(0xFFCBD5E1),
+                        fontWeight: FontWeight.w600,
+                        height: 1.15,
+                      ),
+                    ),
+                  ],
+                ),
               );
-            },
+            }).toList(),
+          ),
+          const SizedBox(height: 16),
+
+          // CTA Gradient Button
+          GestureDetector(
+            onTap: _show99AccessModal,
+            child: Container(
+              width: double.infinity,
+              height: 44,
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Color(0xFFFF7A00), Color(0xFFFF0066)],
+                ),
+                borderRadius: BorderRadius.circular(24),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFFFF0066).withValues(alpha: 0.35),
+                    blurRadius: 10,
+                    offset: const Offset(0, 3),
+                  ),
+                ],
+              ),
+              child: const Center(
+                child: Text(
+                  'Get ₹99 Access Now →',
+                  style: TextStyle(
+                    fontSize: 14.5,
+                    fontWeight: FontWeight.w900,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ),
           ),
         ],
       ),
@@ -1112,116 +1543,206 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   // ==========================================
-  // 9. WHAT TYPE OF JOB DO YOU WANT?
+  // 8. TOP PICKS SECTION
   // ==========================================
-  Widget _buildJobTypeSection() {
-    final types = [
-      {
-        'title': 'Work From Home',
-        'icon': Icons.home_work_rounded,
-        'color': AppColors.success,
-      },
-      {
-        'title': 'Part Time',
-        'icon': Icons.schedule_rounded,
-        'color': AppColors.warning,
-      },
-      {
-        'title': 'Full Time',
-        'icon': Icons.business_center_rounded,
-        'color': AppColors.verifiedBlue,
-      },
-      {
-        'title': 'Fresher Jobs',
-        'icon': Icons.school_rounded,
-        'color': Colors.teal,
-      },
-    ];
+  Widget _buildTopPicksSection(List<Job> jobs) {
+    if (jobs.isEmpty) {
+      return const SizedBox.shrink();
+    }
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Job Type Preferences',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w900,
-              color: AppColors.textPrimary,
-            ),
+    final savedJobIds = ref.watch(jobsProvider).savedJobIds;
+    // Show top picks from jobs list (take up to 3 jobs)
+    final topPicks = jobs.length > 2
+        ? jobs.skip(2).take(4).toList()
+        : jobs.take(3).toList();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                'Top Picks',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w900,
+                  color: Color(0xFF0F172A),
+                ),
+              ),
+              GestureDetector(
+                onTap: () => _goToJobsTabWithQuery(''),
+                child: const Text(
+                  'View All',
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFF2563EB),
+                  ),
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 12),
-          ListView.separated(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: types.length,
-            separatorBuilder: (_, _) => const SizedBox(width: 8, height: 8),
-            itemBuilder: (context, index) {
-              final t = types[index];
-              return InkWell(
-                borderRadius: BorderRadius.circular(16),
-                onTap: () => _selectJobTypeAndGo(t['title'] as String),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 14,
-                    vertical: 12,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: AppColors.border),
-                  ),
-                  child: Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: (t['color'] as Color).withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: Icon(
-                          t['icon'] as IconData,
-                          color: t['color'] as Color,
-                          size: 18,
+        ),
+        const SizedBox(height: 12),
+        ...topPicks.map((job) {
+          final isSaved = savedJobIds.contains(job.id);
+          final icon = _getJobCategoryIcon(job.title, job.jobType);
+          final iconColor = _getJobCategoryColor(job.title);
+
+          return Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+            child: InkWell(
+              borderRadius: BorderRadius.circular(16),
+              onTap: () {
+                if (job.id.isNotEmpty) {
+                  context.push('/jobs/${job.id}');
+                }
+              },
+              child: Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: const Color(0xFFE2E8F0)),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.03),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  children: [
+                    // Worker/Company Avatar
+                    Container(
+                      width: 58,
+                      height: 58,
+                      decoration: BoxDecoration(
+                        color: iconColor.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: iconColor.withValues(alpha: 0.2),
                         ),
                       ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              t['title'] as String,
-                              style: const TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w800,
-                                color: AppColors.textPrimary,
-                              ),
+                      child: Icon(icon, color: iconColor, size: 30),
+                    ),
+                    const SizedBox(width: 12),
+
+                    // Details
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            job.title,
+                            style: const TextStyle(
+                              fontSize: 14.5,
+                              fontWeight: FontWeight.w900,
+                              color: Color(0xFF0F172A),
                             ),
-                            const Text(
-                              'Explore Active Openings',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            job.company,
+                            style: const TextStyle(
+                              fontSize: 11.5,
+                              color: Color(0xFF64748B),
+                              fontWeight: FontWeight.w500,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            '${job.formattedSalary} /month',
+                            style: const TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w800,
+                              color: Color(0xFF0F172A),
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            job.formattedLocation,
+                            style: const TextStyle(
+                              fontSize: 11,
+                              color: Color(0xFF64748B),
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    // Rating & Bookmark Button
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        IconButton(
+                          icon: Icon(
+                            isSaved
+                                ? Icons.bookmark_rounded
+                                : Icons.bookmark_border_rounded,
+                            color: isSaved
+                                ? const Color(0xFF6A0DAD)
+                                : const Color(0xFF94A3B8),
+                            size: 24,
+                          ),
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(),
+                          onPressed: () {
+                            ref
+                                .read(jobsProvider.notifier)
+                                .toggleSaveJob(job.id);
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  isSaved
+                                      ? 'Job removed from saved jobs'
+                                      : 'Job saved successfully!',
+                                ),
+                                duration: const Duration(seconds: 2),
+                              ),
+                            );
+                          },
+                        ),
+                        const SizedBox(height: 12),
+                        Row(
+                          children: const [
+                            Icon(
+                              Icons.star_rounded,
+                              color: Color(0xFFFBBF24),
+                              size: 16,
+                            ),
+                            SizedBox(width: 3),
+                            Text(
+                              '4.7',
                               style: TextStyle(
-                                fontSize: 10,
-                                color: AppColors.textSecondary,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w800,
+                                color: Color(0xFF0F172A),
                               ),
                             ),
                           ],
                         ),
-                      ),
-                      const Icon(
-                        Icons.chevron_right_rounded,
-                        color: AppColors.textLight,
-                        size: 20,
-                      ),
-                    ],
-                  ),
+                      ],
+                    ),
+                  ],
                 ),
-              );
-            },
-          ),
-        ],
-      ),
+              ),
+            ),
+          );
+        }),
+      ],
     );
   }
 }

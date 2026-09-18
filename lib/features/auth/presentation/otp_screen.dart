@@ -53,10 +53,22 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
 
     if (mounted) {
       setState(() => _isLoading = false);
-      if (result.isRegistered) {
+      if (result.isRegistered && result.user != null && result.user!.name.isNotEmpty && result.user!.name != 'Candidate') {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Welcome back, ${result.user!.name}!'),
+            backgroundColor: const Color(0xFF16A34A),
+          ),
+        );
         context.go('/home');
       } else {
-        // New candidate -> complete candidate onboarding
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('No registered account found for this number. Please create an account first.'),
+            backgroundColor: Color(0xFF1E293B),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
         context.go('/register');
       }
     }

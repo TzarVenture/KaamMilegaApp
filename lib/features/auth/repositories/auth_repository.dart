@@ -95,6 +95,43 @@ class AuthRepository {
     );
   }
 
+  /// Register with Name, Email and Password on km-backend
+  Future<AuthVerificationResult> registerWithPassword({
+    required String name,
+    required String email,
+    required String password,
+  }) async {
+    final response = await _client.post(
+      ApiConstants.registerPassword,
+      data: {
+        'name': name.trim(),
+        'email': email.trim(),
+        'password': password,
+        'role': 'user',
+      },
+    );
+
+    final data = response.data as Map<String, dynamic>? ?? {};
+    final token = data['token']?.toString();
+    final isRegistered = data['is_registered'] == true;
+
+    if (token != null && token.isNotEmpty) {
+      await LocalStorage.saveToken(token);
+    }
+
+    UserProfile? user;
+    if (data['user'] is Map<String, dynamic>) {
+      user = UserProfile.fromJson(data['user'] as Map<String, dynamic>);
+      await LocalStorage.saveUser(user.toJson());
+    }
+
+    return AuthVerificationResult(
+      user: user,
+      isRegistered: isRegistered,
+      token: token,
+    );
+  }
+
   /// Register Candidate Profile on km-backend
   Future<UserProfile> registerCandidate({
     required String name,
@@ -273,12 +310,40 @@ class AuthRepository {
     try {
       await _client.post(
         ApiConstants.otpEmailVerify,
-        data: {'email': email.trim(), 'otp': otp.trim()},
+        data: {'email': email.trim(), 'code': otp.trim()},
       );
       return true;
     } catch (_) {
       return false;
     }
+  }
+
+  /// Request password reset OTP code via km-backend
+  Future<void> forgotPassword(String email) async {
+    await _client.post(
+      ApiConstants.forgotPassword,
+      data: {
+        'email': email.trim(),
+        'role': 'user',
+      },
+    );
+  }
+
+  /// Reset password using 4-digit code on km-backend
+  Future<void> resetPassword({
+    required String email,
+    required String code,
+    required String newPassword,
+  }) async {
+    await _client.post(
+      ApiConstants.resetPassword,
+      data: {
+        'email': email.trim(),
+        'code': code.trim(),
+        'new_password': newPassword,
+        'role': 'user',
+      },
+    );
   }
 
   /// Add Project record to Candidate profile

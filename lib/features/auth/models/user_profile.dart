@@ -1,3 +1,5 @@
+import '../../../core/constants/api_constants.dart';
+
 /// Candidate / Jobseeker Profile model mapped from km-backend MongoDB schema
 class UserProfile {
   final String id;
@@ -131,18 +133,19 @@ class UserProfile {
       education: parseEducation(json['education']),
       experience: parseExperience(json['experience']),
       projects: parseProjects(json['projects']),
-      profileImage: json['profile_image']?.toString() ?? '',
-      coverImage:
-          json['cover_image']?.toString() ??
-          json['background_image']?.toString() ??
-          '',
+      profileImage:
+          ApiConstants.resolveImageUrl(json['profile_image']?.toString()),
+      coverImage: ApiConstants.resolveImageUrl(
+        json['cover_image']?.toString() ??
+            json['background_image']?.toString(),
+      ),
       isEmailVerified:
           json['is_email_verified'] == true || json['email_verified'] == true,
-      resumeUrl:
-          json['resume_url']?.toString() ??
-          json['resume']?.toString() ??
-          json['cv_url']?.toString() ??
-          '',
+      resumeUrl: ApiConstants.resolveImageUrl(
+        json['resume_url']?.toString() ??
+            json['resume']?.toString() ??
+            json['cv_url']?.toString(),
+      ),
       openToWork: json['open_to_work']?.toString() ?? '',
       providingServices: json['providing_services']?.toString() ?? '',
       isAvailableForGigs: json['is_available_for_gigs'] != false,

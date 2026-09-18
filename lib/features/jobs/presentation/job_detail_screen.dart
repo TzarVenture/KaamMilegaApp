@@ -4,9 +4,11 @@ import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../app/theme/app_colors.dart';
+import '../../../shared/widgets/auth_prompt_dialog.dart';
 import '../../../shared/widgets/shimmer_loading.dart';
 import '../../applications/presentation/apply_modal.dart';
 import '../../applications/repositories/application_repository.dart';
+import '../../auth/providers/auth_provider.dart';
 import '../models/job.dart';
 import '../providers/jobs_provider.dart';
 import '../repositories/job_repository.dart';
@@ -61,6 +63,15 @@ class _JobDetailScreenState extends ConsumerState<JobDetailScreen> {
 
   void _openApplyModal() {
     if (_job == null) return;
+    if (!ref.read(authProvider).isAuthenticated) {
+      showAuthPromptDialog(
+        context,
+        title: 'Sign In to Apply',
+        message:
+            'Please sign in to your KaamMilega account to apply for ${_job!.title} at ${_job!.company}.',
+      );
+      return;
+    }
     ApplyModalSheet.show(
       context,
       job: _job!,

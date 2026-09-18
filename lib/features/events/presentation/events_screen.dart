@@ -239,7 +239,9 @@ class _EventsScreenState extends ConsumerState<EventsScreen> {
             borderRadius: const BorderRadius.vertical(
               top: Radius.circular(20),
             ),
-            child: event.imageUrl.isNotEmpty
+            child: (event.imageUrl.isNotEmpty &&
+                    (event.imageUrl.startsWith('http://') ||
+                        event.imageUrl.startsWith('https://')))
                 ? Image.network(
                     event.imageUrl,
                     height: 160,

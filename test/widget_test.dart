@@ -1,4 +1,8 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:kaam_milega/features/experts/presentation/apply_expert_screen.dart';
+import 'package:kaam_milega/features/profile/presentation/widgets/profile_drawer.dart';
 import 'package:kaam_milega/features/jobs/models/job.dart';
 import 'package:kaam_milega/features/jobs/models/job_filter.dart';
 import 'package:kaam_milega/features/jobs/models/jobs_response.dart';
@@ -98,6 +102,61 @@ void main() {
       expect(res.hasNextPage, true);
       expect(res.hasPreviousPage, false);
       expect(res.jobs.length, 2);
+    });
+  });
+
+  group('ApplyExpertScreen Widget Tests', () {
+    testWidgets('ApplyExpertScreen renders all form fields and headers', (tester) async {
+      await tester.pumpWidget(
+        const ProviderScope(
+          child: MaterialApp(
+            home: ApplyExpertScreen(),
+          ),
+        ),
+      );
+
+      expect(find.text('Apply to be an Expert'), findsOneWidget);
+      expect(find.text('Share your knowledge, mentor others, and sell courses.'), findsOneWidget);
+      expect(find.text('Category'), findsOneWidget);
+      expect(find.text('Bio'), findsOneWidget);
+      expect(find.text('Hourly Mentorship Rate (₹)'), findsOneWidget);
+      expect(find.text('Documents (Provide URLs for now)'), findsOneWidget);
+      expect(find.text('Resume'), findsOneWidget);
+      expect(find.text('Identity Proof'), findsOneWidget);
+      expect(find.text('Apply'), findsOneWidget);
+    });
+  });
+
+  group('ProfileDrawer Widget Tests', () {
+    testWidgets('ProfileDrawer renders all unified Home drawer items', (tester) async {
+      await tester.pumpWidget(
+        const ProviderScope(
+          child: MaterialApp(
+            home: Scaffold(
+              endDrawer: ProfileDrawer(),
+              body: SizedBox(),
+            ),
+          ),
+        ),
+      );
+
+      // Open drawer
+      final scaffoldState = tester.state<ScaffoldState>(find.byType(Scaffold));
+      scaffoldState.openEndDrawer();
+      await tester.pumpAndSettle();
+
+      expect(find.text('Home'), findsOneWidget);
+      expect(find.text('Network'), findsOneWidget);
+      expect(find.text('Events'), findsOneWidget);
+      expect(find.text('Jobs'), findsOneWidget);
+      expect(find.text('Mentors'), findsOneWidget);
+      expect(find.text('Chat'), findsOneWidget);
+      expect(find.text('Resources'), findsOneWidget);
+      expect(find.text('Digital Wallet & Ledger'), findsOneWidget);
+      expect(find.text('Setting & Privacy'), findsOneWidget);
+      expect(find.text('Applied Jobs Status'), findsOneWidget);
+      expect(find.text('Interviews'), findsOneWidget);
+      expect(find.text('Apply to be an Expert'), findsOneWidget);
     });
   });
 }

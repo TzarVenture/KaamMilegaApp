@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/storage/local_storage.dart';
@@ -35,6 +36,26 @@ class AuthState {
 class AuthNotifier extends Notifier<AuthState> {
   late final AuthRepository _repository;
 
+  String _parseError(dynamic e, String defaultMessage) {
+    if (e is DioException) {
+      if (e.error != null && e.error.toString().isNotEmpty) {
+        return e.error.toString();
+      }
+      if (e.response?.data is Map) {
+        final data = e.response!.data as Map<String, dynamic>;
+        final msg = data['error'] ?? data['message'];
+        if (msg != null && msg.toString().isNotEmpty) {
+          return msg.toString();
+        }
+      }
+    }
+    final str = e.toString();
+    if (str.startsWith('Exception: ')) {
+      return str.substring(11);
+    }
+    return str.isNotEmpty ? str : defaultMessage;
+  }
+
   @override
   AuthState build() {
     _repository = ref.watch(authRepositoryProvider);
@@ -71,7 +92,8 @@ class AuthNotifier extends Notifier<AuthState> {
       state = state.copyWith(isLoading: false);
       return true;
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString());
+      final errorMsg = _parseError(e, 'Failed to send OTP.');
+      state = state.copyWith(isLoading: false, error: errorMsg);
       return false;
     }
   }
@@ -88,7 +110,8 @@ class AuthNotifier extends Notifier<AuthState> {
       );
       return result;
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString());
+      final errorMsg = _parseError(e, 'Invalid OTP code.');
+      state = state.copyWith(isLoading: false, error: errorMsg);
       return const AuthVerificationResult();
     }
   }
@@ -105,7 +128,34 @@ class AuthNotifier extends Notifier<AuthState> {
       );
       return true;
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString());
+      final errorMsg = _parseError(e, 'Invalid email or password');
+      state = state.copyWith(isLoading: false, error: errorMsg);
+      return false;
+    }
+  }
+
+  /// Register with Name, Email, and Password on km-backend
+  Future<bool> registerWithPassword({
+    required String name,
+    required String email,
+    required String password,
+  }) async {
+    state = state.copyWith(isLoading: true, error: null);
+    try {
+      final result = await _repository.registerWithPassword(
+        name: name,
+        email: email,
+        password: password,
+      );
+      state = state.copyWith(
+        isLoading: false,
+        isAuthenticated: true,
+        user: result.user,
+      );
+      return true;
+    } catch (e) {
+      final errorMsg = _parseError(e, 'Registration failed. Please try again.');
+      state = state.copyWith(isLoading: false, error: errorMsg);
       return false;
     }
   }
@@ -391,6 +441,42 @@ class AuthNotifier extends Notifier<AuthState> {
         return true;
       }
       state = state.copyWith(isLoading: false, error: e.toString());
+      return false;
+    }
+  }
+
+  /// Request password reset OTP to email
+  Future<bool> forgotPassword(String email) async {
+    state = state.copyWith(isLoading: true, error: null);
+    try {
+      await _repository.forgotPassword(email);
+      state = state.copyWith(isLoading: false);
+      return true;
+    } catch (e) {
+      final errorMsg = _parseError(e, 'Failed to send reset code');
+      state = state.copyWith(isLoading: false, error: errorMsg);
+      return false;
+    }
+  }
+
+  /// Reset password using 4-digit code and new password
+  Future<bool> resetPassword({
+    required String email,
+    required String code,
+    required String newPassword,
+  }) async {
+    state = state.copyWith(isLoading: true, error: null);
+    try {
+      await _repository.resetPassword(
+        email: email,
+        code: code,
+        newPassword: newPassword,
+      );
+      state = state.copyWith(isLoading: false);
+      return true;
+    } catch (e) {
+      final errorMsg = _parseError(e, 'Failed to reset password');
+      state = state.copyWith(isLoading: false, error: errorMsg);
       return false;
     }
   }

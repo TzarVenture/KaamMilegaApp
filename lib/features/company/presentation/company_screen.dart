@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../app/theme/app_colors.dart';
+import '../../../shared/widgets/auth_prompt_dialog.dart';
+import '../../auth/providers/auth_provider.dart';
 
 class CompanyScreen extends ConsumerStatefulWidget {
   final String companyId;
@@ -92,6 +94,15 @@ class _CompanyScreenState extends ConsumerState<CompanyScreen> {
                             ),
                             ElevatedButton.icon(
                               onPressed: () {
+                                if (!ref.read(authProvider).isAuthenticated) {
+                                  showAuthPromptDialog(
+                                    context,
+                                    title: 'Sign In to Follow',
+                                    message:
+                                        'Please sign in to follow companies and receive hiring alerts.',
+                                  );
+                                  return;
+                                }
                                 setState(() => _isFollowing = !_isFollowing);
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(

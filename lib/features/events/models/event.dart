@@ -1,3 +1,5 @@
+import '../../../core/constants/api_constants.dart';
+
 class EventItem {
   final String id;
   final String title;
@@ -111,7 +113,8 @@ class EventItem {
       time: rawTime,
       dateString: derivedDateString,
       location: json['location']?.toString() ?? 'Online Webinar',
-      imageUrl: json['image_url']?.toString() ?? json['imageUrl']?.toString() ?? '',
+      imageUrl: ApiConstants.resolveImageUrl(
+          json['image_url']?.toString() ?? json['imageUrl']?.toString()),
       participants: participantsList,
       attendeesCount: count,
       isRegistered: registered,

@@ -7,10 +7,43 @@ class ApiConstants {
   /// or http://localhost:8000/api (desktop / web)
   static const String baseUrl = 'https://api.kaammilega.com/api';
 
+  /// Resolves any relative, partial, or malformed image/file URL into a full absolute HTTP/HTTPS URL.
+  static String resolveImageUrl(String? url) {
+    if (url == null) return '';
+    var trimmed = url.trim();
+    if (trimmed.isEmpty) return '';
+
+    // Handle malformed file:/// URLs that might have been saved locally or in state
+    if (trimmed.startsWith('file:///api/') || trimmed.startsWith('file:///files/')) {
+      trimmed = trimmed.substring(7); // strips 'file://'
+    } else if (trimmed.startsWith('file://api/') || trimmed.startsWith('file://files/')) {
+      trimmed = trimmed.substring(7);
+    }
+
+    if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
+      return trimmed;
+    }
+    if (trimmed.startsWith('assets/') ||
+        trimmed.startsWith('data:') ||
+        trimmed.startsWith('blob:')) {
+      return trimmed;
+    }
+
+    final base = baseUrl;
+    final host = base.endsWith('/api')
+        ? base.substring(0, base.length - 4)
+        : base;
+    final formattedUrl = trimmed.startsWith('/') ? trimmed : '/$trimmed';
+    return '$host$formattedUrl';
+  }
+
   // --- Auth Endpoints ---
   static const String sendOtp = '/auth/otp/send';
   static const String verifyOtp = '/auth/otp/verify';
-  static const String loginPassword = '/auth/login';
+  static const String loginPassword = '/auth/login/password';
+  static const String registerPassword = '/auth/register/password';
+  static const String forgotPassword = '/auth/password/forgot';
+  static const String resetPassword = '/auth/password/reset';
   static const String otpEmailSend = '/auth/otp/email/send';
   static const String otpEmailVerify = '/auth/otp/email/verify';
   static const String userProfile = '/user/profile';

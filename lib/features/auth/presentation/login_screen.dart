@@ -103,108 +103,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   }
 
   // -------------------------------------------------------------------
-  // FORGOT PASSWORD DIALOG
+  // FORGOT PASSWORD ACTION
   // -------------------------------------------------------------------
   void _showForgotPasswordDialog() {
-    final resetEmailController = TextEditingController(text: _emailController.text.trim());
-    bool isSubmitting = false;
-
-    showDialog(
-      context: context,
-      builder: (dialogCtx) {
-        return StatefulBuilder(
-          builder: (context, setDialogState) {
-            return AlertDialog(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20),
-              ),
-              title: const Row(
-                children: [
-                  Icon(Icons.lock_reset_rounded, color: Color(0xFF9333EA)),
-                  SizedBox(width: 10),
-                  Text(
-                    'Reset Password',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w800,
-                      color: AppColors.textPrimary,
-                    ),
-                  ),
-                ],
-              ),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Enter your registered email address to receive an OTP verification code to reset your password.',
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: AppColors.textSecondary,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  TextField(
-                    controller: resetEmailController,
-                    keyboardType: TextInputType.emailAddress,
-                    decoration: InputDecoration(
-                      hintText: 'name@example.com',
-                      labelText: 'Email Address',
-                      prefixIcon: const Icon(Icons.email_outlined, color: Color(0xFF9333EA)),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(dialogCtx),
-                  child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
-                ),
-                ElevatedButton(
-                  onPressed: isSubmitting
-                      ? null
-                      : () async {
-                          final email = resetEmailController.text.trim();
-                          if (email.isEmpty || !email.contains('@')) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Please enter a valid email')),
-                            );
-                            return;
-                          }
-                          setDialogState(() => isSubmitting = true);
-                          final sent = await ref.read(authProvider.notifier).sendEmailOtp(email);
-                          if (dialogCtx.mounted) {
-                            Navigator.pop(dialogCtx);
-                            _showSnackBar(
-                              sent
-                                  ? 'Reset OTP code sent to $email!'
-                                  : 'Verification code sent to $email. Please check your inbox.',
-                            );
-                          }
-                        },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF9333EA),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  child: isSubmitting
-                      ? const SizedBox(
-                          width: 16,
-                          height: 16,
-                          child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                        )
-                      : const Text('Send Reset OTP', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                ),
-              ],
-            );
-          },
-        );
-      },
-    );
+    final email = _emailController.text.trim();
+    context.push('/forgot-password', extra: email);
   }
 
   void _showSnackBar(String message, {bool isError = false}) {

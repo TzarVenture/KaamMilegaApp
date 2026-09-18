@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../app/theme/app_colors.dart';
+import '../../../shared/widgets/auth_prompt_dialog.dart';
+import '../../auth/providers/auth_provider.dart';
 import '../../jobs/models/job.dart';
 import '../repositories/application_repository.dart';
 
@@ -45,6 +47,15 @@ class _ApplyModalSheetState extends ConsumerState<ApplyModalSheet> {
   }
 
   Future<void> _submitApplication() async {
+    if (!ref.read(authProvider).isAuthenticated) {
+      showAuthPromptDialog(
+        context,
+        title: 'Sign In to Apply',
+        message: 'Please sign in or register to apply for ${widget.job.title}.',
+      );
+      return;
+    }
+
     setState(() => _isLoading = true);
 
     try {
