@@ -26,6 +26,13 @@ import '../features/wallet/presentation/wallet_transactions_screen.dart';
 import '../features/wallet/presentation/wallet_transfer_screen.dart';
 import '../features/wallet/presentation/wallet_withdraw_screen.dart';
 
+import '../features/explore/presentation/explore_screen.dart';
+import '../features/instant_work/presentation/instant_work_screen.dart';
+import '../features/skills_marketplace/presentation/skills_marketplace_screen.dart';
+import '../features/experts/presentation/experts_screen.dart';
+import '../features/services/presentation/services_marketplace_screen.dart';
+import '../features/peer_to_peer/presentation/peer_to_peer_screen.dart';
+
 /// Central GoRouter configuration for the KaamMilega app
 class AppRouter {
   AppRouter._();
@@ -193,6 +200,36 @@ class AppRouter {
         path: '/wallet/transfer',
         name: 'wallet_transfer',
         builder: (context, state) => const WalletTransferScreen(),
+      ),
+      GoRoute(
+        path: '/explore',
+        name: 'explore',
+        builder: (context, state) => const ExploreScreen(),
+      ),
+      GoRoute(
+        path: '/instant-work',
+        name: 'instant_work',
+        builder: (context, state) => const InstantWorkScreen(),
+      ),
+      GoRoute(
+        path: '/skills-marketplace',
+        name: 'skills_marketplace',
+        builder: (context, state) => const SkillsMarketplaceScreen(),
+      ),
+      GoRoute(
+        path: '/experts',
+        name: 'experts',
+        builder: (context, state) => const ExpertsScreen(),
+      ),
+      GoRoute(
+        path: '/services',
+        name: 'services_marketplace',
+        builder: (context, state) => const ServicesMarketplaceScreen(),
+      ),
+      GoRoute(
+        path: '/peer-to-peer',
+        name: 'peer_to_peer',
+        builder: (context, state) => const PeerToPeerScreen(),
       ),
     ],
   );

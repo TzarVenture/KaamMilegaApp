@@ -97,7 +97,8 @@ class ApiConstants {
 
   // --- Events & Mentorship Endpoints ---
   static const String events = '/events';
-  static const String mentorship = '/mentorship';
+  static const String mentorship = '/mentorships';
+  static const String mentorships = '/mentorships';
 
   // --- Company Hub Endpoints ---
   static const String adminCompanies = '/admin/companies';

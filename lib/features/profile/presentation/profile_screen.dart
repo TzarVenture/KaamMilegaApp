@@ -2852,10 +2852,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     final isAuth = ref.watch(authProvider).isAuthenticated;
 
     return Container(
+      width: double.infinity,
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: AppColors.border),
+        borderRadius: const BorderRadius.vertical(bottom: Radius.circular(20)),
+        border: const Border(bottom: BorderSide(color: AppColors.border)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.03),
@@ -2879,9 +2880,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     width: double.infinity,
                     decoration: BoxDecoration(
                       color: AppColors.heroBg,
-                      borderRadius: const BorderRadius.vertical(
-                        top: Radius.circular(24),
-                      ),
                       image: hasCover
                           ? DecorationImage(
                               image: NetworkImage(coverImage),
@@ -5242,513 +5240,540 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               onRefresh: () => ref.read(authProvider.notifier).refreshProfile(),
               child: SingleChildScrollView(
                 physics: const AlwaysScrollableScrollPhysics(),
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.only(bottom: 32),
                 child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // 1. Hero Cover & Header Card
+                    // 1. Hero Cover & Header Card (Edge-to-edge: 0 horizontal margin)
                     _buildHeroBanner(user, connectionsCount),
 
                     const SizedBox(height: 16),
 
-                    // 2. Twin Cards: Open To Work & Providing Services (media_1789560057886.png)
-                    _buildTwinOpenToCards(user),
-
-                    const SizedBox(height: 16),
-
-                    // 3. Profile Strength & Completeness Breakdown Card (media_1789560057886.png)
-                    _buildProfileCompletenessCard(user),
-
-                    const SizedBox(height: 16),
-
-                    // 4. Free Now for Immediate Gigs Switch Card
-                    _buildGigAvailabilityToggleCard(user),
-
-                    const SizedBox(height: 16),
-
-                    // 5. Analytics Card - Private To You (media_1789560057892.png)
-                    _buildAnalyticsCard(user),
-
-                    const SizedBox(height: 16),
-
-                    // 6. About Card (media_1789560057892.png)
-                    Container(
-                      padding: const EdgeInsets.all(18),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: AppColors.border),
-                      ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              const Text(
-                                'About',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w800,
-                                  color: AppColors.textPrimary,
+                          // 2. Twin Cards: Open To Work & Providing Services (media_1789560057886.png)
+                          _buildTwinOpenToCards(user),
+
+                          const SizedBox(height: 16),
+
+                          // 3. Profile Strength & Completeness Breakdown Card (media_1789560057886.png)
+                          _buildProfileCompletenessCard(user),
+
+                          const SizedBox(height: 16),
+
+                          // 4. Free Now for Immediate Gigs Switch Card
+                          _buildGigAvailabilityToggleCard(user),
+
+                          const SizedBox(height: 16),
+
+                          // 5. Analytics Card - Private To You (media_1789560057892.png)
+                          _buildAnalyticsCard(user),
+
+                          const SizedBox(height: 16),
+
+                          // 6. About Card (media_1789560057892.png)
+                          Container(
+                            padding: const EdgeInsets.all(18),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(color: AppColors.border),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    const Text(
+                                      'About',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w800,
+                                        color: AppColors.textPrimary,
+                                      ),
+                                    ),
+                                    if (user != null)
+                                      IconButton(
+                                        icon: const Icon(
+                                          Icons.edit_outlined,
+                                          size: 18,
+                                          color: AppColors.primary,
+                                        ),
+                                        onPressed: () =>
+                                            _showEditAboutDialog(user),
+                                      ),
+                                  ],
                                 ),
-                              ),
-                              if (user != null)
-                                IconButton(
-                                  icon: const Icon(
-                                    Icons.edit_outlined,
-                                    size: 18,
-                                    color: AppColors.primary,
+                                const Divider(height: 12),
+                                Text(
+                                  user != null && user.about.isNotEmpty
+                                      ? user.about
+                                      : 'Add a summary to highlight your personality and work history.',
+                                  style: TextStyle(
+                                    fontSize: 12.5,
+                                    color: user != null && user.about.isNotEmpty
+                                        ? AppColors.textPrimary
+                                        : AppColors.textSecondary,
                                   ),
-                                  onPressed: () => _showEditAboutDialog(user),
                                 ),
-                            ],
-                          ),
-                          const Divider(height: 12),
-                          Text(
-                            user != null && user.about.isNotEmpty ? user.about : 'Add a summary to highlight your personality and work history.',
-                            style: TextStyle(
-                              fontSize: 12.5,
-                              color: user != null && user.about.isNotEmpty
-                                  ? AppColors.textPrimary
-                                  : AppColors.textSecondary,
+                              ],
                             ),
                           ),
-                        ],
-                      ),
-                    ),
 
-                    const SizedBox(height: 16),
+                          const SizedBox(height: 16),
 
-                    // 7. Jobs Based On Your Profile (media_1789560057906.png)
-                    _buildJobsBasedOnProfileCard(),
+                          // 7. Jobs Based On Your Profile (media_1789560057906.png)
+                          _buildJobsBasedOnProfileCard(),
 
-                    const SizedBox(height: 16),
+                          const SizedBox(height: 16),
 
-                    // 8. Work Experience List Card (media_1789560057906.png)
-                    Container(
-                      padding: const EdgeInsets.all(18),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: AppColors.border),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              const Text(
-                                'Experience',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w800,
+                          // 8. Work Experience List Card (media_1789560057906.png)
+                          Container(
+                            padding: const EdgeInsets.all(18),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(color: AppColors.border),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    const Text(
+                                      'Experience',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w800,
+                                      ),
+                                    ),
+                                    Row(
+                                      children: [
+                                        IconButton(
+                                          icon: const Icon(
+                                            Icons.add,
+                                            color: AppColors.primary,
+                                            size: 20,
+                                          ),
+                                          onPressed: _openAddExperienceDialog,
+                                        ),
+                                        if (user != null)
+                                          IconButton(
+                                            icon: const Icon(
+                                              Icons.edit_outlined,
+                                              color: AppColors.primary,
+                                              size: 18,
+                                            ),
+                                            onPressed: () =>
+                                                _openAddExperienceDialog(),
+                                          ),
+                                      ],
+                                    ),
+                                  ],
                                 ),
-                              ),
-                              Row(
-                                children: [
-                                  IconButton(
-                                    icon: const Icon(
-                                      Icons.add,
-                                      color: AppColors.primary,
-                                      size: 20,
+                                const Divider(height: 12),
+                                if (user == null || user.experience.isEmpty)
+                                  const Text(
+                                    'No experience added yet.',
+                                    style: TextStyle(
+                                      color: AppColors.textSecondary,
+                                      fontSize: 12,
+                                      fontStyle: FontStyle.italic,
                                     ),
-                                    onPressed: _openAddExperienceDialog,
-                                  ),
-                                  if (user != null)
-                                    IconButton(
-                                      icon: const Icon(
-                                        Icons.edit_outlined,
-                                        color: AppColors.primary,
-                                        size: 18,
-                                      ),
-                                      onPressed: () =>
-                                          _openAddExperienceDialog(),
-                                    ),
-                                ],
-                              ),
-                            ],
-                          ),
-                          const Divider(height: 12),
-                          if (user == null || user.experience.isEmpty)
-                            const Text(
-                              'No experience added yet.',
-                              style: TextStyle(
-                                color: AppColors.textSecondary,
-                                fontSize: 12,
-                                fontStyle: FontStyle.italic,
-                              ),
-                            )
-                          else
-                            Column(
-                              children: user.experience.map((exp) {
-                                return Padding(
-                                  padding: const EdgeInsets.only(bottom: 10),
-                                  child: Row(
-                                    children: [
-                                      const Icon(
-                                        Icons.business_center_rounded,
-                                        color: AppColors.primary,
-                                        size: 20,
-                                      ),
-                                      const SizedBox(width: 12),
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
+                                  )
+                                else
+                                  Column(
+                                    children: user.experience.map((exp) {
+                                      return Padding(
+                                        padding: const EdgeInsets.only(
+                                          bottom: 10,
+                                        ),
+                                        child: Row(
                                           children: [
-                                            Text(
-                                              exp.title,
-                                              style: const TextStyle(
-                                                fontWeight: FontWeight.w800,
-                                                fontSize: 14,
+                                            const Icon(
+                                              Icons.business_center_rounded,
+                                              color: AppColors.primary,
+                                              size: 20,
+                                            ),
+                                            const SizedBox(width: 12),
+                                            Expanded(
+                                              child: Column(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: [
+                                                  Text(
+                                                    exp.title,
+                                                    style: const TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.w800,
+                                                      fontSize: 14,
+                                                    ),
+                                                  ),
+                                                  Text(
+                                                    '${exp.companyName} • ${exp.location}'
+                                                        .trim(),
+                                                    style: const TextStyle(
+                                                      color: AppColors
+                                                          .textSecondary,
+                                                      fontSize: 12,
+                                                    ),
+                                                  ),
+                                                  if (exp.startDate.isNotEmpty)
+                                                    Text(
+                                                      '${exp.startDate} - ${exp.endDate}',
+                                                      style: const TextStyle(
+                                                        color:
+                                                            AppColors.textLight,
+                                                        fontSize: 11,
+                                                      ),
+                                                    ),
+                                                ],
                                               ),
                                             ),
-                                            Text(
-                                              '${exp.companyName} • ${exp.location}'
-                                                  .trim(),
-                                              style: const TextStyle(
-                                                color: AppColors.textSecondary,
-                                                fontSize: 12,
-                                              ),
-                                            ),
-                                            if (exp.startDate.isNotEmpty)
-                                              Text(
-                                                '${exp.startDate} - ${exp.endDate}',
-                                                style: const TextStyle(
-                                                  color: AppColors.textLight,
-                                                  fontSize: 11,
-                                                ),
-                                              ),
                                           ],
                                         ),
-                                      ),
-                                    ],
+                                      );
+                                    }).toList(),
                                   ),
-                                );
-                              }).toList(),
+                              ],
                             ),
-                        ],
-                      ),
-                    ),
-
-                    const SizedBox(height: 16),
-
-                    // 9. Education History Card (media_1789560057895.png)
-                    Container(
-                      padding: const EdgeInsets.all(18),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: AppColors.border),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              const Text(
-                                'Education',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w800,
-                                ),
-                              ),
-                              Row(
-                                children: [
-                                  IconButton(
-                                    icon: const Icon(
-                                      Icons.add,
-                                      color: AppColors.primary,
-                                      size: 20,
-                                    ),
-                                    onPressed: _openAddEducationDialog,
-                                  ),
-                                  if (user != null)
-                                    IconButton(
-                                      icon: const Icon(
-                                        Icons.edit_outlined,
-                                        color: AppColors.primary,
-                                        size: 18,
-                                      ),
-                                      onPressed: () =>
-                                          _openEditProfileDialog(user),
-                                    ),
-                                ],
-                              ),
-                            ],
                           ),
-                          const Divider(height: 12),
-                          if (user == null || user.education.isEmpty)
-                            const Text(
-                              'No education details added yet.',
-                              style: TextStyle(
-                                color: AppColors.textSecondary,
-                                fontSize: 12,
-                                fontStyle: FontStyle.italic,
-                              ),
-                            )
-                          else
-                            Column(
-                              children: user.education.map((edu) {
-                                return Padding(
-                                  padding: const EdgeInsets.only(bottom: 10),
-                                  child: Row(
-                                    children: [
-                                      const Icon(
-                                        Icons.school_rounded,
-                                        color: AppColors.primary,
-                                        size: 20,
+
+                          const SizedBox(height: 16),
+
+                          // 9. Education History Card (media_1789560057895.png)
+                          Container(
+                            padding: const EdgeInsets.all(18),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(color: AppColors.border),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    const Text(
+                                      'Education',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w800,
                                       ),
-                                      const SizedBox(width: 12),
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
+                                    ),
+                                    Row(
+                                      children: [
+                                        IconButton(
+                                          icon: const Icon(
+                                            Icons.add,
+                                            color: AppColors.primary,
+                                            size: 20,
+                                          ),
+                                          onPressed: _openAddEducationDialog,
+                                        ),
+                                        if (user != null)
+                                          IconButton(
+                                            icon: const Icon(
+                                              Icons.edit_outlined,
+                                              color: AppColors.primary,
+                                              size: 18,
+                                            ),
+                                            onPressed: () =>
+                                                _openEditProfileDialog(user),
+                                          ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                                const Divider(height: 12),
+                                if (user == null || user.education.isEmpty)
+                                  const Text(
+                                    'No education details added yet.',
+                                    style: TextStyle(
+                                      color: AppColors.textSecondary,
+                                      fontSize: 12,
+                                      fontStyle: FontStyle.italic,
+                                    ),
+                                  )
+                                else
+                                  Column(
+                                    children: user.education.map((edu) {
+                                      return Padding(
+                                        padding: const EdgeInsets.only(
+                                          bottom: 10,
+                                        ),
+                                        child: Row(
                                           children: [
-                                            Text(
-                                              edu.schoolName,
-                                              style: const TextStyle(
-                                                fontWeight: FontWeight.w800,
-                                                fontSize: 14,
+                                            const Icon(
+                                              Icons.school_rounded,
+                                              color: AppColors.primary,
+                                              size: 20,
+                                            ),
+                                            const SizedBox(width: 12),
+                                            Expanded(
+                                              child: Column(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: [
+                                                  Text(
+                                                    edu.schoolName,
+                                                    style: const TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.w800,
+                                                      fontSize: 14,
+                                                    ),
+                                                  ),
+                                                  Text(
+                                                    '${edu.degree} ${edu.fieldOfStudy}'
+                                                        .trim(),
+                                                    style: const TextStyle(
+                                                      color: AppColors
+                                                          .textSecondary,
+                                                      fontSize: 12,
+                                                    ),
+                                                  ),
+                                                  if (edu.startDate.isNotEmpty)
+                                                    Text(
+                                                      '${edu.startDate} - ${edu.endDate}',
+                                                      style: const TextStyle(
+                                                        color:
+                                                            AppColors.textLight,
+                                                        fontSize: 11,
+                                                      ),
+                                                    ),
+                                                ],
                                               ),
                                             ),
-                                            Text(
-                                              '${edu.degree} ${edu.fieldOfStudy}'
-                                                  .trim(),
-                                              style: const TextStyle(
-                                                color: AppColors.textSecondary,
-                                                fontSize: 12,
-                                              ),
-                                            ),
-                                            if (edu.startDate.isNotEmpty)
-                                              Text(
-                                                '${edu.startDate} - ${edu.endDate}',
-                                                style: const TextStyle(
-                                                  color: AppColors.textLight,
-                                                  fontSize: 11,
-                                                ),
-                                              ),
                                           ],
                                         ),
+                                      );
+                                    }).toList(),
+                                  ),
+                              ],
+                            ),
+                          ),
+
+                          const SizedBox(height: 16),
+
+                          // 10. Projects & Assignments Card (media_1789560057895.png)
+                          _buildProjectsCard(user),
+
+                          const SizedBox(height: 16),
+
+                          // 11. Candidate Skills Tagging Card
+                          Container(
+                            padding: const EdgeInsets.all(18),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(color: AppColors.border),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    const Text(
+                                      'My Skill Tags',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w800,
                                       ),
-                                    ],
+                                    ),
+                                    IconButton(
+                                      icon: const Icon(
+                                        Icons.add_circle_outline_rounded,
+                                        color: AppColors.primary,
+                                      ),
+                                      onPressed: _openAddSkillDialog,
+                                    ),
+                                  ],
+                                ),
+                                const Divider(height: 16),
+                                if (user == null || user.skills.isEmpty)
+                                  const Text(
+                                    'No skills added yet. Tap + to add skills to attract recruiters!',
+                                    style: TextStyle(
+                                      color: AppColors.textSecondary,
+                                      fontSize: 12,
+                                    ),
+                                  )
+                                else
+                                  Wrap(
+                                    spacing: 8,
+                                    runSpacing: 8,
+                                    children: user.skills.map((s) {
+                                      return Chip(
+                                        label: Text(s),
+                                        backgroundColor: AppColors.primaryLight,
+                                        labelStyle: const TextStyle(
+                                          color: AppColors.primary,
+                                          fontWeight: FontWeight.w700,
+                                          fontSize: 12,
+                                        ),
+                                      );
+                                    }).toList(),
                                   ),
-                                );
-                              }).toList(),
+                              ],
                             ),
-                        ],
-                      ),
-                    ),
-
-                    const SizedBox(height: 16),
-
-                    // 10. Projects & Assignments Card (media_1789560057895.png)
-                    _buildProjectsCard(user),
-
-                    const SizedBox(height: 16),
-
-                    // 11. Candidate Skills Tagging Card
-                    Container(
-                      padding: const EdgeInsets.all(18),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: AppColors.border),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              const Text(
-                                'My Skill Tags',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w800,
-                                ),
-                              ),
-                              IconButton(
-                                icon: const Icon(
-                                  Icons.add_circle_outline_rounded,
-                                  color: AppColors.primary,
-                                ),
-                                onPressed: _openAddSkillDialog,
-                              ),
-                            ],
                           ),
-                          const Divider(height: 16),
-                          if (user == null || user.skills.isEmpty)
-                            const Text(
-                              'No skills added yet. Tap + to add skills to attract recruiters!',
-                              style: TextStyle(
-                                color: AppColors.textSecondary,
-                                fontSize: 12,
-                              ),
-                            )
-                          else
-                            Wrap(
-                              spacing: 8,
-                              runSpacing: 8,
-                              children: user.skills.map((s) {
-                                return Chip(
-                                  label: Text(s),
-                                  backgroundColor: AppColors.primaryLight,
-                                  labelStyle: const TextStyle(
-                                    color: AppColors.primary,
-                                    fontWeight: FontWeight.w700,
-                                    fontSize: 12,
-                                  ),
-                                );
-                              }).toList(),
+
+                          const SizedBox(height: 16),
+
+                          // 12. Companies To Follow Card (media_1789560057892.png)
+                          _buildCompaniesToFollowCard(),
+
+                          const SizedBox(height: 16),
+
+                          // 13. People Who Viewed / Network Suggestions Card (media_1789560057886.png)
+                          _buildPeopleWhoViewedCard(),
+
+                          const SizedBox(height: 16),
+
+                          // 14. Our Experts Preview Card (media_1789560057886.png)
+                          _buildOurExpertsCard(),
+
+                          const SizedBox(height: 16),
+
+                          // 15. Personal Info Summary Card
+                          Container(
+                            padding: const EdgeInsets.all(18),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(color: AppColors.border),
                             ),
-                        ],
-                      ),
-                    ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: const [
+                                    Text(
+                                      'Personal Info',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w800,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const Divider(height: 16),
+                                _buildDetailRow(
+                                  'Mobile Number',
+                                  user?.mobile.isNotEmpty == true
+                                      ? user!.mobile
+                                      : 'Not added',
+                                ),
+                                _buildDetailRow(
+                                  'Email Address',
+                                  user?.email.isNotEmpty == true
+                                      ? user!.email
+                                      : 'Not added',
+                                ),
+                                _buildDetailRow(
+                                  'Gender',
+                                  user?.gender.isNotEmpty == true
+                                      ? user!.gender
+                                      : 'Not specified',
+                                ),
+                                _buildDetailRow(
+                                  'Education',
+                                  user?.educationLevel.isNotEmpty == true
+                                      ? user!.educationLevel
+                                      : '12th Pass',
+                                ),
+                                _buildDetailRow(
+                                  'Experience',
+                                  user?.workExperience.isNotEmpty == true
+                                      ? user!.workExperience
+                                      : 'Fresher',
+                                ),
+                              ],
+                            ),
+                          ),
 
-                    const SizedBox(height: 16),
+                          const SizedBox(height: 16),
 
-                    // 12. Companies To Follow Card (media_1789560057892.png)
-                    _buildCompaniesToFollowCard(),
+                          // 16. Wallet Credits Card
+                          _buildWalletCreditsCard(user),
 
-                    const SizedBox(height: 16),
+                          const SizedBox(height: 16),
 
-                    // 13. People Who Viewed / Network Suggestions Card (media_1789560057886.png)
-                    _buildPeopleWhoViewedCard(),
+                          // 17. Public Profile & Language Settings Card (media_1789974076369.png)
+                          _buildPublicProfileAndLanguageCard(user),
 
-                    const SizedBox(height: 16),
+                          const SizedBox(height: 16),
 
-                    // 14. Our Experts Preview Card (media_1789560057886.png)
-                    _buildOurExpertsCard(),
+                          // 18. Resume PDF Card
+                          _buildResumeCard(user),
 
-                    const SizedBox(height: 16),
-
-                    // 15. Personal Info Summary Card
-                    Container(
-                      padding: const EdgeInsets.all(18),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: AppColors.border),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: const [
-                              Text(
-                                'Personal Info',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w800,
+                          if (authState.isAuthenticated || user != null) ...[
+                            const SizedBox(height: 20),
+                            OutlinedButton.icon(
+                              onPressed: _showLogoutConfirmationDialog,
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: const Color(0xFFDC2626),
+                                side: const BorderSide(
+                                  color: Color(0xFFFCA5A5),
+                                  width: 1.5,
+                                ),
+                                backgroundColor: const Color(0xFFFEF2F2),
+                                minimumSize: const Size(double.infinity, 50),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(16),
                                 ),
                               ),
-                            ],
-                          ),
-                          const Divider(height: 16),
-                          _buildDetailRow(
-                            'Mobile Number',
-                            user?.mobile.isNotEmpty == true
-                                ? user!.mobile
-                                : 'Not added',
-                          ),
-                          _buildDetailRow(
-                            'Email Address',
-                            user?.email.isNotEmpty == true
-                                ? user!.email
-                                : 'Not added',
-                          ),
-                          _buildDetailRow(
-                            'Gender',
-                            user?.gender.isNotEmpty == true
-                                ? user!.gender
-                                : 'Not specified',
-                          ),
-                          _buildDetailRow(
-                            'Education',
-                            user?.educationLevel.isNotEmpty == true
-                                ? user!.educationLevel
-                                : '12th Pass',
-                          ),
-                          _buildDetailRow(
-                            'Experience',
-                            user?.workExperience.isNotEmpty == true
-                                ? user!.workExperience
-                                : 'Fresher',
-                          ),
+                              icon: const Icon(
+                                Icons.logout_rounded,
+                                size: 20,
+                                color: Color(0xFFDC2626),
+                              ),
+                              label: const Text(
+                                'Log Out',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w800,
+                                  fontSize: 15,
+                                  color: Color(0xFFDC2626),
+                                ),
+                              ),
+                            ),
+                          ] else ...[
+                            const SizedBox(height: 24),
+                            ElevatedButton.icon(
+                              onPressed: () => context.push('/login'),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppColors.primary,
+                                foregroundColor: Colors.white,
+                                minimumSize: const Size(double.infinity, 50),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                              ),
+                              icon: const Icon(Icons.login_rounded, size: 20),
+                              label: const Text(
+                                'Sign In / Register',
+                                style: TextStyle(fontWeight: FontWeight.w700),
+                              ),
+                            ),
+                          ],
+
+                          const SizedBox(height: 16),
                         ],
                       ),
                     ),
-
-                    const SizedBox(height: 16),
-
-                    // 16. Wallet Credits Card
-                    _buildWalletCreditsCard(user),
-
-                    const SizedBox(height: 16),
-
-                    // 17. Public Profile & Language Settings Card (media_1789974076369.png)
-                    _buildPublicProfileAndLanguageCard(user),
-
-                    const SizedBox(height: 16),
-
-                    // 18. Resume PDF Card
-                    _buildResumeCard(user),
-
-                    if (authState.isAuthenticated || user != null) ...[
-                      const SizedBox(height: 20),
-                      OutlinedButton.icon(
-                        onPressed: _showLogoutConfirmationDialog,
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: const Color(0xFFDC2626),
-                          side: const BorderSide(
-                            color: Color(0xFFFCA5A5),
-                            width: 1.5,
-                          ),
-                          backgroundColor: const Color(0xFFFEF2F2),
-                          minimumSize: const Size(double.infinity, 50),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                        ),
-                        icon: const Icon(
-                          Icons.logout_rounded,
-                          size: 20,
-                          color: Color(0xFFDC2626),
-                        ),
-                        label: const Text(
-                          'Log Out',
-                          style: TextStyle(
-                            fontWeight: FontWeight.w800,
-                            fontSize: 15,
-                            color: Color(0xFFDC2626),
-                          ),
-                        ),
-                      ),
-                    ] else ...[
-                      const SizedBox(height: 24),
-                      ElevatedButton.icon(
-                        onPressed: () => context.push('/login'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primary,
-                          foregroundColor: Colors.white,
-                          minimumSize: const Size(double.infinity, 50),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                        ),
-                        icon: const Icon(Icons.login_rounded, size: 20),
-                        label: const Text(
-                          'Sign In / Register',
-                          style: TextStyle(fontWeight: FontWeight.w700),
-                        ),
-                      ),
-                    ],
-
-                    const SizedBox(height: 32),
                   ],
                 ),
               ),

@@ -57,150 +57,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     }
   }
 
-  void _showInstantWorkModal() {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (ctx) => Container(
-        padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Center(
-              child: Container(
-                width: 44,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade300,
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-            ),
-            const SizedBox(height: 18),
-            Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFFFEDD5),
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                  child: const Icon(
-                    Icons.bolt_rounded,
-                    color: Color(0xFFEA580C),
-                    size: 26,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                const Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'InstantMilega™ Work',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w900,
-                        color: AppColors.textPrimary,
-                      ),
-                    ),
-                    Text(
-                      'Work in Minutes. Anywhere, Anytime!',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: AppColors.textSecondary,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-            const SizedBox(height: 18),
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: const Color(0xFFF8FAFC),
-                borderRadius: BorderRadius.circular(18),
-                border: Border.all(color: const Color(0xFFE2E8F0)),
-              ),
-              child: Column(
-                children: [
-                  Row(
-                    children: [
-                      const Icon(
-                        Icons.check_circle_rounded,
-                        color: Color(0xFF16A34A),
-                        size: 20,
-                      ),
-                      const SizedBox(width: 10),
-                      const Expanded(
-                        child: Text(
-                          'Direct spot-hiring for delivery, repair, technician & domestic help gigs',
-                          style: TextStyle(
-                            fontSize: 12.5,
-                            color: AppColors.textPrimary,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 10),
-                  Row(
-                    children: [
-                      const Icon(
-                        Icons.check_circle_rounded,
-                        color: Color(0xFF16A34A),
-                        size: 20,
-                      ),
-                      const SizedBox(width: 10),
-                      const Expanded(
-                        child: Text(
-                          'Instant payouts directly credited upon task verification',
-                          style: TextStyle(
-                            fontSize: 12.5,
-                            color: AppColors.textPrimary,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pop(ctx);
-                _goToJobsTabWithQuery('Instant Work');
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.accent,
-                foregroundColor: Colors.white,
-                minimumSize: const Size(double.infinity, 50),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                elevation: 0,
-              ),
-              child: const Text(
-                'Browse Instant Work',
-                style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   void _show99AccessModal() {
     showModalBottomSheet(
       context: context,
@@ -370,123 +226,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           ),
         ],
       ),
-    );
-  }
-
-  void _showMoreServicesModal() {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      builder: (ctx) => Container(
-        padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Center(
-              child: Container(
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade300,
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-            const Text(
-              'All Platform Services',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w800,
-                color: AppColors.textPrimary,
-              ),
-            ),
-            const SizedBox(height: 14),
-            _buildServiceListTile(
-              icon: Icons.event_available_rounded,
-              color: const Color(0xFF2563EB),
-              title: 'Events & Webinars',
-              subtitle: 'Join job fairs, training sessions & career summits',
-              onTap: () {
-                Navigator.pop(ctx);
-                context.push('/events');
-              },
-            ),
-            _buildServiceListTile(
-              icon: Icons.assignment_turned_in_rounded,
-              color: const Color(0xFF16A34A),
-              title: 'My Applications',
-              subtitle: 'Track status of applied jobs and interviews',
-              onTap: () {
-                Navigator.pop(ctx);
-                context.push('/my-applications');
-              },
-            ),
-            _buildServiceListTile(
-              icon: Icons.calendar_month_rounded,
-              color: const Color(0xFFEA580C),
-              title: 'Interviews Schedule',
-              subtitle: 'View upcoming recruiter interview appointments',
-              onTap: () {
-                Navigator.pop(ctx);
-                context.push('/interviews');
-              },
-            ),
-            _buildServiceListTile(
-              icon: Icons.people_rounded,
-              color: const Color(0xFF9333EA),
-              title: 'Professional Network',
-              subtitle: 'Connect with workers, hiring managers & colleagues',
-              onTap: () {
-                Navigator.pop(ctx);
-                context.push('/network');
-              },
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildServiceListTile({
-    required IconData icon,
-    required Color color,
-    required String title,
-    required String subtitle,
-    required VoidCallback onTap,
-  }) {
-    return ListTile(
-      contentPadding: EdgeInsets.zero,
-      leading: Container(
-        padding: const EdgeInsets.all(10),
-        decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.12),
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Icon(icon, color: color, size: 22),
-      ),
-      title: Text(
-        title,
-        style: const TextStyle(
-          fontSize: 14,
-          fontWeight: FontWeight.w800,
-          color: AppColors.textPrimary,
-        ),
-      ),
-      subtitle: Text(
-        subtitle,
-        style: const TextStyle(fontSize: 11, color: AppColors.textSecondary),
-      ),
-      trailing: const Icon(
-        Icons.chevron_right_rounded,
-        color: AppColors.textLight,
-      ),
-      onTap: onTap,
     );
   }
 
@@ -713,7 +452,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   // ==========================================
   Widget _buildInstantMilegaBanner() {
     return GestureDetector(
-      onTap: _show99AccessModal,
+      onTap: () => context.push('/instant-work'),
       child: Container(
         margin: const EdgeInsets.symmetric(horizontal: 16),
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
@@ -800,70 +539,73 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             ),
 
             // Right: ONE TIME ACCESS ₹99 ONLY >
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 6,
-                    vertical: 2,
-                  ),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFFBBF24),
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                  child: const Text(
-                    'ONE TIME ACCESS',
-                    style: TextStyle(
-                      fontSize: 8.5,
-                      fontWeight: FontWeight.w900,
-                      color: Color(0xFF0F172A),
+            GestureDetector(
+              onTap: _show99AccessModal,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 6,
+                      vertical: 2,
+                    ),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFBBF24),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: const Text(
+                      'ONE TIME ACCESS',
+                      style: TextStyle(
+                        fontSize: 8.5,
+                        fontWeight: FontWeight.w900,
+                        color: Color(0xFF0F172A),
+                      ),
                     ),
                   ),
-                ),
-                const SizedBox(height: 4),
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    RichText(
-                      text: const TextSpan(
-                        children: [
-                          TextSpan(
-                            text: '₹99 ',
-                            style: TextStyle(
-                              fontSize: 17,
-                              fontWeight: FontWeight.w900,
-                              color: Colors.white,
+                  const SizedBox(height: 4),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      RichText(
+                        text: const TextSpan(
+                          children: [
+                            TextSpan(
+                              text: '₹99 ',
+                              style: TextStyle(
+                                fontSize: 17,
+                                fontWeight: FontWeight.w900,
+                                color: Colors.white,
+                              ),
                             ),
-                          ),
-                          TextSpan(
-                            text: 'ONLY ',
-                            style: TextStyle(
-                              fontSize: 8.5,
-                              fontWeight: FontWeight.w700,
-                              color: Colors.white70,
+                            TextSpan(
+                              text: 'ONLY ',
+                              style: TextStyle(
+                                fontSize: 8.5,
+                                fontWeight: FontWeight.w700,
+                                color: Colors.white70,
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                    ),
-                    Container(
-                      width: 22,
-                      height: 22,
-                      decoration: const BoxDecoration(
-                        color: Color(0xFFF97316),
-                        shape: BoxShape.circle,
+                      Container(
+                        width: 22,
+                        height: 22,
+                        decoration: const BoxDecoration(
+                          color: Color(0xFFF97316),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.chevron_right_rounded,
+                          color: Colors.white,
+                          size: 16,
+                        ),
                       ),
-                      child: const Icon(
-                        Icons.chevron_right_rounded,
-                        color: Colors.white,
-                        size: 16,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
+                    ],
+                  ),
+                ],
+              ),
             ),
           ],
         ),
@@ -888,35 +630,35 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         'icon': Icons.bolt_rounded,
         'bg': AppColors.accentLight,
         'color': AppColors.accent,
-        'onTap': _showInstantWorkModal,
+        'onTap': () => context.push('/instant-work'),
       },
       {
         'label': 'Skills',
         'icon': Icons.school_outlined,
         'bg': const Color(0xFFDCFCE7),
         'color': AppColors.moduleSkills,
-        'onTap': () => context.push('/events'),
+        'onTap': () => context.push('/skills-marketplace'),
       },
       {
         'label': 'Experts',
         'icon': Icons.person_search_outlined,
         'bg': const Color(0xFFF3E8FF),
         'color': AppColors.moduleExperts,
-        'onTap': _showMoreServicesModal,
+        'onTap': () => context.push('/experts'),
       },
       {
         'label': 'Services',
         'icon': Icons.home_repair_service_outlined,
         'bg': const Color(0xFFFFE4E6),
         'color': const Color(0xFFE11D48),
-        'onTap': () => _goToJobsTabWithQuery('Services'),
+        'onTap': () => context.push('/services'),
       },
       {
         'label': 'More',
         'icon': Icons.more_horiz_rounded,
         'bg': const Color(0xFFF1F5F9),
         'color': const Color(0xFF475569),
-        'onTap': _showMoreServicesModal,
+        'onTap': () => context.push('/explore'),
       },
     ];
 
