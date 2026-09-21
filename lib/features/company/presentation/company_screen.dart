@@ -98,8 +98,7 @@ class _CompanyScreenState extends ConsumerState<CompanyScreen> {
                                   showAuthPromptDialog(
                                     context,
                                     title: 'Sign In to Follow',
-                                    message:
-                                        'Please sign in to follow companies and receive hiring alerts.',
+                                    message: 'Please sign in to follow companies and receive hiring alerts.',
                                   );
                                   return;
                                 }

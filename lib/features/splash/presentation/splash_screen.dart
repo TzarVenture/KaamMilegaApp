@@ -54,14 +54,13 @@ class _SplashScreenState extends State<SplashScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const AppLogo(size: 100),
-            const SizedBox(height: 24),
-            const Text('KaamMilega', style: AppTextStyles.heading1),
+            const AppBrandBarLogo(iconHeight: 64, textHeight: 36, spacing: 14),
             const SizedBox(height: 8),
             Text(
-              'Kaam Bhi, Kamai Bhi',
+              'Kaam Bhi. Skill Bhi. Kamaai Bhi.',
               style: AppTextStyles.bodySecondary.copyWith(
                 color: AppColors.textSecondary,
+                fontWeight: FontWeight.w600,
                 letterSpacing: 0.2,
               ),
             ),

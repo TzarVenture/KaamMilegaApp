@@ -7,11 +7,7 @@ class AppLogo extends StatelessWidget {
   final double size;
   final bool showText;
 
-  const AppLogo({
-    super.key,
-    this.size = 80,
-    this.showText = false,
-  });
+  const AppLogo({super.key, this.size = 80, this.showText = false});
 
   @override
   Widget build(BuildContext context) {
@@ -63,18 +59,98 @@ class AppLogo extends StatelessWidget {
           ),
         ),
         if (showText) ...[
-          const SizedBox(height: 8),
-          const Text(
-            'KaamMilega™',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w900,
-              color: AppColors.primary,
-              letterSpacing: -0.5,
+          const SizedBox(height: 12),
+          Image.asset(
+            'assets/images/logo_text.png',
+            height: size * 0.3,
+            fit: BoxFit.contain,
+            errorBuilder: (context, error, stackTrace) => RichText(
+              text: const TextSpan(
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: -0.5,
+                ),
+                children: [
+                  TextSpan(
+                    text: 'Kaammi',
+                    style: TextStyle(color: AppColors.brandBlue),
+                  ),
+                  TextSpan(
+                    text: 'lega™',
+                    style: TextStyle(color: AppColors.brandOrange),
+                  ),
+                ],
+              ),
             ),
           ),
         ],
       ],
     );
+  }
+}
+
+/// Combined Brand Logo widget displaying the icon and the Kaammilega™ wordmark side-by-side
+class AppBrandBarLogo extends StatelessWidget {
+  final double iconHeight;
+  final double textHeight;
+  final double spacing;
+  final VoidCallback? onTap;
+
+  const AppBrandBarLogo({
+    super.key,
+    this.iconHeight = 28,
+    this.textHeight = 17,
+    this.spacing = 8,
+    this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final content = Row(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Image.asset(
+          'assets/images/logo.png',
+          height: iconHeight,
+          fit: BoxFit.contain,
+        ),
+        SizedBox(width: spacing),
+        Image.asset(
+          'assets/images/logo_text.png',
+          height: textHeight,
+          fit: BoxFit.contain,
+          errorBuilder: (context, error, stackTrace) => RichText(
+            text: const TextSpan(
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w900,
+                letterSpacing: -0.5,
+              ),
+              children: [
+                TextSpan(
+                  text: 'Kaammi',
+                  style: TextStyle(color: AppColors.brandBlue),
+                ),
+                TextSpan(
+                  text: 'lega™',
+                  style: TextStyle(color: AppColors.brandOrange),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+
+    if (onTap != null) {
+      return GestureDetector(
+        onTap: onTap,
+        behavior: HitTestBehavior.opaque,
+        child: content,
+      );
+    }
+    return content;
   }
 }

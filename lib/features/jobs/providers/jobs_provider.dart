@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/storage/local_storage.dart';
 import '../models/job.dart';
 import '../models/job_filter.dart';
 import '../repositories/job_repository.dart';
@@ -51,8 +52,9 @@ class JobsNotifier extends Notifier<JobsState> {
   @override
   JobsState build() {
     _repository = ref.watch(jobRepositoryProvider);
+    final cachedSaved = LocalStorage.getSavedJobIds();
     Future.microtask(() => fetchJobs());
-    return const JobsState();
+    return JobsState(savedJobIds: cachedSaved);
   }
 
   /// Toggle saving / bookmarking a job
@@ -64,6 +66,7 @@ class JobsNotifier extends Notifier<JobsState> {
       current.add(jobId);
     }
     state = state.copyWith(savedJobIds: current);
+    LocalStorage.saveSavedJobIds(current);
   }
 
   /// Fetch jobs with current filter

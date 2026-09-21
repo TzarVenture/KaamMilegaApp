@@ -99,7 +99,10 @@ class _EventsScreenState extends ConsumerState<EventsScreen> {
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh_rounded, color: AppColors.textSecondary),
+            icon: const Icon(
+              Icons.refresh_rounded,
+              color: AppColors.textSecondary,
+            ),
             onPressed: () => ref.read(eventsProvider.notifier).refresh(),
             tooltip: 'Refresh Events',
           ),
@@ -163,9 +166,7 @@ class _EventsScreenState extends ConsumerState<EventsScreen> {
           },
           loading: () => ListView(
             padding: const EdgeInsets.all(16),
-            children: const [
-              ShimmerLoadingList(count: 3, itemHeight: 280),
-            ],
+            children: const [ShimmerLoadingList(count: 3, itemHeight: 280)],
           ),
           error: (error, stackTrace) => ListView(
             physics: const AlwaysScrollableScrollPhysics(),
@@ -236,10 +237,9 @@ class _EventsScreenState extends ConsumerState<EventsScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           ClipRRect(
-            borderRadius: const BorderRadius.vertical(
-              top: Radius.circular(20),
-            ),
-            child: (event.imageUrl.isNotEmpty &&
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+            child:
+                (event.imageUrl.isNotEmpty &&
                     (event.imageUrl.startsWith('http://') ||
                         event.imageUrl.startsWith('https://')))
                 ? Image.network(
@@ -376,11 +376,7 @@ class _EventsScreenState extends ConsumerState<EventsScreen> {
       height: 160,
       color: AppColors.heroBg,
       child: const Center(
-        child: Icon(
-          Icons.event_rounded,
-          size: 48,
-          color: Colors.white,
-        ),
+        child: Icon(Icons.event_rounded, size: 48, color: Colors.white),
       ),
     );
   }

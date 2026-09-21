@@ -55,5 +55,6 @@ class EventsNotifier extends AsyncNotifier<List<EventItem>> {
   }
 }
 
-final eventsProvider =
-    AsyncNotifierProvider<EventsNotifier, List<EventItem>>(EventsNotifier.new);
+final eventsProvider = AsyncNotifierProvider<EventsNotifier, List<EventItem>>(
+  EventsNotifier.new,
+);

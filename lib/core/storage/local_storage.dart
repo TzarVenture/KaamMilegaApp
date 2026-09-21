@@ -66,4 +66,18 @@ class LocalStorage {
   static String getSelectedCity() {
     return _prefs?.getString(_selectedCityKey) ?? 'All';
   }
+
+  static const String _savedJobsKey = 'km_saved_job_ids';
+
+  /// Persist saved job IDs locally
+  static Future<bool> saveSavedJobIds(Set<String> ids) async {
+    await init();
+    return _prefs!.setStringList(_savedJobsKey, ids.toList());
+  }
+
+  /// Retrieve persisted saved job IDs
+  static Set<String> getSavedJobIds() {
+    final list = _prefs?.getStringList(_savedJobsKey);
+    return list != null ? list.toSet() : {};
+  }
 }

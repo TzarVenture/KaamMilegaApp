@@ -113,7 +113,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         backgroundColor: Colors.white,
         elevation: 0.5,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded, color: AppColors.textPrimary),
+          icon: const Icon(
+            Icons.arrow_back_rounded,
+            color: AppColors.textPrimary,
+          ),
           onPressed: () => context.pop(),
         ),
         title: const Text(
@@ -138,12 +141,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 Container(
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFEEF2FF),
+                    color: AppColors.primaryLight,
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: const Icon(
                     Icons.tune_rounded,
-                    color: Color(0xFF4F46E5),
+                    color: AppColors.primary,
                     size: 26,
                   ),
                 ),
@@ -238,7 +241,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           color: isSelected ? const Color(0xFF5B4DFF) : Colors.white,
           borderRadius: BorderRadius.circular(24),
           border: Border.all(
-            color: isSelected ? const Color(0xFF5B4DFF) : const Color(0xFFE2E8F0),
+            color: isSelected
+                ? const Color(0xFF5B4DFF)
+                : const Color(0xFFE2E8F0),
             width: 1.5,
           ),
           boxShadow: isSelected
@@ -332,8 +337,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
           _buildToggleRow(
             title: 'Email Job Alerts',
-            subtitle:
-                'Receive daily emails about new job openings matching your profile and skills.',
+            subtitle: 'Receive daily emails about new job openings matching your profile and skills.',
             value: _emailAlerts,
             onChanged: (val) => setState(() => _emailAlerts = val),
           ),
@@ -341,8 +345,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
           _buildToggleRow(
             title: 'Application Status Notifications',
-            subtitle:
-                'Get notified instantly when a recruiter reviews, shortlists, or schedules an interview for your application.',
+            subtitle: 'Get notified instantly when a recruiter reviews, shortlists, or schedules an interview for your application.',
             value: _appStatusNotifs,
             onChanged: (val) => setState(() => _appStatusNotifs = val),
           ),
@@ -350,8 +353,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
           _buildToggleRow(
             title: 'Urgent SMS Alerts',
-            subtitle:
-                'Receive high-priority SMS messages for interview invitations and recruiter call requests.',
+            subtitle: 'Receive high-priority SMS messages for interview invitations and recruiter call requests.',
             value: _urgentSmsAlerts,
             onChanged: (val) => setState(() => _urgentSmsAlerts = val),
           ),
@@ -359,8 +361,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
           _buildToggleRow(
             title: 'Browser & Mobile Push Notifications',
-            subtitle:
-                'Allow real-time push alerts on your desktop or mobile device when active.',
+            subtitle: 'Allow real-time push alerts on your desktop or mobile device when active.',
             value: _pushNotifs,
             onChanged: (val) => setState(() => _pushNotifs = val),
           ),
@@ -368,8 +369,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
           _buildToggleRow(
             title: 'Product Updates & Career News',
-            subtitle:
-                'Occasional news regarding platform features, salary insights, and career fairs.',
+            subtitle: 'Occasional news regarding platform features, salary insights, and career fairs.',
             value: _productNewsAlerts,
             onChanged: (val) => setState(() => _productNewsAlerts = val),
           ),
@@ -434,22 +434,19 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           _buildVisibilityModeOption(
             id: 'public',
             title: 'Public (Recommended)',
-            subtitle:
-                'Visible to all verified employers, recruiters, and network connections.',
+            subtitle: 'Visible to all verified employers, recruiters, and network connections.',
           ),
           const SizedBox(height: 12),
           _buildVisibilityModeOption(
             id: 'connections',
             title: 'Connections Only',
-            subtitle:
-                'Only recruiters you interact with or connect to can view your full details.',
+            subtitle: 'Only recruiters you interact with or connect to can view your full details.',
           ),
           const SizedBox(height: 12),
           _buildVisibilityModeOption(
             id: 'private',
             title: 'Private / Hidden',
-            subtitle:
-                'Hidden from general candidate searches. Only visible when you apply directly.',
+            subtitle: 'Hidden from general candidate searches. Only visible when you apply directly.',
           ),
 
           const SizedBox(height: 28),
@@ -458,8 +455,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           _buildToggleRowWithIcon(
             icon: Icons.auto_awesome_rounded,
             title: 'AI Job Matching & Recommendations',
-            subtitle:
-                'Allow automated algorithms to match your resume skills with recruiter searches.',
+            subtitle: 'Allow automated algorithms to match your resume skills with recruiter searches.',
             value: _aiJobMatching,
             onChanged: (val) => setState(() => _aiJobMatching = val),
           ),
@@ -469,8 +465,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           // Search Engine Indexing Toggle Row
           _buildToggleRow(
             title: 'Search Engine Indexing',
-            subtitle:
-                'Allow public search engines (Google Jobs) to index your candidate public profile link.',
+            subtitle: 'Allow public search engines (Google Jobs) to index your candidate public profile link.',
             value: _searchEngineIndexing,
             onChanged: (val) => setState(() => _searchEngineIndexing = val),
           ),
@@ -496,7 +491,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           color: isSelected ? const Color(0xFFFAF5FF) : Colors.white,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: isSelected ? const Color(0xFF5B4DFF) : const Color(0xFFE2E8F0),
+            color: isSelected
+                ? const Color(0xFF5B4DFF)
+                : const Color(0xFFE2E8F0),
             width: isSelected ? 1.8 : 1.0,
           ),
         ),
@@ -535,7 +532,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               height: 22,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: isSelected ? const Color(0xFF5B4DFF) : Colors.transparent,
+                color: isSelected
+                    ? const Color(0xFF5B4DFF)
+                    : Colors.transparent,
                 border: Border.all(
                   color: isSelected
                       ? const Color(0xFF5B4DFF)
@@ -561,8 +560,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   // TAB 3: ACCOUNT SECURITY (media_1789558055533.png)
   // ==========================================
   Widget _buildSecurityCard(UserProfile? user) {
-    final mobileNum = user?.mobile.isNotEmpty == true ? user!.mobile : 'Not provided';
-    final emailAddr = user?.email.isNotEmpty == true ? user!.email : 'Not provided';
+    final mobileNum = user?.mobile.isNotEmpty == true
+        ? user!.mobile
+        : 'Not provided';
+    final emailAddr = user?.email.isNotEmpty == true
+        ? user!.email
+        : 'Not provided';
     final isEmailVerified = user?.isEmailVerified == true;
 
     return Column(
@@ -597,10 +600,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               const SizedBox(height: 4),
               const Text(
                 'Review authenticated devices and contact verification status.',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: AppColors.textSecondary,
-                ),
+                style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
               ),
               const SizedBox(height: 20),
 
@@ -762,13 +762,15 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                             ),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(16),
-                              borderSide:
-                                  const BorderSide(color: Color(0xFFE2E8F0)),
+                              borderSide: const BorderSide(
+                                color: Color(0xFFE2E8F0),
+                              ),
                             ),
                             enabledBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(16),
-                              borderSide:
-                                  const BorderSide(color: Color(0xFFE2E8F0)),
+                              borderSide: const BorderSide(
+                                color: Color(0xFFE2E8F0),
+                              ),
                             ),
                           ),
                         ),
@@ -806,13 +808,15 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                             ),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(16),
-                              borderSide:
-                                  const BorderSide(color: Color(0xFFE2E8F0)),
+                              borderSide: const BorderSide(
+                                color: Color(0xFFE2E8F0),
+                              ),
                             ),
                             enabledBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(16),
-                              borderSide:
-                                  const BorderSide(color: Color(0xFFE2E8F0)),
+                              borderSide: const BorderSide(
+                                color: Color(0xFFE2E8F0),
+                              ),
                             ),
                           ),
                         ),
@@ -920,7 +924,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
             decoration: BoxDecoration(
-              color: isVerified ? const Color(0xFFDCFCE7) : const Color(0xFFFEF3C7),
+              color: isVerified
+                  ? const Color(0xFFDCFCE7)
+                  : const Color(0xFFFEF3C7),
               borderRadius: BorderRadius.circular(20),
             ),
             child: Row(

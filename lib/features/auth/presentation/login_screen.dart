@@ -128,7 +128,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     final isDesktopOrTablet = size.width > 600;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF9F5FF), // Soft purple tint background
+      backgroundColor: AppColors.background,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -154,13 +154,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 borderRadius: BorderRadius.circular(24),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.purple.withValues(alpha: 0.08),
-                    blurRadius: 25,
-                    spreadRadius: 2,
-                    offset: const Offset(0, 10),
+                    color: Colors.black.withValues(alpha: 0.05),
+                    blurRadius: 20,
+                    offset: const Offset(0, 8),
                   ),
                 ],
-                border: Border.all(color: const Color(0xFFF3E8FF)),
+                border: Border.all(color: AppColors.border),
               ),
               padding: EdgeInsets.all(isDesktopOrTablet ? 32 : 24),
               child: Column(
@@ -169,7 +168,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 children: [
                   // App Logo Branding
                   const Center(
-                    child: AppLogo(size: 70),
+                    child: AppBrandBarLogo(
+                      iconHeight: 44,
+                      textHeight: 26,
+                      spacing: 10,
+                    ),
                   ),
                   const SizedBox(height: 24),
 
@@ -376,7 +379,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           decoration: InputDecoration(
             hintText: 'name@example.com',
             hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 14),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 16,
+            ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(16),
               borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
@@ -387,7 +393,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(16),
-              borderSide: const BorderSide(color: Color(0xFF9333EA), width: 1.5),
+              borderSide: const BorderSide(
+                color: Color(0xFF9333EA),
+                width: 1.5,
+              ),
             ),
           ),
         ),
@@ -428,7 +437,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           decoration: InputDecoration(
             hintText: 'Enter your password',
             hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 14),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 16,
+            ),
             suffixIcon: IconButton(
               icon: Icon(
                 _isPasswordVisible ? Icons.visibility_off : Icons.visibility,
@@ -449,7 +461,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(16),
-              borderSide: const BorderSide(color: Color(0xFF9333EA), width: 1.5),
+              borderSide: const BorderSide(
+                color: Color(0xFF9333EA),
+                width: 1.5,
+              ),
             ),
           ),
         ),
@@ -463,7 +478,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           child: ElevatedButton(
             onPressed: _isLoading ? null : _handlePasswordLogin,
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF1A2B8C), // Primary KaamMilega Blue
+              backgroundColor: const Color(
+                0xFF1A2B8C,
+              ), // Primary KaamMilega Blue
               elevation: 0,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(24),
@@ -530,7 +547,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 ),
               ),
             ),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 16,
+            ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(16),
               borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
@@ -541,7 +561,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(16),
-              borderSide: const BorderSide(color: Color(0xFF9333EA), width: 1.5),
+              borderSide: const BorderSide(
+                color: Color(0xFF9333EA),
+                width: 1.5,
+              ),
             ),
           ),
         ),
@@ -555,7 +578,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           child: ElevatedButton(
             onPressed: _isLoading ? null : _handleOtpLogin,
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF1A2B8C), // Primary KaamMilega Blue
+              backgroundColor: const Color(
+                0xFF1A2B8C,
+              ), // Primary KaamMilega Blue
               elevation: 0,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(24),
@@ -597,10 +622,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             children: [
               const Text(
                 "Don't have an account yet? ",
-                style: TextStyle(
-                  fontSize: 12.5,
-                  color: Color(0xFF64748B),
-                ),
+                style: TextStyle(fontSize: 12.5, color: Color(0xFF64748B)),
               ),
               GestureDetector(
                 onTap: () => context.push('/register'),
@@ -626,10 +648,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             children: [
               const Text(
                 'Or ',
-                style: TextStyle(
-                  fontSize: 12.5,
-                  color: Color(0xFF64748B),
-                ),
+                style: TextStyle(fontSize: 12.5, color: Color(0xFF64748B)),
               ),
               GestureDetector(
                 onTap: () {

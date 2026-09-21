@@ -4,7 +4,6 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../app/theme/app_colors.dart';
 import '../../../../core/constants/api_constants.dart';
-import '../../../../shared/widgets/auth_prompt_dialog.dart';
 import '../../../auth/providers/auth_provider.dart';
 import '../../../notifications/providers/notification_provider.dart';
 
@@ -107,7 +106,7 @@ class ProfileDrawer extends ConsumerWidget {
                 context.push('/apply-expert');
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF2563EB),
+                backgroundColor: AppColors.primary,
                 foregroundColor: Colors.white,
                 minimumSize: const Size(double.infinity, 50),
                 shape: RoundedRectangleBorder(
@@ -119,119 +118,6 @@ class ProfileDrawer extends ConsumerWidget {
                 'Explore Mentors & Sessions',
                 style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800),
               ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  void _showRefillWalletModal(BuildContext context, WidgetRef ref) {
-    if (!ref.read(authProvider).isAuthenticated) {
-      showAuthPromptDialog(
-        context,
-        title: 'Sign In Required',
-        message: 'Please sign in to access wallet and credits.',
-      );
-      return;
-    }
-
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      builder: (ctx) => Container(
-        padding: const EdgeInsets.all(24),
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Center(
-              child: Container(
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade300,
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-            ),
-            const SizedBox(height: 20),
-            const Text(
-              'KaamMilega™ Wallet & Credits',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w900,
-                color: Color(0xFF0F172A),
-              ),
-            ),
-            const SizedBox(height: 8),
-            const Text(
-              'Recharge credits for instant applications, featured profile boost, and direct verified recruiter contacts.',
-              style: TextStyle(
-                fontSize: 13,
-                color: Color(0xFF64748B),
-                height: 1.4,
-              ),
-            ),
-            const SizedBox(height: 24),
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: () {
-                      Navigator.pop(ctx);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Recharge ₹199 Pack initiated')),
-                      );
-                    },
-                    style: OutlinedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                      side: const BorderSide(color: Color(0xFFE2E8F0)),
-                    ),
-                    child: const Text(
-                      '₹199 / 20 Credits',
-                      style: TextStyle(
-                        fontWeight: FontWeight.w700,
-                        color: Color(0xFF0F172A),
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.pop(ctx);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Recharge ₹499 Pro Pack initiated'),
-                          backgroundColor: Color(0xFF2563EB),
-                        ),
-                      );
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF2563EB),
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                      elevation: 0,
-                    ),
-                    child: const Text(
-                      '₹499 / 60 Credits',
-                      style: TextStyle(fontWeight: FontWeight.w800),
-                    ),
-                  ),
-                ),
-              ],
             ),
           ],
         ),
@@ -252,7 +138,8 @@ class ProfileDrawer extends ConsumerWidget {
         ? user.headline.trim()
         : (isAuth ? 'User' : 'Guest');
     final userAvatar = ApiConstants.resolveImageUrl(user?.profileImage ?? '');
-    final hasAvatar = isAuth &&
+    final hasAvatar =
+        isAuth &&
         userAvatar.isNotEmpty &&
         (userAvatar.startsWith('http://') || userAvatar.startsWith('https://'));
 
@@ -260,7 +147,7 @@ class ProfileDrawer extends ConsumerWidget {
 
     return Drawer(
       backgroundColor: Colors.white,
-      width: MediaQuery.of(context).size.width * 0.60,
+      width: (MediaQuery.of(context).size.width * 0.78).clamp(280.0, 340.0),
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.horizontal(left: Radius.circular(20)),
       ),
@@ -279,11 +166,40 @@ class ProfileDrawer extends ConsumerWidget {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Image.asset(
-                            'assets/images/logo.png',
-                            height: 26,
-                            fit: BoxFit.contain,
+                          Expanded(
+                            child: GestureDetector(
+                              onTap: () {
+                                Navigator.pop(context);
+                                if (onNavigateTab != null) {
+                                  onNavigateTab!(0);
+                                } else {
+                                  context.go('/home');
+                                }
+                              },
+                              child: FittedBox(
+                                fit: BoxFit.scaleDown,
+                                alignment: Alignment.centerLeft,
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    Image.asset(
+                                      'assets/images/logo.png',
+                                      height: 26,
+                                      fit: BoxFit.contain,
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Image.asset(
+                                      'assets/images/logo_text.png',
+                                      height: 16,
+                                      fit: BoxFit.contain,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
                           ),
+                          const SizedBox(width: 8),
                           Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
@@ -356,7 +272,11 @@ class ProfileDrawer extends ConsumerWidget {
                       ),
                     ),
 
-                    const Divider(height: 1, thickness: 1, color: Color(0xFFF1F5F9)),
+                    const Divider(
+                      height: 1,
+                      thickness: 1,
+                      color: Color(0xFFF1F5F9),
+                    ),
 
                     // 2. User Profile Card
                     Padding(
@@ -431,7 +351,7 @@ class ProfileDrawer extends ConsumerWidget {
                             },
                             style: OutlinedButton.styleFrom(
                               side: const BorderSide(
-                                color: Color(0xFF2563EB),
+                                color: AppColors.primary,
                                 width: 1.2,
                               ),
                               shape: RoundedRectangleBorder(
@@ -447,7 +367,7 @@ class ProfileDrawer extends ConsumerWidget {
                             child: Text(
                               isAuth ? 'Profile' : 'Sign In',
                               style: const TextStyle(
-                                color: Color(0xFF2563EB),
+                                color: AppColors.primary,
                                 fontSize: 13,
                                 fontWeight: FontWeight.w700,
                               ),
@@ -457,7 +377,11 @@ class ProfileDrawer extends ConsumerWidget {
                       ),
                     ),
 
-                    const Divider(height: 1, thickness: 1, color: Color(0xFFF1F5F9)),
+                    const Divider(
+                      height: 1,
+                      thickness: 1,
+                      color: Color(0xFFF1F5F9),
+                    ),
                     const SizedBox(height: 6),
 
                     // 3. Main Nav Items with Icons (Screenshot 1)
@@ -531,7 +455,11 @@ class ProfileDrawer extends ConsumerWidget {
                     ),
 
                     const SizedBox(height: 6),
-                    const Divider(height: 1, thickness: 1, color: Color(0xFFF1F5F9)),
+                    const Divider(
+                      height: 1,
+                      thickness: 1,
+                      color: Color(0xFFF1F5F9),
+                    ),
                     const SizedBox(height: 6),
 
                     // 4. Secondary Text Menu Items (Screenshot 1)
@@ -539,7 +467,7 @@ class ProfileDrawer extends ConsumerWidget {
                       title: 'Digital Wallet & Ledger',
                       onTap: () {
                         Navigator.pop(context);
-                        _showRefillWalletModal(context, ref);
+                        context.push('/wallet');
                       },
                     ),
                     _DrawerTextTile(
@@ -572,7 +500,11 @@ class ProfileDrawer extends ConsumerWidget {
                     ),
 
                     const SizedBox(height: 6),
-                    const Divider(height: 1, thickness: 1, color: Color(0xFFF1F5F9)),
+                    const Divider(
+                      height: 1,
+                      thickness: 1,
+                      color: Color(0xFFF1F5F9),
+                    ),
                     const SizedBox(height: 6),
 
                     // 5. Auth Sign Out / Sign In
@@ -597,7 +529,7 @@ class ProfileDrawer extends ConsumerWidget {
                     else
                       _DrawerTextTile(
                         title: 'Sign In / Create Account',
-                        textColor: const Color(0xFF2563EB),
+                        textColor: AppColors.primary,
                         onTap: () {
                           Navigator.pop(context);
                           context.push('/login');

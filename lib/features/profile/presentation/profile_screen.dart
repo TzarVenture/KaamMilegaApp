@@ -295,7 +295,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
     final user = ref.read(authProvider).user;
     final coverImage = ApiConstants.resolveImageUrl(user?.coverImage ?? '');
-    final hasCover = coverImage.isNotEmpty &&
+    final hasCover =
+        coverImage.isNotEmpty &&
         (coverImage.startsWith('http://') || coverImage.startsWith('https://'));
 
     showDialog(
@@ -471,8 +472,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
     final user = ref.read(authProvider).user;
     final profileImage = ApiConstants.resolveImageUrl(user?.profileImage ?? '');
-    final hasAvatar = profileImage.isNotEmpty &&
-        (profileImage.startsWith('http://') || profileImage.startsWith('https://'));
+    final hasAvatar =
+        profileImage.isNotEmpty &&
+        (profileImage.startsWith('http://') ||
+            profileImage.startsWith('https://'));
 
     showDialog(
       context: context,
@@ -899,6 +902,183 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                         style: TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  // -------------------------------------------------------------------
+  // EDIT ABOUT / SUMMARY DIALOG
+  // -------------------------------------------------------------------
+  void _showEditAboutDialog(UserProfile user) {
+    if (!ref.read(authProvider).isAuthenticated) {
+      showAuthPromptDialog(
+        context,
+        title: 'Sign In Required',
+        message: 'Please sign in to edit your profile information.',
+      );
+      return;
+    }
+
+    final aboutCtrl = TextEditingController(text: user.about);
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setModalState) {
+          final int charCount = aboutCtrl.text.length;
+
+          return Container(
+            padding: EdgeInsets.only(
+              bottom: MediaQuery.of(ctx).viewInsets.bottom + 20,
+              top: 20,
+              left: 20,
+              right: 20,
+            ),
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+            ),
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Header
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        'Edit About',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w800,
+                          color: AppColors.textPrimary,
+                        ),
+                      ),
+                      IconButton(
+                        onPressed: () => Navigator.pop(ctx),
+                        icon: const Icon(
+                          Icons.close,
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const Divider(height: 1),
+                  const SizedBox(height: 16),
+
+                  // Description
+                  const Text(
+                    'You Can Write About Your Years Of Experience, Industry, Or Skills. People Also Talk About Their Achievements Or Previous Job Experiences.',
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.textPrimary,
+                      height: 1.4,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Text Field
+                  Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: AppColors.border),
+                      color: Colors.white,
+                    ),
+                    child: TextField(
+                      controller: aboutCtrl,
+                      maxLines: 8,
+                      minLines: 5,
+                      maxLength: 2600,
+                      onChanged: (val) {
+                        setModalState(() {});
+                      },
+                      decoration: const InputDecoration(
+                        hintText: 'Write your about section here...',
+                        hintStyle: TextStyle(
+                          color: AppColors.textSecondary,
+                          fontSize: 14,
+                        ),
+                        border: InputBorder.none,
+                        enabledBorder: InputBorder.none,
+                        focusedBorder: InputBorder.none,
+                        contentPadding: EdgeInsets.all(16),
+                        counterText: '', // Hide default counter
+                      ),
+                    ),
+                  ),
+
+                  // Counter
+                  Padding(
+                    padding: const EdgeInsets.only(top: 8, bottom: 20),
+                    child: Align(
+                      alignment: Alignment.centerRight,
+                      child: Text(
+                        '$charCount/2600',
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: AppColors.textSecondary,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  const Divider(height: 1),
+                  const SizedBox(height: 16),
+
+                  // Save Button
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 32,
+                          vertical: 12,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      onPressed: () async {
+                        Navigator.pop(ctx);
+                        final ok = await ref
+                            .read(authProvider.notifier)
+                            .updateProfile({'about': aboutCtrl.text.trim()});
+                        if (mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                ok
+                                    ? 'About section updated successfully!'
+                                    : 'Failed to update about section.',
+                              ),
+                              backgroundColor: ok
+                                  ? AppColors.success
+                                  : AppColors.error,
+                            ),
+                          );
+                        }
+                      },
+                      child: const Text(
+                        'Save',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
                     ),
@@ -2472,120 +2652,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   }
 
   // -------------------------------------------------------------------
-  // REFILL WALLET CREDITS MODAL
+  // REFILL WALLET CREDITS / ADD MONEY
   // -------------------------------------------------------------------
   void _showRefillWalletModal() {
-    if (!ref.read(authProvider).isAuthenticated) {
-      showAuthPromptDialog(
-        context,
-        title: 'Sign In Required',
-        message: 'Please sign in to access wallet credits.',
-      );
-      return;
-    }
-
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      builder: (ctx) => Container(
-        padding: const EdgeInsets.all(24),
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text(
-                  'Refill Wallet Credits',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.close),
-                  onPressed: () => Navigator.pop(ctx),
-                ),
-              ],
-            ),
-            const SizedBox(height: 10),
-            const Text(
-              'Add wallet balance to unlock premium recruiter contacts & instant gig dispatches.',
-              style: TextStyle(fontSize: 13, color: AppColors.textSecondary),
-            ),
-            const SizedBox(height: 20),
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: () {
-                      Navigator.pop(ctx);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text(
-                            'Redirecting to Razorpay UPI Checkout...',
-                          ),
-                          backgroundColor: AppColors.primary,
-                        ),
-                      );
-                    },
-                    style: OutlinedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      side: const BorderSide(
-                        color: AppColors.primary,
-                        width: 1.5,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                    ),
-                    child: const Text(
-                      '₹99\nBasic Topup',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontWeight: FontWeight.w800,
-                        color: AppColors.primary,
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.pop(ctx);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text(
-                            'Redirecting to Razorpay UPI Checkout...',
-                          ),
-                          backgroundColor: AppColors.primary,
-                        ),
-                      );
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primary,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                    ),
-                    child: const Text(
-                      '₹199\nPopular Pack',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(fontWeight: FontWeight.w800),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
+    context.push('/wallet/add-money');
   }
 
   // -------------------------------------------------------------------
@@ -2772,10 +2842,13 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   Widget _buildHeroBanner(UserProfile? user, int connectionsCount) {
     final coverImage = ApiConstants.resolveImageUrl(user?.coverImage ?? '');
     final profileImage = ApiConstants.resolveImageUrl(user?.profileImage ?? '');
-    final hasCover = coverImage.isNotEmpty &&
+    final hasCover =
+        coverImage.isNotEmpty &&
         (coverImage.startsWith('http://') || coverImage.startsWith('https://'));
-    final hasAvatar = profileImage.isNotEmpty &&
-        (profileImage.startsWith('http://') || profileImage.startsWith('https://'));
+    final hasAvatar =
+        profileImage.isNotEmpty &&
+        (profileImage.startsWith('http://') ||
+            profileImage.startsWith('https://'));
     final isAuth = ref.watch(authProvider).isAuthenticated;
 
     return Container(
@@ -2866,8 +2939,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                             backgroundImage: hasAvatar
                                 ? NetworkImage(profileImage)
                                 : null,
-                            onBackgroundImageError:
-                                hasAvatar ? (_, _) {} : null,
+                            onBackgroundImageError: hasAvatar
+                                ? (_, _) {}
+                                : null,
                             child: !hasAvatar
                                 ? const Icon(
                                     Icons.person_rounded,
@@ -3247,53 +3321,274 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   // WALLET CREDITS CARD WIDGET
   // -------------------------------------------------------------------
   Widget _buildWalletCreditsCard(UserProfile? user) {
+    return InkWell(
+      onTap: () => context.push('/wallet'),
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+        decoration: BoxDecoration(
+          color: const Color(0xFF0C1738), // Deep navy matching screenshot
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text(
+                    'Wallet Credits',
+                    style: TextStyle(
+                      color: Colors.white70,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    '₹${user?.walletBalance ?? 0}',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 24,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 12),
+            InkWell(
+              onTap: _showRefillWalletModal,
+              borderRadius: BorderRadius.circular(14),
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 10,
+                ),
+                decoration: BoxDecoration(
+                  color: const Color(
+                    0xFF38232C,
+                  ), // Matches screenshot dark warm brownish-red
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(
+                    color: const Color(
+                      0xFF8A4630,
+                    ), // Matches screenshot warm border
+                    width: 1.2,
+                  ),
+                ),
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      '₹ Refill Wallet',
+                      style: TextStyle(
+                        color: Color(
+                          0xFFF97316,
+                        ), // Brand Orange from screenshot
+                        fontWeight: FontWeight.w800,
+                        fontSize: 13,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // -------------------------------------------------------------------
+  // PUBLIC PROFILE & LANGUAGE SETTINGS CARD (media_1789974076369.png)
+  // -------------------------------------------------------------------
+  Widget _buildPublicProfileAndLanguageCard(UserProfile? user) {
+    final publicUrl = user != null && user.id.isNotEmpty
+        ? 'www.kaammilega.com/in/${user.id}'
+        : 'www.kaammilega.com/in/...';
+    final fullUrl = user != null && user.id.isNotEmpty
+        ? 'https://www.kaammilega.com/in/${user.id}'
+        : 'https://www.kaammilega.com';
+
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E1435),
-        borderRadius: BorderRadius.circular(20),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.border),
       ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Wallet Credits',
-                  style: TextStyle(color: Colors.white70, fontSize: 12),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  '₹${user?.walletBalance ?? 0}',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 22,
-                    fontWeight: FontWeight.w900,
+          // Profile Language
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Profile Language',
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w800,
+                      color: AppColors.textPrimary,
+                    ),
                   ),
+                  SizedBox(height: 4),
+                  Text(
+                    'English',
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                ],
+              ),
+              IconButton(
+                icon: const Icon(
+                  Icons.edit_outlined,
+                  size: 18,
+                  color: Color(0xFF94A3B8),
+                ),
+                onPressed: _showLanguageSelectionModal,
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+              ),
+            ],
+          ),
+
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 14),
+            child: Divider(height: 1, thickness: 1, color: Color(0xFFE2E8F0)),
+          ),
+
+          // Public Profile & URL
+          InkWell(
+            onTap: () {
+              if (user != null && user.id.isNotEmpty) {
+                Clipboard.setData(ClipboardData(text: fullUrl));
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Public profile URL copied: $publicUrl'),
+                    backgroundColor: AppColors.success,
+                    behavior: SnackBarBehavior.floating,
+                  ),
+                );
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text(
+                      'Please sign in to view your unique profile URL.',
+                    ),
+                    behavior: SnackBarBehavior.floating,
+                  ),
+                );
+              }
+            },
+            borderRadius: BorderRadius.circular(8),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Public Profile & URL',
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w800,
+                          color: AppColors.textPrimary,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        publicUrl,
+                        style: const TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                          color: AppColors.textSecondary,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 8),
+                const Icon(
+                  Icons.copy_rounded,
+                  size: 16,
+                  color: Color(0xFF94A3B8),
                 ),
               ],
             ),
           ),
-          const SizedBox(width: 12),
-          ElevatedButton.icon(
-            onPressed: _showRefillWalletModal,
-            icon: const Icon(Icons.currency_rupee_rounded, size: 14),
-            label: const Text(
-              'Refill Wallet',
-              style: TextStyle(fontWeight: FontWeight.w800, fontSize: 13),
-            ),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primary,
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
-            ),
-          ),
         ],
+      ),
+    );
+  }
+
+  void _showLanguageSelectionModal() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => Container(
+        padding: const EdgeInsets.all(20),
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  'Select Profile Language',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.close, color: AppColors.textSecondary),
+                  onPressed: () => Navigator.pop(ctx),
+                ),
+              ],
+            ),
+            const Divider(height: 1),
+            const SizedBox(height: 8),
+            ListTile(
+              title: const Text(
+                'English (Default)',
+                style: TextStyle(fontWeight: FontWeight.w700),
+              ),
+              trailing: const Icon(Icons.check, color: AppColors.primary),
+              onTap: () => Navigator.pop(ctx),
+            ),
+            ListTile(
+              title: const Text('Hindi (हिंदी)'),
+              onTap: () {
+                Navigator.pop(ctx);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Language preference updated.'),
+                    behavior: SnackBarBehavior.floating,
+                  ),
+                );
+              },
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -3571,7 +3866,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               if (!hasAbout)
                 _buildCompletenessChip(
                   'Add About Summary +',
-                  () => _openEditProfileDialog(user),
+                  () => _showEditAboutDialog(user),
                 ),
               if (!hasHeadline)
                 _buildCompletenessChip(
@@ -3601,7 +3896,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               crossAxisCount: 2,
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
-              childAspectRatio: 2.1,
+              childAspectRatio: 3.5,
               crossAxisSpacing: 10,
               mainAxisSpacing: 10,
               children: [
@@ -3637,7 +3932,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   subtitle:
                       'Write a brief professional summary of your background',
                   isCompleted: hasAbout,
-                  onTap: () => _openEditProfileDialog(user),
+                  onTap: () => _showEditAboutDialog(user),
                 ),
                 _buildBreakdownCard(
                   title: 'Headline & Location',
@@ -3684,88 +3979,67 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
   Widget _buildBreakdownCard({
     required String title,
-    required String subtitle,
+    required String subtitle, // kept to avoid modifying the caller signature
     required bool isCompleted,
     required VoidCallback onTap,
   }) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(24),
       child: Container(
-        padding: const EdgeInsets.all(10),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
         decoration: BoxDecoration(
-          color: isCompleted
-              ? Colors.green.shade50.withValues(alpha: 0.5)
-              : Colors.amber.shade50.withValues(alpha: 0.5),
-          borderRadius: BorderRadius.circular(12),
+          color: Colors.transparent,
+          borderRadius: BorderRadius.circular(24),
           border: Border.all(
-            color: isCompleted ? Colors.green.shade200 : Colors.amber.shade200,
+            color: const Color(0xFFF1F5F9), // subtle border
           ),
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Icon(
-                  isCompleted
-                      ? Icons.check_circle_outline_rounded
-                      : Icons.error_outline_rounded,
-                  size: 15,
-                  color: isCompleted
-                      ? Colors.green.shade700
-                      : Colors.amber.shade900,
-                ),
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.only(left: 4),
-                    child: Text(
-                      title,
-                      style: const TextStyle(
-                        fontSize: 11.5,
-                        fontWeight: FontWeight.w800,
-                        color: AppColors.textPrimary,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                ),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 5,
-                    vertical: 2,
-                  ),
-                  decoration: BoxDecoration(
-                    color: isCompleted
-                        ? Colors.green.shade100
-                        : Colors.amber.shade100,
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                  child: Text(
-                    isCompleted ? 'Done' : 'Pending',
-                    style: TextStyle(
-                      fontSize: 8.5,
-                      fontWeight: FontWeight.w900,
-                      color: isCompleted
-                          ? Colors.green.shade900
-                          : Colors.amber.shade900,
-                    ),
-                  ),
-                ),
-              ],
+            Icon(
+              isCompleted
+                  ? Icons.check_circle_outline_rounded
+                  : Icons.error_outline_rounded,
+              size: 16,
+              color: isCompleted
+                  ? const Color(0xFF10B981) // Emerald green
+                  : const Color(0xFFF59E0B), // Amber orange
             ),
-            Text(
-              subtitle,
-              style: const TextStyle(
-                fontSize: 9.5,
-                color: AppColors.textSecondary,
-                height: 1.2,
+            const SizedBox(width: 6),
+            Expanded(
+              child: Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.textPrimary,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
+            ),
+            const SizedBox(width: 4),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+              decoration: BoxDecoration(
+                color: isCompleted
+                    ? const Color(0xFFD1FAE5) // Light emerald
+                    : const Color(0xFFFEF3C7), // Light amber
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Text(
+                isCompleted ? 'Completed' : 'Pending',
+                style: TextStyle(
+                  fontSize: 8.5,
+                  fontWeight: FontWeight.w800,
+                  color: isCompleted
+                      ? const Color(0xFF047857) // Dark emerald
+                      : const Color(0xFFB45309), // Dark amber
+                ),
+              ),
             ),
           ],
         ),
@@ -4769,8 +5043,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                               showAuthPromptDialog(
                                 context,
                                 title: 'Sign In Required',
-                                message:
-                                    'Please sign in to follow companies and receive job updates.',
+                                message: 'Please sign in to follow companies and receive job updates.',
                               );
                               return;
                             }
@@ -5026,7 +5299,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                     size: 18,
                                     color: AppColors.primary,
                                   ),
-                                  onPressed: () => _openEditProfileDialog(user),
+                                  onPressed: () => _showEditAboutDialog(user),
                                 ),
                             ],
                           ),
@@ -5417,7 +5690,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
                     const SizedBox(height: 16),
 
-                    // 17. Resume PDF Card
+                    // 17. Public Profile & Language Settings Card (media_1789974076369.png)
+                    _buildPublicProfileAndLanguageCard(user),
+
+                    const SizedBox(height: 16),
+
+                    // 18. Resume PDF Card
                     _buildResumeCard(user),
 
                     if (authState.isAuthenticated || user != null) ...[

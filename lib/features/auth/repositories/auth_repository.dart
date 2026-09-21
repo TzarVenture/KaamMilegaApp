@@ -67,11 +67,7 @@ class AuthRepository {
   ) async {
     final response = await _client.post(
       ApiConstants.loginPassword,
-      data: {
-        'email': email.trim(),
-        'password': password,
-        'role': 'user',
-      },
+      data: {'email': email.trim(), 'password': password, 'role': 'user'},
     );
 
     final data = response.data as Map<String, dynamic>? ?? {};
@@ -322,10 +318,7 @@ class AuthRepository {
   Future<void> forgotPassword(String email) async {
     await _client.post(
       ApiConstants.forgotPassword,
-      data: {
-        'email': email.trim(),
-        'role': 'user',
-      },
+      data: {'email': email.trim(), 'role': 'user'},
     );
   }
 

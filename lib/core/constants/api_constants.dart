@@ -14,9 +14,11 @@ class ApiConstants {
     if (trimmed.isEmpty) return '';
 
     // Handle malformed file:/// URLs that might have been saved locally or in state
-    if (trimmed.startsWith('file:///api/') || trimmed.startsWith('file:///files/')) {
+    if (trimmed.startsWith('file:///api/') ||
+        trimmed.startsWith('file:///files/')) {
       trimmed = trimmed.substring(7); // strips 'file://'
-    } else if (trimmed.startsWith('file://api/') || trimmed.startsWith('file://files/')) {
+    } else if (trimmed.startsWith('file://api/') ||
+        trimmed.startsWith('file://files/')) {
       trimmed = trimmed.substring(7);
     }
 

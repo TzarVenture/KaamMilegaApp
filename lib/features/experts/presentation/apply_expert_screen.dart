@@ -20,7 +20,9 @@ class _ApplyExpertScreenState extends ConsumerState<ApplyExpertScreen> {
 
   final TextEditingController _searchController = TextEditingController();
   final TextEditingController _bioController = TextEditingController();
-  final TextEditingController _rateController = TextEditingController(text: '0');
+  final TextEditingController _rateController = TextEditingController(
+    text: '0',
+  );
   final TextEditingController _resumeController = TextEditingController();
   final TextEditingController _idProofController = TextEditingController();
 
@@ -92,9 +94,16 @@ class _ApplyExpertScreenState extends ConsumerState<ApplyExpertScreen> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: Row(
           children: const [
-            Icon(Icons.check_circle_rounded, color: Color(0xFF16A34A), size: 28),
+            Icon(
+              Icons.check_circle_rounded,
+              color: Color(0xFF16A34A),
+              size: 28,
+            ),
             SizedBox(width: 10),
-            Text('Application Sent', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 18)),
+            Text(
+              'Application Sent',
+              style: TextStyle(fontWeight: FontWeight.w800, fontSize: 18),
+            ),
           ],
         ),
         content: const Text(
@@ -107,7 +116,13 @@ class _ApplyExpertScreenState extends ConsumerState<ApplyExpertScreen> {
               Navigator.pop(ctx);
               context.pop();
             },
-            child: const Text('Done', style: TextStyle(fontWeight: FontWeight.w700, color: Color(0xFF2563EB))),
+            child: const Text(
+              'Done',
+              style: TextStyle(
+                fontWeight: FontWeight.w700,
+                color: Color(0xFF2563EB),
+              ),
+            ),
           ),
         ],
       ),
@@ -127,10 +142,25 @@ class _ApplyExpertScreenState extends ConsumerState<ApplyExpertScreen> {
         elevation: 0.5,
         automaticallyImplyLeading: false,
         titleSpacing: 16,
-        title: Image.asset(
-          'assets/images/logo.png',
-          height: 28,
-          fit: BoxFit.contain,
+        title: GestureDetector(
+          onTap: () => context.go('/home'),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Image.asset(
+                'assets/images/logo.png',
+                height: 30,
+                fit: BoxFit.contain,
+              ),
+              const SizedBox(width: 8),
+              Image.asset(
+                'assets/images/logo_text.png',
+                height: 18,
+                fit: BoxFit.contain,
+              ),
+            ],
+          ),
         ),
         actions: [
           // 1. Search Icon
@@ -200,13 +230,19 @@ class _ApplyExpertScreenState extends ConsumerState<ApplyExpertScreen> {
               // 1. SEARCH / GO BAR (Matches Web Portal single pill design)
               Container(
                 color: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
                 child: Container(
                   height: 44,
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(22),
-                    border: Border.all(color: const Color(0xFFD1D5DB), width: 1),
+                    border: Border.all(
+                      color: const Color(0xFFD1D5DB),
+                      width: 1,
+                    ),
                   ),
                   child: Row(
                     children: [
@@ -257,7 +293,9 @@ class _ApplyExpertScreenState extends ConsumerState<ApplyExpertScreen> {
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(17),
                               ),
-                              padding: const EdgeInsets.symmetric(horizontal: 16),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                              ),
                               elevation: 0,
                               minimumSize: Size.zero,
                             ),
@@ -280,7 +318,10 @@ class _ApplyExpertScreenState extends ConsumerState<ApplyExpertScreen> {
 
               // 2. HERO TITLE SECTION
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 32),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 32,
+                ),
                 color: const Color(0xFFFAFAFA),
                 child: Column(
                   children: const [
@@ -348,18 +389,28 @@ class _ApplyExpertScreenState extends ConsumerState<ApplyExpertScreen> {
                         decoration: InputDecoration(
                           filled: true,
                           fillColor: Colors.white,
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 12,
+                          ),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(6),
-                            borderSide: const BorderSide(color: Color(0xFFD1D5DB)),
+                            borderSide: const BorderSide(
+                              color: Color(0xFFD1D5DB),
+                            ),
                           ),
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(6),
-                            borderSide: const BorderSide(color: Color(0xFFD1D5DB)),
+                            borderSide: const BorderSide(
+                              color: Color(0xFFD1D5DB),
+                            ),
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(6),
-                            borderSide: const BorderSide(color: Color(0xFF2563EB), width: 1.5),
+                            borderSide: const BorderSide(
+                              color: Color(0xFF2563EB),
+                              width: 1.5,
+                            ),
                           ),
                         ),
                         items: _categories.map((cat) {
@@ -412,15 +463,22 @@ class _ApplyExpertScreenState extends ConsumerState<ApplyExpertScreen> {
                           contentPadding: const EdgeInsets.all(14),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(6),
-                            borderSide: const BorderSide(color: Color(0xFFD1D5DB)),
+                            borderSide: const BorderSide(
+                              color: Color(0xFFD1D5DB),
+                            ),
                           ),
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(6),
-                            borderSide: const BorderSide(color: Color(0xFFD1D5DB)),
+                            borderSide: const BorderSide(
+                              color: Color(0xFFD1D5DB),
+                            ),
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(6),
-                            borderSide: const BorderSide(color: Color(0xFF2563EB), width: 1.5),
+                            borderSide: const BorderSide(
+                              color: Color(0xFF2563EB),
+                              width: 1.5,
+                            ),
                           ),
                         ),
                       ),
@@ -447,19 +505,29 @@ class _ApplyExpertScreenState extends ConsumerState<ApplyExpertScreen> {
                         decoration: InputDecoration(
                           filled: true,
                           fillColor: Colors.white,
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 12,
+                          ),
                           isDense: true,
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(6),
-                            borderSide: const BorderSide(color: Color(0xFFD1D5DB)),
+                            borderSide: const BorderSide(
+                              color: Color(0xFFD1D5DB),
+                            ),
                           ),
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(6),
-                            borderSide: const BorderSide(color: Color(0xFFD1D5DB)),
+                            borderSide: const BorderSide(
+                              color: Color(0xFFD1D5DB),
+                            ),
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(6),
-                            borderSide: const BorderSide(color: Color(0xFF2563EB), width: 1.5),
+                            borderSide: const BorderSide(
+                              color: Color(0xFF2563EB),
+                              width: 1.5,
+                            ),
                           ),
                         ),
                       ),
@@ -503,19 +571,29 @@ class _ApplyExpertScreenState extends ConsumerState<ApplyExpertScreen> {
                           ),
                           filled: true,
                           fillColor: Colors.white,
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 12,
+                          ),
                           isDense: true,
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(6),
-                            borderSide: const BorderSide(color: Color(0xFFD1D5DB)),
+                            borderSide: const BorderSide(
+                              color: Color(0xFFD1D5DB),
+                            ),
                           ),
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(6),
-                            borderSide: const BorderSide(color: Color(0xFFD1D5DB)),
+                            borderSide: const BorderSide(
+                              color: Color(0xFFD1D5DB),
+                            ),
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(6),
-                            borderSide: const BorderSide(color: Color(0xFF2563EB), width: 1.5),
+                            borderSide: const BorderSide(
+                              color: Color(0xFF2563EB),
+                              width: 1.5,
+                            ),
                           ),
                         ),
                       ),
@@ -548,19 +626,29 @@ class _ApplyExpertScreenState extends ConsumerState<ApplyExpertScreen> {
                           ),
                           filled: true,
                           fillColor: Colors.white,
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 12,
+                          ),
                           isDense: true,
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(6),
-                            borderSide: const BorderSide(color: Color(0xFFD1D5DB)),
+                            borderSide: const BorderSide(
+                              color: Color(0xFFD1D5DB),
+                            ),
                           ),
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(6),
-                            borderSide: const BorderSide(color: Color(0xFFD1D5DB)),
+                            borderSide: const BorderSide(
+                              color: Color(0xFFD1D5DB),
+                            ),
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(6),
-                            borderSide: const BorderSide(color: Color(0xFF2563EB), width: 1.5),
+                            borderSide: const BorderSide(
+                              color: Color(0xFF2563EB),
+                              width: 1.5,
+                            ),
                           ),
                         ),
                       ),

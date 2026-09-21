@@ -77,13 +77,10 @@ class _MainNavigationShellState extends ConsumerState<MainNavigationShell> {
               leading: Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFEDE9FE),
+                  color: AppColors.accentLight,
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Icon(
-                  Icons.bolt_rounded,
-                  color: Color(0xFF7C3AED),
-                ),
+                child: const Icon(Icons.bolt_rounded, color: AppColors.accent),
               ),
               title: const Text(
                 'Instant Work Request',
@@ -95,8 +92,10 @@ class _MainNavigationShellState extends ConsumerState<MainNavigationShell> {
                 Navigator.pop(ctx);
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
-                    content: Text('Instant Work request submitted! Matching candidates...'),
-                    backgroundColor: Color(0xFF7C3AED),
+                    content: Text(
+                      'Instant Work request submitted! Matching candidates...',
+                    ),
+                    backgroundColor: AppColors.accent,
                   ),
                 );
               },
@@ -159,7 +158,8 @@ class _MainNavigationShellState extends ConsumerState<MainNavigationShell> {
   Widget build(BuildContext context) {
     final convosAsync = ref.watch(conversationsProvider);
     final unreadChats = convosAsync.maybeWhen(
-      data: (convos) => 0, // Update with real unread count logic when backend supports it
+      data: (convos) =>
+          0, // Update with real unread count logic when backend supports it
       orElse: () => 0,
     );
 
@@ -169,9 +169,17 @@ class _MainNavigationShellState extends ConsumerState<MainNavigationShell> {
           setState(() => _currentIndex = index);
         },
       ),
-      const JobsScreen(),
+      JobsScreen(
+        onNavigateTab: (index) {
+          setState(() => _currentIndex = index);
+        },
+      ),
       const SizedBox.shrink(), // Index 2 reserved for Center (+) action trigger
-      const ChatListScreen(),
+      ChatListScreen(
+        onNavigateTab: (index) {
+          setState(() => _currentIndex = index);
+        },
+      ),
       const ProfileScreen(),
     ];
 
@@ -213,23 +221,23 @@ class _MainNavigationShellState extends ConsumerState<MainNavigationShell> {
                   label: 'Jobs',
                 ),
 
-                // 3. CENTER (+) BUTTON
+                // 3. CENTER (+) BUTTON (Design System 6.3: 56px circle, Brand Blue bg #1a2b8c, white + icon, shadow rgba(26,43,140, 0.4))
                 GestureDetector(
                   onTap: () => _showCenterActionMenu(context),
                   child: Container(
-                    width: 48,
-                    height: 48,
+                    width: 56,
+                    height: 56,
                     decoration: BoxDecoration(
                       gradient: const LinearGradient(
-                        colors: [Color(0xFF6A0DAD), Color(0xFF4A0E8F)],
+                        colors: [AppColors.brandBlue, AppColors.deepNavy],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       ),
                       shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(0xFF6A0DAD).withValues(alpha: 0.45),
-                          blurRadius: 10,
+                          color: AppColors.brandBlue.withValues(alpha: 0.40),
+                          blurRadius: 12,
                           offset: const Offset(0, 4),
                         ),
                       ],
@@ -237,7 +245,7 @@ class _MainNavigationShellState extends ConsumerState<MainNavigationShell> {
                     child: const Icon(
                       Icons.add_rounded,
                       color: Colors.white,
-                      size: 28,
+                      size: 30,
                     ),
                   ),
                 ),
@@ -274,8 +282,8 @@ class _MainNavigationShellState extends ConsumerState<MainNavigationShell> {
     int? badgeCount,
   }) {
     final isSelected = _currentIndex == index;
-    final primaryColor = const Color(0xFF6A0DAD);
-    final inactiveColor = const Color(0xFF64748B);
+    final primaryColor = AppColors.primary;
+    final inactiveColor = AppColors.textSecondary;
 
     return InkWell(
       onTap: () => setState(() => _currentIndex = index),

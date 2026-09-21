@@ -103,13 +103,13 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                           Container(
                             padding: const EdgeInsets.all(18),
                             decoration: const BoxDecoration(
-                              color: Color(0xFFEDE9FE),
+                              color: AppColors.primaryLight,
                               shape: BoxShape.circle,
                             ),
                             child: const Icon(
                               Icons.lock_outline_rounded,
                               size: 44,
-                              color: Color(0xFF6A0DAD),
+                              color: AppColors.primary,
                             ),
                           ),
                           const SizedBox(height: 18),
@@ -227,7 +227,8 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
 
   Widget _buildNotificationTile(NotificationItem item) {
     final avatarUrl = ApiConstants.resolveImageUrl(item.avatarUrl);
-    final hasAvatar = avatarUrl.isNotEmpty &&
+    final hasAvatar =
+        avatarUrl.isNotEmpty &&
         (avatarUrl.startsWith('http://') || avatarUrl.startsWith('https://'));
 
     return InkWell(
@@ -249,9 +250,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                 CircleAvatar(
                   radius: 24,
                   backgroundColor: AppColors.heroBg,
-                  backgroundImage: hasAvatar
-                      ? NetworkImage(avatarUrl)
-                      : null,
+                  backgroundImage: hasAvatar ? NetworkImage(avatarUrl) : null,
                   onBackgroundImageError: hasAvatar ? (_, _) {} : null,
                   child: !hasAvatar
                       ? Icon(

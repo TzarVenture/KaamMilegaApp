@@ -9,6 +9,8 @@ import '../../../shared/widgets/shimmer_loading.dart';
 import '../../applications/presentation/apply_modal.dart';
 import '../../applications/repositories/application_repository.dart';
 import '../../auth/providers/auth_provider.dart';
+import '../../notifications/providers/notification_provider.dart';
+import '../../profile/presentation/widgets/profile_drawer.dart';
 import '../models/job.dart';
 import '../providers/jobs_provider.dart';
 import '../repositories/job_repository.dart';
@@ -24,6 +26,7 @@ class JobDetailScreen extends ConsumerStatefulWidget {
 }
 
 class _JobDetailScreenState extends ConsumerState<JobDetailScreen> {
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   Job? _job;
   bool _isLoading = true;
   String? _error;
@@ -209,20 +212,118 @@ class _JobDetailScreenState extends ConsumerState<JobDetailScreen> {
     final savedJobIds = ref.watch(jobsProvider).savedJobIds;
     final isSaved = savedJobIds.contains(widget.jobId);
 
+    final unreadNotifs = ref.watch(unreadNotificationsCountProvider);
+
     return Scaffold(
+      key: _scaffoldKey,
       backgroundColor: AppColors.background,
+      endDrawer: const ProfileDrawer(),
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0.5,
+        automaticallyImplyLeading: false,
+        titleSpacing: 16,
+        title: GestureDetector(
+          onTap: () => context.go('/home'),
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Image.asset(
+                  'assets/images/logo.png',
+                  height: 30,
+                  fit: BoxFit.contain,
+                ),
+                const SizedBox(width: 8),
+                Image.asset(
+                  'assets/images/logo_text.png',
+                  height: 18,
+                  fit: BoxFit.contain,
+                ),
+              ],
+            ),
+          ),
+        ),
+        actions: [
+          // 1. Search Icon
+          IconButton(
+            icon: const Icon(
+              Icons.search_rounded,
+              color: Color(0xFF1E293B),
+              size: 22,
+            ),
+            splashRadius: 20,
+            tooltip: 'Search Jobs',
+            onPressed: () {
+              if (context.canPop()) {
+                context.pop();
+              } else {
+                context.go('/jobs');
+              }
+            },
+          ),
+
+          // 2. Notification Bell with Badge
+          IconButton(
+            icon: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                const Icon(
+                  Icons.notifications_none_rounded,
+                  color: Color(0xFF1E293B),
+                  size: 24,
+                ),
+                if (unreadNotifs > 0)
+                  Positioned(
+                    top: -1,
+                    right: -1,
+                    child: Container(
+                      width: 8,
+                      height: 8,
+                      decoration: const BoxDecoration(
+                        color: Color(0xFFEF4444),
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+            splashRadius: 20,
+            tooltip: 'Notifications',
+            onPressed: () => context.push('/notifications'),
+          ),
+
+          // 3. Hamburger Menu (Drawer)
+          IconButton(
+            icon: const Icon(
+              Icons.menu_rounded,
+              color: Color(0xFF1E293B),
+              size: 24,
+            ),
+            splashRadius: 20,
+            tooltip: 'Menu',
+            onPressed: () {
+              _scaffoldKey.currentState?.openEndDrawer();
+            },
+          ),
+          const SizedBox(width: 6),
+        ],
+      ),
       body: RefreshIndicator(
         color: AppColors.primary,
         onRefresh: _loadJob,
         child: CustomScrollView(
           slivers: [
-            // Deep Purple Top Header Section
+            // Deep Navy Top Header Section (media_1789976851914.png)
             SliverToBoxAdapter(
               child: Container(
                 decoration: const BoxDecoration(
-                  color: AppColors.deepPurpleHeader,
+                  color: Color(0xFF0C1738), // Brand Deep Navy
                   borderRadius: BorderRadius.vertical(
-                    bottom: Radius.circular(36),
+                    bottom: Radius.circular(32),
                   ),
                   boxShadow: [
                     BoxShadow(
@@ -232,12 +333,7 @@ class _JobDetailScreenState extends ConsumerState<JobDetailScreen> {
                     ),
                   ],
                 ),
-                padding: EdgeInsets.only(
-                  top: MediaQuery.of(context).padding.top + 12,
-                  left: 20,
-                  right: 20,
-                  bottom: 28,
-                ),
+                padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -245,27 +341,46 @@ class _JobDetailScreenState extends ConsumerState<JobDetailScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        GestureDetector(
-                          onTap: () => context.pop(),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: const [
-                              Icon(
-                                Icons.arrow_back_rounded,
-                                color: Colors.white70,
-                                size: 18,
-                              ),
-                              SizedBox(width: 6),
-                              Text(
-                                'BACK TO SEARCH',
-                                style: TextStyle(
-                                  color: Colors.white70,
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w900,
-                                  letterSpacing: 1.5,
+                        InkWell(
+                          onTap: () {
+                            if (context.canPop()) {
+                              context.pop();
+                            } else {
+                              context.go('/jobs');
+                            }
+                          },
+                          borderRadius: BorderRadius.circular(20),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 14,
+                              vertical: 7,
+                            ),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF1E293B)
+                                  .withValues(alpha: 0.8),
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(color: Colors.white12),
+                            ),
+                            child: const Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.arrow_back_rounded,
+                                  color: Colors.white,
+                                  size: 14,
                                 ),
-                              ),
-                            ],
+                                SizedBox(width: 6),
+                                Text(
+                                  'BACK TO SEARCH',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w900,
+                                    letterSpacing: 0.5,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                         IconButton(
@@ -276,7 +391,7 @@ class _JobDetailScreenState extends ConsumerState<JobDetailScreen> {
                                 ? Icons.bookmark_rounded
                                 : Icons.bookmark_outline_rounded,
                             color: isSaved
-                                ? AppColors.primaryGradientStart
+                                ? const Color(0xFFF97316)
                                 : Colors.white70,
                             size: 24,
                           ),
@@ -303,139 +418,370 @@ class _JobDetailScreenState extends ConsumerState<JobDetailScreen> {
 
                     // Job Title
                     Text(
-                      job.title,
+                      job.title.toUpperCase(),
                       style: const TextStyle(
-                        fontSize: 24,
+                        fontSize: 26,
                         fontWeight: FontWeight.w900,
                         color: Colors.white,
+                        letterSpacing: -0.5,
                         height: 1.2,
                       ),
                     ),
 
-                    const SizedBox(height: 6),
+                    const SizedBox(height: 8),
 
-                    // Company + Direct Hiring
+                    // DIRECT HIRING
                     Row(
                       children: [
-                        Text(
-                          job.company.toUpperCase(),
-                          style: const TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w800,
-                            color: AppColors.primaryGradientStart,
-                            letterSpacing: 1,
-                          ),
-                        ),
-                        const SizedBox(width: 8),
                         Container(
-                          width: 4,
-                          height: 4,
+                          width: 6,
+                          height: 6,
                           decoration: const BoxDecoration(
-                            color: Colors.white30,
+                            color: Color(0xFF3B82F6),
                             shape: BoxShape.circle,
                           ),
                         ),
                         const SizedBox(width: 8),
                         const Text(
-                          'Direct Hiring',
+                          'DIRECT HIRING',
                           style: TextStyle(
                             fontSize: 12,
-                            color: Colors.white60,
-                            fontWeight: FontWeight.w600,
+                            fontWeight: FontWeight.w900,
+                            color: Color(0xFFF97316),
+                            letterSpacing: 0.5,
                           ),
                         ),
                       ],
                     ),
 
-                    const SizedBox(height: 22),
+                    const SizedBox(height: 18),
 
-                    // Metric Stat Cards (Salary, Location, Experience)
-                    Container(
-                      padding: const EdgeInsets.all(14),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.07),
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: Colors.white12),
-                      ),
+                    // Horizontal Metrics Row (Salary, Location, Experience)
+                    IntrinsicHeight(
                       child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          _StatBox(
-                            iconWidget: const Text(
-                              '₹',
-                              style: TextStyle(
-                                color: AppColors.primaryGradientStart,
-                                fontWeight: FontWeight.w900,
-                                fontSize: 16,
+                          // 1. MONTHLY SALARY
+                          Expanded(
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 12,
+                              ),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF1E293B)
+                                    .withValues(alpha: 0.9),
+                                borderRadius: BorderRadius.circular(14),
+                                border: Border.all(color: Colors.white10),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Container(
+                                    width: 32,
+                                    height: 32,
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFF0F172A),
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: const Center(
+                                      child: Text(
+                                        '₹',
+                                        style: TextStyle(
+                                          color: Color(
+                                            0xFF10B981,
+                                          ), // Bright Emerald Green
+                                          fontWeight: FontWeight.w900,
+                                          fontSize: 18,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  const Text(
+                                    'SALARY',
+                                    style: TextStyle(
+                                      fontSize: 9,
+                                      fontWeight: FontWeight.w800,
+                                      color: Color(0xFF94A3B8),
+                                      letterSpacing: 0.5,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    job.formattedSalary,
+                                    style: const TextStyle(
+                                      fontSize: 12.5,
+                                      fontWeight: FontWeight.w900,
+                                      color: Colors.white,
+                                      height: 1.2,
+                                    ),
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ],
                               ),
                             ),
-                            label: 'BUDGET / MONTH',
-                            value: job.formattedSalary,
                           ),
-                          Container(
-                            width: 1,
-                            height: 36,
-                            color: Colors.white12,
-                          ),
-                          _StatBox(
-                            iconWidget: const Icon(
-                              Icons.location_on_rounded,
-                              color: AppColors.primaryGradientStart,
-                              size: 16,
+                          const SizedBox(width: 8),
+
+                          // 2. LOCATION
+                          Expanded(
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 12,
+                              ),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF1E293B)
+                                    .withValues(alpha: 0.9),
+                                borderRadius: BorderRadius.circular(14),
+                                border: Border.all(color: Colors.white10),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Container(
+                                    width: 32,
+                                    height: 32,
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFF0F172A),
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: const Center(
+                                      child: Icon(
+                                        Icons.location_on_rounded,
+                                        color: Color(
+                                          0xFF38BDF8,
+                                        ), // Bright Sky Blue
+                                        size: 18,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  const Text(
+                                    'LOCATION',
+                                    style: TextStyle(
+                                      fontSize: 9,
+                                      fontWeight: FontWeight.w800,
+                                      color: Color(0xFF94A3B8),
+                                      letterSpacing: 0.5,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    job.cityName.isNotEmpty
+                                        ? (job.location.isNotEmpty &&
+                                                  job.location != job.cityName
+                                              ? '${job.location}, ${job.cityName}'
+                                              : job.cityName)
+                                        : (job.location.isNotEmpty
+                                              ? job.location
+                                              : 'Flexible'),
+                                    style: const TextStyle(
+                                      fontSize: 12.5,
+                                      fontWeight: FontWeight.w900,
+                                      color: Colors.white,
+                                      height: 1.2,
+                                    ),
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ],
+                              ),
                             ),
-                            label: 'LOCATION',
-                            value: job.cityName,
                           ),
-                          Container(
-                            width: 1,
-                            height: 36,
-                            color: Colors.white12,
-                          ),
-                          _StatBox(
-                            iconWidget: const Icon(
-                              Icons.work_history_rounded,
-                              color: AppColors.primaryGradientStart,
-                              size: 16,
+                          const SizedBox(width: 8),
+
+                          // 3. EXPERIENCE
+                          Expanded(
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 12,
+                              ),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF1E293B)
+                                    .withValues(alpha: 0.9),
+                                borderRadius: BorderRadius.circular(14),
+                                border: Border.all(color: Colors.white10),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Container(
+                                    width: 32,
+                                    height: 32,
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFF0F172A),
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: const Center(
+                                      child: Icon(
+                                        Icons.access_time_rounded,
+                                        color: Color(
+                                          0xFFFBBF24,
+                                        ), // Bright Golden Amber
+                                        size: 18,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  const Text(
+                                    'EXPERIENCE',
+                                    style: TextStyle(
+                                      fontSize: 9,
+                                      fontWeight: FontWeight.w800,
+                                      color: Color(0xFF94A3B8),
+                                      letterSpacing: 0.5,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    job.formattedExperience,
+                                    style: const TextStyle(
+                                      fontSize: 12.5,
+                                      fontWeight: FontWeight.w900,
+                                      color: Colors.white,
+                                      height: 1.2,
+                                    ),
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ],
+                              ),
                             ),
-                            label: 'EXPERIENCE',
-                            value: job.formattedExperience,
                           ),
                         ],
                       ),
                     ),
 
-                    const SizedBox(height: 18),
+                    const SizedBox(height: 16),
 
-                    // Badges Row
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: [
-                        _HeaderBadge(
-                          text: 'HOT',
-                          color: AppColors.hotRose,
-                          bgColor: AppColors.hotRose.withValues(alpha: 0.2),
-                        ),
-                        _HeaderBadge(
-                          text: job.jobType.toUpperCase(),
-                          color: Colors.white,
-                          bgColor: Colors.white12,
-                        ),
-                        _HeaderBadge(
-                          text: '${job.vacancies} OPENINGS',
-                          color: Colors.white,
-                          bgColor: Colors.white12,
-                        ),
-                        _HeaderBadge(
-                          text: 'KM VERIFIED',
-                          icon: Icons.verified_rounded,
-                          color: Colors.white,
-                          bgColor: AppColors.verifiedBlue,
-                        ),
-                      ],
+                    // Badges Horizontal Row
+                    SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      physics: const BouncingScrollPhysics(),
+                      child: Row(
+                        children: [
+                          // HOT LISTING
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 6,
+                            ),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFE11D48),
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: const Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text('🔥', style: TextStyle(fontSize: 11)),
+                                SizedBox(width: 4),
+                                Text(
+                                  'HOT LISTING',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w900,
+                                    fontSize: 11,
+                                    letterSpacing: 0.5,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+
+                          // JOB TYPE
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 6,
+                            ),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF1E293B),
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: Text(
+                              job.jobType.isNotEmpty
+                                  ? job.jobType.toUpperCase()
+                                  : 'FULL-TIME',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w800,
+                                fontSize: 11,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+
+                          // OPENINGS
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 6,
+                            ),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF1E293B),
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: Text(
+                              '${job.vacancies > 0 ? job.vacancies : 1} OPENINGS',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w800,
+                                fontSize: 11,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+
+                          // KM VERIFIED
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 6,
+                            ),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF2563EB),
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Container(
+                                  width: 8,
+                                  height: 8,
+                                  decoration: const BoxDecoration(
+                                    color: Colors.white,
+                                    shape: BoxShape.circle,
+                                  ),
+                                ),
+                                const SizedBox(width: 6),
+                                const Text(
+                                  'KM VERIFIED',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w900,
+                                    fontSize: 11,
+                                    letterSpacing: 0.5,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
 
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 16),
 
                     // Social proof: Candidates applied
                     Container(
@@ -452,7 +798,7 @@ class _JobDetailScreenState extends ConsumerState<JobDetailScreen> {
                         children: [
                           const Icon(
                             Icons.people_alt_rounded,
-                            color: AppColors.primaryGradientStart,
+                            color: Color(0xFF60A5FA),
                             size: 20,
                           ),
                           const SizedBox(width: 10),
@@ -803,7 +1149,8 @@ class _JobDetailScreenState extends ConsumerState<JobDetailScreen> {
               flex: 3,
               child: hasAlreadyApplied
                   ? InkWell(
-                      onTap: () => context.push('/applications/${widget.jobId}'),
+                      onTap: () =>
+                          context.push('/applications/${widget.jobId}'),
                       borderRadius: BorderRadius.circular(16),
                       child: Container(
                         padding: const EdgeInsets.symmetric(vertical: 14),
@@ -878,90 +1225,6 @@ class _JobDetailScreenState extends ConsumerState<JobDetailScreen> {
             ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-class _StatBox extends StatelessWidget {
-  final Widget iconWidget;
-  final String label;
-  final String value;
-
-  const _StatBox({
-    required this.iconWidget,
-    required this.label,
-    required this.value,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        iconWidget,
-        const SizedBox(height: 4),
-        Text(
-          label,
-          style: const TextStyle(
-            fontSize: 8,
-            fontWeight: FontWeight.w800,
-            color: Colors.white54,
-            letterSpacing: 0.5,
-          ),
-        ),
-        const SizedBox(height: 2),
-        Text(
-          value,
-          style: const TextStyle(
-            fontSize: 11,
-            fontWeight: FontWeight.w900,
-            color: Colors.white,
-          ),
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-        ),
-      ],
-    );
-  }
-}
-
-class _HeaderBadge extends StatelessWidget {
-  final String text;
-  final IconData? icon;
-  final Color color;
-  final Color bgColor;
-
-  const _HeaderBadge({
-    required this.text,
-    this.icon,
-    required this.color,
-    required this.bgColor,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-      decoration: BoxDecoration(
-        color: bgColor,
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (icon != null) ...[
-            Icon(icon, size: 12, color: color),
-            const SizedBox(width: 4),
-          ],
-          Text(
-            text,
-            style: TextStyle(
-              fontSize: 10,
-              fontWeight: FontWeight.w900,
-              color: color,
-            ),
-          ),
-        ],
       ),
     );
   }

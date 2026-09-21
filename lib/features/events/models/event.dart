@@ -90,7 +90,8 @@ class EventItem {
       }
     }
 
-    final bool registered = json['is_registered'] == true ||
+    final bool registered =
+        json['is_registered'] == true ||
         (currentUserId != null &&
             currentUserId.isNotEmpty &&
             participantsList.contains(currentUserId));
@@ -114,7 +115,8 @@ class EventItem {
       dateString: derivedDateString,
       location: json['location']?.toString() ?? 'Online Webinar',
       imageUrl: ApiConstants.resolveImageUrl(
-          json['image_url']?.toString() ?? json['imageUrl']?.toString()),
+        json['image_url']?.toString() ?? json['imageUrl']?.toString(),
+      ),
       participants: participantsList,
       attendeesCount: count,
       isRegistered: registered,

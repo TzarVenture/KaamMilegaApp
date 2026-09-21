@@ -70,7 +70,22 @@ class UserProfile {
     this.portfolioText = '',
   });
 
-  factory UserProfile.fromJson(Map<String, dynamic> json) {
+  /// Public Profile URL alloted to user from MongoDB backend
+  String get publicProfileUrl =>
+      id.isNotEmpty ? 'www.kaammilega.com/in/$id' : 'www.kaammilega.com/in/...';
+
+  /// Full Web URL to candidate public profile
+  String get fullPublicProfileUrl => id.isNotEmpty
+      ? 'https://www.kaammilega.com/in/$id'
+      : 'https://www.kaammilega.com';
+
+  factory UserProfile.fromJson(Map<String, dynamic> rawJson) {
+    final json = (rawJson['user'] is Map<String, dynamic>)
+        ? rawJson['user'] as Map<String, dynamic>
+        : (rawJson['data'] is Map<String, dynamic>
+              ? rawJson['data'] as Map<String, dynamic>
+              : rawJson);
+
     List<String> parseStringList(dynamic val) {
       if (val is List) {
         return val.map((e) => e.toString()).toList();
@@ -133,11 +148,11 @@ class UserProfile {
       education: parseEducation(json['education']),
       experience: parseExperience(json['experience']),
       projects: parseProjects(json['projects']),
-      profileImage:
-          ApiConstants.resolveImageUrl(json['profile_image']?.toString()),
+      profileImage: ApiConstants.resolveImageUrl(
+        json['profile_image']?.toString(),
+      ),
       coverImage: ApiConstants.resolveImageUrl(
-        json['cover_image']?.toString() ??
-            json['background_image']?.toString(),
+        json['cover_image']?.toString() ?? json['background_image']?.toString(),
       ),
       isEmailVerified:
           json['is_email_verified'] == true || json['email_verified'] == true,
@@ -392,20 +407,20 @@ class ProjectItem {
   });
 
   factory ProjectItem.fromJson(Map<String, dynamic> json) => ProjectItem(
-        id: json['id']?.toString() ?? json['_id']?.toString() ?? '',
-        title: json['title']?.toString() ?? json['name']?.toString() ?? '',
-        description: json['description']?.toString() ?? '',
-        link: json['link']?.toString() ?? json['url']?.toString() ?? '',
-        startDate: json['start_date']?.toString() ?? '',
-        endDate: json['end_date']?.toString() ?? '',
-      );
+    id: json['id']?.toString() ?? json['_id']?.toString() ?? '',
+    title: json['title']?.toString() ?? json['name']?.toString() ?? '',
+    description: json['description']?.toString() ?? '',
+    link: json['link']?.toString() ?? json['url']?.toString() ?? '',
+    startDate: json['start_date']?.toString() ?? '',
+    endDate: json['end_date']?.toString() ?? '',
+  );
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'title': title,
-        'description': description,
-        'link': link,
-        'start_date': startDate,
-        'end_date': endDate,
-      };
+    'id': id,
+    'title': title,
+    'description': description,
+    'link': link,
+    'start_date': startDate,
+    'end_date': endDate,
+  };
 }

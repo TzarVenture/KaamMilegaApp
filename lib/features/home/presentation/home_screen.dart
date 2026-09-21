@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../app/theme/app_colors.dart';
 import '../../../shared/widgets/auth_prompt_dialog.dart';
+import '../../../shared/widgets/shimmer_loading.dart';
 import '../../applications/presentation/apply_modal.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../cities/presentation/city_selector_sheet.dart';
@@ -181,7 +182,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 _goToJobsTabWithQuery('Instant Work');
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF6A0DAD),
+                backgroundColor: AppColors.accent,
                 foregroundColor: Colors.white,
                 minimumSize: const Size(double.infinity, 50),
                 shape: RoundedRectangleBorder(
@@ -351,10 +352,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           Container(
             padding: const EdgeInsets.all(6),
             decoration: BoxDecoration(
-              color: const Color(0xFFEDE9FE),
+              color: AppColors.primaryLight,
               borderRadius: BorderRadius.circular(8),
             ),
-            child: Icon(icon, color: const Color(0xFF6A0DAD), size: 16),
+            child: Icon(icon, color: AppColors.primary, size: 16),
           ),
           const SizedBox(width: 10),
           Expanded(
@@ -560,12 +561,49 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              // Logo (Kept unchanged without modification)
-              Image.asset(
-                'assets/images/logo.png',
-                height: 30,
-                fit: BoxFit.contain,
+              // Logo: clickable navigating to home & scrolling to top
+              Expanded(
+                child: GestureDetector(
+                  onTap: () {
+                    if (_scrollController.hasClients) {
+                      _scrollController.animateTo(
+                        0,
+                        duration: const Duration(milliseconds: 300),
+                        curve: Curves.easeOut,
+                      );
+                    }
+                    if (widget.onNavigateTab != null) {
+                      widget.onNavigateTab!(0);
+                    } else {
+                      try {
+                        context.go('/home');
+                      } catch (_) {}
+                    }
+                  },
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.centerLeft,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Image.asset(
+                          'assets/images/logo.png',
+                          height: 30,
+                          fit: BoxFit.contain,
+                        ),
+                        const SizedBox(width: 8),
+                        Image.asset(
+                          'assets/images/logo_text.png',
+                          height: 18,
+                          fit: BoxFit.contain,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
               ),
+              const SizedBox(width: 8),
 
               // Right Action Icons Row: Search + Notification Bell + Three-line Hamburger
               Row(
@@ -644,7 +682,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               children: [
                 const Icon(
                   Icons.location_on_rounded,
-                  color: Color(0xFF6A0DAD),
+                  color: AppColors.accent,
                   size: 16,
                 ),
                 const SizedBox(width: 4),
@@ -670,7 +708,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
-
   // ==========================================
   // 3. INSTANTMILEGA™ PROMO BANNER (Purple Card)
   // ==========================================
@@ -682,14 +719,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
         decoration: BoxDecoration(
           gradient: const LinearGradient(
-            colors: [Color(0xFF1B0748), Color(0xFF3B1078)],
+            colors: [AppColors.deepNavy, Color(0xFF152A7A)],
             begin: Alignment.centerLeft,
             end: Alignment.centerRight,
           ),
           borderRadius: BorderRadius.circular(18),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFF3B1078).withValues(alpha: 0.35),
+              color: AppColors.deepNavy.withValues(alpha: 0.35),
               blurRadius: 12,
               offset: const Offset(0, 4),
             ),
@@ -703,21 +740,21 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               height: 48,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: const Color(0xFF0F042A),
+                color: const Color(0xFF070F35),
                 border: Border.all(
-                  color: const Color(0xFFEAB308).withValues(alpha: 0.6),
+                  color: AppColors.accent.withValues(alpha: 0.7),
                   width: 1.5,
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFFEAB308).withValues(alpha: 0.3),
+                    color: AppColors.accent.withValues(alpha: 0.35),
                     blurRadius: 8,
                   ),
                 ],
               ),
               child: const Icon(
                 Icons.bolt_rounded,
-                color: Color(0xFFFBBF24),
+                color: AppColors.accent,
                 size: 26,
               ),
             ),
@@ -842,29 +879,29 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       {
         'label': 'Jobs',
         'icon': Icons.work_outline_rounded,
-        'bg': const Color(0xFFEDE9FE),
-        'color': const Color(0xFF6D28D9),
+        'bg': AppColors.primaryLight,
+        'color': AppColors.primary,
         'onTap': () => _goToJobsTabWithQuery(''),
       },
       {
         'label': 'Instant Work',
         'icon': Icons.bolt_rounded,
-        'bg': const Color(0xFFFFEDD5),
-        'color': const Color(0xFFEA580C),
+        'bg': AppColors.accentLight,
+        'color': AppColors.accent,
         'onTap': _showInstantWorkModal,
       },
       {
         'label': 'Skills',
         'icon': Icons.school_outlined,
         'bg': const Color(0xFFDCFCE7),
-        'color': const Color(0xFF16A34A),
+        'color': AppColors.moduleSkills,
         'onTap': () => context.push('/events'),
       },
       {
         'label': 'Experts',
         'icon': Icons.person_search_outlined,
-        'bg': const Color(0xFFE0E7FF),
-        'color': const Color(0xFF4338CA),
+        'bg': const Color(0xFFF3E8FF),
+        'color': AppColors.moduleExperts,
         'onTap': _showMoreServicesModal,
       },
       {
@@ -1157,27 +1194,46 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   // ==========================================
   Widget _buildRecommendedSection(List<Job> jobs, bool isLoading) {
     if (isLoading && jobs.isEmpty) {
-      return Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        child: SizedBox(
-          height: 145,
-          child: ListView.separated(
-            scrollDirection: Axis.horizontal,
-            itemCount: 2,
-            separatorBuilder: (context, index) => const SizedBox(width: 12),
-            itemBuilder: (context, index) => Container(
-              width: 260,
-              decoration: BoxDecoration(
-                color: const Color(0xFFF8FAFC),
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: const Color(0xFFE2E8F0)),
-              ),
-              child: const Center(
-                child: CircularProgressIndicator(strokeWidth: 2),
-              ),
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: const [
+                Text(
+                  'Recommended for You',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w900,
+                    color: Color(0xFF0F172A),
+                  ),
+                ),
+                Text(
+                  'View All',
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFF2563EB),
+                  ),
+                ),
+              ],
             ),
           ),
-        ),
+          const SizedBox(height: 12),
+          SizedBox(
+            height: 145,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              physics: const NeverScrollableScrollPhysics(),
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              itemCount: 3,
+              separatorBuilder: (context, index) => const SizedBox(width: 12),
+              itemBuilder: (context, index) => _buildRecommendedShimmerCard(),
+            ),
+          ),
+        ],
       );
     }
 
@@ -1233,6 +1289,105 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildRecommendedShimmerCard() {
+    return Container(
+      width: 260,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.02),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: AppShimmer(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Row(
+              children: [
+                Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        width: 120,
+                        height: 14,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Container(
+                        width: 80,
+                        height: 11,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  width: 100,
+                  height: 13,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Row(
+                  children: [
+                    Container(
+                      width: 55,
+                      height: 11,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Container(
+                      width: 50,
+                      height: 11,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -1391,7 +1546,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     );
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF6A0DAD),
+                    backgroundColor: AppColors.primary,
                     foregroundColor: Colors.white,
                     elevation: 0,
                     padding: const EdgeInsets.symmetric(
@@ -1693,7 +1848,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                 ? Icons.bookmark_rounded
                                 : Icons.bookmark_border_rounded,
                             color: isSaved
-                                ? const Color(0xFF6A0DAD)
+                                ? AppColors.primary
                                 : const Color(0xFF94A3B8),
                             size: 24,
                           ),

@@ -60,7 +60,9 @@ class ApplicationDetailScreen extends ConsumerWidget {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         backgroundColor: AppColors.primary,
-        content: Text('Connection request sent to ${app.companyName} Recruiter!'),
+        content: Text(
+          'Connection request sent to ${app.companyName} Recruiter!',
+        ),
       ),
     );
   }
@@ -89,7 +91,8 @@ class ApplicationDetailScreen extends ConsumerWidget {
       ),
       body: applicationsAsync.when(
         data: (applications) {
-          final app = initialApplication ??
+          final app =
+              initialApplication ??
               applications.firstWhere(
                 (a) => a.id == applicationId || a.jobId == applicationId,
                 orElse: () => ApplicationItem(
@@ -112,7 +115,8 @@ class ApplicationDetailScreen extends ConsumerWidget {
           child: CircularProgressIndicator(color: AppColors.primary),
         ),
         error: (err, _) {
-          final fallbackApp = initialApplication ??
+          final fallbackApp =
+              initialApplication ??
               ApplicationItem(
                 id: applicationId,
                 jobId: applicationId,
@@ -615,10 +619,7 @@ class _MatchCriteriaItem extends StatelessWidget {
   final String title;
   final bool isMatched;
 
-  const _MatchCriteriaItem({
-    required this.title,
-    required this.isMatched,
-  });
+  const _MatchCriteriaItem({required this.title, required this.isMatched});
 
   @override
   Widget build(BuildContext context) {
@@ -632,10 +633,7 @@ class _MatchCriteriaItem extends StatelessWidget {
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             color: isMatched ? const Color(0xFF00C853) : Colors.transparent,
-            border: Border.all(
-              color: color,
-              width: 1.8,
-            ),
+            border: Border.all(color: color, width: 1.8),
           ),
           child: Icon(
             Icons.check_rounded,

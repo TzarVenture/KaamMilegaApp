@@ -11,7 +11,9 @@ import '../providers/chat_provider.dart';
 
 /// Screen displaying the Candidate's Active Chat Conversations matching web design
 class ChatListScreen extends ConsumerStatefulWidget {
-  const ChatListScreen({super.key});
+  final void Function(int index)? onNavigateTab;
+
+  const ChatListScreen({super.key, this.onNavigateTab});
 
   @override
   ConsumerState<ChatListScreen> createState() => _ChatListScreenState();
@@ -64,8 +66,14 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
             ),
             const SizedBox(height: 12),
             ListTile(
-              leading: const Icon(Icons.done_all_rounded, color: AppColors.primary),
-              title: const Text('Mark all as read', style: TextStyle(fontWeight: FontWeight.w600)),
+              leading: const Icon(
+                Icons.done_all_rounded,
+                color: AppColors.primary,
+              ),
+              title: const Text(
+                'Mark all as read',
+                style: TextStyle(fontWeight: FontWeight.w600),
+              ),
               onTap: () {
                 Navigator.pop(ctx);
                 ScaffoldMessenger.of(context).showSnackBar(
@@ -74,8 +82,14 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
               },
             ),
             ListTile(
-              leading: const Icon(Icons.refresh_rounded, color: Color(0xFF64748B)),
-              title: const Text('Refresh Conversations', style: TextStyle(fontWeight: FontWeight.w600)),
+              leading: const Icon(
+                Icons.refresh_rounded,
+                color: Color(0xFF64748B),
+              ),
+              title: const Text(
+                'Refresh Conversations',
+                style: TextStyle(fontWeight: FontWeight.w600),
+              ),
               onTap: () {
                 Navigator.pop(ctx);
                 ref.invalidate(conversationsProvider);
@@ -91,7 +105,9 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
     _searchFocusNode.requestFocus();
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
-        content: Text('Search for candidates or recruiters above to start chatting!'),
+        content: Text(
+          'Search for candidates or recruiters above to start chatting!',
+        ),
         duration: Duration(seconds: 2),
       ),
     );
@@ -107,16 +123,41 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
     return Scaffold(
       key: _scaffoldKey,
       backgroundColor: Colors.white,
-      endDrawer: const ProfileDrawer(),
+      endDrawer: ProfileDrawer(onNavigateTab: widget.onNavigateTab),
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0.5,
         automaticallyImplyLeading: false,
         titleSpacing: 16,
-        title: Image.asset(
-          'assets/images/logo.png',
-          height: 28,
-          fit: BoxFit.contain,
+        title: GestureDetector(
+          onTap: () {
+            if (widget.onNavigateTab != null) {
+              widget.onNavigateTab!(0);
+            } else {
+              context.go('/home');
+            }
+          },
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Image.asset(
+                  'assets/images/logo.png',
+                  height: 30,
+                  fit: BoxFit.contain,
+                ),
+                const SizedBox(width: 8),
+                Image.asset(
+                  'assets/images/logo_text.png',
+                  height: 18,
+                  fit: BoxFit.contain,
+                ),
+              ],
+            ),
+          ),
         ),
         actions: [
           // 1. Search Icon (focuses search box)
@@ -255,7 +296,11 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                     ),
                     suffixIcon: _searchController.text.isNotEmpty
                         ? IconButton(
-                            icon: const Icon(Icons.clear_rounded, size: 18, color: Color(0xFF94A3B8)),
+                            icon: const Icon(
+                              Icons.clear_rounded,
+                              size: 18,
+                              color: Color(0xFF94A3B8),
+                            ),
                             onPressed: () {
                               _searchController.clear();
                               setState(() {});
@@ -274,7 +319,10 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(14),
-                      borderSide: const BorderSide(color: Color(0xFF6A0DAD), width: 1.5),
+                      borderSide: const BorderSide(
+                        color: AppColors.primary,
+                        width: 1.5,
+                      ),
                     ),
                     contentPadding: const EdgeInsets.symmetric(
                       horizontal: 16,
@@ -320,8 +368,9 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                   final filteredConvs = query.isEmpty
                       ? conversations
                       : conversations.where((conv) {
-                          final otherUserId =
-                              conv.getOtherParticipant(currentUserId).toLowerCase();
+                          final otherUserId = conv
+                              .getOtherParticipant(currentUserId)
+                              .toLowerCase();
                           final lastMsg = conv.lastMessage.toLowerCase();
                           return otherUserId.contains(query) ||
                               lastMsg.contains(query);
@@ -369,16 +418,18 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                   }
 
                   return ListView.separated(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    itemCount: filteredConvs.length,
-                    separatorBuilder: (ctx, idx) => const Divider(
-                      height: 1,
-                      color: Color(0xFFF1F5F9),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
                     ),
+                    itemCount: filteredConvs.length,
+                    separatorBuilder: (ctx, idx) =>
+                        const Divider(height: 1, color: Color(0xFFF1F5F9)),
                     itemBuilder: (context, index) {
                       final conv = filteredConvs[index];
-                      final otherUserId =
-                          conv.getOtherParticipant(currentUserId);
+                      final otherUserId = conv.getOtherParticipant(
+                        currentUserId,
+                      );
                       final displayName =
                           'Recruiter / Candidate #${otherUserId.substring(0, otherUserId.length > 6 ? 6 : otherUserId.length)}';
 
@@ -401,14 +452,14 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                           child: Row(
                             children: [
                               CircleAvatar(
-                                backgroundColor: const Color(0xFFEDE9FE),
+                                backgroundColor: AppColors.primaryLight,
                                 radius: 24,
                                 child: Text(
                                   displayName.isNotEmpty
                                       ? displayName[0].toUpperCase()
                                       : 'U',
                                   style: const TextStyle(
-                                    color: Color(0xFF6A0DAD),
+                                    color: AppColors.primary,
                                     fontWeight: FontWeight.w800,
                                     fontSize: 16,
                                   ),
@@ -420,7 +471,8 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
                                       children: [
                                         Expanded(
                                           child: Text(
@@ -473,15 +525,27 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                     padding: const EdgeInsets.only(bottom: 16),
                     child: Row(
                       children: [
-                        const ShimmerBox(width: 48, height: 48, borderRadius: 24),
+                        const ShimmerBox(
+                          width: 48,
+                          height: 48,
+                          borderRadius: 24,
+                        ),
                         const SizedBox(width: 14),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: const [
-                              ShimmerBox(width: 140, height: 16, borderRadius: 4),
+                              ShimmerBox(
+                                width: 140,
+                                height: 16,
+                                borderRadius: 4,
+                              ),
                               SizedBox(height: 8),
-                              ShimmerBox(width: 200, height: 12, borderRadius: 4),
+                              ShimmerBox(
+                                width: 200,
+                                height: 12,
+                                borderRadius: 4,
+                              ),
                             ],
                           ),
                         ),
@@ -519,7 +583,8 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                         ),
                         const SizedBox(height: 16),
                         ElevatedButton.icon(
-                          onPressed: () => ref.invalidate(conversationsProvider),
+                          onPressed: () =>
+                              ref.invalidate(conversationsProvider),
                           icon: const Icon(Icons.refresh_rounded, size: 18),
                           label: const Text('Retry'),
                         ),

@@ -50,8 +50,7 @@ class NotificationItem {
       type: json['type']?.toString() ?? 'job_alert',
       title: json['title']?.toString() ?? 'Notification',
       message: json['message']?.toString() ?? '',
-      avatarUrl:
-          ApiConstants.resolveImageUrl(json['avatar_url']?.toString()),
+      avatarUrl: ApiConstants.resolveImageUrl(json['avatar_url']?.toString()),
       isRead: json['is_read'] == true,
       createdAt: json['created_at'] != null
           ? DateTime.tryParse(json['created_at'].toString()) ?? DateTime.now()

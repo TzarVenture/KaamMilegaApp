@@ -108,6 +108,7 @@ class AuthNotifier extends Notifier<AuthState> {
         isAuthenticated: true,
         user: result.user,
       );
+      await refreshProfile();
       return result;
     } catch (e) {
       final errorMsg = _parseError(e, 'Invalid OTP code.');
@@ -126,6 +127,7 @@ class AuthNotifier extends Notifier<AuthState> {
         isAuthenticated: true,
         user: result.user,
       );
+      await refreshProfile();
       return true;
     } catch (e) {
       final errorMsg = _parseError(e, 'Invalid email or password');
@@ -152,6 +154,7 @@ class AuthNotifier extends Notifier<AuthState> {
         isAuthenticated: true,
         user: result.user,
       );
+      await refreshProfile();
       return true;
     } catch (e) {
       final errorMsg = _parseError(e, 'Registration failed. Please try again.');

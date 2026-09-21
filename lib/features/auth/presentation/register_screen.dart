@@ -55,7 +55,10 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     }
 
     if (password.length < 6) {
-      _showSnackBar('Password must be at least 6 characters long', isError: true);
+      _showSnackBar(
+        'Password must be at least 6 characters long',
+        isError: true,
+      );
       return;
     }
 
@@ -63,11 +66,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
     final success = await ref
         .read(authProvider.notifier)
-        .registerWithPassword(
-          name: name,
-          email: email,
-          password: password,
-        );
+        .registerWithPassword(name: name, email: email, password: password);
 
     if (mounted) {
       setState(() => _isLoading = false);
@@ -104,7 +103,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     final isDesktopOrTablet = size.width > 600;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF9F5FF), // Soft purple tint background
+      backgroundColor: AppColors.background,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -118,17 +117,24 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
             }
           },
         ),
-        title: Image.asset(
-          'assets/images/logo.png',
-          height: 28,
-          fit: BoxFit.contain,
-          errorBuilder: (_, _, _) => const Text(
-            'Kaam Milega',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w900,
-              color: Color(0xFF1A2B8C),
-            ),
+        title: GestureDetector(
+          onTap: () => context.go('/home'),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Image.asset(
+                'assets/images/logo.png',
+                height: 28,
+                fit: BoxFit.contain,
+              ),
+              const SizedBox(width: 8),
+              Image.asset(
+                'assets/images/logo_text.png',
+                height: 17,
+                fit: BoxFit.contain,
+              ),
+            ],
           ),
         ),
         actions: [
@@ -137,7 +143,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
             padding: const EdgeInsets.only(right: 16),
             child: PopupMenuButton<String>(
               onSelected: (val) => setState(() => _selectedLanguage = val),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
               itemBuilder: (context) => [
                 const PopupMenuItem(value: 'English', child: Text('English')),
                 const PopupMenuItem(value: 'हिंदी', child: Text('हिंदी')),
@@ -231,13 +239,12 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                       borderRadius: BorderRadius.circular(24),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.purple.withValues(alpha: 0.08),
-                          blurRadius: 25,
-                          spreadRadius: 2,
-                          offset: const Offset(0, 10),
+                          color: Colors.black.withValues(alpha: 0.05),
+                          blurRadius: 20,
+                          offset: const Offset(0, 8),
                         ),
                       ],
-                      border: Border.all(color: const Color(0xFFF3E8FF)),
+                      border: Border.all(color: AppColors.border),
                     ),
                     padding: EdgeInsets.all(isDesktopOrTablet ? 32 : 24),
                     child: Column(
@@ -280,22 +287,38 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                         TextField(
                           controller: _nameController,
                           textCapitalization: TextCapitalization.words,
-                          style: const TextStyle(fontSize: 14, color: AppColors.textPrimary),
+                          style: const TextStyle(
+                            fontSize: 14,
+                            color: AppColors.textPrimary,
+                          ),
                           decoration: InputDecoration(
                             hintText: 'Enter your full name',
-                            hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 14),
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                            hintStyle: TextStyle(
+                              color: Colors.grey.shade400,
+                              fontSize: 14,
+                            ),
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 16,
+                            ),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(16),
-                              borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                              borderSide: const BorderSide(
+                                color: Color(0xFFE2E8F0),
+                              ),
                             ),
                             enabledBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(16),
-                              borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                              borderSide: const BorderSide(
+                                color: Color(0xFFE2E8F0),
+                              ),
                             ),
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(16),
-                              borderSide: const BorderSide(color: Color(0xFF9333EA), width: 1.5),
+                              borderSide: const BorderSide(
+                                color: Color(0xFF9333EA),
+                                width: 1.5,
+                              ),
                             ),
                           ),
                         ),
@@ -316,22 +339,38 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                         TextField(
                           controller: _emailController,
                           keyboardType: TextInputType.emailAddress,
-                          style: const TextStyle(fontSize: 14, color: AppColors.textPrimary),
+                          style: const TextStyle(
+                            fontSize: 14,
+                            color: AppColors.textPrimary,
+                          ),
                           decoration: InputDecoration(
                             hintText: 'name@example.com',
-                            hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 14),
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                            hintStyle: TextStyle(
+                              color: Colors.grey.shade400,
+                              fontSize: 14,
+                            ),
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 16,
+                            ),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(16),
-                              borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                              borderSide: const BorderSide(
+                                color: Color(0xFFE2E8F0),
+                              ),
                             ),
                             enabledBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(16),
-                              borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                              borderSide: const BorderSide(
+                                color: Color(0xFFE2E8F0),
+                              ),
                             ),
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(16),
-                              borderSide: const BorderSide(color: Color(0xFF9333EA), width: 1.5),
+                              borderSide: const BorderSide(
+                                color: Color(0xFF9333EA),
+                                width: 1.5,
+                              ),
                             ),
                           ),
                         ),
@@ -352,32 +391,53 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                         TextField(
                           controller: _passwordController,
                           obscureText: !_isPasswordVisible,
-                          style: const TextStyle(fontSize: 14, color: AppColors.textPrimary),
+                          style: const TextStyle(
+                            fontSize: 14,
+                            color: AppColors.textPrimary,
+                          ),
                           decoration: InputDecoration(
                             hintText: 'Create a strong password',
-                            hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 14),
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                            hintStyle: TextStyle(
+                              color: Colors.grey.shade400,
+                              fontSize: 14,
+                            ),
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 16,
+                            ),
                             suffixIcon: IconButton(
                               icon: Icon(
-                                _isPasswordVisible ? Icons.visibility_off : Icons.visibility,
+                                _isPasswordVisible
+                                    ? Icons.visibility_off
+                                    : Icons.visibility,
                                 color: const Color(0xFF94A3B8),
                                 size: 20,
                               ),
                               onPressed: () {
-                                setState(() => _isPasswordVisible = !_isPasswordVisible);
+                                setState(
+                                  () =>
+                                      _isPasswordVisible = !_isPasswordVisible,
+                                );
                               },
                             ),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(16),
-                              borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                              borderSide: const BorderSide(
+                                color: Color(0xFFE2E8F0),
+                              ),
                             ),
                             enabledBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(16),
-                              borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                              borderSide: const BorderSide(
+                                color: Color(0xFFE2E8F0),
+                              ),
                             ),
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(16),
-                              borderSide: const BorderSide(color: Color(0xFF9333EA), width: 1.5),
+                              borderSide: const BorderSide(
+                                color: Color(0xFF9333EA),
+                                width: 1.5,
+                              ),
                             ),
                           ),
                         ),
@@ -391,7 +451,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                           child: ElevatedButton(
                             onPressed: _isLoading ? null : _handleRegister,
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF1A2B8C), // Official KaamMilega Deep Blue
+                              backgroundColor: const Color(
+                                0xFF1A2B8C,
+                              ), // Official KaamMilega Deep Blue
                               elevation: 0,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(24),

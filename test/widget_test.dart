@@ -6,6 +6,7 @@ import 'package:kaam_milega/features/profile/presentation/widgets/profile_drawer
 import 'package:kaam_milega/features/jobs/models/job.dart';
 import 'package:kaam_milega/features/jobs/models/job_filter.dart';
 import 'package:kaam_milega/features/jobs/models/jobs_response.dart';
+import 'package:kaam_milega/features/jobs/presentation/saved_jobs_screen.dart';
 
 void main() {
   group('Job Model Tests', () {
@@ -106,17 +107,18 @@ void main() {
   });
 
   group('ApplyExpertScreen Widget Tests', () {
-    testWidgets('ApplyExpertScreen renders all form fields and headers', (tester) async {
+    testWidgets('ApplyExpertScreen renders all form fields and headers', (
+      tester,
+    ) async {
       await tester.pumpWidget(
-        const ProviderScope(
-          child: MaterialApp(
-            home: ApplyExpertScreen(),
-          ),
-        ),
+        const ProviderScope(child: MaterialApp(home: ApplyExpertScreen())),
       );
 
       expect(find.text('Apply to be an Expert'), findsOneWidget);
-      expect(find.text('Share your knowledge, mentor others, and sell courses.'), findsOneWidget);
+      expect(
+        find.text('Share your knowledge, mentor others, and sell courses.'),
+        findsOneWidget,
+      );
       expect(find.text('Category'), findsOneWidget);
       expect(find.text('Bio'), findsOneWidget);
       expect(find.text('Hourly Mentorship Rate (₹)'), findsOneWidget);
@@ -128,14 +130,13 @@ void main() {
   });
 
   group('ProfileDrawer Widget Tests', () {
-    testWidgets('ProfileDrawer renders all unified Home drawer items', (tester) async {
+    testWidgets('ProfileDrawer renders all unified Home drawer items', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         const ProviderScope(
           child: MaterialApp(
-            home: Scaffold(
-              endDrawer: ProfileDrawer(),
-              body: SizedBox(),
-            ),
+            home: Scaffold(endDrawer: ProfileDrawer(), body: SizedBox()),
           ),
         ),
       );
@@ -158,5 +159,75 @@ void main() {
       expect(find.text('Interviews'), findsOneWidget);
       expect(find.text('Apply to be an Expert'), findsOneWidget);
     });
+  });
+
+  group('SavedJobsScreen Widget Tests', () {
+    testWidgets('SavedJobsScreen renders header and empty state correctly', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        const ProviderScope(child: MaterialApp(home: SavedJobsScreen())),
+      );
+
+      await tester.pumpAndSettle();
+
+      expect(find.text('Back to All Jobs'), findsOneWidget);
+      expect(find.text('Saved Jobs'), findsOneWidget);
+      expect(find.text('0 jobs saved for later'), findsOneWidget);
+      expect(find.text('No Saved Jobs Found'), findsOneWidget);
+      expect(find.text('Browse Jobs'), findsOneWidget);
+    });
+  });
+
+  group('Logo Navigation Tests', () {
+    testWidgets(
+      'Tapping logo in ProfileDrawer invokes onNavigateTab to Home (0)',
+      (tester) async {
+        int navigatedTab = -1;
+        await tester.pumpWidget(
+          ProviderScope(
+            child: MaterialApp(
+              home: Scaffold(
+                endDrawer: ProfileDrawer(
+                  onNavigateTab: (index) {
+                    navigatedTab = index;
+                  },
+                ),
+                body: const SizedBox(),
+              ),
+            ),
+          ),
+        );
+
+        final scaffoldState = tester.state<ScaffoldState>(
+          find.byType(Scaffold),
+        );
+        scaffoldState.openEndDrawer();
+        await tester.pumpAndSettle();
+
+        final logoFinder = find.byWidgetPredicate(
+          (widget) =>
+              widget is Image &&
+              widget.image is AssetImage &&
+              (widget.image as AssetImage).assetName ==
+                  'assets/images/logo.png',
+        );
+        expect(logoFinder, findsOneWidget);
+
+        final logoTextFinder = find.byWidgetPredicate(
+          (widget) =>
+              widget is Image &&
+              widget.image is AssetImage &&
+              (widget.image as AssetImage).assetName ==
+                  'assets/images/logo_text.png',
+        );
+        expect(logoTextFinder, findsOneWidget);
+
+        await tester.tap(logoFinder);
+        await tester.pumpAndSettle();
+
+        expect(navigatedTab, 0);
+      },
+    );
   });
 }

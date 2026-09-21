@@ -12,6 +12,7 @@ import '../features/events/presentation/events_screen.dart';
 import '../features/experts/presentation/apply_expert_screen.dart';
 import '../features/interviews/presentation/interviews_screen.dart';
 import '../features/jobs/presentation/job_detail_screen.dart';
+import '../features/jobs/presentation/saved_jobs_screen.dart';
 import '../features/navigation/presentation/main_navigation_shell.dart';
 import '../features/profile/presentation/settings_screen.dart';
 import '../features/splash/presentation/splash_screen.dart';
@@ -19,6 +20,11 @@ import '../features/splash/presentation/splash_screen.dart';
 import '../features/feed/presentation/feed_screen.dart';
 import '../features/network/presentation/network_screen.dart';
 import '../features/notifications/presentation/notifications_screen.dart';
+import '../features/wallet/presentation/wallet_add_money_screen.dart';
+import '../features/wallet/presentation/wallet_screen.dart';
+import '../features/wallet/presentation/wallet_transactions_screen.dart';
+import '../features/wallet/presentation/wallet_transfer_screen.dart';
+import '../features/wallet/presentation/wallet_withdraw_screen.dart';
 
 /// Central GoRouter configuration for the KaamMilega app
 class AppRouter {
@@ -101,6 +107,11 @@ class AppRouter {
         },
       ),
       GoRoute(
+        path: '/saved-jobs',
+        name: 'saved_jobs',
+        builder: (context, state) => const SavedJobsScreen(),
+      ),
+      GoRoute(
         path: '/my-applications',
         name: 'my_applications',
         builder: (context, state) => const MyApplicationsScreen(),
@@ -157,6 +168,31 @@ class AppRouter {
         path: '/settings',
         name: 'settings',
         builder: (context, state) => const SettingsScreen(),
+      ),
+      GoRoute(
+        path: '/wallet',
+        name: 'wallet',
+        builder: (context, state) => const WalletScreen(),
+      ),
+      GoRoute(
+        path: '/wallet/transactions',
+        name: 'wallet_transactions',
+        builder: (context, state) => const WalletTransactionsScreen(),
+      ),
+      GoRoute(
+        path: '/wallet/add-money',
+        name: 'wallet_add_money',
+        builder: (context, state) => const WalletAddMoneyScreen(),
+      ),
+      GoRoute(
+        path: '/wallet/withdraw',
+        name: 'wallet_withdraw',
+        builder: (context, state) => const WalletWithdrawScreen(),
+      ),
+      GoRoute(
+        path: '/wallet/transfer',
+        name: 'wallet_transfer',
+        builder: (context, state) => const WalletTransferScreen(),
       ),
     ],
   );

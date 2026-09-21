@@ -22,7 +22,9 @@ import 'widgets/promo_banner.dart';
 
 /// Main Jobs Screen matching https://kaammilega.com/jobs
 class JobsScreen extends ConsumerStatefulWidget {
-  const JobsScreen({super.key});
+  final void Function(int index)? onNavigateTab;
+
+  const JobsScreen({super.key, this.onNavigateTab});
 
   @override
   ConsumerState<JobsScreen> createState() => _JobsScreenState();
@@ -89,8 +91,7 @@ class _JobsScreenState extends ConsumerState<JobsScreen> {
       showAuthPromptDialog(
         context,
         title: 'Sign In to Apply',
-        message:
-            'Please sign in or register to apply for jobs and connect with recruiters.',
+        message: 'Please sign in or register to apply for jobs and connect with recruiters.',
       );
       return;
     }
@@ -162,22 +163,49 @@ class _JobsScreenState extends ConsumerState<JobsScreen> {
     return Scaffold(
       key: _scaffoldKey,
       backgroundColor: const Color(0xFFF8FAFC),
-      endDrawer: const ProfileDrawer(),
+      endDrawer: ProfileDrawer(onNavigateTab: widget.onNavigateTab),
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0.5,
         automaticallyImplyLeading: false,
         titleSpacing: 16,
-        title: Image.asset(
-          'assets/images/logo.png',
-          height: 28,
-          fit: BoxFit.contain,
+        title: GestureDetector(
+          onTap: () {
+            if (widget.onNavigateTab != null) {
+              widget.onNavigateTab!(0);
+            } else {
+              context.go('/home');
+            }
+          },
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Image.asset(
+                  'assets/images/logo.png',
+                  height: 30,
+                  fit: BoxFit.contain,
+                ),
+                const SizedBox(width: 8),
+                Image.asset(
+                  'assets/images/logo_text.png',
+                  height: 18,
+                  fit: BoxFit.contain,
+                ),
+              ],
+            ),
+          ),
         ),
         actions: [
           // 1. Search Icon
           IconButton(
             icon: Icon(
-              _isSearchVisible ? Icons.search_off_rounded : Icons.search_rounded,
+              _isSearchVisible
+                  ? Icons.search_off_rounded
+                  : Icons.search_rounded,
               color: const Color(0xFF1E293B),
               size: 22,
             ),
@@ -416,17 +444,7 @@ class _JobsScreenState extends ConsumerState<JobsScreen> {
                     // Saved Jobs Button
                     InkWell(
                       onTap: () {
-                        setState(() {
-                          _filterSavedOnly = !_filterSavedOnly;
-                        });
-                        if (_filterSavedOnly && jobsState.savedJobIds.isEmpty) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('No saved jobs yet. Tap the bookmark icon on any job to save it!'),
-                              backgroundColor: Color(0xFFF59E0B),
-                            ),
-                          );
-                        }
+                        context.push('/saved-jobs');
                       },
                       borderRadius: BorderRadius.circular(12),
                       child: Container(
@@ -435,15 +453,9 @@ class _JobsScreenState extends ConsumerState<JobsScreen> {
                           vertical: 10,
                         ),
                         decoration: BoxDecoration(
-                          color: _filterSavedOnly
-                              ? const Color(0xFFF59E0B).withValues(alpha: 0.25)
-                              : const Color(0xFF1E293B).withValues(alpha: 0.8),
+                          color: const Color(0xFF1E293B).withValues(alpha: 0.8),
                           borderRadius: BorderRadius.circular(12),
-                          border: Border.all(
-                            color: _filterSavedOnly
-                                ? const Color(0xFFF59E0B)
-                                : const Color(0xFF475569),
-                          ),
+                          border: Border.all(color: const Color(0xFF475569)),
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
@@ -462,14 +474,12 @@ class _JobsScreenState extends ConsumerState<JobsScreen> {
                                 fontWeight: FontWeight.w700,
                               ),
                             ),
-                            if (_filterSavedOnly) ...[
-                              const SizedBox(width: 6),
-                              const Icon(
-                                Icons.check_circle_rounded,
-                                color: Color(0xFFF59E0B),
-                                size: 14,
-                              ),
-                            ],
+                            const SizedBox(width: 4),
+                            const Icon(
+                              Icons.chevron_right_rounded,
+                              color: Colors.white70,
+                              size: 18,
+                            ),
                           ],
                         ),
                       ),
@@ -544,19 +554,43 @@ class _JobsScreenState extends ConsumerState<JobsScreen> {
                           itemBuilder: (ctx) => [
                             const PopupMenuItem(
                               value: 'Newest First',
-                              child: Text('Newest First', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13)),
+                              child: Text(
+                                'Newest First',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 13,
+                                ),
+                              ),
                             ),
                             const PopupMenuItem(
                               value: 'Highest Salary',
-                              child: Text('Highest Salary', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13)),
+                              child: Text(
+                                'Highest Salary',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 13,
+                                ),
+                              ),
                             ),
                             const PopupMenuItem(
                               value: 'Lowest Salary',
-                              child: Text('Lowest Salary', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13)),
+                              child: Text(
+                                'Lowest Salary',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 13,
+                                ),
+                              ),
                             ),
                             const PopupMenuItem(
                               value: 'Most Vacancies',
-                              child: Text('Most Vacancies', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13)),
+                              child: Text(
+                                'Most Vacancies',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 13,
+                                ),
+                              ),
                             ),
                           ],
                           child: Container(
@@ -567,7 +601,9 @@ class _JobsScreenState extends ConsumerState<JobsScreen> {
                             decoration: BoxDecoration(
                               color: const Color(0xFFF8FAFC),
                               borderRadius: BorderRadius.circular(12),
-                              border: Border.all(color: const Color(0xFFE2E8F0)),
+                              border: Border.all(
+                                color: const Color(0xFFE2E8F0),
+                              ),
                             ),
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
@@ -609,7 +645,9 @@ class _JobsScreenState extends ConsumerState<JobsScreen> {
                             decoration: BoxDecoration(
                               color: const Color(0xFFEFF6FF),
                               borderRadius: BorderRadius.circular(12),
-                              border: Border.all(color: const Color(0xFFBFDBFE)),
+                              border: Border.all(
+                                color: const Color(0xFFBFDBFE),
+                              ),
                             ),
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
@@ -638,7 +676,9 @@ class _JobsScreenState extends ConsumerState<JobsScreen> {
                     ),
 
                     // City / Search Indicator if active
-                    if (filter.searchQuery.isNotEmpty || filter.city != 'All' || _filterSavedOnly)
+                    if (filter.searchQuery.isNotEmpty ||
+                        filter.city != 'All' ||
+                        _filterSavedOnly)
                       Padding(
                         padding: const EdgeInsets.only(top: 10),
                         child: Wrap(

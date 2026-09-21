@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../app/theme/app_colors.dart';
@@ -12,21 +12,19 @@ Future<void> showAuthPromptDialog(
   return showDialog<void>(
     context: context,
     builder: (ctx) => AlertDialog(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       contentPadding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
       title: Row(
         children: [
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: const Color(0xFFEDE9FE),
+              color: AppColors.primaryLight,
               borderRadius: BorderRadius.circular(12),
             ),
             child: const Icon(
               Icons.lock_outline_rounded,
-              color: Color(0xFF6A0DAD),
+              color: AppColors.primary,
               size: 22,
             ),
           ),

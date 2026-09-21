@@ -17,10 +17,7 @@ class FeedScreen extends ConsumerWidget {
         backgroundColor: Colors.white,
         elevation: 0.5,
         leading: IconButton(
-          icon: const Icon(
-            Icons.arrow_back_rounded,
-            color: Color(0xFF0F172A),
-          ),
+          icon: const Icon(Icons.arrow_back_rounded, color: Color(0xFF0F172A)),
           onPressed: () {
             if (Navigator.of(context).canPop()) {
               context.pop();
@@ -79,4 +76,3 @@ class FeedScreen extends ConsumerWidget {
     );
   }
 }
-
