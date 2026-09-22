@@ -239,6 +239,8 @@ class _SkillsMarketplaceScreenState
                           ),
                         ),
                       )
+                    else if (state.error != null)
+                      _buildErrorState(state.error!)
                     else if (state.skills.isEmpty)
                       _buildEmptyState()
                     else
@@ -428,6 +430,66 @@ class _SkillsMarketplaceScreenState
             'Try clearing your search query or selecting another category.',
             textAlign: TextAlign.center,
             style: TextStyle(fontSize: 12, color: Color(0xFF64748B)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildErrorState(String error) {
+    return Container(
+      padding: const EdgeInsets.all(32),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFF1F5F9)),
+      ),
+      child: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: const BoxDecoration(
+              color: Color(0xFFECFDF5),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.construction_rounded,
+              size: 32,
+              color: Color(0xFF10B981),
+            ),
+          ),
+          const SizedBox(height: 14),
+          const Text(
+            'Skills Catalog Unavailable',
+            style: TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.w800,
+              color: Color(0xFF1E293B),
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            error,
+            textAlign: TextAlign.center,
+            style: const TextStyle(fontSize: 12, color: Color(0xFF64748B)),
+          ),
+          const SizedBox(height: 16),
+          ElevatedButton.icon(
+            onPressed: () => ref.read(skillsProvider.notifier).init(),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF10B981),
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              elevation: 0,
+            ),
+            icon: const Icon(Icons.refresh_rounded, size: 16),
+            label: const Text(
+              'Retry',
+              style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
+            ),
           ),
         ],
       ),

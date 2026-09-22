@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/network/connectivity_provider.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../providers/wallet_provider.dart';
 import '../repositories/wallet_repository.dart';
@@ -19,6 +20,7 @@ class _WalletTransferScreenState extends ConsumerState<WalletTransferScreen> {
   final TextEditingController _recipientController = TextEditingController();
   final TextEditingController _amountController = TextEditingController();
   final TextEditingController _noteController = TextEditingController();
+  bool _isProcessing = false;
 
   @override
   void dispose() {
@@ -29,6 +31,21 @@ class _WalletTransferScreenState extends ConsumerState<WalletTransferScreen> {
   }
 
   Future<void> _handleTransfer(int currentBalance) async {
+    if (_isProcessing) return;
+
+    if (!ref.read(isOnlineProvider)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Internet connection required to perform this transaction.',
+          ),
+          backgroundColor: Color(0xFFE11D48),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+
     final recipient = _recipientController.text.trim();
     if (recipient.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -63,6 +80,8 @@ class _WalletTransferScreenState extends ConsumerState<WalletTransferScreen> {
       return;
     }
 
+    setState(() => _isProcessing = true);
+
     try {
       await ref
           .read(walletProvider.notifier)
@@ -88,8 +107,12 @@ class _WalletTransferScreenState extends ConsumerState<WalletTransferScreen> {
         context,
         amount,
         recipient,
-        'Peer-to-peer transfer microservice pending on backend.',
+        'P2P microservice integration pending on backend.',
       );
+    } finally {
+      if (mounted) {
+        setState(() => _isProcessing = false);
+      }
     }
   }
 

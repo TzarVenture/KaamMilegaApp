@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/network/connectivity_provider.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../providers/wallet_provider.dart';
 import '../repositories/wallet_repository.dart';
@@ -22,6 +23,7 @@ class _WalletWithdrawScreenState extends ConsumerState<WalletWithdrawScreen> {
   final TextEditingController _ifscController = TextEditingController();
 
   String _destinationType = 'UPI'; // 'UPI' or 'BANK'
+  bool _isProcessing = false;
 
   @override
   void dispose() {
@@ -33,6 +35,21 @@ class _WalletWithdrawScreenState extends ConsumerState<WalletWithdrawScreen> {
   }
 
   Future<void> _handleWithdraw(int currentBalance) async {
+    if (_isProcessing) return;
+
+    if (!ref.read(isOnlineProvider)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Internet connection required to perform this transaction.',
+          ),
+          backgroundColor: Color(0xFFE11D48),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+
     final amount = double.tryParse(_amountController.text.trim());
     if (amount == null || amount <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -79,6 +96,8 @@ class _WalletWithdrawScreenState extends ConsumerState<WalletWithdrawScreen> {
       return;
     }
 
+    setState(() => _isProcessing = true);
+
     try {
       await ref
           .read(walletProvider.notifier)
@@ -106,6 +125,10 @@ class _WalletWithdrawScreenState extends ConsumerState<WalletWithdrawScreen> {
         destination,
         'Payout microservice integration pending on backend.',
       );
+    } finally {
+      if (mounted) {
+        setState(() => _isProcessing = false);
+      }
     }
   }
 

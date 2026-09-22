@@ -415,13 +415,18 @@ class ProjectItem {
   factory ProjectItem.fromJson(Map<String, dynamic> json) => ProjectItem(
     id: json['id']?.toString() ?? json['_id']?.toString() ?? '',
     title: json['title']?.toString() ?? json['name']?.toString() ?? '',
-    associatedWith: json['associated_with']?.toString() ?? json['associatedWith']?.toString() ?? '',
+    associatedWith:
+        json['associated_with']?.toString() ??
+        json['associatedWith']?.toString() ??
+        '',
     description: json['description']?.toString() ?? '',
     link: json['link']?.toString() ?? json['url']?.toString() ?? '',
     startDate: json['start_date']?.toString() ?? '',
     endDate: json['end_date']?.toString() ?? '',
     skills: json['skills']?.toString() ?? json['skills_used']?.toString() ?? '',
-    isCurrentlyWorking: json['is_currently_working'] == true || json['isCurrentlyWorking'] == true,
+    isCurrentlyWorking:
+        json['is_currently_working'] == true ||
+        json['isCurrentlyWorking'] == true,
   );
 
   Map<String, dynamic> toJson() => {

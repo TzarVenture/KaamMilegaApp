@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/network/app_exception.dart';
 import '../models/expert_profile.dart';
 import '../repositories/expert_repository.dart';
 
@@ -52,9 +53,14 @@ class ExpertNotifier extends Notifier<ExpertState> {
         category: state.selectedCategory,
         query: state.searchQuery,
       );
-      state = state.copyWith(isLoading: false, experts: list);
+      state = state.copyWith(isLoading: false, experts: list, error: null);
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString());
+      final errorMsg = e is AppNotFoundException
+          ? 'Expert mentorship service is currently under development.'
+          : (e is AppNetworkException
+                ? 'No internet connection. Please check your network.'
+                : e.toString());
+      state = state.copyWith(isLoading: false, error: errorMsg);
     }
   }
 

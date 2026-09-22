@@ -168,6 +168,8 @@ class _ExpertsScreenState extends ConsumerState<ExpertsScreen> {
                           ),
                         ),
                       )
+                    else if (state.error != null)
+                      _buildErrorState(state.error!)
                     else if (state.experts.isEmpty)
                       _buildEmptyState()
                     else
@@ -296,6 +298,66 @@ class _ExpertsScreenState extends ConsumerState<ExpertsScreen> {
             child: const Text(
               'Apply as Expert',
               style: TextStyle(fontWeight: FontWeight.w700),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildErrorState(String error) {
+    return Container(
+      padding: const EdgeInsets.all(32),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFF1F5F9)),
+      ),
+      child: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: const BoxDecoration(
+              color: Color(0xFFEEF2FF),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.school_outlined,
+              size: 32,
+              color: Color(0xFF4F46E5),
+            ),
+          ),
+          const SizedBox(height: 14),
+          const Text(
+            'Mentorship Catalog Unavailable',
+            style: TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.w800,
+              color: Color(0xFF1E293B),
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            error,
+            textAlign: TextAlign.center,
+            style: const TextStyle(fontSize: 12, color: Color(0xFF64748B)),
+          ),
+          const SizedBox(height: 16),
+          ElevatedButton.icon(
+            onPressed: () => ref.read(expertProvider.notifier).loadExperts(),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF4F46E5),
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              elevation: 0,
+            ),
+            icon: const Icon(Icons.refresh_rounded, size: 16),
+            label: const Text(
+              'Retry',
+              style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
             ),
           ),
         ],

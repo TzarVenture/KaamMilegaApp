@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/network/app_exception.dart';
 import '../models/skill_item.dart';
 import '../repositories/skills_repository.dart';
 
@@ -64,36 +65,56 @@ class SkillsNotifier extends Notifier<SkillsState> {
         isLoading: false,
         categories: categories,
         skills: skills,
+        error: null,
       );
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString());
+      final errorMsg = e is AppNotFoundException
+          ? 'Skills marketplace is currently under development.'
+          : (e is AppNetworkException
+                ? 'No internet connection. Please check your network.'
+                : e.toString());
+      state = state.copyWith(isLoading: false, error: errorMsg);
     }
   }
 
   Future<void> filterByCategory(String category) async {
     if (state.selectedCategory == category) return;
-    state = state.copyWith(selectedCategory: category, isLoading: true);
+    state = state.copyWith(
+      selectedCategory: category,
+      isLoading: true,
+      error: null,
+    );
     try {
       final skills = await _repository.getSkills(
         category: category,
         query: state.searchQuery,
       );
-      state = state.copyWith(skills: skills, isLoading: false);
+      state = state.copyWith(skills: skills, isLoading: false, error: null);
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString());
+      final errorMsg = e is AppNotFoundException
+          ? 'Skills marketplace is currently under development.'
+          : (e is AppNetworkException
+                ? 'No internet connection. Please check your network.'
+                : e.toString());
+      state = state.copyWith(isLoading: false, error: errorMsg);
     }
   }
 
   Future<void> search(String query) async {
-    state = state.copyWith(searchQuery: query, isLoading: true);
+    state = state.copyWith(searchQuery: query, isLoading: true, error: null);
     try {
       final skills = await _repository.getSkills(
         category: state.selectedCategory,
         query: query,
       );
-      state = state.copyWith(skills: skills, isLoading: false);
+      state = state.copyWith(skills: skills, isLoading: false, error: null);
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString());
+      final errorMsg = e is AppNotFoundException
+          ? 'Skills marketplace is currently under development.'
+          : (e is AppNetworkException
+                ? 'No internet connection. Please check your network.'
+                : e.toString());
+      state = state.copyWith(isLoading: false, error: errorMsg);
     }
   }
 }

@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/constants/api_constants.dart';
 import '../../../core/network/api_client.dart';
 import '../models/skill_item.dart';
 
@@ -13,40 +14,43 @@ class SkillsRepository {
 
   SkillsRepository(this._apiClient);
 
-  /// Fetch list of skills with optional query & category filter from /api/skills
+  /// Fetch list of skills with optional query & category filter from /skills
   Future<List<SkillItem>> getSkills({String? query, String? category}) async {
-    try {
-      final response = await _apiClient.get(
-        '/api/skills',
-        queryParameters: {
-          if (query != null && query.isNotEmpty) 'q': query,
-          if (category != null && category.isNotEmpty && category != 'All')
-            'category': category,
-        },
-      );
+    final response = await _apiClient.get(
+      ApiConstants.skills,
+      queryParameters: {
+        if (query != null && query.isNotEmpty) 'q': query,
+        if (category != null && category.isNotEmpty && category != 'All')
+          'category': category,
+      },
+    );
 
-      if (response.data is List) {
-        return (response.data as List)
-            .whereType<Map<String, dynamic>>()
-            .map(SkillItem.fromJson)
-            .toList();
-      }
-      return [];
-    } catch (_) {
-      return [];
+    if (response.data is List) {
+      return (response.data as List)
+          .whereType<Map<String, dynamic>>()
+          .map(SkillItem.fromJson)
+          .toList();
+    } else if (response.data is Map<String, dynamic> &&
+        response.data['data'] is List) {
+      return (response.data['data'] as List)
+          .whereType<Map<String, dynamic>>()
+          .map(SkillItem.fromJson)
+          .toList();
     }
+    return [];
   }
 
-  /// Fetch distinct categories from /api/skills/categories
+  /// Fetch distinct categories from /skills/categories
   Future<List<String>> getCategories() async {
-    try {
-      final response = await _apiClient.get('/api/skills/categories');
-      if (response.data is List) {
-        return (response.data as List).map((e) => e.toString()).toList();
-      }
-      return [];
-    } catch (_) {
-      return [];
+    final response = await _apiClient.get('${ApiConstants.skills}/categories');
+    if (response.data is List) {
+      return (response.data as List).map((e) => e.toString()).toList();
+    } else if (response.data is Map<String, dynamic> &&
+        response.data['categories'] is List) {
+      return (response.data['categories'] as List)
+          .map((e) => e.toString())
+          .toList();
     }
+    return [];
   }
 }

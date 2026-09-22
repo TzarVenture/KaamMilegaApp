@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/network/connectivity_provider.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../providers/wallet_provider.dart';
 import '../repositories/wallet_repository.dart';
@@ -17,11 +18,12 @@ class WalletAddMoneyScreen extends ConsumerStatefulWidget {
 
 class _WalletAddMoneyScreenState extends ConsumerState<WalletAddMoneyScreen> {
   final TextEditingController _amountController = TextEditingController(
-    text: '500',
+    text: '100',
   );
   String _selectedMethod = 'UPI';
+  bool _isProcessing = false;
 
-  final List<int> _quickAmounts = [500, 1000, 2000, 5000];
+  final List<int> _quickAmounts = [100, 500, 1000, 2000];
 
   @override
   void dispose() {
@@ -36,13 +38,28 @@ class _WalletAddMoneyScreenState extends ConsumerState<WalletAddMoneyScreen> {
   }
 
   Future<void> _handleProceed() async {
+    if (_isProcessing) return;
+
+    if (!ref.read(isOnlineProvider)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Internet connection required to perform this transaction.',
+          ),
+          backgroundColor: Color(0xFFE11D48),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+
     final text = _amountController.text.trim();
     final amount = double.tryParse(text);
 
-    if (amount == null || amount < 10) {
+    if (amount == null || amount < 100) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Minimum deposit amount is ₹10'),
+          content: Text('Minimum deposit amount is ₹100'),
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -58,6 +75,8 @@ class _WalletAddMoneyScreenState extends ConsumerState<WalletAddMoneyScreen> {
       );
       return;
     }
+
+    setState(() => _isProcessing = true);
 
     try {
       await ref
@@ -81,6 +100,10 @@ class _WalletAddMoneyScreenState extends ConsumerState<WalletAddMoneyScreen> {
         amount,
         'Payment gateway integration pending on backend.',
       );
+    } finally {
+      if (mounted) {
+        setState(() => _isProcessing = false);
+      }
     }
   }
 

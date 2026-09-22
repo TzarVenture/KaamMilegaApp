@@ -11,6 +11,7 @@ import '../features/company/presentation/company_screen.dart';
 import '../features/events/presentation/events_screen.dart';
 import '../features/experts/presentation/apply_expert_screen.dart';
 import '../features/interviews/presentation/interviews_screen.dart';
+import '../features/jobs/models/job.dart';
 import '../features/jobs/presentation/job_detail_screen.dart';
 import '../features/jobs/presentation/saved_jobs_screen.dart';
 import '../features/navigation/presentation/main_navigation_shell.dart';
@@ -110,7 +111,8 @@ class AppRouter {
         name: 'job_detail',
         builder: (context, state) {
           final id = state.pathParameters['id'] ?? '';
-          return JobDetailScreen(jobId: id);
+          final job = state.extra is Job ? state.extra as Job : null;
+          return JobDetailScreen(jobId: id, initialJob: job);
         },
       ),
       GoRoute(

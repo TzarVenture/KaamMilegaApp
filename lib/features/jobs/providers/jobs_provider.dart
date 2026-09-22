@@ -1,5 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/network/connectivity_provider.dart';
+import '../../../core/network/network_status.dart';
 import '../../../core/storage/local_storage.dart';
 import '../models/job.dart';
 import '../models/job_filter.dart';
@@ -10,41 +12,49 @@ class JobsState {
   final List<Job> jobs;
   final int totalJobs;
   final bool isLoading;
+  final bool isOffline;
   final String? errorMessage;
   final JobFilter filter;
   final Set<String> savedJobIds;
+  final DateTime? cachedTimestamp;
 
   const JobsState({
     this.jobs = const [],
     this.totalJobs = 0,
     this.isLoading = false,
+    this.isOffline = false,
     this.errorMessage,
     this.filter = const JobFilter(),
     this.savedJobIds = const {},
+    this.cachedTimestamp,
   });
 
   JobsState copyWith({
     List<Job>? jobs,
     int? totalJobs,
     bool? isLoading,
+    bool? isOffline,
     String? errorMessage,
     JobFilter? filter,
     Set<String>? savedJobIds,
+    DateTime? cachedTimestamp,
   }) {
     return JobsState(
       jobs: jobs ?? this.jobs,
       totalJobs: totalJobs ?? this.totalJobs,
       isLoading: isLoading ?? this.isLoading,
+      isOffline: isOffline ?? this.isOffline,
       errorMessage: errorMessage,
       filter: filter ?? this.filter,
       savedJobIds: savedJobIds ?? this.savedJobIds,
+      cachedTimestamp: cachedTimestamp,
     );
   }
 
   int get totalPages => (totalJobs / filter.limit).ceil();
 }
 
-/// Riverpod Notifier for managing Jobs State smoothly
+/// Riverpod Notifier for managing Jobs State smoothly with offline caching & recovery
 class JobsNotifier extends Notifier<JobsState> {
   late final JobRepository _repository;
   int _currentRequestId = 0;
@@ -53,8 +63,38 @@ class JobsNotifier extends Notifier<JobsState> {
   JobsState build() {
     _repository = ref.watch(jobRepositoryProvider);
     final cachedSaved = LocalStorage.getSavedJobIds();
+
+    // Listen to network status for smart recovery on reconnect
+    ref.listen<NetworkStatus>(networkStatusProvider, (prev, next) {
+      if (prev == NetworkStatus.offline && next == NetworkStatus.online) {
+        // Auto-refresh when internet returns
+        if (state.isOffline ||
+            state.cachedTimestamp != null ||
+            state.errorMessage != null) {
+          fetchJobs();
+        }
+      }
+    });
+
+    // Check cached jobs initially
+    final cachedData = LocalStorage.getCachedJobs();
+    List<Job> initialJobs = [];
+    DateTime? initialTimestamp;
+    if (cachedData.jobs.isNotEmpty) {
+      try {
+        initialJobs = cachedData.jobs.map((m) => Job.fromJson(m)).toList();
+        initialTimestamp = cachedData.timestamp;
+      } catch (_) {}
+    }
+
     Future.microtask(() => fetchJobs());
-    return JobsState(savedJobIds: cachedSaved);
+
+    return JobsState(
+      jobs: initialJobs,
+      totalJobs: initialJobs.length,
+      savedJobIds: cachedSaved,
+      cachedTimestamp: initialTimestamp,
+    );
   }
 
   /// Toggle saving / bookmarking a job
@@ -78,16 +118,78 @@ class JobsNotifier extends Notifier<JobsState> {
       final response = await _repository.getJobs(state.filter);
       if (requestId != _currentRequestId) return;
 
+      // Save to local cache
+      try {
+        final jobMaps = response.jobs
+            .map(
+              (j) => {
+                'id': j.id,
+                'recruiter_id': j.recruiterId,
+                'title': j.title,
+                'description': j.description,
+                'company': j.company,
+                'city_id': j.cityId,
+                'city_name': j.cityName,
+                'location': j.location,
+                'salary_min': j.salaryMin,
+                'salary_max': j.salaryMax,
+                'job_type': j.jobType,
+                'status': j.status,
+                'requirements': j.requirements,
+                'we_offer': j.weOffer,
+                'gender': j.gender,
+                'education': j.education,
+                'experience_min': j.experienceMin,
+                'experience_max': j.experienceMax,
+                'vacancies': j.vacancies,
+                'applicant_count': j.applicantCount,
+                'created_at': j.createdAt?.toIso8601String(),
+              },
+            )
+            .toList();
+        LocalStorage.saveCachedJobs(jobMaps);
+      } catch (_) {}
+
       state = state.copyWith(
         jobs: response.jobs,
         totalJobs: response.total,
         isLoading: false,
+        isOffline: false,
         errorMessage: null,
+        cachedTimestamp: null,
       );
     } catch (e) {
       if (requestId != _currentRequestId) return;
 
-      state = state.copyWith(isLoading: false, errorMessage: e.toString());
+      // Check if we have cached jobs to display gracefully
+      final cached = LocalStorage.getCachedJobs();
+      if (cached.jobs.isNotEmpty) {
+        try {
+          final cachedList = cached.jobs.map((m) => Job.fromJson(m)).toList();
+          state = state.copyWith(
+            jobs: cachedList,
+            totalJobs: cachedList.length,
+            isLoading: false,
+            isOffline: false,
+            errorMessage: null,
+            cachedTimestamp: cached.timestamp ?? DateTime.now(),
+          );
+          return;
+        } catch (_) {}
+      }
+
+      // If no cache, display clean offline / error state
+      final isOffline =
+          ref.read(isOnlineProvider) == false ||
+          e.toString().toLowerCase().contains('connection') ||
+          e.toString().toLowerCase().contains('offline') ||
+          e.toString().toLowerCase().contains('socket');
+
+      state = state.copyWith(
+        isLoading: false,
+        isOffline: isOffline,
+        errorMessage: isOffline ? null : e.toString(),
+      );
     }
   }
 

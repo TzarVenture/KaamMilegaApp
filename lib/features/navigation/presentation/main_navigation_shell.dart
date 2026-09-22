@@ -43,112 +43,116 @@ class _MainNavigationShellState extends ConsumerState<MainNavigationShell> {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
-      builder: (ctx) => Container(
-        padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Center(
-              child: Container(
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade300,
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-            const Text(
-              'Quick Actions',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w800,
-                color: AppColors.textPrimary,
-              ),
-            ),
-            const SizedBox(height: 16),
-            ListTile(
-              leading: Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: AppColors.accentLight,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: const Icon(Icons.bolt_rounded, color: AppColors.accent),
-              ),
-              title: const Text(
-                'Instant Work Request',
-                style: TextStyle(fontWeight: FontWeight.w700),
-              ),
-              subtitle: const Text('Get matched with workers in minutes'),
-              trailing: const Icon(Icons.chevron_right_rounded),
-              onTap: () {
-                Navigator.pop(ctx);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text(
-                      'Instant Work request submitted! Matching candidates...',
-                    ),
-                    backgroundColor: AppColors.accent,
+      builder: (ctx) => Material(
+        color: Colors.white,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        clipBehavior: Clip.antiAlias,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade300,
+                    borderRadius: BorderRadius.circular(2),
                   ),
-                );
-              },
-            ),
-            const Divider(height: 1),
-            ListTile(
-              leading: Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFDCFCE7),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: const Icon(
-                  Icons.menu_book_rounded,
-                  color: Color(0xFF16A34A),
                 ),
               ),
-              title: const Text(
-                'Browse Resources',
-                style: TextStyle(fontWeight: FontWeight.w700),
-              ),
-              subtitle: const Text('Access career guides and materials'),
-              trailing: const Icon(Icons.chevron_right_rounded),
-              onTap: () {
-                Navigator.pop(ctx);
-                context.push('/feed');
-              },
-            ),
-            const Divider(height: 1),
-            ListTile(
-              leading: Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFEFF6FF),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: const Icon(
-                  Icons.event_available_rounded,
-                  color: Color(0xFF2563EB),
+              const SizedBox(height: 16),
+              const Text(
+                'Quick Actions',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w800,
+                  color: AppColors.textPrimary,
                 ),
               ),
-              title: const Text(
-                'Browse Live Events',
-                style: TextStyle(fontWeight: FontWeight.w700),
+              const SizedBox(height: 16),
+              ListTile(
+                leading: Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: AppColors.accentLight,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(
+                    Icons.bolt_rounded,
+                    color: AppColors.accent,
+                  ),
+                ),
+                title: const Text(
+                  'Instant Work Request',
+                  style: TextStyle(fontWeight: FontWeight.w700),
+                ),
+                subtitle: const Text('Get matched with workers in minutes'),
+                trailing: const Icon(Icons.chevron_right_rounded),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text(
+                        'Instant Work request submitted! Matching candidates...',
+                      ),
+                      backgroundColor: AppColors.accent,
+                    ),
+                  );
+                },
               ),
-              subtitle: const Text('Join career webinars & hiring fairs'),
-              trailing: const Icon(Icons.chevron_right_rounded),
-              onTap: () {
-                Navigator.pop(ctx);
-                context.push('/events');
-              },
-            ),
-          ],
+              const Divider(height: 1),
+              ListTile(
+                leading: Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFDCFCE7),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(
+                    Icons.menu_book_rounded,
+                    color: Color(0xFF16A34A),
+                  ),
+                ),
+                title: const Text(
+                  'Browse Resources',
+                  style: TextStyle(fontWeight: FontWeight.w700),
+                ),
+                subtitle: const Text('Access career guides and materials'),
+                trailing: const Icon(Icons.chevron_right_rounded),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  context.push('/feed');
+                },
+              ),
+              const Divider(height: 1),
+              ListTile(
+                leading: Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFEFF6FF),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(
+                    Icons.event_available_rounded,
+                    color: Color(0xFF2563EB),
+                  ),
+                ),
+                title: const Text(
+                  'Browse Live Events',
+                  style: TextStyle(fontWeight: FontWeight.w700),
+                ),
+                subtitle: const Text('Join career webinars & hiring fairs'),
+                trailing: const Icon(Icons.chevron_right_rounded),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  context.push('/events');
+                },
+              ),
+            ],
+          ),
         ),
       ),
     );

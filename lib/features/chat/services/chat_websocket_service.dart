@@ -2,15 +2,18 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/constants/api_constants.dart';
+import '../../../core/network/connectivity_service.dart';
+import '../../../core/network/network_status.dart';
 import '../../../core/storage/local_storage.dart';
 import '../models/chat_message.dart';
 
 enum WebSocketStatus { disconnected, connecting, connected, error }
 
-/// Production-ready Real-Time Chat WebSocket Service
+/// Production-ready Real-Time Chat WebSocket Service with network resilience
 class ChatWebSocketService {
   WebSocket? _webSocket;
   WebSocketStatus _status = WebSocketStatus.disconnected;
@@ -22,8 +25,22 @@ class ChatWebSocketService {
   int _reconnectAttempts = 0;
   static const int _maxReconnectAttempts = 5;
   bool _isDisposed = false;
+  StreamSubscription<NetworkStatus>? _networkSubscription;
 
-  ChatWebSocketService();
+  ChatWebSocketService() {
+    // Listen to network status to auto-reconnect when internet returns
+    _networkSubscription = ConnectivityService().statusStream.listen((
+      netStatus,
+    ) {
+      if (netStatus == NetworkStatus.online &&
+          _status != WebSocketStatus.connected &&
+          !_isDisposed) {
+        _reconnectAttempts = 0;
+        _reconnectTimer?.cancel();
+        connect();
+      }
+    });
+  }
 
   WebSocketStatus get status => _status;
   Stream<WebSocketStatus> get statusStream => _statusController.stream;
@@ -32,6 +49,11 @@ class ChatWebSocketService {
   /// Connect to km-backend WebSocket server: /api/ws/chats?token=jwt_token
   Future<void> connect() async {
     if (_isDisposed || _status == WebSocketStatus.connected) return;
+
+    if (!ConnectivityService().isOnline) {
+      _setStatus(WebSocketStatus.disconnected);
+      return;
+    }
 
     final token = LocalStorage.getToken();
     if (token == null || token.isEmpty) {
@@ -48,7 +70,9 @@ class ChatWebSocketService {
       final wsUrl =
           '$wsScheme://${uri.host}${uri.hasPort ? ':${uri.port}' : ''}/api/ws/chats?token=$token';
 
-      _webSocket = await WebSocket.connect(wsUrl);
+      _webSocket?.close();
+      _webSocket = await WebSocket.connect(wsUrl)
+          .timeout(const Duration(seconds: 8));
       _setStatus(WebSocketStatus.connected);
       _reconnectAttempts = 0;
 
@@ -59,6 +83,7 @@ class ChatWebSocketService {
         cancelOnError: false,
       );
     } catch (e) {
+      debugPrint('[ChatWebSocketService] Connection failed: $e');
       _setStatus(WebSocketStatus.error);
       _scheduleReconnect();
     }
@@ -85,19 +110,24 @@ class ChatWebSocketService {
   }
 
   void _onError(dynamic error) {
+    debugPrint('[ChatWebSocketService] Socket error: $error');
     _setStatus(WebSocketStatus.error);
     _scheduleReconnect();
   }
 
   void _onDone() {
     _setStatus(WebSocketStatus.disconnected);
-    if (!_isDisposed) {
+    if (!_isDisposed && ConnectivityService().isOnline) {
       _scheduleReconnect();
     }
   }
 
   void _scheduleReconnect() {
-    if (_isDisposed || _reconnectAttempts >= _maxReconnectAttempts) return;
+    if (_isDisposed ||
+        _reconnectAttempts >= _maxReconnectAttempts ||
+        !ConnectivityService().isOnline) {
+      return;
+    }
 
     _reconnectTimer?.cancel();
     _reconnectAttempts++;
@@ -121,6 +151,7 @@ class ChatWebSocketService {
   /// Disconnect and cleanup resources
   void dispose() {
     _isDisposed = true;
+    _networkSubscription?.cancel();
     _reconnectTimer?.cancel();
     _webSocket?.close();
     _statusController.close();

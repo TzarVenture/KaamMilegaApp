@@ -15,6 +15,7 @@ import '../../cities/presentation/city_selector_sheet.dart';
 import '../../notifications/providers/notification_provider.dart';
 import '../../profile/presentation/widgets/profile_drawer.dart';
 import '../providers/jobs_provider.dart';
+import '../../../shared/widgets/network_state_view.dart';
 import 'widgets/filter_modal.dart';
 import 'widgets/job_card.dart';
 import 'widgets/pagination_bar.dart';
@@ -763,6 +764,12 @@ class _JobsScreenState extends ConsumerState<JobsScreen> {
                 ),
               ),
 
+            // Offline Cache Notice
+            if (jobsState.cachedTimestamp != null)
+              SliverToBoxAdapter(
+                child: CachedDataBadge(timestamp: jobsState.cachedTimestamp!),
+              ),
+
             // Jobs List or Loading/Error/Empty State
             if (jobsState.isLoading)
               SliverList(
@@ -906,7 +913,7 @@ class _JobsScreenState extends ConsumerState<JobsScreen> {
                     isSaved: jobsState.savedJobIds.contains(job.id),
                     onBookmarkToggle: () =>
                         ref.read(jobsProvider.notifier).toggleSaveJob(job.id),
-                    onTap: () => context.push('/jobs/${job.id}'),
+                    onTap: () => context.push('/jobs/${job.id}', extra: job),
                     onApply: () => _handleApply(job.id),
                     onChat: _handleChat,
                     onCall: _handleCall,

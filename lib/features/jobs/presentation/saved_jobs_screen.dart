@@ -189,11 +189,13 @@ class _SavedJobsScreenState extends ConsumerState<SavedJobsScreen> {
                       return JobCard(
                         job: job,
                         isSaved: true,
-                        onTap: () => context.push('/jobs/${job.id}'),
+                        onTap: () =>
+                            context.push('/jobs/${job.id}', extra: job),
                         onBookmarkToggle: () {
                           ref.read(jobsProvider.notifier).toggleSaveJob(job.id);
                         },
-                        onApply: () => context.push('/jobs/${job.id}'),
+                        onApply: () =>
+                            context.push('/jobs/${job.id}', extra: job),
                         onChat: () => context.push('/chat'),
                         onCall: () {},
                       );

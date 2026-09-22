@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/network/connectivity_provider.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../models/wallet_transaction.dart';
 import '../providers/wallet_provider.dart';
@@ -11,6 +12,7 @@ class WalletScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final isOnline = ref.watch(isOnlineProvider);
     final authState = ref.watch(authProvider);
     final walletState = ref.watch(walletProvider);
     final user = authState.user;
@@ -95,6 +97,40 @@ class WalletScreen extends ConsumerWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              if (!isOnline)
+                Container(
+                  margin: const EdgeInsets.only(bottom: 16),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 10,
+                  ),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFEF2F2),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: const Color(0xFFFECACA)),
+                  ),
+                  child: const Row(
+                    children: [
+                      Icon(
+                        Icons.wifi_off_rounded,
+                        color: Color(0xFFE11D48),
+                        size: 18,
+                      ),
+                      SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          "You're offline. Balance may have changed since last sync.",
+                          style: TextStyle(
+                            color: Color(0xFF991B1B),
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
               // 1. MAIN BALANCE CARD
               _buildBalanceCard(
                 context,
@@ -705,7 +741,6 @@ class WalletScreen extends ConsumerWidget {
     // If transactions exist from backend:
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -715,54 +750,59 @@ class WalletScreen extends ConsumerWidget {
           ),
         ],
       ),
-      child: ListView.separated(
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        itemCount: walletState.transactions.take(5).length,
-        separatorBuilder: (context, index) =>
-            const Divider(height: 1, color: Color(0xFFF1F5F9)),
-        itemBuilder: (context, index) {
-          final txn = walletState.transactions[index];
-          final isCredit = txn.type == TransactionType.credit;
-          return ListTile(
-            leading: CircleAvatar(
-              backgroundColor: isCredit
-                  ? const Color(0xFF10B981).withValues(alpha: 0.12)
-                  : const Color(0xFFEF4444).withValues(alpha: 0.12),
-              child: Icon(
-                isCredit
-                    ? Icons.arrow_downward_rounded
-                    : Icons.arrow_upward_rounded,
-                color: isCredit
-                    ? const Color(0xFF10B981)
-                    : const Color(0xFFEF4444),
-                size: 18,
+      child: Material(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        clipBehavior: Clip.antiAlias,
+        child: ListView.separated(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: walletState.transactions.take(5).length,
+          separatorBuilder: (context, index) =>
+              const Divider(height: 1, color: Color(0xFFF1F5F9)),
+          itemBuilder: (context, index) {
+            final txn = walletState.transactions[index];
+            final isCredit = txn.type == TransactionType.credit;
+            return ListTile(
+              leading: CircleAvatar(
+                backgroundColor: isCredit
+                    ? const Color(0xFF10B981).withValues(alpha: 0.12)
+                    : const Color(0xFFEF4444).withValues(alpha: 0.12),
+                child: Icon(
+                  isCredit
+                      ? Icons.arrow_downward_rounded
+                      : Icons.arrow_upward_rounded,
+                  color: isCredit
+                      ? const Color(0xFF10B981)
+                      : const Color(0xFFEF4444),
+                  size: 18,
+                ),
               ),
-            ),
-            title: Text(
-              txn.title,
-              style: const TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-                color: Color(0xFF0F172A),
+              title: Text(
+                txn.title,
+                style: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF0F172A),
+                ),
               ),
-            ),
-            subtitle: Text(
-              txn.createdAt.toLocal().toString().split('.').first,
-              style: const TextStyle(fontSize: 11, color: Color(0xFF94A3B8)),
-            ),
-            trailing: Text(
-              '${isCredit ? "+" : "-"}₹${txn.amount.toStringAsFixed(0)}',
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w700,
-                color: isCredit
-                    ? const Color(0xFF10B981)
-                    : const Color(0xFF0F172A),
+              subtitle: Text(
+                txn.createdAt.toLocal().toString().split('.').first,
+                style: const TextStyle(fontSize: 11, color: Color(0xFF94A3B8)),
               ),
-            ),
-          );
-        },
+              trailing: Text(
+                '${isCredit ? "+" : "-"}₹${txn.amount.toStringAsFixed(0)}',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                  color: isCredit
+                      ? const Color(0xFF10B981)
+                      : const Color(0xFF0F172A),
+                ),
+              ),
+            );
+          },
+        ),
       ),
     );
   }
@@ -823,96 +863,97 @@ class WalletScreen extends ConsumerWidget {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (ctx) => Container(
-        padding: const EdgeInsets.all(24),
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Center(
-              child: Container(
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: const Color(0xFFCBD5E1),
-                  borderRadius: BorderRadius.circular(2),
+      builder: (ctx) => Material(
+        color: Colors.white,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        clipBehavior: Clip.antiAlias,
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFCBD5E1),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(height: 16),
-            const Text(
-              'Make a Payment',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w800,
-                color: Color(0xFF0F172A),
-              ),
-            ),
-            const SizedBox(height: 6),
-            const Text(
-              'Pay candidate for gig milestones or service fees directly from your wallet balance.',
-              style: TextStyle(fontSize: 13, color: Color(0xFF64748B)),
-            ),
-            const SizedBox(height: 20),
-            ListTile(
-              leading: Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF1A2B8C).withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: const Icon(
-                  Icons.qr_code_scanner_rounded,
-                  color: Color(0xFF1A2B8C),
+              const SizedBox(height: 16),
+              const Text(
+                'Make a Payment',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w800,
+                  color: Color(0xFF0F172A),
                 ),
               ),
-              title: const Text(
-                'Scan KaamMilega QR',
-                style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
+              const SizedBox(height: 6),
+              const Text(
+                'Pay candidate for gig milestones or service fees directly from your wallet balance.',
+                style: TextStyle(fontSize: 13, color: Color(0xFF64748B)),
               ),
-              subtitle: const Text(
-                'Scan candidate or expert payment QR code',
-                style: TextStyle(fontSize: 12),
-              ),
-              trailing: const Icon(Icons.chevron_right_rounded),
-              onTap: () {
-                Navigator.of(ctx).pop();
-                _showBackendRequiredModal(context, 'QR Code Scanner');
-              },
-            ),
-            const Divider(height: 1),
-            ListTile(
-              leading: Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF10B981).withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(10),
+              const SizedBox(height: 20),
+              ListTile(
+                leading: Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF1A2B8C).withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Icon(
+                    Icons.qr_code_scanner_rounded,
+                    color: Color(0xFF1A2B8C),
+                  ),
                 ),
-                child: const Icon(
-                  Icons.phone_iphone_rounded,
-                  color: Color(0xFF10B981),
+                title: const Text(
+                  'Scan KaamMilega QR',
+                  style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
                 ),
+                subtitle: const Text(
+                  'Scan candidate or expert payment QR code',
+                  style: TextStyle(fontSize: 12),
+                ),
+                trailing: const Icon(Icons.chevron_right_rounded),
+                onTap: () {
+                  Navigator.of(ctx).pop();
+                  _showBackendRequiredModal(context, 'QR Code Scanner');
+                },
               ),
-              title: const Text(
-                'Pay to Phone / ID',
-                style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
+              const Divider(height: 1),
+              ListTile(
+                leading: Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF10B981).withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Icon(
+                    Icons.phone_iphone_rounded,
+                    color: Color(0xFF10B981),
+                  ),
+                ),
+                title: const Text(
+                  'Pay to Phone / ID',
+                  style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
+                ),
+                subtitle: const Text(
+                  'Send money directly to candidate phone',
+                  style: TextStyle(fontSize: 12),
+                ),
+                trailing: const Icon(Icons.chevron_right_rounded),
+                onTap: () {
+                  Navigator.of(ctx).pop();
+                  context.push('/wallet/transfer');
+                },
               ),
-              subtitle: const Text(
-                'Send money directly to candidate phone',
-                style: TextStyle(fontSize: 12),
-              ),
-              trailing: const Icon(Icons.chevron_right_rounded),
-              onTap: () {
-                Navigator.of(ctx).pop();
-                context.push('/wallet/transfer');
-              },
-            ),
-            const SizedBox(height: 16),
-          ],
+              const SizedBox(height: 16),
+            ],
+          ),
         ),
       ),
     );

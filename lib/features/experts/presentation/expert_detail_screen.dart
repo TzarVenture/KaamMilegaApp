@@ -315,68 +315,71 @@ class _ExpertDetailScreenState extends ConsumerState<ExpertDetailScreen> {
           const SizedBox(height: 16),
 
           // 3. Schedule Picker
-          Container(
-            padding: const EdgeInsets.all(18),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: const Color(0xFFE2E8F0)),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Select Session Date',
-                  style: TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w800,
-                    color: Color(0xFF0F172A),
-                  ),
-                ),
-                const SizedBox(height: 10),
-                ListTile(
-                  contentPadding: EdgeInsets.zero,
-                  leading: const Icon(
-                    Icons.calendar_today_rounded,
-                    color: Color(0xFF4F46E5),
-                  ),
-                  title: Text(
-                    '${_selectedDate.day}/${_selectedDate.month}/${_selectedDate.year}',
-                    style: const TextStyle(fontWeight: FontWeight.w700),
-                  ),
-                  subtitle: const Text('Tap to choose a different day'),
-                  trailing: const Icon(Icons.chevron_right_rounded),
-                  onTap: () async {
-                    final picked = await showDatePicker(
-                      context: context,
-                      initialDate: _selectedDate,
-                      firstDate: DateTime.now(),
-                      lastDate: DateTime.now().add(const Duration(days: 60)),
-                    );
-                    if (picked != null) {
-                      setState(() => _selectedDate = picked);
-                    }
-                  },
-                ),
-                const SizedBox(height: 10),
-                TextField(
-                  controller: _notesController,
-                  maxLines: 2,
-                  decoration: InputDecoration(
-                    hintText: 'What would you like to focus on? (e.g. Resume audit, interview prep)',
-                    hintStyle: const TextStyle(
-                      fontSize: 12,
-                      color: Color(0xFF94A3B8),
-                    ),
-                    filled: true,
-                    fillColor: const Color(0xFFF8FAFC),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+          Material(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            child: Container(
+              padding: const EdgeInsets.all(18),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: const Color(0xFFE2E8F0)),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Select Session Date',
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w800,
+                      color: Color(0xFF0F172A),
                     ),
                   ),
-                ),
-              ],
+                  const SizedBox(height: 10),
+                  ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    leading: const Icon(
+                      Icons.calendar_today_rounded,
+                      color: Color(0xFF4F46E5),
+                    ),
+                    title: Text(
+                      '${_selectedDate.day}/${_selectedDate.month}/${_selectedDate.year}',
+                      style: const TextStyle(fontWeight: FontWeight.w700),
+                    ),
+                    subtitle: const Text('Tap to choose a different day'),
+                    trailing: const Icon(Icons.chevron_right_rounded),
+                    onTap: () async {
+                      final picked = await showDatePicker(
+                        context: context,
+                        initialDate: _selectedDate,
+                        firstDate: DateTime.now(),
+                        lastDate: DateTime.now().add(const Duration(days: 60)),
+                      );
+                      if (picked != null) {
+                        setState(() => _selectedDate = picked);
+                      }
+                    },
+                  ),
+                  const SizedBox(height: 10),
+                  TextField(
+                    controller: _notesController,
+                    maxLines: 2,
+                    decoration: InputDecoration(
+                      hintText: 'What would you like to focus on? (e.g. Resume audit, interview prep)',
+                      hintStyle: const TextStyle(
+                        fontSize: 12,
+                        color: Color(0xFF94A3B8),
+                      ),
+                      filled: true,
+                      fillColor: const Color(0xFFF8FAFC),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
 

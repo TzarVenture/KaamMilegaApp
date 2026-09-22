@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../core/network/offline_banner.dart';
 import 'router.dart';
 import 'theme/app_theme.dart';
 
@@ -13,6 +14,9 @@ class KaamMilegaApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
       routerConfig: AppRouter.router,
+      builder: (context, child) {
+        return OfflineBannerOverlay(child: child ?? const SizedBox.shrink());
+      },
     );
   }
 }

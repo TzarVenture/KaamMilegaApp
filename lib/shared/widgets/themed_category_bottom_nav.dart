@@ -28,113 +28,115 @@ class ThemedCategoryBottomNav extends ConsumerWidget {
   });
 
   void _showDefaultQuickActionSheet(BuildContext context) {
+    final categoryName = categoryLabel;
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
-      builder: (ctx) => Container(
-        padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Center(
-              child: Container(
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade300,
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'Quick Actions • ',
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w800,
-                color: AppColors.textPrimary,
-              ),
-            ),
-            const SizedBox(height: 16),
-            ListTile(
-              leading: Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: activeColor.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(categoryIcon, color: activeColor),
-              ),
-              title: Text(
-                'Post or Request ',
-                style: const TextStyle(fontWeight: FontWeight.w700),
-              ),
-              subtitle: Text('Instant listing in  module'),
-              trailing: const Icon(Icons.chevron_right_rounded),
-              onTap: () {
-                Navigator.pop(ctx);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(' action initiated!'),
-                    backgroundColor: activeColor,
+      builder: (ctx) => Material(
+        color: Colors.white,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        clipBehavior: Clip.antiAlias,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade300,
+                    borderRadius: BorderRadius.circular(2),
                   ),
-                );
-              },
-            ),
-            const Divider(height: 1),
-            ListTile(
-              leading: Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFDCFCE7),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: const Icon(
-                  Icons.explore_rounded,
-                  color: Color(0xFF16A34A),
                 ),
               ),
-              title: const Text(
-                'Explore All Modules',
-                style: TextStyle(fontWeight: FontWeight.w700),
-              ),
-              subtitle: const Text('View all 7 KaamMilega ecosystems'),
-              trailing: const Icon(Icons.chevron_right_rounded),
-              onTap: () {
-                Navigator.pop(ctx);
-                context.push('/explore');
-              },
-            ),
-            const Divider(height: 1),
-            ListTile(
-              leading: Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFEFF6FF),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: const Icon(
-                  Icons.event_available_rounded,
-                  color: Color(0xFF2563EB),
+              const SizedBox(height: 16),
+              Text(
+                'Quick Actions • $categoryName',
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w800,
+                  color: AppColors.textPrimary,
                 ),
               ),
-              title: const Text(
-                'Upcoming Events',
-                style: TextStyle(fontWeight: FontWeight.w700),
+              const SizedBox(height: 16),
+              ListTile(
+                leading: Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: activeColor.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(categoryIcon, color: activeColor),
+                ),
+                title: Text(
+                  'Post or Request $categoryName',
+                  style: const TextStyle(fontWeight: FontWeight.w700),
+                ),
+                subtitle: Text('Instant listing in $categoryName module'),
+                trailing: const Icon(Icons.chevron_right_rounded),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('$categoryName action initiated!'),
+                      backgroundColor: activeColor,
+                    ),
+                  );
+                },
               ),
-              subtitle: const Text('Join career webinars & hiring fairs'),
-              trailing: const Icon(Icons.chevron_right_rounded),
-              onTap: () {
-                Navigator.pop(ctx);
-                context.push('/events');
-              },
-            ),
-          ],
+              const Divider(height: 1),
+              ListTile(
+                leading: Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFDCFCE7),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(
+                    Icons.explore_rounded,
+                    color: Color(0xFF16A34A),
+                  ),
+                ),
+                title: const Text(
+                  'Explore All Modules',
+                  style: TextStyle(fontWeight: FontWeight.w700),
+                ),
+                subtitle: const Text('View all 7 KaamMilega ecosystems'),
+                trailing: const Icon(Icons.chevron_right_rounded),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  context.push('/explore');
+                },
+              ),
+              const Divider(height: 1),
+              ListTile(
+                leading: Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFEFF6FF),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(
+                    Icons.event_available_rounded,
+                    color: Color(0xFF2563EB),
+                  ),
+                ),
+                title: const Text(
+                  'Upcoming Events',
+                  style: TextStyle(fontWeight: FontWeight.w700),
+                ),
+                subtitle: const Text('Join career webinars & hiring fairs'),
+                trailing: const Icon(Icons.chevron_right_rounded),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  context.push('/events');
+                },
+              ),
+            ],
+          ),
         ),
       ),
     );

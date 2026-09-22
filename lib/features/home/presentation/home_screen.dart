@@ -1140,7 +1140,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     return GestureDetector(
       onTap: () {
         if (job.id.isNotEmpty) {
-          context.push('/jobs/${job.id}');
+          context.push('/jobs/${job.id}', extra: job);
         }
       },
       child: Container(
@@ -1495,7 +1495,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               borderRadius: BorderRadius.circular(16),
               onTap: () {
                 if (job.id.isNotEmpty) {
-                  context.push('/jobs/${job.id}');
+                  context.push('/jobs/${job.id}', extra: job);
                 }
               },
               child: Container(

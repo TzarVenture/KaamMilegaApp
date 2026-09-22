@@ -1,6 +1,8 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/network/connectivity_provider.dart';
+import '../../../core/network/network_status.dart';
 import '../../../core/storage/local_storage.dart';
 import '../models/user_profile.dart';
 import '../repositories/auth_repository.dart';
@@ -59,6 +61,16 @@ class AuthNotifier extends Notifier<AuthState> {
   @override
   AuthState build() {
     _repository = ref.watch(authRepositoryProvider);
+
+    // Auto-refresh profile when internet returns
+    ref.listen<NetworkStatus>(networkStatusProvider, (prev, next) {
+      if (prev == NetworkStatus.offline && next == NetworkStatus.online) {
+        if (state.isAuthenticated) {
+          refreshProfile();
+        }
+      }
+    });
+
     Future.microtask(() => checkAuthStatus());
     return const AuthState();
   }
@@ -78,9 +90,13 @@ class AuthNotifier extends Notifier<AuthState> {
 
   /// Refresh latest candidate profile from backend API
   Future<void> refreshProfile() async {
-    final profile = await _repository.getProfile();
-    if (profile != null) {
-      state = state.copyWith(isAuthenticated: true, user: profile);
+    try {
+      final profile = await _repository.getProfile();
+      if (profile != null) {
+        state = state.copyWith(isAuthenticated: true, user: profile);
+      }
+    } catch (_) {
+      // Preserve cached user profile without logging out when offline
     }
   }
 
@@ -452,7 +468,9 @@ class AuthNotifier extends Notifier<AuthState> {
           isCurrentlyWorking: isCurrentlyWorking,
         );
         final updatedList = List<ProjectItem>.from(state.user!.projects);
-        final existingIdx = updatedList.indexWhere((p) => p.id == newProject.id);
+        final existingIdx = updatedList.indexWhere(
+          (p) => p.id == newProject.id,
+        );
         if (existingIdx >= 0) {
           updatedList[existingIdx] = newProject;
         } else {

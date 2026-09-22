@@ -115,10 +115,10 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Add Money to Wallet'), findsOneWidget);
+      expect(find.text('+₹100'), findsOneWidget);
       expect(find.text('+₹500'), findsOneWidget);
       expect(find.text('+₹1000'), findsOneWidget);
       expect(find.text('+₹2000'), findsOneWidget);
-      expect(find.text('+₹5000'), findsOneWidget);
       expect(find.text('Proceed to Pay'), findsOneWidget);
     });
   });

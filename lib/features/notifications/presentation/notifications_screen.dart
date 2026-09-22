@@ -4,6 +4,8 @@ import 'package:go_router/go_router.dart';
 
 import '../../../app/theme/app_colors.dart';
 import '../../../core/constants/api_constants.dart';
+import '../../../core/network/app_exception.dart';
+import '../../../shared/widgets/network_state_view.dart';
 import '../../../shared/widgets/shimmer_loading.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../models/notification_item.dart';
@@ -214,8 +216,14 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                           child: ShimmerBox(width: double.infinity, height: 70),
                         ),
                       ),
-                      error: (err, stack) => Center(
-                        child: Text('Error loading notifications: $err'),
+                      error: (err, stack) => NetworkStateView(
+                        isOffline: err is AppNetworkException,
+                        errorMessage: err is AppNotFoundException
+                            ? 'Notifications service is currently under development.'
+                            : err.toString(),
+                        onRetry: () =>
+                            ref.read(notificationsProvider.notifier).refresh(),
+                        child: const SizedBox.shrink(),
                       ),
                     ),
                   ),

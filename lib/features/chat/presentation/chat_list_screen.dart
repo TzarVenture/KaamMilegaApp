@@ -35,67 +35,70 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
-      builder: (ctx) => Container(
-        padding: const EdgeInsets.fromLTRB(20, 16, 20, 28),
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Center(
-              child: Container(
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade300,
-                  borderRadius: BorderRadius.circular(2),
+      builder: (ctx) => Material(
+        color: Colors.white,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        clipBehavior: Clip.antiAlias,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 16, 20, 28),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade300,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(height: 16),
-            const Text(
-              'Message Options',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w800,
-                color: Color(0xFF0F172A),
+              const SizedBox(height: 16),
+              const Text(
+                'Message Options',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w800,
+                  color: Color(0xFF0F172A),
+                ),
               ),
-            ),
-            const SizedBox(height: 12),
-            ListTile(
-              leading: const Icon(
-                Icons.done_all_rounded,
-                color: AppColors.primary,
+              const SizedBox(height: 12),
+              ListTile(
+                leading: const Icon(
+                  Icons.done_all_rounded,
+                  color: AppColors.primary,
+                ),
+                title: const Text(
+                  'Mark all as read',
+                  style: TextStyle(fontWeight: FontWeight.w600),
+                ),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('All messages marked as read.'),
+                    ),
+                  );
+                },
               ),
-              title: const Text(
-                'Mark all as read',
-                style: TextStyle(fontWeight: FontWeight.w600),
+              ListTile(
+                leading: const Icon(
+                  Icons.refresh_rounded,
+                  color: Color(0xFF64748B),
+                ),
+                title: const Text(
+                  'Refresh Conversations',
+                  style: TextStyle(fontWeight: FontWeight.w600),
+                ),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  ref.invalidate(conversationsProvider);
+                },
               ),
-              onTap: () {
-                Navigator.pop(ctx);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('All messages marked as read.')),
-                );
-              },
-            ),
-            ListTile(
-              leading: const Icon(
-                Icons.refresh_rounded,
-                color: Color(0xFF64748B),
-              ),
-              title: const Text(
-                'Refresh Conversations',
-                style: TextStyle(fontWeight: FontWeight.w600),
-              ),
-              onTap: () {
-                Navigator.pop(ctx);
-                ref.invalidate(conversationsProvider);
-              },
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

@@ -162,66 +162,67 @@ class _CompanyScreenState extends ConsumerState<CompanyScreen> {
             const SizedBox(height: 8),
 
             // Open Vacancies Section
-            Container(
+            Material(
               color: Colors.white,
-              padding: const EdgeInsets.all(20),
-              width: double.infinity,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Open Positions at Company',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w800,
-                      color: AppColors.textPrimary,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    leading: Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: AppColors.primaryLight,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: const Icon(
-                        Icons.drive_eta_rounded,
-                        color: AppColors.primary,
+              child: Padding(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Open Positions at Company',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.textPrimary,
                       ),
                     ),
-                    title: const Text(
-                      'Senior Delivery Driver',
-                      style: TextStyle(fontWeight: FontWeight.w800),
-                    ),
-                    subtitle: const Text('Mumbai • ₹25,000 - ₹35,000/mo'),
-                    trailing: const Icon(Icons.chevron_right_rounded),
-                    onTap: () {},
-                  ),
-                  const Divider(height: 1),
-                  ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    leading: Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: AppColors.primaryLight,
-                        borderRadius: BorderRadius.circular(12),
+                    const SizedBox(height: 12),
+                    ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      leading: Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: AppColors.primaryLight,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Icon(
+                          Icons.drive_eta_rounded,
+                          color: AppColors.primary,
+                        ),
                       ),
-                      child: const Icon(
-                        Icons.inventory_2_rounded,
-                        color: AppColors.primary,
+                      title: const Text(
+                        'Senior Delivery Driver',
+                        style: TextStyle(fontWeight: FontWeight.w800),
                       ),
+                      subtitle: const Text('Mumbai • ₹25,000 - ₹35,000/mo'),
+                      trailing: const Icon(Icons.chevron_right_rounded),
+                      onTap: () {},
                     ),
-                    title: const Text(
-                      'Warehouse Operations Manager',
-                      style: TextStyle(fontWeight: FontWeight.w800),
+                    const Divider(height: 1),
+                    ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      leading: Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: AppColors.primaryLight,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Icon(
+                          Icons.inventory_2_rounded,
+                          color: AppColors.primary,
+                        ),
+                      ),
+                      title: const Text(
+                        'Warehouse Operations Manager',
+                        style: TextStyle(fontWeight: FontWeight.w800),
+                      ),
+                      subtitle: const Text('Thane, Navi Mumbai • ₹40,000/mo'),
+                      trailing: const Icon(Icons.chevron_right_rounded),
+                      onTap: () {},
                     ),
-                    subtitle: const Text('Thane, Navi Mumbai • ₹40,000/mo'),
-                    trailing: const Icon(Icons.chevron_right_rounded),
-                    onTap: () {},
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ],

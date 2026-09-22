@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/network/api_client.dart';
+import '../../../core/network/app_exception.dart';
 import '../../profile/presentation/widgets/profile_drawer.dart';
 import '../../../shared/widgets/category_top_header.dart';
 import '../../../shared/widgets/themed_category_bottom_nav.dart';
@@ -27,6 +28,7 @@ class _PeerToPeerScreenState extends ConsumerState<PeerToPeerScreen>
 
   List<UserProfile> _discoveredUsers = [];
   bool _isSearching = false;
+  String? _searchError;
 
   @override
   void initState() {
@@ -43,11 +45,14 @@ class _PeerToPeerScreenState extends ConsumerState<PeerToPeerScreen>
   }
 
   Future<void> _searchUsers(String query) async {
-    setState(() => _isSearching = true);
+    setState(() {
+      _isSearching = true;
+      _searchError = null;
+    });
     try {
       final client = ref.read(apiClientProvider);
       final response = await client.get(
-        '/api/user/search',
+        '/users/search',
         queryParameters: {if (query.isNotEmpty) 'q': query, 'limit': 20},
       );
 
@@ -64,15 +69,27 @@ class _PeerToPeerScreenState extends ConsumerState<PeerToPeerScreen>
         setState(() {
           _discoveredUsers = filtered;
           _isSearching = false;
+          _searchError = null;
         });
         return;
       }
-    } catch (_) {}
-
-    setState(() {
-      _discoveredUsers = [];
-      _isSearching = false;
-    });
+      setState(() {
+        _discoveredUsers = [];
+        _isSearching = false;
+        _searchError = null;
+      });
+    } catch (e) {
+      final errorMsg = e is AppNotFoundException
+          ? 'User discovery is currently under development.'
+          : (e is AppNetworkException
+                ? 'No internet connection. Please check your network.'
+                : 'Could not load users. Please try again.');
+      setState(() {
+        _discoveredUsers = [];
+        _isSearching = false;
+        _searchError = errorMsg;
+      });
+    }
   }
 
   Future<void> _handleConnect(String userId) async {
@@ -241,6 +258,70 @@ class _PeerToPeerScreenState extends ConsumerState<PeerToPeerScreen>
             child: Padding(
               padding: EdgeInsets.all(40),
               child: CircularProgressIndicator(color: Color(0xFF9333EA)),
+            ),
+          )
+        else if (_searchError != null)
+          Container(
+            padding: const EdgeInsets.all(32),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: const Color(0xFFF1F5F9)),
+            ),
+            child: Column(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFF3E8FF),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.people_outline_rounded,
+                    size: 32,
+                    color: Color(0xFF9333EA),
+                  ),
+                ),
+                const SizedBox(height: 14),
+                const Text(
+                  'User Discovery Unavailable',
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w800,
+                    color: Color(0xFF1E293B),
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  _searchError!,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: Color(0xFF64748B),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                ElevatedButton.icon(
+                  onPressed: () => _searchUsers(_searchController.text),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF9333EA),
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 10,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    elevation: 0,
+                  ),
+                  icon: const Icon(Icons.refresh_rounded, size: 16),
+                  label: const Text(
+                    'Retry',
+                    style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
+                  ),
+                ),
+              ],
             ),
           )
         else if (_discoveredUsers.isEmpty)

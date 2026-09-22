@@ -198,10 +198,7 @@ class AuthRepository {
       payload['id'] = id;
     }
 
-    final response = await _client.post(
-      '/user/education',
-      data: payload,
-    );
+    final response = await _client.post('/user/education', data: payload);
 
     final data = response.data as Map<String, dynamic>? ?? {};
     final user = UserProfile.fromJson(data);
@@ -373,10 +370,7 @@ class AuthRepository {
       payload['id'] = id;
     }
 
-    final response = await _client.post(
-      '/user/project',
-      data: payload,
-    );
+    final response = await _client.post('/user/project', data: payload);
 
     final data = response.data as Map<String, dynamic>? ?? {};
     final user = UserProfile.fromJson(data);

@@ -650,7 +650,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     final additionalNameCtrl = TextEditingController();
     final headlineCtrl = TextEditingController(text: user.headline);
 
-    String selectedPronoun = user.gender.isNotEmpty ? user.gender : 'Please Select';
+    String selectedPronoun = user.gender.isNotEmpty
+        ? user.gender
+        : 'Please Select';
 
     showModalBottomSheet(
       context: context,
@@ -732,17 +734,28 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                     decoration: InputDecoration(
                                       border: OutlineInputBorder(
                                         borderRadius: BorderRadius.circular(14),
-                                        borderSide: const BorderSide(color: Color(0xFFCBD5E1)),
+                                        borderSide: const BorderSide(
+                                          color: Color(0xFFCBD5E1),
+                                        ),
                                       ),
                                       enabledBorder: OutlineInputBorder(
                                         borderRadius: BorderRadius.circular(14),
-                                        borderSide: const BorderSide(color: Color(0xFFCBD5E1)),
+                                        borderSide: const BorderSide(
+                                          color: Color(0xFFCBD5E1),
+                                        ),
                                       ),
                                       focusedBorder: OutlineInputBorder(
                                         borderRadius: BorderRadius.circular(14),
-                                        borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
+                                        borderSide: const BorderSide(
+                                          color: AppColors.primary,
+                                          width: 1.5,
+                                        ),
                                       ),
-                                      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                                      contentPadding:
+                                          const EdgeInsets.symmetric(
+                                            horizontal: 14,
+                                            vertical: 12,
+                                          ),
                                     ),
                                   ),
                                 ],
@@ -767,17 +780,28 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                     decoration: InputDecoration(
                                       border: OutlineInputBorder(
                                         borderRadius: BorderRadius.circular(14),
-                                        borderSide: const BorderSide(color: Color(0xFFCBD5E1)),
+                                        borderSide: const BorderSide(
+                                          color: Color(0xFFCBD5E1),
+                                        ),
                                       ),
                                       enabledBorder: OutlineInputBorder(
                                         borderRadius: BorderRadius.circular(14),
-                                        borderSide: const BorderSide(color: Color(0xFFCBD5E1)),
+                                        borderSide: const BorderSide(
+                                          color: Color(0xFFCBD5E1),
+                                        ),
                                       ),
                                       focusedBorder: OutlineInputBorder(
                                         borderRadius: BorderRadius.circular(14),
-                                        borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
+                                        borderSide: const BorderSide(
+                                          color: AppColors.primary,
+                                          width: 1.5,
+                                        ),
                                       ),
-                                      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                                      contentPadding:
+                                          const EdgeInsets.symmetric(
+                                            horizontal: 14,
+                                            vertical: 12,
+                                          ),
                                     ),
                                   ),
                                 ],
@@ -802,17 +826,27 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                           decoration: InputDecoration(
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(14),
-                              borderSide: const BorderSide(color: Color(0xFFCBD5E1)),
+                              borderSide: const BorderSide(
+                                color: Color(0xFFCBD5E1),
+                              ),
                             ),
                             enabledBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(14),
-                              borderSide: const BorderSide(color: Color(0xFFCBD5E1)),
+                              borderSide: const BorderSide(
+                                color: Color(0xFFCBD5E1),
+                              ),
                             ),
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(14),
-                              borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
+                              borderSide: const BorderSide(
+                                color: AppColors.primary,
+                                width: 1.5,
+                              ),
                             ),
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 14,
+                              vertical: 12,
+                            ),
                           ),
                         ),
                         const SizedBox(height: 16),
@@ -828,45 +862,53 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                         ),
                         const SizedBox(height: 6),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 2),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 2,
+                          ),
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(14),
                             border: Border.all(color: const Color(0xFFCBD5E1)),
                           ),
                           child: DropdownButtonHideUnderline(
                             child: DropdownButton<String>(
-                              value: [
-                                'Please Select',
-                                'He/Him (He/Him/His)',
-                                'She/Her (She/Her/Hers)',
-                                'They/Them (They/Them/Theirs)',
-                                'Custom',
-                              ].contains(selectedPronoun)
+                              value:
+                                  [
+                                    'Please Select',
+                                    'He/Him (He/Him/His)',
+                                    'She/Her (She/Her/Hers)',
+                                    'They/Them (They/Them/Theirs)',
+                                    'Custom',
+                                  ].contains(selectedPronoun)
                                   ? selectedPronoun
                                   : 'Please Select',
                               isExpanded: true,
-                              icon: const Icon(Icons.keyboard_arrow_down, color: Color(0xFF64748B)),
-                              items: [
-                                'Please Select',
-                                'He/Him (He/Him/His)',
-                                'She/Her (She/Her/Hers)',
-                                'They/Them (They/Them/Theirs)',
-                                'Custom',
-                              ].map((p) {
-                                final isPlaceholder = p == 'Please Select';
-                                return DropdownMenuItem(
-                                  value: p,
-                                  child: Text(
-                                    p,
-                                    style: TextStyle(
-                                      color: isPlaceholder
-                                          ? const Color(0xFF94A3B8)
-                                          : const Color(0xFF1E293B),
-                                      fontSize: 15,
-                                    ),
-                                  ),
-                                );
-                              }).toList(),
+                              icon: const Icon(
+                                Icons.keyboard_arrow_down,
+                                color: Color(0xFF64748B),
+                              ),
+                              items:
+                                  [
+                                    'Please Select',
+                                    'He/Him (He/Him/His)',
+                                    'She/Her (She/Her/Hers)',
+                                    'They/Them (They/Them/Theirs)',
+                                    'Custom',
+                                  ].map((p) {
+                                    final isPlaceholder = p == 'Please Select';
+                                    return DropdownMenuItem(
+                                      value: p,
+                                      child: Text(
+                                        p,
+                                        style: TextStyle(
+                                          color: isPlaceholder
+                                              ? const Color(0xFF94A3B8)
+                                              : const Color(0xFF1E293B),
+                                          fontSize: 15,
+                                        ),
+                                      ),
+                                    );
+                                  }).toList(),
                               onChanged: (val) {
                                 if (val != null) {
                                   setModalState(() => selectedPronoun = val);
@@ -883,7 +925,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                               color: Color(0xFF64748B),
                             ),
                             children: [
-                              TextSpan(text: 'Let others know how to refer to you. '),
+                              TextSpan(
+                                text: 'Let others know how to refer to you. ',
+                              ),
                               TextSpan(
                                 text: 'Learn More About Gender Pronouns.',
                                 style: TextStyle(
@@ -912,17 +956,27 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                           decoration: InputDecoration(
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(14),
-                              borderSide: const BorderSide(color: Color(0xFFCBD5E1)),
+                              borderSide: const BorderSide(
+                                color: Color(0xFFCBD5E1),
+                              ),
                             ),
                             enabledBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(14),
-                              borderSide: const BorderSide(color: Color(0xFFCBD5E1)),
+                              borderSide: const BorderSide(
+                                color: Color(0xFFCBD5E1),
+                              ),
                             ),
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(14),
-                              borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
+                              borderSide: const BorderSide(
+                                color: AppColors.primary,
+                                width: 1.5,
+                              ),
                             ),
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 14,
+                              vertical: 12,
+                            ),
                           ),
                         ),
                         const SizedBox(height: 20),
@@ -1494,13 +1548,19 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       return;
     }
 
-    final schoolCtrl = TextEditingController(text: existingEdu?.schoolName ?? '');
+    final schoolCtrl = TextEditingController(
+      text: existingEdu?.schoolName ?? '',
+    );
     final degreeCtrl = TextEditingController(text: existingEdu?.degree ?? '');
-    final fieldCtrl = TextEditingController(text: existingEdu?.fieldOfStudy ?? '');
+    final fieldCtrl = TextEditingController(
+      text: existingEdu?.fieldOfStudy ?? '',
+    );
     final startCtrl = TextEditingController(text: existingEdu?.startDate ?? '');
     final endCtrl = TextEditingController(text: existingEdu?.endDate ?? '');
     final gradeCtrl = TextEditingController(text: existingEdu?.grade ?? '');
-    final descCtrl = TextEditingController(text: existingEdu?.description ?? '');
+    final descCtrl = TextEditingController(
+      text: existingEdu?.description ?? '',
+    );
 
     Future<void> pickDate(TextEditingController controller) async {
       final date = await showDatePicker(
@@ -1510,7 +1570,20 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         lastDate: DateTime(2100),
       );
       if (date != null) {
-        final months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+        final months = [
+          'January',
+          'February',
+          'March',
+          'April',
+          'May',
+          'June',
+          'July',
+          'August',
+          'September',
+          'October',
+          'November',
+          'December',
+        ];
         controller.text = '${months[date.month - 1]}, ${date.year}';
       }
     }
@@ -1538,7 +1611,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               children: [
                 Text(
                   existingEdu == null ? 'Add Education' : 'Edit Education',
-                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w800,
+                  ),
                 ),
                 IconButton(
                   icon: const Icon(Icons.close),
@@ -1552,39 +1628,72 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('School / University', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+                    const Text(
+                      'School / University',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 14,
+                      ),
+                    ),
                     const SizedBox(height: 6),
                     TextField(
                       controller: schoolCtrl,
                       decoration: InputDecoration(
                         hintText: 'Ex: Indian Institute of Technology',
                         hintStyle: const TextStyle(color: Colors.black38),
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 12,
+                        ),
                       ),
                     ),
                     const SizedBox(height: 16),
-                    const Text('Degree', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+                    const Text(
+                      'Degree',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 14,
+                      ),
+                    ),
                     const SizedBox(height: 6),
                     TextField(
                       controller: degreeCtrl,
                       decoration: InputDecoration(
                         hintText: 'Ex: Bachelor of Computer Science',
                         hintStyle: const TextStyle(color: Colors.black38),
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 12,
+                        ),
                       ),
                     ),
                     const SizedBox(height: 16),
-                    const Text('Field of Study', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+                    const Text(
+                      'Field of Study',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 14,
+                      ),
+                    ),
                     const SizedBox(height: 6),
                     TextField(
                       controller: fieldCtrl,
                       decoration: InputDecoration(
                         hintText: 'Ex: Computer Science',
                         hintStyle: const TextStyle(color: Colors.black38),
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 12,
+                        ),
                       ),
                     ),
                     const SizedBox(height: 16),
@@ -1594,7 +1703,13 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Text('Start Date', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+                              const Text(
+                                'Start Date',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 14,
+                                ),
+                              ),
                               const SizedBox(height: 6),
                               TextField(
                                 controller: startCtrl,
@@ -1602,10 +1717,20 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                 onTap: () => pickDate(startCtrl),
                                 decoration: InputDecoration(
                                   hintText: '--------, ----',
-                                  hintStyle: const TextStyle(color: Colors.black38),
-                                  suffixIcon: const Icon(Icons.calendar_today_outlined, size: 20),
-                                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
-                                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                  hintStyle: const TextStyle(
+                                    color: Colors.black38,
+                                  ),
+                                  suffixIcon: const Icon(
+                                    Icons.calendar_today_outlined,
+                                    size: 20,
+                                  ),
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(14),
+                                  ),
+                                  contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                    vertical: 12,
+                                  ),
                                 ),
                               ),
                             ],
@@ -1616,7 +1741,13 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Text('End Date (or expected)', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+                              const Text(
+                                'End Date (or expected)',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 14,
+                                ),
+                              ),
                               const SizedBox(height: 6),
                               TextField(
                                 controller: endCtrl,
@@ -1624,10 +1755,20 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                 onTap: () => pickDate(endCtrl),
                                 decoration: InputDecoration(
                                   hintText: '--------, ----',
-                                  hintStyle: const TextStyle(color: Colors.black38),
-                                  suffixIcon: const Icon(Icons.calendar_today_outlined, size: 20),
-                                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
-                                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                  hintStyle: const TextStyle(
+                                    color: Colors.black38,
+                                  ),
+                                  suffixIcon: const Icon(
+                                    Icons.calendar_today_outlined,
+                                    size: 20,
+                                  ),
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(14),
+                                  ),
+                                  contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                    vertical: 12,
+                                  ),
                                 ),
                               ),
                             ],
@@ -1636,19 +1777,36 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       ],
                     ),
                     const SizedBox(height: 16),
-                    const Text('Grade', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+                    const Text(
+                      'Grade',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 14,
+                      ),
+                    ),
                     const SizedBox(height: 6),
                     TextField(
                       controller: gradeCtrl,
                       decoration: InputDecoration(
                         hintText: 'Ex: 8.5 CGPA',
                         hintStyle: const TextStyle(color: Colors.black38),
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 12,
+                        ),
                       ),
                     ),
                     const SizedBox(height: 16),
-                    const Text('Description', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+                    const Text(
+                      'Description',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 14,
+                      ),
+                    ),
                     const SizedBox(height: 6),
                     TextField(
                       controller: descCtrl,
@@ -1656,8 +1814,13 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       decoration: InputDecoration(
                         hintText: 'Describe your achievements, societies, etc.',
                         hintStyle: const TextStyle(color: Colors.black38),
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 12,
+                        ),
                       ),
                     ),
                     const SizedBox(height: 24),
@@ -1673,10 +1836,18 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     onPressed: () => Navigator.pop(ctx),
                     style: OutlinedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
                       side: const BorderSide(color: Colors.black26),
                     ),
-                    child: const Text('Cancel', style: TextStyle(color: Colors.black87, fontWeight: FontWeight.w700)),
+                    child: const Text(
+                      'Cancel',
+                      style: TextStyle(
+                        color: Colors.black87,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -1705,7 +1876,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                   ? 'Education saved successfully!'
                                   : 'Failed to save education.',
                             ),
-                            backgroundColor: ok ? AppColors.success : AppColors.error,
+                            backgroundColor: ok
+                                ? AppColors.success
+                                : AppColors.error,
                           ),
                         );
                       }
@@ -1714,9 +1887,14 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       backgroundColor: const Color(0xFF1E3A8A),
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
                     ),
-                    child: const Text('Save', style: TextStyle(fontWeight: FontWeight.w700)),
+                    child: const Text(
+                      'Save',
+                      style: TextStyle(fontWeight: FontWeight.w700),
+                    ),
                   ),
                 ),
               ],
@@ -3722,56 +3900,60 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
-      builder: (ctx) => Container(
-        padding: const EdgeInsets.all(20),
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text(
-                  'Select Profile Language',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w800,
-                    color: AppColors.textPrimary,
+      builder: (ctx) => Material(
+        color: Colors.white,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        clipBehavior: Clip.antiAlias,
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    'Select Profile Language',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w800,
+                      color: AppColors.textPrimary,
+                    ),
                   ),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.close, color: AppColors.textSecondary),
-                  onPressed: () => Navigator.pop(ctx),
-                ),
-              ],
-            ),
-            const Divider(height: 1),
-            const SizedBox(height: 8),
-            ListTile(
-              title: const Text(
-                'English (Default)',
-                style: TextStyle(fontWeight: FontWeight.w700),
+                  IconButton(
+                    icon: const Icon(
+                      Icons.close,
+                      color: AppColors.textSecondary,
+                    ),
+                    onPressed: () => Navigator.pop(ctx),
+                  ),
+                ],
               ),
-              trailing: const Icon(Icons.check, color: AppColors.primary),
-              onTap: () => Navigator.pop(ctx),
-            ),
-            ListTile(
-              title: const Text('Hindi (हिंदी)'),
-              onTap: () {
-                Navigator.pop(ctx);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Language preference updated.'),
-                    behavior: SnackBarBehavior.floating,
-                  ),
-                );
-              },
-            ),
-          ],
+              const Divider(height: 1),
+              const SizedBox(height: 8),
+              ListTile(
+                title: const Text(
+                  'English (Default)',
+                  style: TextStyle(fontWeight: FontWeight.w700),
+                ),
+                trailing: const Icon(Icons.check, color: AppColors.primary),
+                onTap: () => Navigator.pop(ctx),
+              ),
+              ListTile(
+                title: const Text('Hindi (हिंदी)'),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Language preference updated.'),
+                      behavior: SnackBarBehavior.floating,
+                    ),
+                  );
+                },
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -4769,13 +4951,16 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     }
 
     final titleCtrl = TextEditingController(text: existingProject?.title ?? '');
-    final associatedWithCtrl =
-        TextEditingController(text: existingProject?.associatedWith ?? '');
+    final associatedWithCtrl = TextEditingController(
+      text: existingProject?.associatedWith ?? '',
+    );
     final linkCtrl = TextEditingController(text: existingProject?.link ?? '');
-    final descCtrl =
-        TextEditingController(text: existingProject?.description ?? '');
-    final skillsCtrl =
-        TextEditingController(text: existingProject?.skills ?? '');
+    final descCtrl = TextEditingController(
+      text: existingProject?.description ?? '',
+    );
+    final skillsCtrl = TextEditingController(
+      text: existingProject?.skills ?? '',
+    );
 
     String startMonth = 'Month';
     String startYear = 'Year';
@@ -4906,8 +5091,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                           controller: titleCtrl,
                           onChanged: (_) => setModalState(() {}),
                           decoration: InputDecoration(
-                            hintText:
-                                'Ex: KaamMilega Mobile App, Modular Kitchen Woodwork, Brand Camp',
+                            hintText: 'Ex: KaamMilega Mobile App, Modular Kitchen Woodwork, Brand Camp',
                             hintStyle: const TextStyle(
                               color: Color(0xFF94A3B8),
                               fontSize: 13.5,
@@ -4954,8 +5138,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                         TextField(
                           controller: associatedWithCtrl,
                           decoration: InputDecoration(
-                            hintText:
-                                'Ex: Freelance, TCS, Self-employed, or Client Name',
+                            hintText: 'Ex: Freelance, TCS, Self-employed, or Client Name',
                             hintStyle: const TextStyle(
                               color: Color(0xFF94A3B8),
                               fontSize: 13.5,
@@ -5014,8 +5197,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                             vertical: 2,
                                           ),
                                           decoration: BoxDecoration(
-                                            borderRadius:
-                                                BorderRadius.circular(14),
+                                            borderRadius: BorderRadius.circular(
+                                              14,
+                                            ),
                                             border: Border.all(
                                               color: const Color(0xFFCBD5E1),
                                             ),
@@ -5070,8 +5254,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                             vertical: 2,
                                           ),
                                           decoration: BoxDecoration(
-                                            borderRadius:
-                                                BorderRadius.circular(14),
+                                            borderRadius: BorderRadius.circular(
+                                              14,
+                                            ),
                                             border: Border.all(
                                               color: const Color(0xFFCBD5E1),
                                             ),
@@ -5143,18 +5328,15 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                       children: [
                                         Expanded(
                                           child: Container(
-                                            padding:
-                                                const EdgeInsets.symmetric(
-                                                  horizontal: 10,
-                                                  vertical: 2,
-                                                ),
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 10,
+                                              vertical: 2,
+                                            ),
                                             decoration: BoxDecoration(
                                               borderRadius:
                                                   BorderRadius.circular(14),
                                               border: Border.all(
-                                                color: const Color(
-                                                  0xFFCBD5E1,
-                                                ),
+                                                color: const Color(0xFFCBD5E1),
                                               ),
                                             ),
                                             child: DropdownButtonHideUnderline(
@@ -5206,18 +5388,15 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                         const SizedBox(width: 8),
                                         Expanded(
                                           child: Container(
-                                            padding:
-                                                const EdgeInsets.symmetric(
-                                                  horizontal: 10,
-                                                  vertical: 2,
-                                                ),
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 10,
+                                              vertical: 2,
+                                            ),
                                             decoration: BoxDecoration(
                                               borderRadius:
                                                   BorderRadius.circular(14),
                                               border: Border.all(
-                                                color: const Color(
-                                                  0xFFCBD5E1,
-                                                ),
+                                                color: const Color(0xFFCBD5E1),
                                               ),
                                             ),
                                             child: DropdownButtonHideUnderline(
@@ -5254,8 +5433,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                                     : (val) {
                                                         if (val != null) {
                                                           setModalState(
-                                                            () =>
-                                                                endYear = val,
+                                                            () => endYear = val,
                                                           );
                                                         }
                                                       },
@@ -5329,8 +5507,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                         TextField(
                           controller: linkCtrl,
                           decoration: InputDecoration(
-                            hintText:
-                                'https://example.com, GitHub, Google Drive, or Demo link',
+                            hintText: 'https://example.com, GitHub, Google Drive, or Demo link',
                             hintStyle: const TextStyle(
                               color: Color(0xFF94A3B8),
                               fontSize: 13.5,
@@ -5376,8 +5553,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                           controller: descCtrl,
                           maxLines: 4,
                           decoration: InputDecoration(
-                            hintText:
-                                'Describe your role, responsibilities, tools used, or client results...',
+                            hintText: 'Describe your role, responsibilities, tools used, or client results...',
                             hintStyle: const TextStyle(
                               color: Color(0xFF94A3B8),
                               fontSize: 13.5,
@@ -5422,8 +5598,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                         TextField(
                           controller: skillsCtrl,
                           decoration: InputDecoration(
-                            hintText:
-                                'Ex: React, Go, MongoDB, Carpentry, Customer Handling',
+                            hintText: 'Ex: React, Go, MongoDB, Carpentry, Customer Handling',
                             hintStyle: const TextStyle(
                               color: Color(0xFF94A3B8),
                               fontSize: 13.5,
@@ -5503,13 +5678,15 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
                         final formattedStartDate =
                             (startMonth != 'Month' || startYear != 'Year')
-                                ? '${startMonth != "Month" ? startMonth : ""} ${startYear != "Year" ? startYear : ""}'.trim()
-                                : '';
+                            ? '${startMonth != "Month" ? startMonth : ""} ${startYear != "Year" ? startYear : ""}'
+                                  .trim()
+                            : '';
                         final formattedEndDate = isCurrentlyWorking
                             ? 'Present'
                             : ((endMonth != 'Month' || endYear != 'Year')
-                                ? '${endMonth != "Month" ? endMonth : ""} ${endYear != "Year" ? endYear : ""}'.trim()
-                                : '');
+                                  ? '${endMonth != "Month" ? endMonth : ""} ${endYear != "Year" ? endYear : ""}'
+                                        .trim()
+                                  : '');
 
                         final ok = await ref
                             .read(authProvider.notifier)
@@ -5531,8 +5708,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                               content: Text(
                                 ok
                                     ? (existingProject == null
-                                        ? 'Project added successfully!'
-                                        : 'Project updated successfully!')
+                                          ? 'Project added successfully!'
+                                          : 'Project updated successfully!')
                                     : 'Failed to save project.',
                               ),
                               backgroundColor: ok
@@ -5557,7 +5734,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                         elevation: 0,
                       ),
                       child: Text(
-                        existingProject == null ? 'Save Project' : 'Update Project',
+                        existingProject == null
+                            ? 'Save Project'
+                            : 'Update Project',
                         style: const TextStyle(
                           fontWeight: FontWeight.w800,
                           fontSize: 14,
@@ -5719,7 +5898,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                 children: [
                                   Expanded(
                                     child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
                                         Text(
                                           p.title,
@@ -5753,10 +5933,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                   ),
                                 ],
                               ),
-                              if (p.startDate.isNotEmpty || p.endDate.isNotEmpty) ...[
+                              if (p.startDate.isNotEmpty ||
+                                  p.endDate.isNotEmpty) ...[
                                 const SizedBox(height: 2),
                                 Text(
-                                  '${p.startDate} ${p.endDate.isNotEmpty ? "- ${p.endDate}" : ""}'.trim(),
+                                  '${p.startDate} ${p.endDate.isNotEmpty ? "- ${p.endDate}" : ""}'
+                                      .trim(),
                                   style: const TextStyle(
                                     fontSize: 11,
                                     color: Color(0xFF94A3B8),
@@ -5783,24 +5965,28 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                       .split(',')
                                       .map((s) => s.trim())
                                       .where((s) => s.isNotEmpty)
-                                      .map((skill) => Container(
-                                            padding: const EdgeInsets.symmetric(
-                                              horizontal: 8,
-                                              vertical: 2,
+                                      .map(
+                                        (skill) => Container(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 8,
+                                            vertical: 2,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            color: const Color(0xFFF3E8FF),
+                                            borderRadius: BorderRadius.circular(
+                                              8,
                                             ),
-                                            decoration: BoxDecoration(
-                                              color: const Color(0xFFF3E8FF),
-                                              borderRadius: BorderRadius.circular(8),
+                                          ),
+                                          child: Text(
+                                            skill,
+                                            style: const TextStyle(
+                                              fontSize: 10,
+                                              fontWeight: FontWeight.w600,
+                                              color: Color(0xFF9333EA),
                                             ),
-                                            child: Text(
-                                              skill,
-                                              style: const TextStyle(
-                                                fontSize: 10,
-                                                fontWeight: FontWeight.w600,
-                                                color: Color(0xFF9333EA),
-                                              ),
-                                            ),
-                                          ))
+                                          ),
+                                        ),
+                                      )
                                       .toList(),
                                 ),
                               ],
@@ -6399,7 +6585,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                               size: 18,
                                             ),
                                             onPressed: () =>
-                                                _openAddEducationDialog(user.education.isNotEmpty ? user.education.first : null),
+                                                _openAddEducationDialog(
+                                                  user.education.isNotEmpty
+                                                      ? user.education.first
+                                                      : null,
+                                                ),
                                           ),
                                       ],
                                     ),

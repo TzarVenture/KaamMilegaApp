@@ -440,7 +440,8 @@ class _InstantWorkScreenState extends ConsumerState<InstantWorkScreen> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (_) => JobDetailScreen(jobId: job.id),
+                        builder: (_) =>
+                            JobDetailScreen(jobId: job.id, initialJob: job),
                       ),
                     );
                   },
