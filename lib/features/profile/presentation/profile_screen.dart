@@ -649,11 +649,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     final lastNameCtrl = TextEditingController(text: initialLastName);
     final additionalNameCtrl = TextEditingController();
     final headlineCtrl = TextEditingController(text: user.headline);
-    final cityCtrl = TextEditingController(text: user.city);
-    final emailCtrl = TextEditingController(text: user.email);
-    final aboutCtrl = TextEditingController(text: user.about);
 
-    String selectedPronoun = 'Please Select';
+    String selectedPronoun = user.gender.isNotEmpty ? user.gender : 'Please Select';
 
     showModalBottomSheet(
       context: context,
@@ -662,8 +659,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setModalState) {
           return Container(
+            height: MediaQuery.of(ctx).size.height * 0.85,
             padding: EdgeInsets.only(
-              bottom: MediaQuery.of(ctx).viewInsets.bottom + 20,
+              bottom: MediaQuery.of(ctx).viewInsets.bottom + 16,
               top: 20,
               left: 20,
               right: 20,
@@ -672,242 +670,343 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               color: Colors.white,
               borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
             ),
-            child: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text(
-                        'Edit Intro',
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.w800,
-                          color: AppColors.textPrimary,
-                        ),
-                      ),
-                      IconButton(
-                        icon: const Icon(
-                          Icons.close_rounded,
-                          color: AppColors.textSecondary,
-                        ),
-                        onPressed: () => Navigator.pop(ctx),
-                      ),
-                    ],
-                  ),
-                  const Divider(height: 1),
-                  const SizedBox(height: 16),
-
-                  // First Name & Last Name in Row
-                  Row(
-                    children: [
-                      Expanded(
-                        child: TextField(
-                          controller: firstNameCtrl,
-                          decoration: InputDecoration(
-                            labelText: 'First Name*',
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: TextField(
-                          controller: lastNameCtrl,
-                          decoration: InputDecoration(
-                            labelText: 'Last Name*',
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 14),
-
-                  // Additional Name
-                  TextField(
-                    controller: additionalNameCtrl,
-                    decoration: InputDecoration(
-                      labelText: 'Additional Name',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 14),
-
-                  // Pronouns
-                  DropdownButtonFormField<String>(
-                    initialValue: selectedPronoun,
-                    decoration: InputDecoration(
-                      labelText: 'Pronouns',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    items:
-                        [
-                          'Please Select',
-                          'He/Him (He/Him/His)',
-                          'She/Her (She/Her/Hers)',
-                          'They/Them (They/Them/Theirs)',
-                          'Custom',
-                        ].map((p) {
-                          return DropdownMenuItem(value: p, child: Text(p));
-                        }).toList(),
-                    onChanged: (val) {
-                      if (val != null) {
-                        setModalState(() => selectedPronoun = val);
-                      }
-                    },
-                  ),
-                  const SizedBox(height: 4),
-                  RichText(
-                    text: const TextSpan(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      'Edit Intro',
                       style: TextStyle(
-                        fontSize: 11,
+                        fontSize: 20,
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(
+                        Icons.close_rounded,
                         color: AppColors.textSecondary,
                       ),
+                      onPressed: () => Navigator.pop(ctx),
+                    ),
+                  ],
+                ),
+                const Divider(height: 1),
+                const SizedBox(height: 12),
+                Expanded(
+                  child: SingleChildScrollView(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        TextSpan(text: 'Let others know how to refer to you. '),
-                        TextSpan(
-                          text: 'Learn More About Gender Pronouns.',
+                        const Text(
+                          '* Indicates required',
                           style: TextStyle(
-                            color: Color(0xFF9333EA),
-                            fontWeight: FontWeight.w700,
+                            fontSize: 12,
+                            color: Color(0xFF64748B),
+                            fontWeight: FontWeight.w500,
                           ),
                         ),
+                        const SizedBox(height: 16),
+
+                        // First Name & Last Name in Row
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text(
+                                    'First Name*',
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w600,
+                                      color: Color(0xFF1E293B),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 6),
+                                  TextField(
+                                    controller: firstNameCtrl,
+                                    decoration: InputDecoration(
+                                      border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(14),
+                                        borderSide: const BorderSide(color: Color(0xFFCBD5E1)),
+                                      ),
+                                      enabledBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(14),
+                                        borderSide: const BorderSide(color: Color(0xFFCBD5E1)),
+                                      ),
+                                      focusedBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(14),
+                                        borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
+                                      ),
+                                      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text(
+                                    'Last Name*',
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w600,
+                                      color: Color(0xFF1E293B),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 6),
+                                  TextField(
+                                    controller: lastNameCtrl,
+                                    decoration: InputDecoration(
+                                      border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(14),
+                                        borderSide: const BorderSide(color: Color(0xFFCBD5E1)),
+                                      ),
+                                      enabledBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(14),
+                                        borderSide: const BorderSide(color: Color(0xFFCBD5E1)),
+                                      ),
+                                      focusedBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(14),
+                                        borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
+                                      ),
+                                      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+
+                        // Additional Name
+                        const Text(
+                          'Additional Name',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFF1E293B),
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        TextField(
+                          controller: additionalNameCtrl,
+                          decoration: InputDecoration(
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(14),
+                              borderSide: const BorderSide(color: Color(0xFFCBD5E1)),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(14),
+                              borderSide: const BorderSide(color: Color(0xFFCBD5E1)),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(14),
+                              borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
+                            ),
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+
+                        // Pronouns
+                        const Text(
+                          'Pronouns',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFF1E293B),
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 2),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(14),
+                            border: Border.all(color: const Color(0xFFCBD5E1)),
+                          ),
+                          child: DropdownButtonHideUnderline(
+                            child: DropdownButton<String>(
+                              value: [
+                                'Please Select',
+                                'He/Him (He/Him/His)',
+                                'She/Her (She/Her/Hers)',
+                                'They/Them (They/Them/Theirs)',
+                                'Custom',
+                              ].contains(selectedPronoun)
+                                  ? selectedPronoun
+                                  : 'Please Select',
+                              isExpanded: true,
+                              icon: const Icon(Icons.keyboard_arrow_down, color: Color(0xFF64748B)),
+                              items: [
+                                'Please Select',
+                                'He/Him (He/Him/His)',
+                                'She/Her (She/Her/Hers)',
+                                'They/Them (They/Them/Theirs)',
+                                'Custom',
+                              ].map((p) {
+                                final isPlaceholder = p == 'Please Select';
+                                return DropdownMenuItem(
+                                  value: p,
+                                  child: Text(
+                                    p,
+                                    style: TextStyle(
+                                      color: isPlaceholder
+                                          ? const Color(0xFF94A3B8)
+                                          : const Color(0xFF1E293B),
+                                      fontSize: 15,
+                                    ),
+                                  ),
+                                );
+                              }).toList(),
+                              onChanged: (val) {
+                                if (val != null) {
+                                  setModalState(() => selectedPronoun = val);
+                                }
+                              },
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        RichText(
+                          text: const TextSpan(
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Color(0xFF64748B),
+                            ),
+                            children: [
+                              TextSpan(text: 'Let others know how to refer to you. '),
+                              TextSpan(
+                                text: 'Learn More About Gender Pronouns.',
+                                style: TextStyle(
+                                  color: Color(0xFF1E3A8A),
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+
+                        // Headline*
+                        const Text(
+                          'Headline*',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFF1E293B),
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        TextField(
+                          controller: headlineCtrl,
+                          maxLines: 4,
+                          decoration: InputDecoration(
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(14),
+                              borderSide: const BorderSide(color: Color(0xFFCBD5E1)),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(14),
+                              borderSide: const BorderSide(color: Color(0xFFCBD5E1)),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(14),
+                              borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
+                            ),
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                          ),
+                        ),
+                        const SizedBox(height: 20),
                       ],
                     ),
                   ),
-                  const SizedBox(height: 14),
+                ),
+                const Divider(height: 1),
+                const SizedBox(height: 12),
 
-                  // Headline*
-                  TextField(
-                    controller: headlineCtrl,
-                    maxLines: 2,
-                    decoration: InputDecoration(
-                      labelText: 'Headline*',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 14),
+                // Bottom Right Save Button
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: ElevatedButton(
+                    onPressed: () async {
+                      final fname = firstNameCtrl.text.trim();
+                      final lname = lastNameCtrl.text.trim();
+                      final addName = additionalNameCtrl.text.trim();
 
-                  // City / Location*
-                  TextField(
-                    controller: cityCtrl,
-                    decoration: InputDecoration(
-                      labelText: 'City / Location*',
-                      prefixIcon: const Icon(
-                        Icons.location_on_outlined,
-                        color: AppColors.primary,
-                      ),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 14),
+                      if (fname.isEmpty) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Please enter your first name'),
+                            backgroundColor: AppColors.error,
+                          ),
+                        );
+                        return;
+                      }
 
-                  // Email Address
-                  TextField(
-                    controller: emailCtrl,
-                    decoration: InputDecoration(
-                      labelText: 'Email Address',
-                      prefixIcon: const Icon(Icons.email_outlined),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 14),
+                      Navigator.pop(ctx);
+                      final computedName = fname.isNotEmpty
+                          ? '$fname $lname ${addName.isNotEmpty ? "($addName)" : ""}'
+                                .trim()
+                          : user.name;
 
-                  // About / Summary
-                  TextField(
-                    controller: aboutCtrl,
-                    maxLines: 3,
-                    decoration: InputDecoration(
-                      labelText: 'About / Summary',
-                      alignLabelWithHint: true,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                  ),
+                      final Map<String, dynamic> updatePayload = {
+                        'name': computedName,
+                        'headline': headlineCtrl.text.trim(),
+                      };
+                      if (selectedPronoun != 'Please Select') {
+                        updatePayload['gender'] = selectedPronoun;
+                      }
 
-                  const SizedBox(height: 20),
-                  const Divider(height: 1),
-                  const SizedBox(height: 16),
+                      final ok = await ref
+                          .read(authProvider.notifier)
+                          .updateProfile(updatePayload);
 
-                  // Bottom Right Save Button
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: ElevatedButton(
-                      onPressed: () async {
-                        Navigator.pop(ctx);
-                        final fname = firstNameCtrl.text.trim();
-                        final lname = lastNameCtrl.text.trim();
-                        final addName = additionalNameCtrl.text.trim();
-                        final computedName = fname.isNotEmpty
-                            ? '$fname $lname ${addName.isNotEmpty ? "($addName)" : ""}'
-                                  .trim()
-                            : user.name;
-
-                        final ok = await ref
-                            .read(authProvider.notifier)
-                            .updateProfile({
-                              'name': computedName,
-                              'headline': headlineCtrl.text.trim(),
-                              'city': cityCtrl.text.trim(),
-                              'email': emailCtrl.text.trim(),
-                              'about': aboutCtrl.text.trim(),
-                            });
-                        if (mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                ok
-                                    ? 'Intro updated successfully!'
-                                    : 'Failed to update intro.',
-                              ),
-                              backgroundColor: ok
-                                  ? AppColors.success
-                                  : AppColors.error,
+                      if (mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              ok
+                                  ? 'Intro updated successfully!'
+                                  : 'Failed to update intro.',
                             ),
-                          );
-                        }
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF9333EA),
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 28,
-                          vertical: 12,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(24),
-                        ),
-                        elevation: 0,
+                            backgroundColor: ok
+                                ? AppColors.success
+                                : AppColors.error,
+                          ),
+                        );
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF1E3A8A),
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 32,
+                        vertical: 12,
                       ),
-                      child: const Text(
-                        'Save',
-                        style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w800,
-                        ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      elevation: 0,
+                    ),
+                    child: const Text(
+                      'Save',
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w800,
                       ),
                     ),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           );
         },
@@ -1385,7 +1484,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   // -------------------------------------------------------------------
   // ADD EDUCATION DIALOG
   // -------------------------------------------------------------------
-  void _openAddEducationDialog() {
+  void _openAddEducationDialog([EducationItem? existingEdu]) {
     if (!ref.read(authProvider).isAuthenticated) {
       showAuthPromptDialog(
         context,
@@ -1395,17 +1494,33 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       return;
     }
 
-    final schoolCtrl = TextEditingController();
-    final degreeCtrl = TextEditingController();
-    final fieldCtrl = TextEditingController();
-    final startCtrl = TextEditingController();
-    final endCtrl = TextEditingController();
+    final schoolCtrl = TextEditingController(text: existingEdu?.schoolName ?? '');
+    final degreeCtrl = TextEditingController(text: existingEdu?.degree ?? '');
+    final fieldCtrl = TextEditingController(text: existingEdu?.fieldOfStudy ?? '');
+    final startCtrl = TextEditingController(text: existingEdu?.startDate ?? '');
+    final endCtrl = TextEditingController(text: existingEdu?.endDate ?? '');
+    final gradeCtrl = TextEditingController(text: existingEdu?.grade ?? '');
+    final descCtrl = TextEditingController(text: existingEdu?.description ?? '');
+
+    Future<void> pickDate(TextEditingController controller) async {
+      final date = await showDatePicker(
+        context: context,
+        initialDate: DateTime.now(),
+        firstDate: DateTime(1950),
+        lastDate: DateTime(2100),
+      );
+      if (date != null) {
+        final months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+        controller.text = '${months[date.month - 1]}, ${date.year}';
+      }
+    }
 
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (ctx) => Container(
+        height: MediaQuery.of(ctx).size.height * 0.9,
         padding: EdgeInsets.only(
           bottom: MediaQuery.of(ctx).viewInsets.bottom + 20,
           top: 24,
@@ -1416,126 +1531,197 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           color: Colors.white,
           borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
         ),
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    'Add Education',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.close),
+        child: Column(
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  existingEdu == null ? 'Add Education' : 'Edit Education',
+                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.close),
+                  onPressed: () => Navigator.pop(ctx),
+                ),
+              ],
+            ),
+            const Divider(height: 24),
+            Expanded(
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text('School / University', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+                    const SizedBox(height: 6),
+                    TextField(
+                      controller: schoolCtrl,
+                      decoration: InputDecoration(
+                        hintText: 'Ex: Indian Institute of Technology',
+                        hintStyle: const TextStyle(color: Colors.black38),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    const Text('Degree', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+                    const SizedBox(height: 6),
+                    TextField(
+                      controller: degreeCtrl,
+                      decoration: InputDecoration(
+                        hintText: 'Ex: Bachelor of Computer Science',
+                        hintStyle: const TextStyle(color: Colors.black38),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    const Text('Field of Study', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+                    const SizedBox(height: 6),
+                    TextField(
+                      controller: fieldCtrl,
+                      decoration: InputDecoration(
+                        hintText: 'Ex: Computer Science',
+                        hintStyle: const TextStyle(color: Colors.black38),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text('Start Date', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+                              const SizedBox(height: 6),
+                              TextField(
+                                controller: startCtrl,
+                                readOnly: true,
+                                onTap: () => pickDate(startCtrl),
+                                decoration: InputDecoration(
+                                  hintText: '--------, ----',
+                                  hintStyle: const TextStyle(color: Colors.black38),
+                                  suffixIcon: const Icon(Icons.calendar_today_outlined, size: 20),
+                                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
+                                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text('End Date (or expected)', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+                              const SizedBox(height: 6),
+                              TextField(
+                                controller: endCtrl,
+                                readOnly: true,
+                                onTap: () => pickDate(endCtrl),
+                                decoration: InputDecoration(
+                                  hintText: '--------, ----',
+                                  hintStyle: const TextStyle(color: Colors.black38),
+                                  suffixIcon: const Icon(Icons.calendar_today_outlined, size: 20),
+                                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
+                                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    const Text('Grade', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+                    const SizedBox(height: 6),
+                    TextField(
+                      controller: gradeCtrl,
+                      decoration: InputDecoration(
+                        hintText: 'Ex: 8.5 CGPA',
+                        hintStyle: const TextStyle(color: Colors.black38),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    const Text('Description', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+                    const SizedBox(height: 6),
+                    TextField(
+                      controller: descCtrl,
+                      maxLines: 4,
+                      decoration: InputDecoration(
+                        hintText: 'Describe your achievements, societies, etc.',
+                        hintStyle: const TextStyle(color: Colors.black38),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                  ],
+                ),
+              ),
+            ),
+            const Divider(height: 24),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
                     onPressed: () => Navigator.pop(ctx),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 14),
-              TextField(
-                controller: schoolCtrl,
-                decoration: InputDecoration(
-                  labelText: 'School / University Name*',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: degreeCtrl,
-                decoration: InputDecoration(
-                  labelText: 'Degree / Certificate',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: fieldCtrl,
-                decoration: InputDecoration(
-                  labelText: 'Field of Study',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 12),
-              Row(
-                children: [
-                  Expanded(
-                    child: TextField(
-                      controller: startCtrl,
-                      decoration: InputDecoration(
-                        labelText: 'Start Year',
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                      ),
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      side: const BorderSide(color: Colors.black26),
                     ),
+                    child: const Text('Cancel', style: TextStyle(color: Colors.black87, fontWeight: FontWeight.w700)),
                   ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: TextField(
-                      controller: endCtrl,
-                      decoration: InputDecoration(
-                        labelText: 'End Year',
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                      ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () async {
+                      if (schoolCtrl.text.trim().isEmpty) return;
+                      Navigator.pop(ctx);
+                      final ok = await ref
+                          .read(authProvider.notifier)
+                          .addEducation(
+                            id: existingEdu?.id,
+                            schoolName: schoolCtrl.text,
+                            degree: degreeCtrl.text,
+                            fieldOfStudy: fieldCtrl.text,
+                            startDate: startCtrl.text,
+                            endDate: endCtrl.text,
+                            grade: gradeCtrl.text,
+                            description: descCtrl.text,
+                          );
+                      if (mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              ok
+                                  ? 'Education saved successfully!'
+                                  : 'Failed to save education.',
+                            ),
+                            backgroundColor: ok ? AppColors.success : AppColors.error,
+                          ),
+                        );
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF1E3A8A),
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                     ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: () async {
-                  if (schoolCtrl.text.trim().isEmpty) return;
-                  Navigator.pop(ctx);
-                  final ok = await ref
-                      .read(authProvider.notifier)
-                      .addEducation(
-                        schoolName: schoolCtrl.text,
-                        degree: degreeCtrl.text,
-                        fieldOfStudy: fieldCtrl.text,
-                        startDate: startCtrl.text,
-                        endDate: endCtrl.text,
-                      );
-                  if (mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(
-                          ok
-                              ? 'Education added successfully!'
-                              : 'Failed to add education.',
-                        ),
-                        backgroundColor: ok
-                            ? AppColors.success
-                            : AppColors.error,
-                      ),
-                    );
-                  }
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  foregroundColor: Colors.white,
-                  minimumSize: const Size(double.infinity, 50),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
+                    child: const Text('Save', style: TextStyle(fontWeight: FontWeight.w700)),
                   ),
                 ),
-                child: const Text(
-                  'Add Education',
-                  style: TextStyle(fontWeight: FontWeight.w800),
-                ),
-              ),
-            ],
-          ),
+              ],
+            ),
+          ],
         ),
       ),
     );
@@ -3982,7 +4168,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     required VoidCallback onTap,
   }) {
     return InkWell(
-      onTap: onTap,
+      onTap: isCompleted ? null : onTap,
       borderRadius: BorderRadius.circular(24),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
@@ -4572,7 +4758,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   // -------------------------------------------------------------------
   // ADD PROJECT DIALOG & WIDGET (web-matched media_1789560057895.png)
   // -------------------------------------------------------------------
-  void _openAddProjectDialog() {
+  void _openAddProjectDialog([ProjectItem? existingProject]) {
     if (!ref.read(authProvider).isAuthenticated) {
       showAuthPromptDialog(
         context,
@@ -4582,156 +4768,808 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       return;
     }
 
-    final titleCtrl = TextEditingController();
-    final descCtrl = TextEditingController();
-    final linkCtrl = TextEditingController();
-    final startCtrl = TextEditingController();
-    final endCtrl = TextEditingController();
+    final titleCtrl = TextEditingController(text: existingProject?.title ?? '');
+    final associatedWithCtrl =
+        TextEditingController(text: existingProject?.associatedWith ?? '');
+    final linkCtrl = TextEditingController(text: existingProject?.link ?? '');
+    final descCtrl =
+        TextEditingController(text: existingProject?.description ?? '');
+    final skillsCtrl =
+        TextEditingController(text: existingProject?.skills ?? '');
+
+    String startMonth = 'Month';
+    String startYear = 'Year';
+    String endMonth = 'Month';
+    String endYear = 'Year';
+
+    final monthsList = [
+      'Month',
+      'January',
+      'February',
+      'March',
+      'April',
+      'May',
+      'June',
+      'July',
+      'August',
+      'September',
+      'October',
+      'November',
+      'December',
+    ];
+
+    final currentYear = DateTime.now().year;
+    final yearsList = [
+      'Year',
+      for (int y = currentYear + 2; y >= 1980; y--) y.toString(),
+    ];
+
+    if (existingProject != null) {
+      final startParts = existingProject.startDate.split(' ');
+      if (startParts.isNotEmpty) {
+        final matchM = monthsList.firstWhere(
+          (m) => m.toLowerCase().startsWith(startParts[0].toLowerCase()),
+          orElse: () => 'Month',
+        );
+        startMonth = matchM;
+        if (startParts.length > 1) {
+          startYear = startParts[1];
+        }
+      }
+      final endParts = existingProject.endDate.split(' ');
+      if (endParts.isNotEmpty) {
+        final matchM = monthsList.firstWhere(
+          (m) => m.toLowerCase().startsWith(endParts[0].toLowerCase()),
+          orElse: () => 'Month',
+        );
+        endMonth = matchM;
+        if (endParts.length > 1) {
+          endYear = endParts[1];
+        }
+      }
+    }
+
+    bool isCurrentlyWorking = existingProject?.isCurrentlyWorking ?? false;
 
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (ctx) => Container(
-        padding: EdgeInsets.only(
-          bottom: MediaQuery.of(ctx).viewInsets.bottom + 20,
-          top: 24,
-          left: 20,
-          right: 20,
-        ),
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
-        ),
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    'Add Project / Assignment',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.close),
-                    onPressed: () => Navigator.pop(ctx),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 14),
-              TextField(
-                controller: titleCtrl,
-                decoration: InputDecoration(
-                  labelText: 'Project Title*',
-                  hintText: 'e.g. E-Commerce App, Portfolio Website',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(14),
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setModalState) {
+          final isTitleNotEmpty = titleCtrl.text.trim().isNotEmpty;
+
+          return Container(
+            height: MediaQuery.of(ctx).size.height * 0.88,
+            padding: EdgeInsets.only(
+              bottom: MediaQuery.of(ctx).viewInsets.bottom + 16,
+              top: 20,
+              left: 20,
+              right: 20,
+            ),
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      existingProject == null ? 'Add Project' : 'Edit Project',
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(
+                        Icons.close_rounded,
+                        color: AppColors.textSecondary,
+                      ),
+                      onPressed: () => Navigator.pop(ctx),
+                    ),
+                  ],
+                ),
+                const Divider(height: 1),
+                const SizedBox(height: 14),
+                Expanded(
+                  child: SingleChildScrollView(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // 1. Project / Work Name *
+                        RichText(
+                          text: const TextSpan(
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: Color(0xFF1E293B),
+                            ),
+                            children: [
+                              TextSpan(text: 'Project / Work Name '),
+                              TextSpan(
+                                text: '*',
+                                style: TextStyle(
+                                  color: Colors.red,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        TextField(
+                          controller: titleCtrl,
+                          onChanged: (_) => setModalState(() {}),
+                          decoration: InputDecoration(
+                            hintText:
+                                'Ex: KaamMilega Mobile App, Modular Kitchen Woodwork, Brand Camp',
+                            hintStyle: const TextStyle(
+                              color: Color(0xFF94A3B8),
+                              fontSize: 13.5,
+                            ),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(14),
+                              borderSide: const BorderSide(
+                                color: Color(0xFF9333EA),
+                                width: 1.5,
+                              ),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(14),
+                              borderSide: const BorderSide(
+                                color: Color(0xFF9333EA),
+                                width: 1.5,
+                              ),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(14),
+                              borderSide: const BorderSide(
+                                color: Color(0xFF9333EA),
+                                width: 2,
+                              ),
+                            ),
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 14,
+                              vertical: 12,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+
+                        // 2. Associated With (Optional)
+                        const Text(
+                          'Associated With (Optional)',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFF1E293B),
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        TextField(
+                          controller: associatedWithCtrl,
+                          decoration: InputDecoration(
+                            hintText:
+                                'Ex: Freelance, TCS, Self-employed, or Client Name',
+                            hintStyle: const TextStyle(
+                              color: Color(0xFF94A3B8),
+                              fontSize: 13.5,
+                            ),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(14),
+                              borderSide: const BorderSide(
+                                color: Color(0xFFCBD5E1),
+                              ),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(14),
+                              borderSide: const BorderSide(
+                                color: Color(0xFFCBD5E1),
+                              ),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(14),
+                              borderSide: const BorderSide(
+                                color: Color(0xFF9333EA),
+                                width: 1.5,
+                              ),
+                            ),
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 14,
+                              vertical: 12,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+
+                        // 3. Start Date & End Date Dropdown Row
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Start Date
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text(
+                                    'Start Date',
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w600,
+                                      color: Color(0xFF1E293B),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 6),
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: Container(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 10,
+                                            vertical: 2,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            borderRadius:
+                                                BorderRadius.circular(14),
+                                            border: Border.all(
+                                              color: const Color(0xFFCBD5E1),
+                                            ),
+                                          ),
+                                          child: DropdownButtonHideUnderline(
+                                            child: DropdownButton<String>(
+                                              value: startMonth,
+                                              isExpanded: true,
+                                              icon: const Icon(
+                                                Icons.keyboard_arrow_down,
+                                                color: Color(0xFF64748B),
+                                                size: 20,
+                                              ),
+                                              items: monthsList.map((m) {
+                                                final isPlaceholder =
+                                                    m == 'Month';
+                                                return DropdownMenuItem(
+                                                  value: m,
+                                                  child: Text(
+                                                    m.length > 5 && m != 'Month'
+                                                        ? m.substring(0, 3)
+                                                        : m,
+                                                    style: TextStyle(
+                                                      color: isPlaceholder
+                                                          ? const Color(
+                                                              0xFF94A3B8,
+                                                            )
+                                                          : const Color(
+                                                              0xFF1E293B,
+                                                            ),
+                                                      fontSize: 13,
+                                                    ),
+                                                  ),
+                                                );
+                                              }).toList(),
+                                              onChanged: (val) {
+                                                if (val != null) {
+                                                  setModalState(
+                                                    () => startMonth = val,
+                                                  );
+                                                }
+                                              },
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Expanded(
+                                        child: Container(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 10,
+                                            vertical: 2,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            borderRadius:
+                                                BorderRadius.circular(14),
+                                            border: Border.all(
+                                              color: const Color(0xFFCBD5E1),
+                                            ),
+                                          ),
+                                          child: DropdownButtonHideUnderline(
+                                            child: DropdownButton<String>(
+                                              value: startYear,
+                                              isExpanded: true,
+                                              icon: const Icon(
+                                                Icons.keyboard_arrow_down,
+                                                color: Color(0xFF64748B),
+                                                size: 20,
+                                              ),
+                                              items: yearsList.map((y) {
+                                                final isPlaceholder =
+                                                    y == 'Year';
+                                                return DropdownMenuItem(
+                                                  value: y,
+                                                  child: Text(
+                                                    y,
+                                                    style: TextStyle(
+                                                      color: isPlaceholder
+                                                          ? const Color(
+                                                              0xFF94A3B8,
+                                                            )
+                                                          : const Color(
+                                                              0xFF1E293B,
+                                                            ),
+                                                      fontSize: 13,
+                                                    ),
+                                                  ),
+                                                );
+                                              }).toList(),
+                                              onChanged: (val) {
+                                                if (val != null) {
+                                                  setModalState(
+                                                    () => startYear = val,
+                                                  );
+                                                }
+                                              },
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+
+                            // End Date
+                            Expanded(
+                              child: Opacity(
+                                opacity: isCurrentlyWorking ? 0.4 : 1.0,
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Text(
+                                      'End Date',
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w600,
+                                        color: Color(0xFF1E293B),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 6),
+                                    Row(
+                                      children: [
+                                        Expanded(
+                                          child: Container(
+                                            padding:
+                                                const EdgeInsets.symmetric(
+                                                  horizontal: 10,
+                                                  vertical: 2,
+                                                ),
+                                            decoration: BoxDecoration(
+                                              borderRadius:
+                                                  BorderRadius.circular(14),
+                                              border: Border.all(
+                                                color: const Color(
+                                                  0xFFCBD5E1,
+                                                ),
+                                              ),
+                                            ),
+                                            child: DropdownButtonHideUnderline(
+                                              child: DropdownButton<String>(
+                                                value: endMonth,
+                                                isExpanded: true,
+                                                icon: const Icon(
+                                                  Icons.keyboard_arrow_down,
+                                                  color: Color(0xFF64748B),
+                                                  size: 20,
+                                                ),
+                                                items: monthsList.map((m) {
+                                                  final isPlaceholder =
+                                                      m == 'Month';
+                                                  return DropdownMenuItem(
+                                                    value: m,
+                                                    child: Text(
+                                                      m.length > 5 &&
+                                                              m != 'Month'
+                                                          ? m.substring(0, 3)
+                                                          : m,
+                                                      style: TextStyle(
+                                                        color: isPlaceholder
+                                                            ? const Color(
+                                                                0xFF94A3B8,
+                                                              )
+                                                            : const Color(
+                                                                0xFF1E293B,
+                                                              ),
+                                                        fontSize: 13,
+                                                      ),
+                                                    ),
+                                                  );
+                                                }).toList(),
+                                                onChanged: isCurrentlyWorking
+                                                    ? null
+                                                    : (val) {
+                                                        if (val != null) {
+                                                          setModalState(
+                                                            () =>
+                                                                endMonth = val,
+                                                          );
+                                                        }
+                                                      },
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(width: 8),
+                                        Expanded(
+                                          child: Container(
+                                            padding:
+                                                const EdgeInsets.symmetric(
+                                                  horizontal: 10,
+                                                  vertical: 2,
+                                                ),
+                                            decoration: BoxDecoration(
+                                              borderRadius:
+                                                  BorderRadius.circular(14),
+                                              border: Border.all(
+                                                color: const Color(
+                                                  0xFFCBD5E1,
+                                                ),
+                                              ),
+                                            ),
+                                            child: DropdownButtonHideUnderline(
+                                              child: DropdownButton<String>(
+                                                value: endYear,
+                                                isExpanded: true,
+                                                icon: const Icon(
+                                                  Icons.keyboard_arrow_down,
+                                                  color: Color(0xFF64748B),
+                                                  size: 20,
+                                                ),
+                                                items: yearsList.map((y) {
+                                                  final isPlaceholder =
+                                                      y == 'Year';
+                                                  return DropdownMenuItem(
+                                                    value: y,
+                                                    child: Text(
+                                                      y,
+                                                      style: TextStyle(
+                                                        color: isPlaceholder
+                                                            ? const Color(
+                                                                0xFF94A3B8,
+                                                              )
+                                                            : const Color(
+                                                                0xFF1E293B,
+                                                              ),
+                                                        fontSize: 13,
+                                                      ),
+                                                    ),
+                                                  );
+                                                }).toList(),
+                                                onChanged: isCurrentlyWorking
+                                                    ? null
+                                                    : (val) {
+                                                        if (val != null) {
+                                                          setModalState(
+                                                            () =>
+                                                                endYear = val,
+                                                          );
+                                                        }
+                                                      },
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+
+                        // 4. Currently working checkbox
+                        InkWell(
+                          onTap: () {
+                            setModalState(() {
+                              isCurrentlyWorking = !isCurrentlyWorking;
+                            });
+                          },
+                          borderRadius: BorderRadius.circular(8),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 4),
+                            child: Row(
+                              children: [
+                                SizedBox(
+                                  width: 22,
+                                  height: 22,
+                                  child: Checkbox(
+                                    value: isCurrentlyWorking,
+                                    activeColor: const Color(0xFF9333EA),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(4),
+                                    ),
+                                    onChanged: (val) {
+                                      setModalState(() {
+                                        isCurrentlyWorking = val ?? false;
+                                      });
+                                    },
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                const Text(
+                                  'I am currently working on this project',
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w500,
+                                    color: Color(0xFF1E293B),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+
+                        // 5. Project URL (Optional)
+                        const Text(
+                          'Project URL (Optional)',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFF1E293B),
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        TextField(
+                          controller: linkCtrl,
+                          decoration: InputDecoration(
+                            hintText:
+                                'https://example.com, GitHub, Google Drive, or Demo link',
+                            hintStyle: const TextStyle(
+                              color: Color(0xFF94A3B8),
+                              fontSize: 13.5,
+                            ),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(14),
+                              borderSide: const BorderSide(
+                                color: Color(0xFFCBD5E1),
+                              ),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(14),
+                              borderSide: const BorderSide(
+                                color: Color(0xFFCBD5E1),
+                              ),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(14),
+                              borderSide: const BorderSide(
+                                color: Color(0xFF9333EA),
+                                width: 1.5,
+                              ),
+                            ),
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 14,
+                              vertical: 12,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+
+                        // 6. Description
+                        const Text(
+                          'Description',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFF1E293B),
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        TextField(
+                          controller: descCtrl,
+                          maxLines: 4,
+                          decoration: InputDecoration(
+                            hintText:
+                                'Describe your role, responsibilities, tools used, or client results...',
+                            hintStyle: const TextStyle(
+                              color: Color(0xFF94A3B8),
+                              fontSize: 13.5,
+                            ),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(14),
+                              borderSide: const BorderSide(
+                                color: Color(0xFFCBD5E1),
+                              ),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(14),
+                              borderSide: const BorderSide(
+                                color: Color(0xFFCBD5E1),
+                              ),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(14),
+                              borderSide: const BorderSide(
+                                color: Color(0xFF9333EA),
+                                width: 1.5,
+                              ),
+                            ),
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 14,
+                              vertical: 12,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+
+                        // 7. Skills Used (Comma separated, optional)
+                        const Text(
+                          'Skills Used (Comma separated, optional)',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFF1E293B),
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        TextField(
+                          controller: skillsCtrl,
+                          decoration: InputDecoration(
+                            hintText:
+                                'Ex: React, Go, MongoDB, Carpentry, Customer Handling',
+                            hintStyle: const TextStyle(
+                              color: Color(0xFF94A3B8),
+                              fontSize: 13.5,
+                            ),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(14),
+                              borderSide: const BorderSide(
+                                color: Color(0xFFCBD5E1),
+                              ),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(14),
+                              borderSide: const BorderSide(
+                                color: Color(0xFFCBD5E1),
+                              ),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(14),
+                              borderSide: const BorderSide(
+                                color: Color(0xFF9333EA),
+                                width: 1.5,
+                              ),
+                            ),
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 14,
+                              vertical: 12,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(height: 14),
-              TextField(
-                controller: descCtrl,
-                maxLines: 3,
-                decoration: InputDecoration(
-                  labelText: 'Description',
-                  hintText:
-                      'Describe key technologies, features, and your role',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 14),
-              TextField(
-                controller: linkCtrl,
-                decoration: InputDecoration(
-                  labelText: 'Project Link / URL',
-                  hintText: 'https://github.com/... or https://myproject.com',
-                  prefixIcon: const Icon(Icons.link_rounded),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 14),
-              Row(
-                children: [
-                  Expanded(
-                    child: TextField(
-                      controller: startCtrl,
-                      decoration: InputDecoration(
-                        labelText: 'Start Date',
-                        hintText: 'e.g. Jan 2024',
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(14),
+                const Divider(height: 1),
+                const SizedBox(height: 12),
+
+                // Action buttons: Cancel & Save Project
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    OutlinedButton(
+                      onPressed: () => Navigator.pop(ctx),
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 24,
+                          vertical: 12,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        side: const BorderSide(color: Color(0xFFCBD5E1)),
+                      ),
+                      child: const Text(
+                        'Cancel',
+                        style: TextStyle(
+                          color: Color(0xFF1E293B),
+                          fontWeight: FontWeight.w700,
                         ),
                       ),
                     ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: TextField(
-                      controller: endCtrl,
-                      decoration: InputDecoration(
-                        labelText: 'End Date / Present',
-                        hintText: 'e.g. Mar 2024',
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(14),
+                    const SizedBox(width: 12),
+                    ElevatedButton(
+                      onPressed: () async {
+                        final title = titleCtrl.text.trim();
+                        if (title.isEmpty) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Please enter a project name'),
+                              backgroundColor: AppColors.error,
+                            ),
+                          );
+                          return;
+                        }
+
+                        Navigator.pop(ctx);
+
+                        final formattedStartDate =
+                            (startMonth != 'Month' || startYear != 'Year')
+                                ? '${startMonth != "Month" ? startMonth : ""} ${startYear != "Year" ? startYear : ""}'.trim()
+                                : '';
+                        final formattedEndDate = isCurrentlyWorking
+                            ? 'Present'
+                            : ((endMonth != 'Month' || endYear != 'Year')
+                                ? '${endMonth != "Month" ? endMonth : ""} ${endYear != "Year" ? endYear : ""}'.trim()
+                                : '');
+
+                        final ok = await ref
+                            .read(authProvider.notifier)
+                            .addProject(
+                              id: existingProject?.id,
+                              title: title,
+                              associatedWith: associatedWithCtrl.text.trim(),
+                              description: descCtrl.text.trim(),
+                              link: linkCtrl.text.trim(),
+                              startDate: formattedStartDate,
+                              endDate: formattedEndDate,
+                              skills: skillsCtrl.text.trim(),
+                              isCurrentlyWorking: isCurrentlyWorking,
+                            );
+
+                        if (mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                ok
+                                    ? (existingProject == null
+                                        ? 'Project added successfully!'
+                                        : 'Project updated successfully!')
+                                    : 'Failed to save project.',
+                              ),
+                              backgroundColor: ok
+                                  ? AppColors.success
+                                  : AppColors.error,
+                            ),
+                          );
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: isTitleNotEmpty
+                            ? const Color(0xFF9333EA)
+                            : const Color(0xFFCBD5E1),
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 24,
+                          vertical: 12,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        elevation: 0,
+                      ),
+                      child: Text(
+                        existingProject == null ? 'Save Project' : 'Update Project',
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w800,
+                          fontSize: 14,
                         ),
                       ),
                     ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: () async {
-                  if (titleCtrl.text.trim().isEmpty) return;
-                  Navigator.pop(ctx);
-                  final ok = await ref
-                      .read(authProvider.notifier)
-                      .addProject(
-                        title: titleCtrl.text,
-                        description: descCtrl.text,
-                        link: linkCtrl.text,
-                        startDate: startCtrl.text,
-                        endDate: endCtrl.text,
-                      );
-                  if (mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(
-                          ok
-                              ? 'Project added successfully!'
-                              : 'Failed to add project.',
-                        ),
-                        backgroundColor: ok
-                            ? AppColors.success
-                            : AppColors.error,
-                      ),
-                    );
-                  }
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF9333EA),
-                  foregroundColor: Colors.white,
-                  minimumSize: const Size(double.infinity, 50),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
+                  ],
                 ),
-                child: const Text(
-                  'Save Project',
-                  style: TextStyle(fontWeight: FontWeight.w800),
-                ),
-              ),
-            ],
-          ),
-        ),
+              ],
+            ),
+          );
+        },
       ),
     );
   }
@@ -4876,15 +5714,58 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(
-                                p.title,
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.w800,
-                                  fontSize: 14,
-                                ),
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          p.title,
+                                          style: const TextStyle(
+                                            fontWeight: FontWeight.w800,
+                                            fontSize: 14,
+                                            color: AppColors.textPrimary,
+                                          ),
+                                        ),
+                                        if (p.associatedWith.isNotEmpty)
+                                          Text(
+                                            p.associatedWith,
+                                            style: const TextStyle(
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.w600,
+                                              color: Color(0xFF64748B),
+                                            ),
+                                          ),
+                                      ],
+                                    ),
+                                  ),
+                                  IconButton(
+                                    icon: const Icon(
+                                      Icons.edit_outlined,
+                                      size: 16,
+                                      color: Color(0xFF9333EA),
+                                    ),
+                                    padding: EdgeInsets.zero,
+                                    constraints: const BoxConstraints(),
+                                    onPressed: () => _openAddProjectDialog(p),
+                                  ),
+                                ],
                               ),
-                              if (p.description.isNotEmpty) ...[
+                              if (p.startDate.isNotEmpty || p.endDate.isNotEmpty) ...[
                                 const SizedBox(height: 2),
+                                Text(
+                                  '${p.startDate} ${p.endDate.isNotEmpty ? "- ${p.endDate}" : ""}'.trim(),
+                                  style: const TextStyle(
+                                    fontSize: 11,
+                                    color: Color(0xFF94A3B8),
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ],
+                              if (p.description.isNotEmpty) ...[
+                                const SizedBox(height: 4),
                                 Text(
                                   p.description,
                                   style: const TextStyle(
@@ -4893,8 +5774,38 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                   ),
                                 ),
                               ],
+                              if (p.skills.isNotEmpty) ...[
+                                const SizedBox(height: 6),
+                                Wrap(
+                                  spacing: 4,
+                                  runSpacing: 4,
+                                  children: p.skills
+                                      .split(',')
+                                      .map((s) => s.trim())
+                                      .where((s) => s.isNotEmpty)
+                                      .map((skill) => Container(
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 8,
+                                              vertical: 2,
+                                            ),
+                                            decoration: BoxDecoration(
+                                              color: const Color(0xFFF3E8FF),
+                                              borderRadius: BorderRadius.circular(8),
+                                            ),
+                                            child: Text(
+                                              skill,
+                                              style: const TextStyle(
+                                                fontSize: 10,
+                                                fontWeight: FontWeight.w600,
+                                                color: Color(0xFF9333EA),
+                                              ),
+                                            ),
+                                          ))
+                                      .toList(),
+                                ),
+                              ],
                               if (p.link.isNotEmpty) ...[
-                                const SizedBox(height: 4),
+                                const SizedBox(height: 6),
                                 InkWell(
                                   onTap: () async {
                                     final uri = Uri.tryParse(p.link);
@@ -5488,7 +6399,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                               size: 18,
                                             ),
                                             onPressed: () =>
-                                                _openEditProfileDialog(user),
+                                                _openAddEducationDialog(user.education.isNotEmpty ? user.education.first : null),
                                           ),
                                       ],
                                     ),

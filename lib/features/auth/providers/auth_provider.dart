@@ -213,21 +213,25 @@ class AuthNotifier extends Notifier<AuthState> {
 
   /// Add Education item to candidate profile
   Future<bool> addEducation({
+    String? id,
     required String schoolName,
     required String degree,
     required String fieldOfStudy,
     required String startDate,
     required String endDate,
+    String grade = '',
     String description = '',
   }) async {
     state = state.copyWith(isLoading: true, error: null);
     try {
       final updatedUser = await _repository.addEducation(
+        id: id,
         schoolName: schoolName,
         degree: degree,
         fieldOfStudy: fieldOfStudy,
         startDate: startDate,
         endDate: endDate,
+        grade: grade,
         description: description,
       );
       state = state.copyWith(isLoading: false, user: updatedUser);
@@ -409,35 +413,51 @@ class AuthNotifier extends Notifier<AuthState> {
 
   /// Add Project item to candidate profile
   Future<bool> addProject({
+    String? id,
     required String title,
+    String associatedWith = '',
     String description = '',
     String link = '',
     String startDate = '',
     String endDate = '',
+    String skills = '',
+    bool isCurrentlyWorking = false,
   }) async {
     state = state.copyWith(isLoading: true, error: null);
     try {
       final updatedUser = await _repository.addProject(
+        id: id,
         title: title,
+        associatedWith: associatedWith,
         description: description,
         link: link,
         startDate: startDate,
         endDate: endDate,
+        skills: skills,
+        isCurrentlyWorking: isCurrentlyWorking,
       );
       state = state.copyWith(isLoading: false, user: updatedUser);
       return true;
     } catch (e) {
       if (state.user != null) {
         final newProject = ProjectItem(
-          id: DateTime.now().millisecondsSinceEpoch.toString(),
+          id: id ?? DateTime.now().millisecondsSinceEpoch.toString(),
           title: title,
+          associatedWith: associatedWith,
           description: description,
           link: link,
           startDate: startDate,
           endDate: endDate,
+          skills: skills,
+          isCurrentlyWorking: isCurrentlyWorking,
         );
-        final updatedList = List<ProjectItem>.from(state.user!.projects)
-          ..add(newProject);
+        final updatedList = List<ProjectItem>.from(state.user!.projects);
+        final existingIdx = updatedList.indexWhere((p) => p.id == newProject.id);
+        if (existingIdx >= 0) {
+          updatedList[existingIdx] = newProject;
+        } else {
+          updatedList.add(newProject);
+        }
         final updatedUser = state.user!.copyWith(projects: updatedList);
         state = state.copyWith(isLoading: false, user: updatedUser);
         await LocalStorage.saveUser(updatedUser.toJson());

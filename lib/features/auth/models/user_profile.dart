@@ -392,35 +392,47 @@ class ExperienceItem {
 class ProjectItem {
   final String id;
   final String title;
+  final String associatedWith;
   final String description;
   final String link;
   final String startDate;
   final String endDate;
+  final String skills;
+  final bool isCurrentlyWorking;
 
   const ProjectItem({
     this.id = '',
     required this.title,
+    this.associatedWith = '',
     this.description = '',
     this.link = '',
     this.startDate = '',
     this.endDate = '',
+    this.skills = '',
+    this.isCurrentlyWorking = false,
   });
 
   factory ProjectItem.fromJson(Map<String, dynamic> json) => ProjectItem(
     id: json['id']?.toString() ?? json['_id']?.toString() ?? '',
     title: json['title']?.toString() ?? json['name']?.toString() ?? '',
+    associatedWith: json['associated_with']?.toString() ?? json['associatedWith']?.toString() ?? '',
     description: json['description']?.toString() ?? '',
     link: json['link']?.toString() ?? json['url']?.toString() ?? '',
     startDate: json['start_date']?.toString() ?? '',
     endDate: json['end_date']?.toString() ?? '',
+    skills: json['skills']?.toString() ?? json['skills_used']?.toString() ?? '',
+    isCurrentlyWorking: json['is_currently_working'] == true || json['isCurrentlyWorking'] == true,
   );
 
   Map<String, dynamic> toJson() => {
     'id': id,
     'title': title,
+    'associated_with': associatedWith,
     'description': description,
     'link': link,
     'start_date': startDate,
     'end_date': endDate,
+    'skills': skills,
+    'is_currently_working': isCurrentlyWorking,
   };
 }

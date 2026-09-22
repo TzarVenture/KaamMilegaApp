@@ -176,23 +176,31 @@ class AuthRepository {
 
   /// Add Education record to Candidate profile
   Future<UserProfile> addEducation({
+    String? id,
     required String schoolName,
     required String degree,
     required String fieldOfStudy,
     required String startDate,
     required String endDate,
+    String grade = '',
     String description = '',
   }) async {
+    final payload = {
+      'school_name': schoolName.trim(),
+      'degree': degree.trim(),
+      'field_of_study': fieldOfStudy.trim(),
+      'start_date': startDate.trim(),
+      'end_date': endDate.trim(),
+      'grade': grade.trim(),
+      'description': description.trim(),
+    };
+    if (id != null && id.isNotEmpty) {
+      payload['id'] = id;
+    }
+
     final response = await _client.post(
       '/user/education',
-      data: {
-        'school_name': schoolName.trim(),
-        'degree': degree.trim(),
-        'field_of_study': fieldOfStudy.trim(),
-        'start_date': startDate.trim(),
-        'end_date': endDate.trim(),
-        'description': description.trim(),
-      },
+      data: payload,
     );
 
     final data = response.data as Map<String, dynamic>? ?? {};
@@ -341,21 +349,33 @@ class AuthRepository {
 
   /// Add Project record to Candidate profile
   Future<UserProfile> addProject({
+    String? id,
     required String title,
+    String associatedWith = '',
     String description = '',
     String link = '',
     String startDate = '',
     String endDate = '',
+    String skills = '',
+    bool isCurrentlyWorking = false,
   }) async {
+    final payload = {
+      'title': title.trim(),
+      'associated_with': associatedWith.trim(),
+      'description': description.trim(),
+      'link': link.trim(),
+      'start_date': startDate.trim(),
+      'end_date': endDate.trim(),
+      'skills': skills.trim(),
+      'is_currently_working': isCurrentlyWorking,
+    };
+    if (id != null && id.isNotEmpty) {
+      payload['id'] = id;
+    }
+
     final response = await _client.post(
       '/user/project',
-      data: {
-        'title': title.trim(),
-        'description': description.trim(),
-        'link': link.trim(),
-        'start_date': startDate.trim(),
-        'end_date': endDate.trim(),
-      },
+      data: payload,
     );
 
     final data = response.data as Map<String, dynamic>? ?? {};
