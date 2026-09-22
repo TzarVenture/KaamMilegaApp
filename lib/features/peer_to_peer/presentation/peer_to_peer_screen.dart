@@ -6,6 +6,7 @@ import '../../../core/network/api_client.dart';
 import '../../../core/network/app_exception.dart';
 import '../../profile/presentation/widgets/profile_drawer.dart';
 import '../../../shared/widgets/category_top_header.dart';
+import '../../../shared/widgets/shimmer_loading.dart';
 import '../../../shared/widgets/themed_category_bottom_nav.dart';
 import '../../auth/models/user_profile.dart';
 import '../../auth/providers/auth_provider.dart';
@@ -254,11 +255,9 @@ class _PeerToPeerScreenState extends ConsumerState<PeerToPeerScreen>
         const SizedBox(height: 12),
 
         if (_isSearching)
-          const Center(
-            child: Padding(
-              padding: EdgeInsets.all(40),
-              child: CircularProgressIndicator(color: Color(0xFF9333EA)),
-            ),
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 8),
+            child: ShimmerLoadingList(count: 3, itemHeight: 90),
           )
         else if (_searchError != null)
           Container(
@@ -621,8 +620,9 @@ class _PeerToPeerScreenState extends ConsumerState<PeerToPeerScreen>
           },
         );
       },
-      loading: () => const Center(
-        child: CircularProgressIndicator(color: Color(0xFF9333EA)),
+      loading: () => const Padding(
+        padding: EdgeInsets.symmetric(vertical: 8),
+        child: ShimmerLoadingList(count: 4, itemHeight: 80),
       ),
       error: (e, _) => Center(child: Text('Error: $e')),
     );
@@ -739,8 +739,9 @@ class _PeerToPeerScreenState extends ConsumerState<PeerToPeerScreen>
           },
         );
       },
-      loading: () => const Center(
-        child: CircularProgressIndicator(color: Color(0xFF9333EA)),
+      loading: () => const Padding(
+        padding: EdgeInsets.symmetric(vertical: 8),
+        child: ShimmerLoadingList(count: 3, itemHeight: 80),
       ),
       error: (e, _) => Center(child: Text('Error: $e')),
     );

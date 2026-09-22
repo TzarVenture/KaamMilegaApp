@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import '../../../app/theme/app_colors.dart';
+import 'shimmer_loading.dart';
 
 /// Reusable widget for presenting consistent API screen states:
 /// Loading, Success, Empty, Offline, and Error with Retry.
@@ -37,9 +38,7 @@ class NetworkStateView extends StatelessWidget {
   Widget build(BuildContext context) {
     if (isLoading) {
       return loadingWidget ??
-          const Center(
-            child: CircularProgressIndicator(color: AppColors.primary),
-          );
+          const ShimmerLoadingList(count: 4, itemHeight: 90);
     }
 
     if (isOffline) {

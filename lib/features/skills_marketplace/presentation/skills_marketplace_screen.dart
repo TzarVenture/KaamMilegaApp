@@ -6,6 +6,7 @@ import '../../auth/providers/auth_provider.dart';
 import '../../jobs/providers/jobs_provider.dart';
 import '../../profile/presentation/widgets/profile_drawer.dart';
 import '../../../shared/widgets/category_top_header.dart';
+import '../../../shared/widgets/shimmer_loading.dart';
 import '../../../shared/widgets/themed_category_bottom_nav.dart';
 import '../providers/skills_provider.dart';
 
@@ -231,13 +232,49 @@ class _SkillsMarketplaceScreenState
 
                     // 6. Skills Grid / List
                     if (state.isLoading)
-                      const Center(
-                        child: Padding(
-                          padding: EdgeInsets.all(40),
-                          child: CircularProgressIndicator(
-                            color: Color(0xFF10B981),
-                          ),
-                        ),
+                      GridView.builder(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: 6,
+                        gridDelegate:
+                            const SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: 2,
+                              crossAxisSpacing: 10,
+                              mainAxisSpacing: 10,
+                              childAspectRatio: 2.2,
+                            ),
+                        itemBuilder: (context, index) {
+                          return Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 10,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(14),
+                              border: Border.all(
+                                color: const Color(0xFFF1F5F9),
+                              ),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: const [
+                                ShimmerBox(
+                                  width: 100,
+                                  height: 14,
+                                  borderRadius: 4,
+                                ),
+                                SizedBox(height: 6),
+                                ShimmerBox(
+                                  width: 65,
+                                  height: 12,
+                                  borderRadius: 4,
+                                ),
+                              ],
+                            ),
+                          );
+                        },
                       )
                     else if (state.error != null)
                       _buildErrorState(state.error!)
@@ -301,27 +338,31 @@ class _SkillsMarketplaceScreenState
                                   const SizedBox(height: 2),
                                   Row(
                                     children: [
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 6,
-                                          vertical: 2,
-                                        ),
-                                        decoration: BoxDecoration(
-                                          color: const Color(0xFFECFDF5),
-                                          borderRadius: BorderRadius.circular(
-                                            4,
+                                      Flexible(
+                                        child: Container(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 6,
+                                            vertical: 2,
                                           ),
-                                        ),
-                                        child: Text(
-                                          skill.category,
-                                          style: const TextStyle(
-                                            fontSize: 10,
-                                            fontWeight: FontWeight.w600,
-                                            color: Color(0xFF059669),
+                                          decoration: BoxDecoration(
+                                            color: const Color(0xFFECFDF5),
+                                            borderRadius: BorderRadius.circular(
+                                              4,
+                                            ),
+                                          ),
+                                          child: Text(
+                                            skill.category,
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: const TextStyle(
+                                              fontSize: 10,
+                                              fontWeight: FontWeight.w600,
+                                              color: Color(0xFF059669),
+                                            ),
                                           ),
                                         ),
                                       ),
-                                      const Spacer(),
+                                      const SizedBox(width: 4),
                                       const Icon(
                                         Icons.arrow_forward_rounded,
                                         size: 12,

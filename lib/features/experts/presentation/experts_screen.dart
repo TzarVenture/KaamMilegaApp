@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../profile/presentation/widgets/profile_drawer.dart';
 import '../../../shared/widgets/category_top_header.dart';
+import '../../../shared/widgets/shimmer_loading.dart';
 import '../../../shared/widgets/themed_category_bottom_nav.dart';
 import '../models/expert_profile.dart';
 import '../providers/expert_provider.dart';
@@ -160,13 +161,54 @@ class _ExpertsScreenState extends ConsumerState<ExpertsScreen> {
 
                     // 5. Experts List
                     if (state.isLoading)
-                      const Center(
-                        child: Padding(
-                          padding: EdgeInsets.all(40),
-                          child: CircularProgressIndicator(
-                            color: Color(0xFF4F46E5),
-                          ),
-                        ),
+                      ListView.builder(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: 3,
+                        itemBuilder: (context, index) {
+                          return Container(
+                            margin: const EdgeInsets.only(bottom: 12),
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(
+                                color: const Color(0xFFF1F5F9),
+                              ),
+                            ),
+                            child: Row(
+                              children: [
+                                const ShimmerCircle(size: 52),
+                                const SizedBox(width: 14),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: const [
+                                      ShimmerBox(
+                                        width: 140,
+                                        height: 16,
+                                        borderRadius: 4,
+                                      ),
+                                      SizedBox(height: 6),
+                                      ShimmerBox(
+                                        width: 100,
+                                        height: 12,
+                                        borderRadius: 4,
+                                      ),
+                                      SizedBox(height: 10),
+                                      ShimmerBox(
+                                        width: 80,
+                                        height: 18,
+                                        borderRadius: 6,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        },
                       )
                     else if (state.error != null)
                       _buildErrorState(state.error!)

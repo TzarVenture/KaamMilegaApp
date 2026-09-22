@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/network/connectivity_provider.dart';
+import '../../../shared/widgets/shimmer_loading.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../models/wallet_transaction.dart';
 import '../providers/wallet_provider.dart';
@@ -666,21 +667,12 @@ class WalletScreen extends ConsumerWidget {
   ) {
     if (walletState.isLoading) {
       return Container(
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.symmetric(vertical: 8),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(16),
         ),
-        child: const Center(
-          child: SizedBox(
-            width: 24,
-            height: 24,
-            child: CircularProgressIndicator(
-              strokeWidth: 2.5,
-              color: Color(0xFF1A2B8C),
-            ),
-          ),
-        ),
+        child: const ShimmerLoadingList(count: 3, itemHeight: 60),
       );
     }
 

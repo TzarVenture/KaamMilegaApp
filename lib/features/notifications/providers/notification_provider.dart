@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/network/api_client.dart';
+import '../../../core/network/app_exception.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../models/notification_item.dart';
 import '../repositories/notification_repository.dart';
@@ -10,27 +11,61 @@ final notificationRepositoryProvider = Provider<NotificationRepository>((ref) {
 });
 
 class NotificationNotifier extends AsyncNotifier<List<NotificationItem>> {
+  bool _isEndpointUnavailable = false;
+
   @override
   Future<List<NotificationItem>> build() async {
     final isAuthenticated = ref.watch(
       authProvider.select((s) => s.isAuthenticated),
     );
     if (!isAuthenticated) {
+      _isEndpointUnavailable = false;
       return const [];
     }
-    return ref.read(notificationRepositoryProvider).getNotifications();
+
+    // If endpoint was already recognized as 404/under development,
+    // do not trigger repeated network calls on routine rebuilds/tab switches.
+    // Manual pull-to-refresh / retry will probe the endpoint again.
+    if (_isEndpointUnavailable) {
+      throw const AppNotFoundException(
+        'Notifications service is currently under development.',
+      );
+    }
+
+    try {
+      final items = await ref
+          .read(notificationRepositoryProvider)
+          .getNotifications();
+      _isEndpointUnavailable = false;
+      return items;
+    } on AppNotFoundException catch (_) {
+      _isEndpointUnavailable = true;
+      rethrow;
+    }
   }
 
+  /// Explicit manual refresh / retry initiated by user
   Future<void> refresh() async {
     final isAuthenticated = ref.read(authProvider).isAuthenticated;
     if (!isAuthenticated) {
+      _isEndpointUnavailable = false;
       state = const AsyncValue.data([]);
       return;
     }
     state = const AsyncValue.loading();
-    state = await AsyncValue.guard(
-      () => ref.read(notificationRepositoryProvider).getNotifications(),
-    );
+    _isEndpointUnavailable = false; // Reset to probe live API
+    state = await AsyncValue.guard(() async {
+      try {
+        final items = await ref
+            .read(notificationRepositoryProvider)
+            .getNotifications();
+        _isEndpointUnavailable = false;
+        return items;
+      } on AppNotFoundException catch (_) {
+        _isEndpointUnavailable = true;
+        rethrow;
+      }
+    });
   }
 
   void markAsRead(String id) {

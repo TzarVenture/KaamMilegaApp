@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../applications/presentation/apply_modal.dart';
 import '../../profile/presentation/widgets/profile_drawer.dart';
 import '../../../shared/widgets/category_top_header.dart';
+import '../../../shared/widgets/shimmer_loading.dart';
 import '../../../shared/widgets/themed_category_bottom_nav.dart';
 import '../../jobs/models/job.dart';
 import '../../jobs/presentation/job_detail_screen.dart';
@@ -166,14 +167,7 @@ class _InstantWorkScreenState extends ConsumerState<InstantWorkScreen> {
 
                     // 5. Work Cards / Empty State
                     if (state.isLoading)
-                      const Center(
-                        child: Padding(
-                          padding: EdgeInsets.all(40),
-                          child: CircularProgressIndicator(
-                            color: Color(0xFFEA580C),
-                          ),
-                        ),
-                      )
+                      const ShimmerLoadingList(count: 3, itemHeight: 120)
                     else if (state.gigs.isEmpty)
                       _buildEmptyState()
                     else

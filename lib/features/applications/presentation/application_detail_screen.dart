@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../app/theme/app_colors.dart';
+import '../../../shared/widgets/shimmer_loading.dart';
 import '../models/application.dart';
 import '../repositories/application_repository.dart';
 
@@ -111,9 +112,7 @@ class ApplicationDetailScreen extends ConsumerWidget {
 
           return _buildContent(context, app);
         },
-        loading: () => const Center(
-          child: CircularProgressIndicator(color: AppColors.primary),
-        ),
+        loading: () => const JobDetailSkeleton(),
         error: (err, _) {
           final fallbackApp =
               initialApplication ??
