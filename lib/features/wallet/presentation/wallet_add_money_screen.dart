@@ -4,9 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/network/connectivity_provider.dart';
-import '../../auth/providers/auth_provider.dart';
 import '../providers/wallet_provider.dart';
-import '../repositories/wallet_repository.dart';
 
 class WalletAddMoneyScreen extends ConsumerStatefulWidget {
   const WalletAddMoneyScreen({super.key});
@@ -56,10 +54,11 @@ class _WalletAddMoneyScreenState extends ConsumerState<WalletAddMoneyScreen> {
     final text = _amountController.text.trim();
     final amount = double.tryParse(text);
 
-    if (amount == null || amount < 100) {
+    // Same limits as the backend: ₹10 – ₹1,00,000
+    if (amount == null || amount < 10) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Minimum deposit amount is ₹100'),
+          content: Text('Minimum amount is ₹10'),
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -79,31 +78,77 @@ class _WalletAddMoneyScreenState extends ConsumerState<WalletAddMoneyScreen> {
     setState(() => _isProcessing = true);
 
     try {
-      await ref
+      // Server order -> Razorpay checkout -> server verification.
+      // The wallet is credited ONLY after the server verifies the payment.
+      final result = await ref
           .read(walletProvider.notifier)
-          .addMoney(amount: amount, paymentMethod: _selectedMethod);
+          .addMoney(
+            amount: amount,
+            preferredMethod: _razorpayMethod(_selectedMethod),
+          );
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Successfully added ₹$amount to wallet!'),
-          backgroundColor: const Color(0xFF10B981),
-        ),
-      );
-      context.pop();
-    } on WalletApiException catch (e) {
-      if (!mounted) return;
-      _showBackendNotice(context, amount, e.message);
-    } catch (e) {
-      if (!mounted) return;
-      _showBackendNotice(
-        context,
-        amount,
-        'Payment gateway integration pending on backend.',
-      );
+
+      switch (result.outcome) {
+        case TopupOutcome.success:
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(result.message),
+              backgroundColor: const Color(0xFF10B981),
+            ),
+          );
+          context.pop();
+          break;
+        case TopupOutcome.cancelled:
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(result.message)),
+          );
+          break;
+        case TopupOutcome.comingSoon:
+          _showBackendNotice(context, amount, result.message);
+          break;
+        case TopupOutcome.paidButUnverified:
+          // Money may have left the user's account: explain clearly
+          await showDialog<void>(
+            context: context,
+            builder: (ctx) => AlertDialog(
+              title: const Text('Payment received, confirming'),
+              content: Text(result.message),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(ctx).pop(),
+                  child: const Text('OK'),
+                ),
+              ],
+            ),
+          );
+          break;
+        case TopupOutcome.failed:
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(result.message),
+              backgroundColor: const Color(0xFFEF4444),
+            ),
+          );
+          break;
+      }
     } finally {
       if (mounted) {
         setState(() => _isProcessing = false);
       }
+    }
+  }
+
+  /// Maps the selected tile to Razorpay's preferred checkout method
+  String? _razorpayMethod(String selected) {
+    switch (selected) {
+      case 'UPI':
+        return 'upi';
+      case 'Cards':
+        return 'card';
+      case 'NetBanking':
+        return 'netbanking';
+      default:
+        return null;
     }
   }
 
@@ -153,7 +198,7 @@ class _WalletAddMoneyScreenState extends ConsumerState<WalletAddMoneyScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Backend Gateway Required',
+                        'Coming Soon',
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w800,
@@ -161,7 +206,7 @@ class _WalletAddMoneyScreenState extends ConsumerState<WalletAddMoneyScreen> {
                         ),
                       ),
                       Text(
-                        'Razorpay / Cashfree / Stripe',
+                        'Adding money to your wallet',
                         style: TextStyle(
                           fontSize: 12,
                           color: Color(0xFF64748B),
@@ -189,7 +234,7 @@ class _WalletAddMoneyScreenState extends ConsumerState<WalletAddMoneyScreen> {
                   const SizedBox(height: 8),
                   _buildSummaryRow('Payment Method', _selectedMethod),
                   const SizedBox(height: 8),
-                  _buildSummaryRow('Status', 'Pending Backend API Route'),
+                  _buildSummaryRow('Status', 'Not charged'),
                 ],
               ),
             ),
@@ -252,10 +297,9 @@ class _WalletAddMoneyScreenState extends ConsumerState<WalletAddMoneyScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final authState = ref.watch(authProvider);
     final walletState = ref.watch(walletProvider);
-    final user = authState.user;
-    final currentBalance = user?.walletBalance ?? 0;
+    // Real main balance from GET /wallet/balance
+    final currentBalance = walletState.summary?.mainBalance ?? 0;
 
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
@@ -316,7 +360,7 @@ class _WalletAddMoneyScreenState extends ConsumerState<WalletAddMoneyScreen> {
                   ),
                   const Spacer(),
                   Text(
-                    '₹$currentBalance',
+                    '₹${currentBalance.toStringAsFixed(currentBalance % 1 == 0 ? 0 : 2)}',
                     style: const TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.w800,

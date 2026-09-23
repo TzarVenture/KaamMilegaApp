@@ -3,11 +3,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kaam_milega/features/auth/models/user_profile.dart';
 import 'package:kaam_milega/features/auth/providers/auth_provider.dart';
+import 'package:kaam_milega/features/wallet/models/wallet_summary.dart';
 import 'package:kaam_milega/features/wallet/models/wallet_transaction.dart';
 import 'package:kaam_milega/features/wallet/presentation/wallet_add_money_screen.dart';
 import 'package:kaam_milega/features/wallet/presentation/wallet_screen.dart';
 import 'package:kaam_milega/features/wallet/presentation/wallet_transactions_screen.dart';
 import 'package:kaam_milega/features/wallet/presentation/wallet_withdraw_screen.dart';
+import 'package:kaam_milega/features/wallet/providers/wallet_provider.dart';
 
 void main() {
   group('WalletTransaction Model Tests', () {
@@ -69,8 +71,19 @@ void main() {
                 const UserProfile(
                   id: 'usr_1',
                   mobile: '9876543210',
-                  walletBalance: 1250,
                   isEmailVerified: true,
+                ),
+              ),
+            ),
+            // Balances now come from GET /wallet/balance (walletProvider),
+            // not from the user profile. Supply them without a network call.
+            walletProvider.overrideWith(
+              () => _MockWalletNotifier(
+                const WalletState(
+                  summary: WalletSummary(
+                    totalBalance: 1250,
+                    mainBalance: 1250,
+                  ),
                 ),
               ),
             ),
@@ -85,11 +98,11 @@ void main() {
       expect(find.text('Digital Wallet & Ledger'), findsOneWidget);
       expect(find.text('KaamMilega Escrow & Payouts'), findsOneWidget);
 
-      // Real balance from UserProfile
+      // Real balance from the wallet service (Indian number format)
       expect(
-        find.text('₹1250'),
+        find.text('₹1,250'),
         findsNWidgets(2),
-      ); // in primary card and breakdown
+      ); // total in primary card + main wallet row in breakdown
       expect(find.text('Verified'), findsOneWidget);
 
       // Quick Actions
@@ -157,6 +170,18 @@ void main() {
       expect(find.text('No transactions yet'), findsOneWidget);
     });
   });
+}
+
+/// Wallet notifier that returns fixed balances and never calls the server
+class _MockWalletNotifier extends WalletNotifier {
+  final WalletState _initial;
+  _MockWalletNotifier(this._initial);
+
+  @override
+  WalletState build() => _initial;
+
+  @override
+  Future<void> loadWallet() async {}
 }
 
 class _MockAuthNotifier extends AuthNotifier {

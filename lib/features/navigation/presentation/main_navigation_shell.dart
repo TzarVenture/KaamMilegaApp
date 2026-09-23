@@ -93,10 +93,12 @@ class _MainNavigationShellState extends ConsumerState<MainNavigationShell> {
                 trailing: const Icon(Icons.chevron_right_rounded),
                 onTap: () {
                   Navigator.pop(ctx);
+                  // Instant dispatch is not built on the backend yet:
+                  // do not claim a request was submitted.
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
                       content: Text(
-                        'Instant Work request submitted! Matching candidates...',
+                        'Instant Work requests are coming soon. No request has been sent.',
                       ),
                       backgroundColor: AppColors.accent,
                     ),

@@ -12,8 +12,8 @@ import '../../../shared/widgets/auth_prompt_dialog.dart';
 import '../../../shared/widgets/shimmer_loading.dart';
 import '../../auth/models/user_profile.dart';
 import '../../auth/providers/auth_provider.dart';
+import '../../wallet/providers/wallet_provider.dart';
 import '../../network/providers/network_provider.dart';
-import '../../network/repositories/network_repository.dart';
 
 /// Full-featured Candidate Profile & CV Screen
 /// Specialized exclusively for Job Seekers / Candidates
@@ -1425,7 +1425,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                               .read(authProvider.notifier)
                               .updateProfile({
                                 'portfolio_url': '',
-                                'portfolio_text': '',
+                                'portfolio_label': '',
                               });
                           if (mounted) {
                             ScaffoldMessenger.of(context).showSnackBar(
@@ -1491,7 +1491,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                             .read(authProvider.notifier)
                             .updateProfile({
                               'portfolio_url': rawUrl,
-                              'portfolio_text': linkText,
+                              'portfolio_label': linkText,
                             });
                         if (mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(
@@ -1874,7 +1874,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                             content: Text(
                               ok
                                   ? 'Education saved successfully!'
-                                  : 'Failed to save education.',
+                                  : (ref.read(authProvider).error ??
+                                        'Failed to save education.'),
                             ),
                             backgroundColor: ok
                                 ? AppColors.success
@@ -2214,7 +2215,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                         content: Text(
                                           ok
                                               ? 'Experience saved successfully!'
-                                              : 'Failed to save experience.',
+                                              : (ref.read(authProvider).error ??
+                                                    'Failed to save experience.'),
                                         ),
                                         backgroundColor: ok
                                             ? AppColors.success
@@ -2931,7 +2933,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       SnackBar(
                         content: Text(
                           ok
-                              ? 'Preferences updated!'
+                              ? 'Preferences saved on this device. Online sync is coming soon.'
                               : 'Failed to update preferences.',
                         ),
                         backgroundColor: ok
@@ -3710,7 +3712,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    '₹${user?.walletBalance ?? 0}',
+                    // Real total balance from GET /wallet/balance
+                    '₹${(ref.watch(walletProvider).summary?.totalBalance ?? 0).toStringAsFixed(0)}',
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 24,
@@ -4414,116 +4417,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   }
 
   // -------------------------------------------------------------------
-  // FREE NOW FOR GIGS AVAILABILITY TOGGLE CARD (F30)
-  // -------------------------------------------------------------------
-  Widget _buildGigAvailabilityToggleCard(UserProfile? user) {
-    if (user == null) return const SizedBox.shrink();
-
-    final isAvailable = user.isAvailableForGigs;
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
-      decoration: BoxDecoration(
-        color: isAvailable ? const Color(0xFFF3E8FF) : Colors.grey.shade100,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: isAvailable ? const Color(0xFFD8B4FE) : Colors.grey.shade300,
-        ),
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: isAvailable
-                  ? const Color(0xFF9333EA)
-                  : Colors.grey.shade400,
-              shape: BoxShape.circle,
-            ),
-            child: const Icon(
-              Icons.bolt_rounded,
-              color: Colors.white,
-              size: 20,
-            ),
-          ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    const Text(
-                      'Free Now for Gigs',
-                      style: TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w800,
-                        color: AppColors.textPrimary,
-                      ),
-                    ),
-                    const SizedBox(width: 6),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 6,
-                        vertical: 2,
-                      ),
-                      decoration: BoxDecoration(
-                        color: isAvailable ? Colors.green : Colors.grey,
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Text(
-                        isAvailable ? 'AVAILABLE' : 'OFFLINE',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 9,
-                          fontWeight: FontWeight.w900,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 2),
-                const Text(
-                  'Notify recruiters you are available for immediate gig assignments',
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: AppColors.textSecondary,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Switch.adaptive(
-            value: isAvailable,
-            activeTrackColor: const Color(0xFF9333EA),
-            onChanged: (val) async {
-              final ok = await ref.read(authProvider.notifier).updateProfile({
-                'is_available_for_gigs': val,
-              });
-              if (mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(
-                      ok
-                          ? (val
-                                ? 'Status updated: You are now FREE for immediate gigs!'
-                                : 'Status updated: Gig availability paused.')
-                          : 'Failed to update availability.',
-                    ),
-                    backgroundColor: ok
-                        ? (val ? AppColors.success : AppColors.primary)
-                        : AppColors.error,
-                  ),
-                );
-              }
-            },
-          ),
-        ],
-      ),
-    );
-  }
-
-  // -------------------------------------------------------------------
   // ANALYTICS CARD WIDGET
   // -------------------------------------------------------------------
   Widget _buildAnalyticsCard(UserProfile? user) {
@@ -4705,23 +4598,13 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   // -------------------------------------------------------------------
   // PEOPLE WHO VIEWED / SUGGESTED NETWORK WIDGET
   // -------------------------------------------------------------------
+  /// Profile viewers & connection suggestions are not available from the
+  /// backend yet. (Previously this card showed two made-up people with
+  /// invented mutual-connection counts, and "Connect" sent requests to
+  /// fake user IDs.)
   Widget _buildPeopleWhoViewedCard() {
-    final suggestions = [
-      {
-        'id': 'u1',
-        'name': 'Arjun Sharma',
-        'headline': 'Software Engineer at TCS',
-        'mutual': '10 Mutual Connects',
-      },
-      {
-        'id': 'u2',
-        'name': 'Priya Patel',
-        'headline': 'Product Manager at Flipkart',
-        'mutual': '5 Mutual Connects',
-      },
-    ];
-
     return Container(
+      width: double.infinity,
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
         color: Colors.white,
@@ -4748,97 +4631,15 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             ],
           ),
           const Divider(height: 12),
-          Column(
-            children: suggestions.map((s) {
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 12),
-                child: Row(
-                  children: [
-                    const CircleAvatar(
-                      radius: 20,
-                      backgroundColor: AppColors.heroBg,
-                      child: Icon(Icons.person, color: Colors.white, size: 22),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            s['name']!,
-                            style: const TextStyle(
-                              fontWeight: FontWeight.w800,
-                              fontSize: 13,
-                            ),
-                          ),
-                          Text(
-                            s['headline']!,
-                            style: const TextStyle(
-                              color: AppColors.textSecondary,
-                              fontSize: 11,
-                            ),
-                          ),
-                          Text(
-                            s['mutual']!,
-                            style: const TextStyle(
-                              color: AppColors.textLight,
-                              fontSize: 10,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    ElevatedButton(
-                      onPressed: () async {
-                        try {
-                          await ref
-                              .read(networkRepositoryProvider)
-                              .sendInvitation(s['id']!);
-                          if (mounted && context.mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  'Invitation sent to ${s['name']}!',
-                                ),
-                              ),
-                            );
-                          }
-                        } catch (_) {
-                          if (mounted && context.mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text(
-                                  'Already connected or request pending.',
-                                ),
-                              ),
-                            );
-                          }
-                        }
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primary,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 6,
-                        ),
-                        minimumSize: Size.zero,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                      ),
-                      child: const Text(
-                        'Follow',
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              );
-            }).toList(),
+          const SizedBox(height: 4),
+          const Text(
+            'Profile viewers and people suggestions are coming soon. '
+            'Meanwhile, grow your network from the Network page.',
+            style: TextStyle(
+              color: AppColors.textSecondary,
+              fontSize: 12,
+              height: 1.4,
+            ),
           ),
         ],
       ),
@@ -4894,7 +4695,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       ),
                     ),
                     Text(
-                      'GATE & Tech Interview Mentor',
+                      'Career, interview & skill mentors',
                       style: TextStyle(
                         color: AppColors.textSecondary,
                         fontSize: 11,
@@ -4904,15 +4705,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 ),
               ),
               OutlinedButton(
-                onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text(
-                        'Expert mentorship session booking sheet...',
-                      ),
-                    ),
-                  );
-                },
+                // Opens the real Experts directory (GET /mentorships).
+                // Previously this only showed a placeholder message.
+                onPressed: () => context.push('/experts'),
                 style: OutlinedButton.styleFrom(
                   foregroundColor: AppColors.primary,
                   side: const BorderSide(color: AppColors.primary),
@@ -4926,7 +4721,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   ),
                 ),
                 child: const Text(
-                  'Book Session',
+                  'Find Mentors',
                   style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800),
                 ),
               ),
@@ -5640,6 +5435,45 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
+                    if (existingProject != null &&
+                        existingProject.id.isNotEmpty) ...[
+                      TextButton.icon(
+                        onPressed: () async {
+                          Navigator.pop(ctx);
+                          final ok = await ref
+                              .read(authProvider.notifier)
+                              .deleteProject(existingProject.id);
+                          if (mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  ok
+                                      ? 'Project deleted.'
+                                      : (ref.read(authProvider).error ??
+                                            'Failed to delete project.'),
+                                ),
+                                backgroundColor: ok
+                                    ? AppColors.success
+                                    : AppColors.error,
+                              ),
+                            );
+                          }
+                        },
+                        icon: const Icon(
+                          Icons.delete_outline_rounded,
+                          color: AppColors.error,
+                          size: 18,
+                        ),
+                        label: const Text(
+                          'Delete',
+                          style: TextStyle(
+                            color: AppColors.error,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                      const Spacer(),
+                    ],
                     OutlinedButton(
                       onPressed: () => Navigator.pop(ctx),
                       style: OutlinedButton.styleFrom(
@@ -5710,7 +5544,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                     ? (existingProject == null
                                           ? 'Project added successfully!'
                                           : 'Project updated successfully!')
-                                    : 'Failed to save project.',
+                                    : (ref.read(authProvider).error ??
+                                          'Failed to save project.'),
                               ),
                               backgroundColor: ok
                                   ? AppColors.success
@@ -6300,17 +6135,16 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     );
   }
 
-  void _callHR() async {
-    final uri = Uri(scheme: 'tel', path: '1800123456');
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri);
-    } else {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('HR Support Helpline: 1800 123 456')),
-        );
-      }
-    }
+  /// There is no real KaamMilega helpline number yet. (Previously this
+  /// dialled a placeholder number, 1800 123 456.)
+  void _callHR() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text(
+          'Phone support is coming soon. Please use Chat to contact recruiters.',
+        ),
+      ),
+    );
   }
 
   @override
@@ -6361,11 +6195,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
                           const SizedBox(height: 16),
 
-                          // 4. Free Now for Immediate Gigs Switch Card
-                          _buildGigAvailabilityToggleCard(user),
-
-                          const SizedBox(height: 16),
-
+                          // ("Free Now for Gigs" card removed on request.)
                           // 5. Analytics Card - Private To You (media_1789560057892.png)
                           _buildAnalyticsCard(user),
 
@@ -6461,16 +6291,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                           ),
                                           onPressed: _openAddExperienceDialog,
                                         ),
-                                        if (user != null)
-                                          IconButton(
-                                            icon: const Icon(
-                                              Icons.edit_outlined,
-                                              color: AppColors.primary,
-                                              size: 18,
-                                            ),
-                                            onPressed: () =>
-                                                _openAddExperienceDialog(),
-                                          ),
+                                        // Edit button removed: the backend can only
+                                        // ADD experience (no update/delete endpoint yet).
                                       ],
                                     ),
                                   ],
@@ -6577,20 +6399,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                           ),
                                           onPressed: _openAddEducationDialog,
                                         ),
-                                        if (user != null)
-                                          IconButton(
-                                            icon: const Icon(
-                                              Icons.edit_outlined,
-                                              color: AppColors.primary,
-                                              size: 18,
-                                            ),
-                                            onPressed: () =>
-                                                _openAddEducationDialog(
-                                                  user.education.isNotEmpty
-                                                      ? user.education.first
-                                                      : null,
-                                                ),
-                                          ),
+                                        // Edit button removed: the backend can only
+                                        // ADD education (no update/delete endpoint yet).
+                                        // Editing re-sent the entry and created a duplicate.
                                       ],
                                     ),
                                   ],

@@ -151,8 +151,9 @@ void main() {
         expect(find.byType(CategoryTopHeader), findsOneWidget);
         expect(find.byType(ThemedCategoryBottomNav), findsOneWidget);
         expect(find.text('ON-DEMAND LOCAL EXPERTISE'), findsOneWidget);
+        // "Not live yet" notice (user-friendly wording since 23 Sep)
         expect(
-          find.text('UI Ready — Backend Microservice Required'),
+          find.text('Services Marketplace is coming soon'),
           findsOneWidget,
         );
         expect(find.text('Electrician Work'), findsOneWidget);

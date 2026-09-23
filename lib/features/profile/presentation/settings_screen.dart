@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../app/theme/app_colors.dart';
 import '../../auth/models/user_profile.dart';
 import '../../auth/providers/auth_provider.dart';
+import '../../auth/repositories/auth_repository.dart';
 
 /// Account & Preference Settings screen matching kaammilega.com web interface
 class SettingsScreen extends ConsumerStatefulWidget {
@@ -37,6 +38,94 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
   // 4. Preferences & Language
   String _selectedLanguage = 'English (Default)';
+
+  // Backend language codes <-> dropdown labels
+  static const Map<String, String> _languageCodes = {
+    'English (Default)': 'en',
+    'हिंदी (Hindi)': 'hi',
+    'मराठी (Marathi)': 'mr',
+    'தமிழ் (Tamil)': 'ta',
+    'తెలుగు (Telugu)': 'te',
+  };
+
+  @override
+  void initState() {
+    super.initState();
+    Future.microtask(_loadSettings);
+  }
+
+  /// Load saved preferences from backend (GET /user/settings)
+  Future<void> _loadSettings() async {
+    if (!ref.read(authProvider).isAuthenticated) return;
+    try {
+      final s = await ref.read(authRepositoryProvider).getSettings();
+      if (!mounted) return;
+      // A user who never saved settings has an empty profile_visibility;
+      // keep the app defaults in that case instead of showing all switches off.
+      final visibility = s['profile_visibility']?.toString() ?? '';
+      if (visibility.isEmpty) return;
+      final langCode = s['language']?.toString() ?? 'en';
+      setState(() {
+        _emailAlerts = s['email_job_alerts'] == true;
+        _appStatusNotifs = s['email_application_updates'] == true;
+        _urgentSmsAlerts = s['sms_alerts'] == true;
+        _pushNotifs = s['push_notifications'] == true;
+        _productNewsAlerts = s['email_marketing'] == true;
+        _visibilityMode = visibility;
+        _aiJobMatching = s['enable_ai_recommendations'] == true;
+        _searchEngineIndexing = s['search_engine_indexing'] == true;
+        _selectedLanguage = _languageCodes.entries
+            .firstWhere(
+              (e) => e.value == langCode,
+              orElse: () => _languageCodes.entries.first,
+            )
+            .key;
+      });
+    } catch (_) {
+      // Keep defaults if settings can't be loaded (offline / not available)
+    }
+  }
+
+  /// Save all preferences to backend (PUT /user/settings)
+  Future<void> _saveSettings() async {
+    if (!ref.read(authProvider).isAuthenticated) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          backgroundColor: AppColors.error,
+          content: Text('Please sign in to save your preferences.'),
+        ),
+      );
+      return;
+    }
+    try {
+      await ref.read(authRepositoryProvider).updateSettings({
+        'email_job_alerts': _emailAlerts,
+        'email_application_updates': _appStatusNotifs,
+        'email_marketing': _productNewsAlerts,
+        'sms_alerts': _urgentSmsAlerts,
+        'push_notifications': _pushNotifs,
+        'profile_visibility': _visibilityMode,
+        'language': _languageCodes[_selectedLanguage] ?? 'en',
+        'enable_ai_recommendations': _aiJobMatching,
+        'search_engine_indexing': _searchEngineIndexing,
+      });
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            backgroundColor: AppColors.error,
+            content: Text('Could not save preferences: $e'),
+          ),
+        );
+      }
+    }
+  }
+
+  /// Update a preference locally, then persist to backend
+  void _updateSetting(VoidCallback change) {
+    setState(change);
+    _saveSettings();
+  }
 
   @override
   void dispose() {
@@ -83,23 +172,32 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
     setState(() => _isUpdatingPassword = true);
 
-    await Future.delayed(const Duration(milliseconds: 800));
+    final ok = await ref
+        .read(authProvider.notifier)
+        .changePassword(currentPassword: currentPass, newPassword: newPass);
 
-    if (mounted) {
-      setState(() {
-        _isUpdatingPassword = false;
+    if (!mounted) return;
+
+    setState(() {
+      _isUpdatingPassword = false;
+      if (ok) {
         _currentPasswordCtrl.clear();
         _newPasswordCtrl.clear();
         _confirmPasswordCtrl.clear();
-      });
+      }
+    });
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          backgroundColor: AppColors.success,
-          content: Text('Account password updated successfully!'),
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        backgroundColor: ok ? AppColors.success : AppColors.error,
+        content: Text(
+          ok
+              ? 'Account password updated successfully!'
+              : (ref.read(authProvider).error ??
+                    'Failed to update password. Please try again.'),
         ),
-      );
-    }
+      ),
+    );
   }
 
   @override
@@ -339,7 +437,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             title: 'Email Job Alerts',
             subtitle: 'Receive daily emails about new job openings matching your profile and skills.',
             value: _emailAlerts,
-            onChanged: (val) => setState(() => _emailAlerts = val),
+            onChanged: (val) => _updateSetting(() => _emailAlerts = val),
           ),
           const Divider(height: 32, color: Color(0xFFF1F5F9)),
 
@@ -347,7 +445,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             title: 'Application Status Notifications',
             subtitle: 'Get notified instantly when a recruiter reviews, shortlists, or schedules an interview for your application.',
             value: _appStatusNotifs,
-            onChanged: (val) => setState(() => _appStatusNotifs = val),
+            onChanged: (val) => _updateSetting(() => _appStatusNotifs = val),
           ),
           const Divider(height: 32, color: Color(0xFFF1F5F9)),
 
@@ -355,7 +453,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             title: 'Urgent SMS Alerts',
             subtitle: 'Receive high-priority SMS messages for interview invitations and recruiter call requests.',
             value: _urgentSmsAlerts,
-            onChanged: (val) => setState(() => _urgentSmsAlerts = val),
+            onChanged: (val) => _updateSetting(() => _urgentSmsAlerts = val),
           ),
           const Divider(height: 32, color: Color(0xFFF1F5F9)),
 
@@ -363,7 +461,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             title: 'Browser & Mobile Push Notifications',
             subtitle: 'Allow real-time push alerts on your desktop or mobile device when active.',
             value: _pushNotifs,
-            onChanged: (val) => setState(() => _pushNotifs = val),
+            onChanged: (val) => _updateSetting(() => _pushNotifs = val),
           ),
           const Divider(height: 32, color: Color(0xFFF1F5F9)),
 
@@ -371,7 +469,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             title: 'Product Updates & Career News',
             subtitle: 'Occasional news regarding platform features, salary insights, and career fairs.',
             value: _productNewsAlerts,
-            onChanged: (val) => setState(() => _productNewsAlerts = val),
+            onChanged: (val) => _updateSetting(() => _productNewsAlerts = val),
           ),
         ],
       ),
@@ -457,7 +555,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             title: 'AI Job Matching & Recommendations',
             subtitle: 'Allow automated algorithms to match your resume skills with recruiter searches.',
             value: _aiJobMatching,
-            onChanged: (val) => setState(() => _aiJobMatching = val),
+            onChanged: (val) => _updateSetting(() => _aiJobMatching = val),
           ),
 
           const Divider(height: 32, color: Color(0xFFF1F5F9)),
@@ -467,7 +565,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             title: 'Search Engine Indexing',
             subtitle: 'Allow public search engines (Google Jobs) to index your candidate public profile link.',
             value: _searchEngineIndexing,
-            onChanged: (val) => setState(() => _searchEngineIndexing = val),
+            onChanged: (val) => _updateSetting(() => _searchEngineIndexing = val),
           ),
         ],
       ),
@@ -482,7 +580,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final isSelected = _visibilityMode == id;
 
     return InkWell(
-      onTap: () => setState(() => _visibilityMode = id),
+      onTap: () => _updateSetting(() => _visibilityMode = id),
       borderRadius: BorderRadius.circular(16),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 180),
@@ -1044,7 +1142,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 ),
                 onChanged: (val) {
                   if (val != null) {
-                    setState(() => _selectedLanguage = val);
+                    _updateSetting(() => _selectedLanguage = val);
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
                         content: Text('Display language changed to $val'),

@@ -1,4 +1,5 @@
 import '../../../core/constants/api_constants.dart';
+import '../../../core/storage/local_storage.dart';
 
 /// Candidate / Jobseeker Profile model mapped from km-backend MongoDB schema
 class UserProfile {
@@ -159,11 +160,24 @@ class UserProfile {
       resumeUrl: ApiConstants.resolveImageUrl(
         json['resume_url']?.toString() ??
             json['resume']?.toString() ??
-            json['cv_url']?.toString(),
+            json['cv_url']?.toString() ??
+            // Server profile has no resume field yet: use the device copy
+            LocalStorage.getResumeUrl(),
       ),
-      openToWork: json['open_to_work']?.toString() ?? '',
-      providingServices: json['providing_services']?.toString() ?? '',
-      isAvailableForGigs: json['is_available_for_gigs'] != false,
+      // Not stored by the backend yet: fall back to the copy kept on device
+      openToWork:
+          json['open_to_work']?.toString() ??
+          LocalStorage.getDeviceProfilePrefs()['open_to_work']?.toString() ??
+          '',
+      providingServices:
+          json['providing_services']?.toString() ??
+          LocalStorage.getDeviceProfilePrefs()['providing_services']
+              ?.toString() ??
+          '',
+      isAvailableForGigs:
+          (json['is_available_for_gigs'] ??
+              LocalStorage.getDeviceProfilePrefs()['is_available_for_gigs']) !=
+          false,
       walletBalance: (json['wallet_balance'] as num?)?.toInt() ?? 0,
       profileViewsCount: (json['profile_views_count'] as num?)?.toInt() ?? 0,
       postImpressionsCount:
@@ -177,9 +191,9 @@ class UserProfile {
           json['website']?.toString() ??
           '',
       portfolioText:
+          json['portfolio_label']?.toString() ??
           json['portfolio_text']?.toString() ??
           json['portfolioText']?.toString() ??
-          json['portfolio_label']?.toString() ??
           '',
     );
   }
@@ -420,24 +434,45 @@ class ProjectItem {
         json['associatedWith']?.toString() ??
         '',
     description: json['description']?.toString() ?? '',
-    link: json['link']?.toString() ?? json['url']?.toString() ?? '',
+    link:
+        json['project_url']?.toString() ??
+        json['link']?.toString() ??
+        json['url']?.toString() ??
+        '',
     startDate: json['start_date']?.toString() ?? '',
     endDate: json['end_date']?.toString() ?? '',
-    skills: json['skills']?.toString() ?? json['skills_used']?.toString() ?? '',
+    // Backend sends skills as a list; UI works with comma-separated text
+    skills: _skillsToText(json['skills'] ?? json['skills_used']),
     isCurrentlyWorking:
+        json['is_current'] == true ||
         json['is_currently_working'] == true ||
         json['isCurrentlyWorking'] == true,
   );
+
+  static String _skillsToText(dynamic value) {
+    if (value == null) return '';
+    if (value is List) {
+      return value
+          .map((e) => e.toString().trim())
+          .where((e) => e.isNotEmpty)
+          .join(', ');
+    }
+    return value.toString();
+  }
 
   Map<String, dynamic> toJson() => {
     'id': id,
     'title': title,
     'associated_with': associatedWith,
     'description': description,
-    'link': link,
+    'project_url': link,
     'start_date': startDate,
     'end_date': endDate,
-    'skills': skills,
-    'is_currently_working': isCurrentlyWorking,
+    'skills': skills
+        .split(',')
+        .map((s) => s.trim())
+        .where((s) => s.isNotEmpty)
+        .toList(),
+    'is_current': isCurrentlyWorking,
   };
 }

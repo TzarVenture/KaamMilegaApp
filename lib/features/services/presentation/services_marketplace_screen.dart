@@ -151,7 +151,7 @@ class _ServicesMarketplaceScreenState extends State<ServicesMarketplaceScreen> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    'UI Ready — Backend Microservice Required',
+                                    'Services Marketplace is coming soon',
                                     style: TextStyle(
                                       fontSize: 14,
                                       fontWeight: FontWeight.w800,
@@ -159,7 +159,7 @@ class _ServicesMarketplaceScreenState extends State<ServicesMarketplaceScreen> {
                                     ),
                                   ),
                                   Text(
-                                    'Route: /api/services',
+                                    'Launching city by city',
                                     style: TextStyle(
                                       fontSize: 11,
                                       fontWeight: FontWeight.w600,
@@ -173,7 +173,7 @@ class _ServicesMarketplaceScreenState extends State<ServicesMarketplaceScreen> {
                         ),
                         const SizedBox(height: 12),
                         const Text(
-                          'The client-requested on-demand Services Marketplace requires the backend `/api/services` endpoint to be mounted on km-backend. To strictly follow the zero mock data rule, no simulated provider records are displayed.',
+                          'Soon you will be able to book verified electricians, plumbers, technicians and other local professionals right here. Browse the categories below to see what is coming.',
                           style: TextStyle(
                             fontSize: 12,
                             color: Color(0xFF881337),

@@ -244,6 +244,23 @@ class ApiClient {
     );
   }
 
+  /// Helper for PUT requests
+  Future<Response<T>> put<T>(
+    String path, {
+    dynamic data,
+    Map<String, dynamic>? queryParameters,
+    Options? options,
+  }) async {
+    return _safeExecute(
+      () => _dio.put<T>(
+        path,
+        data: data,
+        queryParameters: queryParameters,
+        options: options,
+      ),
+    );
+  }
+
   /// Helper for DELETE requests
   Future<Response<T>> delete<T>(
     String path, {

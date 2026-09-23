@@ -171,9 +171,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
                       content: Text(
-                        '₹99 Access successfully activated on your profile!',
+                        '₹99 Access is coming soon. Payments are not live yet, so you have not been charged.',
                       ),
-                      backgroundColor: Color(0xFF16A34A),
+                      backgroundColor: Color(0xFFD97706),
                     ),
                   );
                 },
@@ -1243,17 +1243,19 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
+                // Shows the real job type. (Previously a hard-coded "4.8"
+                // star rating, identical for every company.)
                 Row(
-                  children: const [
-                    Icon(
-                      Icons.star_rounded,
-                      color: Color(0xFFFBBF24),
-                      size: 16,
+                  children: [
+                    const Icon(
+                      Icons.work_outline_rounded,
+                      color: Color(0xFF64748B),
+                      size: 15,
                     ),
-                    SizedBox(width: 3),
+                    const SizedBox(width: 3),
                     Text(
-                      '4.8',
-                      style: TextStyle(
+                      job.jobType.isNotEmpty ? job.jobType : 'Job',
+                      style: const TextStyle(
                         fontSize: 11.5,
                         fontWeight: FontWeight.w800,
                         color: Color(0xFF0F172A),
@@ -1580,7 +1582,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       ),
                     ),
 
-                    // Rating & Bookmark Button
+                    // Bookmark Button
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
@@ -1612,25 +1614,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             );
                           },
                         ),
-                        const SizedBox(height: 12),
-                        Row(
-                          children: const [
-                            Icon(
-                              Icons.star_rounded,
-                              color: Color(0xFFFBBF24),
-                              size: 16,
-                            ),
-                            SizedBox(width: 3),
-                            Text(
-                              '4.7',
-                              style: TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w800,
-                                color: Color(0xFF0F172A),
-                              ),
-                            ),
-                          ],
-                        ),
+                        // Hard-coded "4.7" rating removed: the backend has
+                        // no company ratings, so it was the same for every job.
                       ],
                     ),
                   ],

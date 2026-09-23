@@ -8,6 +8,7 @@ import '../../auth/providers/auth_provider.dart';
 import '../../notifications/providers/notification_provider.dart';
 import '../../profile/presentation/widgets/profile_drawer.dart';
 import '../providers/chat_provider.dart';
+import '../providers/user_lookup_provider.dart';
 
 /// Screen displaying the Candidate's Active Chat Conversations matching web design
 class ChatListScreen extends ConsumerStatefulWidget {
@@ -375,7 +376,19 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                               .getOtherParticipant(currentUserId)
                               .toLowerCase();
                           final lastMsg = conv.lastMessage.toLowerCase();
-                          return otherUserId.contains(query) ||
+                          final otherName =
+                              ref
+                                  .read(
+                                    userLookupProvider(
+                                      conv.getOtherParticipant(currentUserId),
+                                    ),
+                                  )
+                                  .value
+                                  ?.name
+                                  .toLowerCase() ??
+                              '';
+                          return otherName.contains(query) ||
+                              otherUserId.contains(query) ||
                               lastMsg.contains(query);
                         }).toList();
 
@@ -433,8 +446,11 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                       final otherUserId = conv.getOtherParticipant(
                         currentUserId,
                       );
-                      final displayName =
-                          'Recruiter / Candidate #${otherUserId.substring(0, otherUserId.length > 6 ? 6 : otherUserId.length)}';
+                      final otherUser = ref
+                          .watch(userLookupProvider(otherUserId))
+                          .value;
+                      final displayName = displayNameFor(otherUser);
+                      final avatarUrl = otherUser?.profileImage ?? '';
 
                       return InkWell(
                         onTap: () {
@@ -457,16 +473,21 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                               CircleAvatar(
                                 backgroundColor: AppColors.primaryLight,
                                 radius: 24,
-                                child: Text(
-                                  displayName.isNotEmpty
-                                      ? displayName[0].toUpperCase()
-                                      : 'U',
-                                  style: const TextStyle(
-                                    color: AppColors.primary,
-                                    fontWeight: FontWeight.w800,
-                                    fontSize: 16,
-                                  ),
-                                ),
+                                backgroundImage: avatarUrl.isNotEmpty
+                                    ? NetworkImage(avatarUrl)
+                                    : null,
+                                child: avatarUrl.isNotEmpty
+                                    ? null
+                                    : Text(
+                                        displayName.isNotEmpty
+                                            ? displayName[0].toUpperCase()
+                                            : 'U',
+                                        style: const TextStyle(
+                                          color: AppColors.primary,
+                                          fontWeight: FontWeight.w800,
+                                          fontSize: 16,
+                                        ),
+                                      ),
                               ),
                               const SizedBox(width: 14),
                               Expanded(

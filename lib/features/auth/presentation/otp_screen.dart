@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import '../../../app/theme/app_colors.dart';
 import '../../../app/theme/app_text_styles.dart';
 import '../../../shared/widgets/app_button.dart';
+import '../../../app/auth_guard.dart';
 import '../providers/auth_provider.dart';
 
 class OtpScreen extends ConsumerStatefulWidget {
@@ -63,7 +64,8 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
             backgroundColor: const Color(0xFF16A34A),
           ),
         );
-        context.go('/home');
+        // Return to the screen the user wanted before login (or Home)
+        context.go(AuthGuard.takePendingPath());
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(

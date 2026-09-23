@@ -219,7 +219,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                       error: (err, stack) => NetworkStateView(
                         isOffline: err is AppNetworkException,
                         errorMessage: err is AppNotFoundException
-                            ? 'Notifications service is currently under development.'
+                            ? 'Notifications are coming soon.'
                             : err.toString(),
                         onRetry: () =>
                             ref.read(notificationsProvider.notifier).refresh(),

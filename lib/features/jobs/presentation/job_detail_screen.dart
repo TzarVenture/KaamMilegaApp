@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import '../../../app/theme/app_colors.dart';
 import '../../../shared/widgets/auth_prompt_dialog.dart';
@@ -9,6 +8,7 @@ import '../../../shared/widgets/shimmer_loading.dart';
 import '../../applications/presentation/apply_modal.dart';
 import '../../applications/repositories/application_repository.dart';
 import '../../auth/providers/auth_provider.dart';
+import '../../chat/presentation/open_chat.dart';
 import '../../notifications/providers/notification_provider.dart';
 import '../../profile/presentation/widgets/profile_drawer.dart';
 import '../models/job.dart';
@@ -41,6 +41,17 @@ class _JobDetailScreenState extends ConsumerState<JobDetailScreen> {
       _isLoading = false;
     }
     _loadJob();
+    _checkAlreadyApplied();
+  }
+
+  /// Show "Applied" immediately if the server says this user already applied
+  Future<void> _checkAlreadyApplied() async {
+    final applied = await ref
+        .read(applicationRepositoryProvider)
+        .hasApplied(widget.jobId);
+    if (applied && mounted) {
+      setState(() => _isApplied = true);
+    }
   }
 
   Future<void> _loadJob() async {
@@ -98,41 +109,12 @@ class _JobDetailScreenState extends ConsumerState<JobDetailScreen> {
           return;
         }
 
-        // Provide seamless fallback job data for guest mode / offline preview
+        // No real job data available: show the "Job Details Unavailable"
+        // screen with Retry. (Previously a made-up job was shown here,
+        // which users could even apply to.)
         setState(() {
-          _job = Job(
-            id: widget.jobId,
-            recruiterId: '',
-            title: 'Verified Job Opportunity',
-            description: 'Exciting career opportunity with verified partner employer. Key responsibilities include handling day-to-day operations and collaborating with team members.',
-            company: 'Verified Partner Employer',
-            cityId: '',
-            cityName: 'All India',
-            location: 'Multiple Locations',
-            salaryMin: 18000,
-            salaryMax: 35000,
-            jobType: 'Full-time',
-            status: 'open',
-            requirements: const [
-              'Good communication skills',
-              'Basic technical or relevant job experience',
-              'Self-motivated, punctual, and team player',
-            ],
-            weOffer: const [
-              'Competitive monthly salary & incentives',
-              'Insurance cover and paid training',
-              'Fast-track career advancement',
-            ],
-            gender: 'Both',
-            education: '10th / 12th / Graduate',
-            experienceMin: 0,
-            experienceMax: 3,
-            vacancies: 2,
-            applicantCount: 12,
-            createdAt: DateTime.now(),
-          );
           _isLoading = false;
-          _error = null;
+          _error = e.toString();
         });
       }
     }
@@ -158,17 +140,16 @@ class _JobDetailScreenState extends ConsumerState<JobDetailScreen> {
     );
   }
 
-  void _callHR() async {
-    final uri = Uri(scheme: 'tel', path: '1800123456');
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri);
-    } else {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('HR Support Helpline: +91 98765 43210')),
-        );
-      }
-    }
+  /// Recruiter phone numbers are not shared by the backend yet.
+  /// (Previously this dialled a placeholder number / made-up helpline.)
+  void _callHR() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text(
+          'Calling recruiters is coming soon. Please use Chat to contact the recruiter.',
+        ),
+      ),
+    );
   }
 
   void _chatWithHR() {
@@ -180,8 +161,13 @@ class _JobDetailScreenState extends ConsumerState<JobDetailScreen> {
       );
       return;
     }
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Connecting to recruiter chat...')),
+    final job = _job;
+    if (job == null) return;
+    openChatWithUser(
+      context,
+      ref,
+      receiverId: job.recruiterId,
+      title: '${job.company} Recruiter',
     );
   }
 

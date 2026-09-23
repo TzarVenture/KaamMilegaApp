@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/network/app_exception.dart';
+import '../../../core/payments/razorpay_checkout.dart';
 import '../../auth/providers/auth_provider.dart';
+import '../../wallet/providers/wallet_provider.dart';
 import '../models/expert_profile.dart';
 import '../repositories/expert_repository.dart';
 
@@ -16,6 +19,7 @@ class ExpertDetailScreen extends ConsumerStatefulWidget {
 
 class _ExpertDetailScreenState extends ConsumerState<ExpertDetailScreen> {
   DateTime _selectedDate = DateTime.now().add(const Duration(days: 1));
+  TimeOfDay _selectedTime = const TimeOfDay(hour: 10, minute: 0);
   final TextEditingController _notesController = TextEditingController();
   bool _isBooking = false;
 
@@ -25,74 +29,286 @@ class _ExpertDetailScreenState extends ConsumerState<ExpertDetailScreen> {
     super.dispose();
   }
 
+  /// Session date + time combined (local time; sent to the server as UTC)
+  DateTime get _scheduledAt => DateTime(
+    _selectedDate.year,
+    _selectedDate.month,
+    _selectedDate.day,
+    _selectedTime.hour,
+    _selectedTime.minute,
+  );
+
+  void _showMessage(String text, {bool isError = false}) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(text),
+        backgroundColor: isError ? const Color(0xFFEF4444) : null,
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
   Future<void> _handleBookSession() async {
+    if (_isBooking) return;
     final authState = ref.read(authProvider);
     if (!authState.isAuthenticated) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please log in to book an expert session'),
-          behavior: SnackBarBehavior.floating,
-        ),
+      _showMessage('Please log in to book an expert session');
+      return;
+    }
+    if (_scheduledAt.isBefore(DateTime.now().add(const Duration(minutes: 30)))) {
+      _showMessage(
+        'Please choose a time at least 30 minutes from now.',
+        isError: true,
       );
       return;
     }
 
+    // Free session: simple request, no payment
+    if (widget.expert.price <= 0) {
+      await _bookFree();
+      return;
+    }
+
+    // Paid session: let the user choose how to pay
+    final method = await _choosePaymentMethod();
+    if (method == 'wallet') {
+      await _bookWithWallet();
+    } else if (method == 'online') {
+      await _bookWithRazorpay();
+    }
+  }
+
+  Future<void> _bookFree() async {
     setState(() => _isBooking = true);
-    final repo = ref.read(expertRepositoryProvider);
-    final success = await repo.bookSession(
-      mentorshipId: widget.expert.id,
-      scheduledAt: _selectedDate,
-      notes: _notesController.text.trim(),
-    );
+    try {
+      await ref
+          .read(expertRepositoryProvider)
+          .bookSession(
+            mentorshipId: widget.expert.id,
+            scheduledAt: _scheduledAt,
+            notes: _notesController.text.trim(),
+          );
+      if (!mounted) return;
+      await _showSuccess(
+        'Session Requested!',
+        'Your session request with ${widget.expert.expertName} has been sent '
+            'to the mentor. You will be notified once it is confirmed.',
+      );
+    } on AppException catch (e) {
+      // Real reason instead of the old fake "booking placed" message
+      _showMessage(e.message, isError: true);
+    } finally {
+      if (mounted) setState(() => _isBooking = false);
+    }
+  }
 
-    setState(() => _isBooking = false);
+  /// Bottom sheet: pay from wallet (if enough balance) or pay online
+  Future<String?> _choosePaymentMethod() async {
+    final price = widget.expert.price;
+    // Make sure balances are fresh before showing them
+    await ref.read(walletProvider.notifier).loadWallet();
+    if (!mounted) return null;
+    final summary = ref.read(walletProvider).summary;
+    final walletLive = summary != null && !ref.read(walletProvider).isComingSoon;
+    final mainBalance = summary?.mainBalance ?? 0;
+    final canUseWallet = walletLive && mainBalance >= price;
 
-    if (!mounted) return;
-
-    if (success) {
-      showDialog(
-        context: context,
-        builder: (ctx) => AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          title: const Row(
+    return showModalBottomSheet<String>(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (ctx) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 20, 20, 12),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Icon(Icons.check_circle_rounded, color: Color(0xFF10B981)),
-              SizedBox(width: 8),
-              Text('Session Requested!'),
+              Text(
+                'Pay ₹${price.toStringAsFixed(0)} for this session',
+                style: const TextStyle(
+                  fontSize: 17,
+                  fontWeight: FontWeight.w800,
+                  color: Color(0xFF0F172A),
+                ),
+              ),
+              const SizedBox(height: 4),
+              const Text(
+                'The fee is held safely in escrow until the session is completed.',
+                style: TextStyle(fontSize: 12, color: Color(0xFF64748B)),
+              ),
+              const SizedBox(height: 16),
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                enabled: canUseWallet,
+                leading: const Icon(
+                  Icons.account_balance_wallet_rounded,
+                  color: Color(0xFF1A2B8C),
+                ),
+                title: const Text(
+                  'Pay from KaamMilega Wallet',
+                  style: TextStyle(fontWeight: FontWeight.w700),
+                ),
+                subtitle: Text(
+                  !walletLive
+                      ? 'Wallet is not available right now'
+                      : canUseWallet
+                      ? 'Balance: ₹${mainBalance.toStringAsFixed(0)}'
+                      : 'Balance ₹${mainBalance.toStringAsFixed(0)} is not enough. Add money in Wallet.',
+                ),
+                onTap: canUseWallet ? () => Navigator.pop(ctx, 'wallet') : null,
+              ),
+              const Divider(height: 1),
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: const Icon(
+                  Icons.payments_rounded,
+                  color: Color(0xFF4F46E5),
+                ),
+                title: const Text(
+                  'Pay online',
+                  style: TextStyle(fontWeight: FontWeight.w700),
+                ),
+                subtitle: const Text('UPI, card or net banking via Razorpay'),
+                onTap: () => Navigator.pop(ctx, 'online'),
+              ),
             ],
           ),
-          content: Text(
-            'Your session request with ${widget.expert.expertName} has been sent to the mentor.',
-            style: const TextStyle(fontSize: 13, color: Color(0xFF475569)),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(ctx);
-                Navigator.pop(context);
-              },
-              child: const Text(
-                'OK',
-                style: TextStyle(fontWeight: FontWeight.w700),
-              ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _bookWithWallet() async {
+    setState(() => _isBooking = true);
+    try {
+      await ref
+          .read(expertRepositoryProvider)
+          .bookWithWallet(
+            mentorshipId: widget.expert.id,
+            scheduledAt: _scheduledAt,
+            notes: _notesController.text.trim(),
+          );
+      // Server deducted the fee: refresh balances shown elsewhere
+      await ref.read(walletProvider.notifier).loadWallet();
+      if (!mounted) return;
+      await _showSuccess(
+        'Session Confirmed!',
+        '₹${widget.expert.price.toStringAsFixed(0)} was paid from your wallet '
+            'and is held in escrow until your session with '
+            '${widget.expert.expertName} is completed.',
+      );
+    } on AppException catch (e) {
+      _showMessage(e.message, isError: true);
+    } finally {
+      if (mounted) setState(() => _isBooking = false);
+    }
+  }
+
+  Future<void> _bookWithRazorpay() async {
+    setState(() => _isBooking = true);
+    try {
+      final repo = ref.read(expertRepositoryProvider);
+      // 1. Server creates a pending booking + Razorpay order (real price)
+      final order = await repo.createBookingOrder(
+        mentorshipId: widget.expert.id,
+        scheduledAt: _scheduledAt,
+        notes: _notesController.text.trim(),
+      );
+
+      // 2. Razorpay checkout
+      final user = ref.read(authProvider).user;
+      final payment = await RazorpayCheckout.pay(
+        keyId: order.keyId,
+        orderId: order.orderId,
+        amountPaise: order.amountPaise,
+        description: '${widget.expert.title} with ${widget.expert.expertName}',
+        email: user?.email,
+        contact: user?.mobile,
+      );
+      if (!mounted) return;
+      if (payment.cancelled) {
+        _showMessage('Payment cancelled. No money was charged.');
+        return;
+      }
+      if (!payment.success) {
+        _showMessage(payment.errorMessage ?? 'Payment failed.', isError: true);
+        return;
+      }
+
+      // 3. Server verifies the payment and confirms the booking
+      try {
+        await repo.verifyBookingPayment(
+          bookingId: order.bookingId,
+          orderId: payment.orderId,
+          paymentId: payment.paymentId,
+          signature: payment.signature,
+        );
+      } on AppException catch (e) {
+        if (!mounted) return;
+        await _showSuccess(
+          'Payment received, confirming',
+          'Your payment was received but the booking could not be confirmed '
+              'yet (${e.message}). Please do not pay again. Payment ID: '
+              '${payment.paymentId}. Contact support with this ID if the '
+              'session is not confirmed.',
+          closeScreen: false,
+        );
+        return;
+      }
+      ref.read(walletProvider.notifier).loadWallet();
+      if (!mounted) return;
+      await _showSuccess(
+        'Session Confirmed!',
+        'Payment verified. Your session with ${widget.expert.expertName} is '
+            'confirmed.',
+      );
+    } on AppException catch (e) {
+      _showMessage(e.message, isError: true);
+    } finally {
+      if (mounted) setState(() => _isBooking = false);
+    }
+  }
+
+  Future<void> _showSuccess(
+    String title,
+    String message, {
+    bool closeScreen = true,
+  }) async {
+    await showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Row(
+          children: [
+            Icon(
+              closeScreen ? Icons.check_circle_rounded : Icons.info_rounded,
+              color: closeScreen
+                  ? const Color(0xFF10B981)
+                  : const Color(0xFFF59E0B),
             ),
+            const SizedBox(width: 8),
+            Expanded(child: Text(title)),
           ],
         ),
-      );
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'Session booking placed. Waiting for mentor confirmation.',
-          ),
-          backgroundColor: Color(0xFF4F46E5),
-          behavior: SnackBarBehavior.floating,
+        content: Text(
+          message,
+          style: const TextStyle(fontSize: 13, color: Color(0xFF475569)),
         ),
-      );
-      Navigator.pop(context);
-    }
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text(
+              'OK',
+              style: TextStyle(fontWeight: FontWeight.w700),
+            ),
+          ),
+        ],
+      ),
+    );
+    if (closeScreen && mounted) Navigator.pop(context);
   }
 
   @override
@@ -357,6 +573,28 @@ class _ExpertDetailScreenState extends ConsumerState<ExpertDetailScreen> {
                       );
                       if (picked != null) {
                         setState(() => _selectedDate = picked);
+                      }
+                    },
+                  ),
+                  ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    leading: const Icon(
+                      Icons.schedule_rounded,
+                      color: Color(0xFF4F46E5),
+                    ),
+                    title: Text(
+                      _selectedTime.format(context),
+                      style: const TextStyle(fontWeight: FontWeight.w700),
+                    ),
+                    subtitle: const Text('Tap to choose a time'),
+                    trailing: const Icon(Icons.chevron_right_rounded),
+                    onTap: () async {
+                      final picked = await showTimePicker(
+                        context: context,
+                        initialTime: _selectedTime,
+                      );
+                      if (picked != null) {
+                        setState(() => _selectedTime = picked);
                       }
                     },
                   ),

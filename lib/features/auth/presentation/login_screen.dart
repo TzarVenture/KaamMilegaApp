@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../app/theme/app_colors.dart';
 import '../../../shared/widgets/app_logo.dart';
+import '../../../app/auth_guard.dart';
 import '../providers/auth_provider.dart';
 
 enum LoginTab { otp, password }
@@ -63,7 +64,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       setState(() => _isLoading = false);
       if (success) {
         _showSnackBar('Signed in successfully! Welcome back.');
-        context.go('/home');
+        // Return to the screen the user wanted before login (or Home)
+        context.go(AuthGuard.takePendingPath());
       } else {
         final error = ref.read(authProvider).error;
         _showSnackBar(
@@ -96,8 +98,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       if (success) {
         context.push('/otp', extra: phone);
       } else {
-        // Fallback navigate to OTP screen for testing in dev environment
-        context.push('/otp', extra: phone);
+        // OTP was not sent: stay here and show why (previously this still
+        // opened the OTP screen, a leftover testing shortcut).
+        _showSnackBar(
+          ref.read(authProvider).error ??
+              'Could not send OTP. Please try again.',
+          isError: true,
+        );
       }
     }
   }

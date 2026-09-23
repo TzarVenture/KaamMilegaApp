@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 
+import '../../../core/constants/api_constants.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/network/app_exception.dart';
 import '../../profile/presentation/widgets/profile_drawer.dart';
@@ -10,6 +10,7 @@ import '../../../shared/widgets/shimmer_loading.dart';
 import '../../../shared/widgets/themed_category_bottom_nav.dart';
 import '../../auth/models/user_profile.dart';
 import '../../auth/providers/auth_provider.dart';
+import '../../chat/presentation/open_chat.dart';
 import '../../network/models/connection_request.dart';
 import '../../network/providers/network_provider.dart';
 import '../../network/repositories/network_repository.dart';
@@ -53,7 +54,7 @@ class _PeerToPeerScreenState extends ConsumerState<PeerToPeerScreen>
     try {
       final client = ref.read(apiClientProvider);
       final response = await client.get(
-        '/users/search',
+        ApiConstants.userSearch,
         queryParameters: {if (query.isNotEmpty) 'q': query, 'limit': 20},
       );
 
@@ -607,12 +608,12 @@ class _PeerToPeerScreenState extends ConsumerState<PeerToPeerScreen>
                       Icons.chat_bubble_outline_rounded,
                       color: Color(0xFF9333EA),
                     ),
-                    onPressed: () {
-                      context.push(
-                        '/chats/$connId',
-                        extra: {'receiverId': connId, 'title': 'Chat'},
-                      );
-                    },
+                    onPressed: () => openChatWithUser(
+                      context,
+                      ref,
+                      receiverId: connId,
+                      title: 'Chat',
+                    ),
                   ),
                 ],
               ),

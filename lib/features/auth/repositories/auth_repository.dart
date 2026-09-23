@@ -344,7 +344,8 @@ class AuthRepository {
     );
   }
 
-  /// Add Project record to Candidate profile
+  /// Add a new Project, or update an existing one when [id] is given.
+  /// Backend: POST /user/project (add) and PUT /user/project/:id (update).
   Future<UserProfile> addProject({
     String? id,
     required String title,
@@ -356,22 +357,107 @@ class AuthRepository {
     String skills = '',
     bool isCurrentlyWorking = false,
   }) async {
-    final payload = {
+    // Field names must match the backend Project model exactly.
+    final payload = <String, dynamic>{
       'title': title.trim(),
       'associated_with': associatedWith.trim(),
       'description': description.trim(),
-      'link': link.trim(),
+      'project_url': link.trim(),
       'start_date': startDate.trim(),
       'end_date': endDate.trim(),
-      'skills': skills.trim(),
-      'is_currently_working': isCurrentlyWorking,
+      // Backend expects a list of skills, the form collects comma-separated text
+      'skills': skills
+          .split(',')
+          .map((s) => s.trim())
+          .where((s) => s.isNotEmpty)
+          .toList(),
+      'is_current': isCurrentlyWorking,
     };
-    if (id != null && id.isNotEmpty) {
-      payload['id'] = id;
+
+    final isEdit = id != null && id.isNotEmpty;
+    final response = isEdit
+        ? await _client.put('${ApiConstants.userProject}/$id', data: payload)
+        : await _client.post(ApiConstants.userProject, data: payload);
+
+    final data = response.data as Map<String, dynamic>? ?? {};
+    final user = UserProfile.fromJson(data);
+    await LocalStorage.saveUser(user.toJson());
+    return user;
+  }
+
+  /// Apply to become an Expert (POST /user/apply-expert).
+  /// Returns the updated profile with expert_approval_status = "pending".
+  Future<UserProfile> applyForExpert({
+    required String category,
+    required String bio,
+    required double pricing,
+    List<Map<String, String>> documents = const [],
+  }) async {
+    final response = await _client.post(
+      ApiConstants.userApplyExpert,
+      data: {
+        'expert_category': category,
+        'expert_bio': bio.trim(),
+        'expert_pricing': pricing,
+        'expert_documents': documents,
+      },
+    );
+    final data = response.data as Map<String, dynamic>? ?? {};
+    final user = UserProfile.fromJson(data);
+    await LocalStorage.saveUser(user.toJson());
+    return user;
+  }
+
+  /// Change account password (PUT /user/password).
+  /// [currentPassword] may be empty for accounts created with OTP only.
+  Future<void> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    await _client.put(
+      ApiConstants.userPassword,
+      data: {
+        if (currentPassword.isNotEmpty) 'current_password': currentPassword,
+        'new_password': newPassword,
+      },
+    );
+  }
+
+  /// Fetch account settings.
+  /// Read from GET /user/profile (field `settings`). GET /user/settings
+  /// currently returns HTTP 500 because the backend matches it as
+  /// GET /user/:id (route order issue on the server). Saving via
+  /// PUT /user/settings is not affected.
+  Future<Map<String, dynamic>> getSettings() async {
+    final response = await _client.get(ApiConstants.userProfile);
+    final data = response.data;
+    if (data is Map<String, dynamic> &&
+        data['settings'] is Map<String, dynamic>) {
+      return data['settings'] as Map<String, dynamic>;
     }
+    return {};
+  }
 
-    final response = await _client.post('/user/project', data: payload);
+  /// Save account settings (PUT /user/settings). Backend replaces the whole
+  /// settings object, so always send every field.
+  Future<Map<String, dynamic>> updateSettings(
+    Map<String, dynamic> settings,
+  ) async {
+    final response = await _client.put(
+      ApiConstants.userSettings,
+      data: settings,
+    );
+    final data = response.data;
+    if (data is Map<String, dynamic> &&
+        data['settings'] is Map<String, dynamic>) {
+      return data['settings'] as Map<String, dynamic>;
+    }
+    return settings;
+  }
 
+  /// Delete a Project from Candidate profile (DELETE /user/project/:id)
+  Future<UserProfile> deleteProject(String id) async {
+    final response = await _client.delete('${ApiConstants.userProject}/$id');
     final data = response.data as Map<String, dynamic>? ?? {};
     final user = UserProfile.fromJson(data);
     await LocalStorage.saveUser(user.toJson());

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../auth/providers/auth_provider.dart';
 import '../../notifications/providers/notification_provider.dart';
 import '../../profile/presentation/widgets/profile_drawer.dart';
 
@@ -83,10 +84,50 @@ class _ApplyExpertScreenState extends ConsumerState<ApplyExpertScreen> {
       return;
     }
 
+    if (!ref.read(authProvider).isAuthenticated) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please sign in to apply as an Expert.'),
+          backgroundColor: Color(0xFFEF4444),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+
+    final pricing = double.tryParse(_rateController.text.trim()) ?? 0;
+    final documents = <Map<String, String>>[
+      if (_resumeController.text.trim().isNotEmpty)
+        {'name': 'Resume', 'url': _resumeController.text.trim()},
+      if (_idProofController.text.trim().isNotEmpty)
+        {'name': 'Identity Proof', 'url': _idProofController.text.trim()},
+    ];
+
     setState(() => _isSubmitting = true);
-    await Future.delayed(const Duration(milliseconds: 1000));
+    final ok = await ref
+        .read(authProvider.notifier)
+        .applyForExpert(
+          category: _selectedCategory!,
+          bio: _bioController.text.trim(),
+          pricing: pricing,
+          documents: documents,
+        );
     if (!mounted) return;
     setState(() => _isSubmitting = false);
+
+    if (!ok) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            ref.read(authProvider).error ??
+                'Failed to submit application. Please try again.',
+          ),
+          backgroundColor: const Color(0xFFEF4444),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
 
     showDialog(
       context: context,

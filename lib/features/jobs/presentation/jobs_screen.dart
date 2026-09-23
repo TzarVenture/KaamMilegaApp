@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import '../../../app/theme/app_colors.dart';
 import '../../../shared/widgets/auth_prompt_dialog.dart';
@@ -11,9 +10,11 @@ import '../../../shared/widgets/shimmer_loading.dart';
 import '../../applications/presentation/apply_modal.dart';
 import '../../applications/repositories/application_repository.dart';
 import '../../auth/providers/auth_provider.dart';
+import '../../chat/presentation/open_chat.dart';
 import '../../cities/presentation/city_selector_sheet.dart';
 import '../../notifications/providers/notification_provider.dart';
 import '../../profile/presentation/widgets/profile_drawer.dart';
+import '../models/job.dart';
 import '../providers/jobs_provider.dart';
 import '../../../shared/widgets/network_state_view.dart';
 import 'widgets/filter_modal.dart';
@@ -108,22 +109,35 @@ class _JobsScreenState extends ConsumerState<JobsScreen> {
     );
   }
 
-  void _handleCall() async {
-    final uri = Uri(scheme: 'tel', path: '1800123456');
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri);
-    } else {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('HR Support Helpline: +91 98765 43210')),
-        );
-      }
-    }
+  /// Recruiter phone numbers are not shared by the backend yet, so there is
+  /// no real number to dial. (Previously this dialled a placeholder number
+  /// and showed a made-up helpline.)
+  void _handleCall() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text(
+          'Calling recruiters is coming soon. Please use Chat to contact the recruiter.',
+        ),
+      ),
+    );
   }
 
-  void _handleChat() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Connecting to recruiter chat...')),
+  /// Open a real chat with the job's recruiter
+  void _handleChat(Job job) {
+    if (!ref.read(authProvider).isAuthenticated) {
+      showAuthPromptDialog(
+        context,
+        title: 'Sign In to Chat',
+        message:
+            'Please sign in to your KaamMilega account to chat with the recruiter.',
+      );
+      return;
+    }
+    openChatWithUser(
+      context,
+      ref,
+      receiverId: job.recruiterId,
+      title: '${job.company} Recruiter',
     );
   }
 
@@ -425,12 +439,13 @@ class _JobsScreenState extends ConsumerState<JobsScreen> {
                         _buildHeroMetric(
                           icon: Icons.trending_up_rounded,
                           color: const Color(0xFF34D399),
-                          text: '1,250+ Active Listings',
+                          // Real total from the server (was a made-up "1,250+")
+                          text: '${jobsState.totalJobs} Active Listings',
                         ),
                         _buildHeroMetric(
                           icon: Icons.apartment_rounded,
                           color: const Color(0xFF60A5FA),
-                          text: '450+ Verified Companies',
+                          text: 'Verified Companies',
                         ),
                         _buildHeroMetric(
                           icon: Icons.bolt_rounded,
@@ -915,7 +930,7 @@ class _JobsScreenState extends ConsumerState<JobsScreen> {
                         ref.read(jobsProvider.notifier).toggleSaveJob(job.id),
                     onTap: () => context.push('/jobs/${job.id}', extra: job),
                     onApply: () => _handleApply(job.id),
-                    onChat: _handleChat,
+                    onChat: () => _handleChat(job),
                     onCall: _handleCall,
                   );
                 }, childCount: displayedJobs.length),

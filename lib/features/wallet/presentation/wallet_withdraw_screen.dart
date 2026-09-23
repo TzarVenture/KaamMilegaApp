@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/network/connectivity_provider.dart';
-import '../../auth/providers/auth_provider.dart';
 import '../providers/wallet_provider.dart';
 import '../repositories/wallet_repository.dart';
 
@@ -116,14 +115,24 @@ class _WalletWithdrawScreenState extends ConsumerState<WalletWithdrawScreen> {
       context.pop();
     } on WalletApiException catch (e) {
       if (!mounted) return;
-      _showBackendNotice(context, amount, destination, e.message);
+      if (e.isBackendPending) {
+        _showBackendNotice(context, amount, destination, e.message);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(e.toString()),
+            backgroundColor: const Color(0xFFEF4444),
+          ),
+        );
+      }
     } catch (e) {
+      // Offline / server error: show the real reason, not a "coming soon" notice
       if (!mounted) return;
-      _showBackendNotice(
-        context,
-        amount,
-        destination,
-        'Payout microservice integration pending on backend.',
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(e.toString()),
+          backgroundColor: const Color(0xFFEF4444),
+        ),
       );
     } finally {
       if (mounted) {
@@ -183,7 +192,7 @@ class _WalletWithdrawScreenState extends ConsumerState<WalletWithdrawScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Backend Payout API Required',
+                        'Coming Soon',
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w800,
@@ -191,7 +200,7 @@ class _WalletWithdrawScreenState extends ConsumerState<WalletWithdrawScreen> {
                         ),
                       ),
                       Text(
-                        '/api/wallet/withdraw',
+                        'Withdrawals to bank / UPI',
                         style: TextStyle(
                           fontSize: 12,
                           color: Color(0xFF64748B),
@@ -279,9 +288,10 @@ class _WalletWithdrawScreenState extends ConsumerState<WalletWithdrawScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final authState = ref.watch(authProvider);
     final walletState = ref.watch(walletProvider);
-    final currentBalance = authState.user?.walletBalance ?? 0;
+    // Only earnings are withdrawable (backend withdrawable_balance)
+    final currentBalance = (walletState.summary?.withdrawableBalance ?? 0)
+        .floor();
 
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),

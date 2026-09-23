@@ -14,7 +14,11 @@ class ApplicationRepository {
   ApplicationRepository(this._client);
 
   /// Apply to a job by ID (strictly requires active network)
-  Future<void> applyToJob(String jobId, {String coverLetter = ''}) async {
+  Future<void> applyToJob(
+    String jobId, {
+    String coverLetter = '',
+    String resumeUrl = '',
+  }) async {
     if (!ConnectivityService().isOnline) {
       throw const AppNetworkException(
         'Internet connection required to apply for jobs.',
@@ -23,8 +27,28 @@ class ApplicationRepository {
 
     await _client.post(
       ApiConstants.applications,
-      data: {'job_id': jobId, 'cover_letter': coverLetter},
+      data: {
+        'job_id': jobId,
+        'cover_letter': coverLetter,
+        if (resumeUrl.isNotEmpty) 'resume_url': resumeUrl,
+      },
     );
+  }
+
+  /// Ask the server whether the signed-in user already applied to [jobId]
+  /// (GET /applications/check/:jobId -> {"applied": bool}).
+  Future<bool> hasApplied(String jobId) async {
+    final token = LocalStorage.getToken();
+    if (token == null || token.isEmpty) return false;
+    try {
+      final response = await _client.get(
+        '${ApiConstants.applicationCheck}$jobId',
+      );
+      final data = response.data;
+      return data is Map<String, dynamic> && data['applied'] == true;
+    } catch (_) {
+      return false;
+    }
   }
 
   /// Get candidate's submitted applications (with offline cache fallback)

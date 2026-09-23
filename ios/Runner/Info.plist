@@ -66,5 +66,14 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<!-- Lets Razorpay checkout open installed UPI apps (UPI intent) -->
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>tez</string>
+		<string>phonepe</string>
+		<string>paytmmp</string>
+		<string>credpay</string>
+		<string>bhim</string>
+	</array>
 </dict>
 </plist>

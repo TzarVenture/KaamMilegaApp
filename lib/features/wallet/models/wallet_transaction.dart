@@ -21,6 +21,7 @@ enum TransactionStatus {
       case 'success':
         return TransactionStatus.completed;
       case 'failed':
+      case 'reversed':
         return TransactionStatus.failed;
       default:
         return TransactionStatus.pending;
@@ -64,10 +65,35 @@ class WalletTransaction {
     this.category,
   });
 
+  /// Readable title for backend ledger categories (backend has no "title")
+  static String titleForCategory(String? category) {
+    switch (category) {
+      case 'topup':
+        return 'Wallet top-up';
+      case 'pass_purchase':
+        return 'Access pass purchase';
+      case 'session_booking':
+        return 'Mentorship session booking';
+      case 'session_payout':
+        return 'Mentorship session earning';
+      case 'gig_payout':
+        return 'Gig payout';
+      case 'withdrawal':
+        return 'Withdrawal';
+      case 'bonus_reward':
+        return 'Bonus reward';
+      case 'refund':
+        return 'Refund';
+      default:
+        return 'Transaction';
+    }
+  }
+
   factory WalletTransaction.fromJson(Map<String, dynamic> json) {
+    final category = json['category']?.toString();
     return WalletTransaction(
       id: json['id']?.toString() ?? json['_id']?.toString() ?? '',
-      title: json['title']?.toString() ?? 'Transaction',
+      title: json['title']?.toString() ?? titleForCategory(category),
       description: json['description']?.toString() ?? '',
       amount: (json['amount'] as num?)?.toDouble() ?? 0.0,
       type: TransactionType.fromString(json['type']?.toString()),
@@ -76,8 +102,12 @@ class WalletTransaction {
           ? DateTime.tryParse(json['created_at'].toString()) ?? DateTime.now()
           : DateTime.now(),
       referenceId: json['reference_id']?.toString(),
-      paymentMethod: json['payment_method']?.toString(),
-      category: json['category']?.toString(),
+      paymentMethod:
+          json['payment_method']?.toString() ??
+          (json['metadata'] is Map
+              ? (json['metadata'] as Map)['payment_channel']?.toString()
+              : null),
+      category: category,
     );
   }
 

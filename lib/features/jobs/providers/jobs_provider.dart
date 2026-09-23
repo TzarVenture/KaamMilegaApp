@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/network/connectivity_provider.dart';
 import '../../../core/network/network_status.dart';
 import '../../../core/storage/local_storage.dart';
+import '../../auth/providers/auth_provider.dart';
 import '../models/job.dart';
 import '../models/job_filter.dart';
 import '../repositories/job_repository.dart';
@@ -87,7 +88,15 @@ class JobsNotifier extends Notifier<JobsState> {
       } catch (_) {}
     }
 
+    // Sync bookmarks with the server when a user signs in
+    ref.listen<AuthState>(authProvider, (prev, next) {
+      if ((prev?.isAuthenticated ?? false) == false && next.isAuthenticated) {
+        syncSavedJobs();
+      }
+    });
+
     Future.microtask(() => fetchJobs());
+    Future.microtask(() => syncSavedJobs());
 
     return JobsState(
       jobs: initialJobs,
@@ -97,16 +106,64 @@ class JobsNotifier extends Notifier<JobsState> {
     );
   }
 
-  /// Toggle saving / bookmarking a job
-  void toggleSaveJob(String jobId) {
-    final current = Set<String>.from(state.savedJobIds);
+  bool get _isSignedIn {
+    final token = LocalStorage.getToken();
+    return token != null && token.isNotEmpty;
+  }
+
+  bool _isSyncingSaved = false;
+
+  /// Load bookmarked job IDs from the server (signed-in users only)
+  Future<void> syncSavedJobs() async {
+    if (!_isSignedIn || _isSyncingSaved) return;
+    _isSyncingSaved = true;
+    try {
+      final serverIds = await _repository.getBookmarkedJobIds();
+      state = state.copyWith(
+        savedJobIds: serverIds,
+        cachedTimestamp: state.cachedTimestamp,
+      );
+      LocalStorage.saveSavedJobIds(serverIds);
+    } catch (_) {
+      // Offline or unavailable: keep the locally cached bookmarks
+    } finally {
+      _isSyncingSaved = false;
+    }
+  }
+
+  /// Toggle saving / bookmarking a job.
+  /// Updates instantly on the phone, then syncs with the server when signed in.
+  Future<void> toggleSaveJob(String jobId) async {
+    final previous = Set<String>.from(state.savedJobIds);
+    final current = Set<String>.from(previous);
     if (current.contains(jobId)) {
       current.remove(jobId);
     } else {
       current.add(jobId);
     }
-    state = state.copyWith(savedJobIds: current);
+    state = state.copyWith(
+      savedJobIds: current,
+      cachedTimestamp: state.cachedTimestamp,
+    );
     LocalStorage.saveSavedJobIds(current);
+
+    if (!_isSignedIn) return; // Guests keep bookmarks on this device only
+
+    try {
+      final serverIds = await _repository.toggleBookmark(jobId);
+      state = state.copyWith(
+        savedJobIds: serverIds,
+        cachedTimestamp: state.cachedTimestamp,
+      );
+      LocalStorage.saveSavedJobIds(serverIds);
+    } catch (_) {
+      // Server rejected or unreachable: undo so the phone matches the server
+      state = state.copyWith(
+        savedJobIds: previous,
+        cachedTimestamp: state.cachedTimestamp,
+      );
+      LocalStorage.saveSavedJobIds(previous);
+    }
   }
 
   /// Fetch jobs with current filter

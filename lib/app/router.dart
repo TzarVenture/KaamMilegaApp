@@ -1,5 +1,7 @@
 import 'package:go_router/go_router.dart';
 
+import 'auth_guard.dart';
+
 import '../features/applications/presentation/application_detail_screen.dart';
 import '../features/applications/presentation/my_applications_screen.dart';
 import '../features/auth/presentation/forgot_password_screen.dart';
@@ -40,6 +42,8 @@ class AppRouter {
 
   static final GoRouter router = GoRouter(
     initialLocation: '/splash',
+    // Send logged-out users to /login for screens that need an account
+    redirect: AuthGuard.redirect,
     routes: [
       GoRoute(
         path: '/splash',

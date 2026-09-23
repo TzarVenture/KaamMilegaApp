@@ -9,6 +9,11 @@ class LocalStorage {
   static const String _userCacheTimeKey = 'km_user_cache_time';
   static const String _selectedCityKey = 'km_selected_city';
   static const String _savedJobsKey = 'km_saved_job_ids';
+  // Backend has no resume field on the user profile yet, so the uploaded
+  // resume URL is kept on the device and attached to job applications.
+  static const String _resumeUrlKey = 'km_resume_url';
+  // Profile fields the backend does not store yet (open_to_work, etc.)
+  static const String _deviceProfilePrefsKey = 'km_device_profile_prefs';
 
   static const String _jobsCacheKey = 'km_cache_jobs';
   static const String _jobsCacheTimeKey = 'km_cache_jobs_time';
@@ -84,6 +89,42 @@ class LocalStorage {
     await _prefs!.remove(_tokenKey);
     await _prefs!.remove(_userKey);
     await _prefs!.remove(_userCacheTimeKey);
+    await _prefs!.remove(_resumeUrlKey);
+    await _prefs!.remove(_deviceProfilePrefsKey);
+    // Per-user caches must not be shown to the next person who logs in
+    await _prefs!.remove(_walletCacheKey);
+    await _prefs!.remove(_walletCacheTimeKey);
+    await _prefs!.remove(_appsCacheKey);
+    await _prefs!.remove(_appsCacheTimeKey);
+  }
+
+  /// Save profile fields that the backend cannot store yet
+  static Future<bool> saveDeviceProfilePrefs(Map<String, dynamic> prefs) async {
+    await init();
+    final merged = {...getDeviceProfilePrefs(), ...prefs};
+    return _prefs!.setString(_deviceProfilePrefsKey, jsonEncode(merged));
+  }
+
+  /// Read profile fields kept on this device
+  static Map<String, dynamic> getDeviceProfilePrefs() {
+    final str = _prefs?.getString(_deviceProfilePrefsKey);
+    if (str == null || str.isEmpty) return {};
+    try {
+      final decoded = jsonDecode(str);
+      if (decoded is Map<String, dynamic>) return decoded;
+    } catch (_) {}
+    return {};
+  }
+
+  /// Save uploaded resume URL (kept on device until backend supports it)
+  static Future<bool> saveResumeUrl(String url) async {
+    await init();
+    return _prefs!.setString(_resumeUrlKey, url);
+  }
+
+  /// Get uploaded resume URL saved on this device
+  static String? getResumeUrl() {
+    return _prefs?.getString(_resumeUrlKey);
   }
 
   /// Save preferred city name

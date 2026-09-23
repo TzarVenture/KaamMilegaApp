@@ -208,10 +208,11 @@ void main() {
 
       final notifier = container.read(walletProvider.notifier);
 
-      await expectLater(
-        notifier.addMoney(amount: 500, paymentMethod: 'UPI'),
-        throwsA(isA<AppNetworkException>()),
-      );
+      // addMoney returns a result instead of throwing; offline it must fail
+      // before any order is created or Razorpay checkout is opened.
+      final topup = await notifier.addMoney(amount: 500);
+      expect(topup.outcome, TopupOutcome.failed);
+      expect(topup.message, contains('Internet connection required'));
 
       await expectLater(
         notifier.withdraw(

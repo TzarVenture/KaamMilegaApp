@@ -1,4 +1,4 @@
-package com.example.kaam_milega
+package com.kaammilega.app
 
 import io.flutter.embedding.android.FlutterActivity
 

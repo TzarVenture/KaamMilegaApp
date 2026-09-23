@@ -108,6 +108,8 @@ class _WalletTransactionsScreenState
     String filter,
   ) {
     if (transactions.isEmpty) {
+      // Wallet service not live yet: say so instead of "no transactions"
+      final isComingSoon = ref.watch(walletProvider).isComingSoon;
       return Center(
         child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
@@ -129,7 +131,9 @@ class _WalletTransactionsScreenState
               ),
               const SizedBox(height: 16),
               Text(
-                filter == 'credit'
+                isComingSoon
+                    ? 'Transactions coming soon'
+                    : filter == 'credit'
                     ? 'No credits yet'
                     : filter == 'debit'
                     ? 'No debits yet'

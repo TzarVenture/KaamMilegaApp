@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 
 import '../../../core/network/connectivity_provider.dart';
 import '../../../shared/widgets/shimmer_loading.dart';
 import '../../auth/providers/auth_provider.dart';
+import '../models/wallet_summary.dart';
 import '../models/wallet_transaction.dart';
 import '../providers/wallet_provider.dart';
 
@@ -17,7 +19,8 @@ class WalletScreen extends ConsumerWidget {
     final authState = ref.watch(authProvider);
     final walletState = ref.watch(walletProvider);
     final user = authState.user;
-    final balance = user?.walletBalance ?? 0;
+    // Real balances from GET /wallet/balance (null until loaded)
+    final summary = walletState.summary;
 
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
@@ -132,10 +135,13 @@ class WalletScreen extends ConsumerWidget {
                   ),
                 ),
 
+              // Wallet service is not live on the backend yet
+              if (walletState.isComingSoon) _buildComingSoonBanner(),
+
               // 1. MAIN BALANCE CARD
               _buildBalanceCard(
                 context,
-                balance,
+                summary,
                 user?.isEmailVerified ?? false,
               ),
 
@@ -147,7 +153,7 @@ class WalletScreen extends ConsumerWidget {
               const SizedBox(height: 20),
 
               // 3. BALANCE BREAKDOWN / WALLET TYPES
-              _buildWalletTypesSection(balance),
+              _buildWalletTypesSection(summary),
 
               const SizedBox(height: 20),
 
@@ -170,7 +176,21 @@ class WalletScreen extends ConsumerWidget {
   }
 
   /// Deep Navy Primary Card with real balance and verification badge
-  Widget _buildBalanceCard(BuildContext context, int balance, bool isVerified) {
+  /// Indian-rupee format, e.g. ₹1,250 or ₹99.50
+  static String _inr(double value) {
+    final hasPaise = (value * 100).round() % 100 != 0;
+    return NumberFormat.currency(
+      locale: 'en_IN',
+      symbol: '₹',
+      decimalDigits: hasPaise ? 2 : 0,
+    ).format(value);
+  }
+
+  Widget _buildBalanceCard(
+    BuildContext context,
+    WalletSummary? summary,
+    bool isVerified,
+  ) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(22),
@@ -252,7 +272,7 @@ class WalletScreen extends ConsumerWidget {
                     ),
                     const SizedBox(width: 4),
                     Text(
-                      isVerified ? 'Verified' : 'Basic KYC',
+                      isVerified ? 'Verified' : 'Not verified',
                       style: TextStyle(
                         color: isVerified
                             ? const Color(0xFF34D399)
@@ -268,7 +288,7 @@ class WalletScreen extends ConsumerWidget {
           ),
           const SizedBox(height: 18),
           Text(
-            '₹$balance',
+            _inr(summary?.totalBalance ?? 0),
             style: const TextStyle(
               color: Colors.white,
               fontSize: 36,
@@ -278,7 +298,7 @@ class WalletScreen extends ConsumerWidget {
           ),
           const SizedBox(height: 4),
           const Text(
-            'Available for instant payouts and services',
+            'Total balance (added money + earnings + bonus)',
             style: TextStyle(
               color: Colors.white60,
               fontSize: 12,
@@ -295,12 +315,12 @@ class WalletScreen extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text(
-                      'Gig Earnings',
+                      'Earnings',
                       style: TextStyle(color: Colors.white60, fontSize: 11),
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      '₹0',
+                      _inr(summary?.earningsBalance ?? 0),
                       style: TextStyle(
                         color: Colors.white.withValues(alpha: 0.95),
                         fontSize: 14,
@@ -322,7 +342,7 @@ class WalletScreen extends ConsumerWidget {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      '₹0',
+                      _inr(summary?.lockedBalance ?? 0),
                       style: TextStyle(
                         color: Colors.white.withValues(alpha: 0.95),
                         fontSize: 14,
@@ -430,7 +450,7 @@ class WalletScreen extends ConsumerWidget {
   }
 
   /// Wallet Types Breakdown Card
-  Widget _buildWalletTypesSection(int balance) {
+  Widget _buildWalletTypesSection(WalletSummary? summary) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -457,27 +477,35 @@ class WalletScreen extends ConsumerWidget {
           ),
           const SizedBox(height: 12),
           _buildWalletTypeRow(
-            title: 'Main Wallet (Direct Balance)',
-            subtitle: 'Ready for hiring, upgrades & transfers',
-            amount: '₹$balance',
+            title: 'Main Wallet (Added Money)',
+            subtitle: 'Use for session bookings and services',
+            amount: _inr(summary?.mainBalance ?? 0),
             icon: Icons.wallet_rounded,
             color: const Color(0xFF1A2B8C),
           ),
           const Divider(height: 18, color: Color(0xFFF1F5F9)),
           _buildWalletTypeRow(
-            title: 'Earnings Ledger',
-            subtitle: 'Gig contracts and referral rewards',
-            amount: '₹0',
+            title: 'Earnings',
+            subtitle: 'Money you earned (withdrawable)',
+            amount: _inr(summary?.earningsBalance ?? 0),
             icon: Icons.monetization_on_outlined,
             color: const Color(0xFF10B981),
           ),
           const Divider(height: 18, color: Color(0xFFF1F5F9)),
           _buildWalletTypeRow(
             title: 'Escrow Protected',
-            subtitle: 'Held safely until milestone completion',
-            amount: '₹0',
+            subtitle: 'Held safely until the session is completed',
+            amount: _inr(summary?.lockedBalance ?? 0),
             icon: Icons.shield_outlined,
             color: const Color(0xFFF59E0B),
+          ),
+          const Divider(height: 18, color: Color(0xFFF1F5F9)),
+          _buildWalletTypeRow(
+            title: 'Bonus Credits',
+            subtitle: 'Promotional rewards (not withdrawable)',
+            amount: _inr(summary?.bonusBalance ?? 0),
+            icon: Icons.card_giftcard_rounded,
+            color: const Color(0xFF9333EA),
           ),
         ],
       ),
@@ -568,7 +596,8 @@ class WalletScreen extends ConsumerWidget {
                 ],
               ),
               Text(
-                isVerified ? 'Tier 2 (Full KYC)' : 'Tier 1 (Basic)',
+                // Email verification is not KYC; real KYC is not built yet
+                isVerified ? 'Email verified' : 'Email not verified',
                 style: const TextStyle(
                   color: Color(0xFF64748B),
                   fontSize: 12,
@@ -615,7 +644,7 @@ class WalletScreen extends ConsumerWidget {
           ),
           const SizedBox(height: 10),
           const Text(
-            'Protected by KaamMilega Escrow & RBI compliant partner payment gateways.',
+            'Payments are processed securely by Razorpay. Withdrawal limits and KYC will apply once withdrawals go live.',
             style: TextStyle(
               color: Color(0xFF94A3B8),
               fontSize: 11,
@@ -657,6 +686,40 @@ class WalletScreen extends ConsumerWidget {
           ),
         ),
       ],
+    );
+  }
+
+  /// Friendly notice shown while the wallet service is not live yet
+  Widget _buildComingSoonBanner() {
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFFFBEB),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFFDE68A)),
+      ),
+      child: const Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(Icons.schedule_rounded, color: Color(0xFFD97706), size: 20),
+          SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              'KaamMilega Wallet is coming soon. Balances, payments, '
+              'withdrawals and transfers will be available here once the '
+              'wallet goes live.',
+              style: TextStyle(
+                color: Color(0xFF92400E),
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                height: 1.4,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -707,9 +770,11 @@ class WalletScreen extends ConsumerWidget {
               ),
             ),
             const SizedBox(height: 14),
-            const Text(
-              'No transactions yet',
-              style: TextStyle(
+            Text(
+              walletState.isComingSoon
+                  ? 'Transactions coming soon'
+                  : 'No transactions yet',
+              style: const TextStyle(
                 color: Color(0xFF1E293B),
                 fontSize: 15,
                 fontWeight: FontWeight.w700,
@@ -993,7 +1058,7 @@ class WalletScreen extends ConsumerWidget {
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
-                    '$feature Integration',
+                    '$feature is coming soon',
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w800,
@@ -1005,7 +1070,7 @@ class WalletScreen extends ConsumerWidget {
             ),
             const SizedBox(height: 12),
             const Text(
-              'This feature requires the Go backend payment microservice or camera permissions to be deployed on the KaamMilega server.',
+              'We are still setting this up. It will be available in a future update of KaamMilega.',
               style: TextStyle(
                 fontSize: 13,
                 color: Color(0xFF475569),

@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import '../../../app/theme/app_colors.dart';
+import '../../../core/network/app_exception.dart';
+import '../../../shared/widgets/network_state_view.dart';
 import '../../../shared/widgets/shimmer_loading.dart';
+import '../../chat/presentation/open_chat.dart';
+import '../../network/repositories/network_repository.dart';
 import '../models/application.dart';
 import '../repositories/application_repository.dart';
 
@@ -23,7 +26,7 @@ class ApplicationDetailScreen extends ConsumerWidget {
     if (date == null) return 'Applied recently';
     final diff = DateTime.now().difference(date);
     if (diff.inMinutes < 60) {
-      return 'Applied ${diff.inMinutes <= 1 ? "just now" : "${diff.inMinutes} hours ago"}';
+      return 'Applied ${diff.inMinutes <= 1 ? "just now" : "${diff.inMinutes} minutes ago"}';
     } else if (diff.inHours < 24) {
       return 'Applied ${diff.inHours} ${diff.inHours == 1 ? "hour" : "hours"} ago';
     } else if (diff.inDays < 30) {
@@ -34,38 +37,65 @@ class ApplicationDetailScreen extends ConsumerWidget {
     }
   }
 
-  void _callHR(BuildContext context) async {
-    final uri = Uri(scheme: 'tel', path: '1800123456');
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri);
-    } else {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('HR Support Helpline: +91 98765 43210')),
-        );
-      }
-    }
-  }
-
-  void _chatWithHR(BuildContext context, ApplicationItem app) {
-    context.push(
-      '/chats/${app.id}',
-      extra: {
-        'receiverId': app.recruiterId.isNotEmpty ? app.recruiterId : 'hr_desk',
-        'title': '${app.companyName} HR Desk',
-      },
-    );
-  }
-
-  void _connectRecruiter(BuildContext context, ApplicationItem app) {
+  /// The backend does not share recruiter phone numbers with candidates yet,
+  /// so there is no real number to dial. (Previously this dialled a
+  /// placeholder number and showed a made-up helpline.)
+  void _callHR(BuildContext context) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        backgroundColor: AppColors.primary,
+      const SnackBar(
         content: Text(
-          'Connection request sent to ${app.companyName} Recruiter!',
+          'Calling recruiters is coming soon. Please use "Chat with HR" to '
+          'contact the recruiter.',
         ),
       ),
     );
+  }
+
+  /// Open a real chat with the recruiter (never a placeholder user).
+  /// Previously this opened the chat using the application ID as the
+  /// conversation ID and a fake "hr_desk" recipient.
+  void _chatWithHR(BuildContext context, WidgetRef ref, ApplicationItem app) {
+    openChatWithUser(
+      context,
+      ref,
+      receiverId: app.recruiterId,
+      title: '${app.companyName} HR Desk',
+    );
+  }
+
+  /// Send a real connection request (POST /network/connect)
+  Future<void> _connectRecruiter(
+    BuildContext context,
+    WidgetRef ref,
+    ApplicationItem app,
+  ) async {
+    final messenger = ScaffoldMessenger.of(context);
+    if (app.recruiterId.isEmpty) {
+      messenger.showSnackBar(
+        const SnackBar(
+          content: Text('Recruiter details are not available for this job.'),
+        ),
+      );
+      return;
+    }
+    try {
+      await ref.read(networkRepositoryProvider).sendInvitation(app.recruiterId);
+      messenger.showSnackBar(
+        SnackBar(
+          backgroundColor: AppColors.primary,
+          content: Text(
+            'Connection request sent to ${app.companyName} Recruiter!',
+          ),
+        ),
+      );
+    } catch (e) {
+      messenger.showSnackBar(
+        SnackBar(
+          backgroundColor: AppColors.error,
+          content: Text('Could not send connection request: $e'),
+        ),
+      );
+    }
   }
 
   @override
@@ -94,47 +124,42 @@ class ApplicationDetailScreen extends ConsumerWidget {
         data: (applications) {
           final app =
               initialApplication ??
-              applications.firstWhere(
-                (a) => a.id == applicationId || a.jobId == applicationId,
-                orElse: () => ApplicationItem(
-                  id: applicationId,
-                  jobId: applicationId,
-                  recruiterId: '',
-                  candidateId: '',
-                  status: 'Applied',
-                  coverLetter: '',
-                  createdAt: DateTime.now().subtract(const Duration(hours: 2)),
-                  jobTitle: 'Job Application',
-                  companyName: 'Company',
-                  cityName: 'All India',
-                ),
-              );
+              applications
+                  .where(
+                    (a) => a.id == applicationId || a.jobId == applicationId,
+                  )
+                  .firstOrNull;
 
-          return _buildContent(context, app);
+          // Never invent an application: show "not found" with Retry
+          if (app == null) {
+            return NetworkStateView(
+              errorMessage: 'This application could not be found.',
+              onRetry: () => ref.invalidate(myApplicationsProvider),
+              child: const SizedBox.shrink(),
+            );
+          }
+          return _buildContent(context, ref, app);
         },
         loading: () => const JobDetailSkeleton(),
         error: (err, _) {
-          final fallbackApp =
-              initialApplication ??
-              ApplicationItem(
-                id: applicationId,
-                jobId: applicationId,
-                recruiterId: '',
-                candidateId: '',
-                status: 'Applied',
-                coverLetter: '',
-                createdAt: DateTime.now().subtract(const Duration(hours: 2)),
-                jobTitle: 'Job Application',
-                companyName: 'Company',
-                cityName: 'All India',
-              );
-          return _buildContent(context, fallbackApp);
+          final app = initialApplication;
+          if (app != null) return _buildContent(context, ref, app);
+          return NetworkStateView(
+            isOffline: err is AppNetworkException,
+            errorMessage: err.toString(),
+            onRetry: () => ref.invalidate(myApplicationsProvider),
+            child: const SizedBox.shrink(),
+          );
         },
       ),
     );
   }
 
-  Widget _buildContent(BuildContext context, ApplicationItem app) {
+  Widget _buildContent(
+    BuildContext context,
+    WidgetRef ref,
+    ApplicationItem app,
+  ) {
     final timeAgoStr = _formatTimeAgo(app.createdAt);
 
     return SingleChildScrollView(
@@ -425,7 +450,7 @@ class ApplicationDetailScreen extends ConsumerWidget {
                       Expanded(
                         flex: 3,
                         child: OutlinedButton.icon(
-                          onPressed: () => _chatWithHR(context, app),
+                          onPressed: () => _chatWithHR(context, ref, app),
                           style: OutlinedButton.styleFrom(
                             foregroundColor: AppColors.textPrimary,
                             side: const BorderSide(color: Color(0xFFE0E0E0)),
@@ -455,7 +480,7 @@ class ApplicationDetailScreen extends ConsumerWidget {
                       Expanded(
                         flex: 2,
                         child: ElevatedButton(
-                          onPressed: () => _connectRecruiter(context, app),
+                          onPressed: () => _connectRecruiter(context, ref, app),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFFB052B7),
                             foregroundColor: Colors.white,

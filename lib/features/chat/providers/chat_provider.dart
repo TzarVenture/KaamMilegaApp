@@ -28,6 +28,12 @@ class ChatMessagesNotifier extends ChangeNotifier {
   final String _conversationId;
   StreamSubscription<ChatMessage>? _subscription;
 
+  /// The real conversation ID. For a brand-new chat the screen is opened
+  /// with a temporary ID; after the first message is sent the server
+  /// returns the real conversation ID and we switch to it, so live replies
+  /// (which carry the real ID) keep appearing.
+  late String _activeConversationId = _conversationId;
+
   List<ChatMessage> _messages = [];
   List<ChatMessage> get messages => List.unmodifiable(_messages);
 
@@ -43,7 +49,7 @@ class ChatMessagesNotifier extends ChangeNotifier {
   void _init() {
     _wsService.connect();
     _subscription = _wsService.messageStream.listen((newMsg) {
-      if (newMsg.conversationId == _conversationId) {
+      if (newMsg.conversationId == _activeConversationId) {
         _appendMessage(newMsg);
       }
     });
@@ -58,7 +64,7 @@ class ChatMessagesNotifier extends ChangeNotifier {
 
   Future<void> _fetchMessageHistory() async {
     try {
-      final history = await _repository.getMessages(_conversationId);
+      final history = await _repository.getMessages(_activeConversationId);
       _messages = history;
       notifyListeners();
     } catch (_) {}
@@ -81,6 +87,10 @@ class ChatMessagesNotifier extends ChangeNotifier {
         content: content,
       );
       _appendMessage(sentMessage);
+      final realId = sentMessage.conversationId;
+      if (realId.isNotEmpty && realId != _activeConversationId) {
+        _activeConversationId = realId;
+      }
       _ref.invalidate(conversationsProvider);
       return true;
     } catch (_) {

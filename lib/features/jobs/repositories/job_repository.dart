@@ -34,6 +34,29 @@ class JobRepository {
     return const JobsResponse(jobs: [], total: 0, page: 1, limit: 10);
   }
 
+  /// Toggle a job bookmark on the server (POST /user/bookmark/:jobId).
+  /// Returns the full updated list of bookmarked job IDs.
+  Future<Set<String>> toggleBookmark(String jobId) async {
+    final response = await _client.post('${ApiConstants.userBookmark}$jobId');
+    return _parseBookmarkIds(response.data);
+  }
+
+  /// Fetch bookmarked job IDs for the signed-in user.
+  /// Read from GET /user/profile (field `bookmarked_jobs`), the same way the
+  /// website does. GET /user/bookmarks currently returns HTTP 500 because the
+  /// backend matches it as GET /user/:id (route order issue on the server).
+  Future<Set<String>> getBookmarkedJobIds() async {
+    final response = await _client.get(ApiConstants.userProfile);
+    return _parseBookmarkIds(response.data);
+  }
+
+  Set<String> _parseBookmarkIds(dynamic data) {
+    if (data is Map<String, dynamic> && data['bookmarked_jobs'] is List) {
+      return (data['bookmarked_jobs'] as List).map((e) => e.toString()).toSet();
+    }
+    return <String>{};
+  }
+
   /// Fetch single job by ID
   Future<Job> getJobById(String id) async {
     final response = await _client.get('${ApiConstants.jobDetail}$id');

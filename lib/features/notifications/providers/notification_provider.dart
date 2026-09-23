@@ -28,7 +28,7 @@ class NotificationNotifier extends AsyncNotifier<List<NotificationItem>> {
     // Manual pull-to-refresh / retry will probe the endpoint again.
     if (_isEndpointUnavailable) {
       throw const AppNotFoundException(
-        'Notifications service is currently under development.',
+        'Notifications are coming soon.',
       );
     }
 

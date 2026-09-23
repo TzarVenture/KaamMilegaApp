@@ -214,15 +214,48 @@ class AuthNotifier extends Notifier<AuthState> {
     }
   }
 
+  /// Profile fields the backend does not store yet. They are kept on the
+  /// device instead of being sent (the server would silently drop them).
+  static const Set<String> deviceOnlyProfileKeys = {
+    'open_to_work',
+    'providing_services',
+    'is_available_for_gigs',
+  };
+
   /// Update Candidate Profile (headline, about, city, gender, experience, etc.)
   Future<bool> updateProfile(Map<String, dynamic> updates) async {
     state = state.copyWith(isLoading: true, error: null);
     try {
-      final updatedUser = await _repository.updateProfile(updates);
+      final deviceUpdates = Map<String, dynamic>.from(updates)
+        ..removeWhere((k, _) => !deviceOnlyProfileKeys.contains(k));
+      final serverUpdates = Map<String, dynamic>.from(updates)
+        ..removeWhere((k, _) => deviceOnlyProfileKeys.contains(k));
+
+      if (deviceUpdates.isNotEmpty) {
+        await LocalStorage.saveDeviceProfilePrefs(deviceUpdates);
+      }
+
+      UserProfile? updatedUser = state.user;
+      if (serverUpdates.isNotEmpty) {
+        updatedUser = await _repository.updateProfile(serverUpdates);
+      }
+
+      if (updatedUser != null && deviceUpdates.isNotEmpty) {
+        updatedUser = updatedUser.copyWith(
+          openToWork: deviceUpdates['open_to_work']?.toString(),
+          providingServices: deviceUpdates['providing_services']?.toString(),
+          isAvailableForGigs: deviceUpdates['is_available_for_gigs'] as bool?,
+        );
+        await LocalStorage.saveUser(updatedUser.toJson());
+      }
+
       state = state.copyWith(isLoading: false, user: updatedUser);
       return true;
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString());
+      state = state.copyWith(
+        isLoading: false,
+        error: _parseError(e, 'Failed to update profile'),
+      );
       return false;
     }
   }
@@ -240,8 +273,9 @@ class AuthNotifier extends Notifier<AuthState> {
   }) async {
     state = state.copyWith(isLoading: true, error: null);
     try {
+      // Backend can only add education; the existing id is not re-sent
+      // (the server would store a duplicate entry with the same id).
       final updatedUser = await _repository.addEducation(
-        id: id,
         schoolName: schoolName,
         degree: degree,
         fieldOfStudy: fieldOfStudy,
@@ -253,7 +287,10 @@ class AuthNotifier extends Notifier<AuthState> {
       state = state.copyWith(isLoading: false, user: updatedUser);
       return true;
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString());
+      state = state.copyWith(
+        isLoading: false,
+        error: _parseError(e, 'Failed to save education'),
+      );
       return false;
     }
   }
@@ -282,7 +319,10 @@ class AuthNotifier extends Notifier<AuthState> {
       state = state.copyWith(isLoading: false, user: updatedUser);
       return true;
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString());
+      state = state.copyWith(
+        isLoading: false,
+        error: _parseError(e, 'Failed to save experience'),
+      );
       return false;
     }
   }
@@ -389,11 +429,17 @@ class AuthNotifier extends Notifier<AuthState> {
     try {
       final url = await _repository.uploadFile(bytes, filename);
       if (url != null && url.isNotEmpty) {
-        final updatedUser = await _repository.updateProfile({
-          'resume_url': url,
-          'resume': url,
-        });
-        state = state.copyWith(isLoading: false, user: updatedUser);
+        // Backend profile has no resume field yet, so keep the uploaded URL on
+        // the device; it is attached to every job application (resume_url).
+        await LocalStorage.saveResumeUrl(url);
+        final current = state.user;
+        if (current != null) {
+          final updatedUser = current.copyWith(resumeUrl: url);
+          await LocalStorage.saveUser(updatedUser.toJson());
+          state = state.copyWith(isLoading: false, user: updatedUser);
+        } else {
+          state = state.copyWith(isLoading: false);
+        }
         return true;
       }
       state = state.copyWith(
@@ -455,33 +501,75 @@ class AuthNotifier extends Notifier<AuthState> {
       state = state.copyWith(isLoading: false, user: updatedUser);
       return true;
     } catch (e) {
-      if (state.user != null) {
-        final newProject = ProjectItem(
-          id: id ?? DateTime.now().millisecondsSinceEpoch.toString(),
-          title: title,
-          associatedWith: associatedWith,
-          description: description,
-          link: link,
-          startDate: startDate,
-          endDate: endDate,
-          skills: skills,
-          isCurrentlyWorking: isCurrentlyWorking,
-        );
-        final updatedList = List<ProjectItem>.from(state.user!.projects);
-        final existingIdx = updatedList.indexWhere(
-          (p) => p.id == newProject.id,
-        );
-        if (existingIdx >= 0) {
-          updatedList[existingIdx] = newProject;
-        } else {
-          updatedList.add(newProject);
-        }
-        final updatedUser = state.user!.copyWith(projects: updatedList);
-        state = state.copyWith(isLoading: false, user: updatedUser);
-        await LocalStorage.saveUser(updatedUser.toJson());
-        return true;
-      }
-      state = state.copyWith(isLoading: false, error: e.toString());
+      // Do not fake success locally: surface the real server error.
+      state = state.copyWith(
+        isLoading: false,
+        error: _parseError(e, 'Failed to save project'),
+      );
+      return false;
+    }
+  }
+
+  /// Submit Expert application to backend
+  Future<bool> applyForExpert({
+    required String category,
+    required String bio,
+    required double pricing,
+    List<Map<String, String>> documents = const [],
+  }) async {
+    state = state.copyWith(isLoading: true, error: null);
+    try {
+      final updatedUser = await _repository.applyForExpert(
+        category: category,
+        bio: bio,
+        pricing: pricing,
+        documents: documents,
+      );
+      state = state.copyWith(isLoading: false, user: updatedUser);
+      return true;
+    } catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        error: _parseError(e, 'Failed to submit expert application'),
+      );
+      return false;
+    }
+  }
+
+  /// Change account password
+  Future<bool> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    state = state.copyWith(isLoading: true, error: null);
+    try {
+      await _repository.changePassword(
+        currentPassword: currentPassword,
+        newPassword: newPassword,
+      );
+      state = state.copyWith(isLoading: false);
+      return true;
+    } catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        error: _parseError(e, 'Failed to update password'),
+      );
+      return false;
+    }
+  }
+
+  /// Delete a Project from candidate profile
+  Future<bool> deleteProject(String id) async {
+    state = state.copyWith(isLoading: true, error: null);
+    try {
+      final updatedUser = await _repository.deleteProject(id);
+      state = state.copyWith(isLoading: false, user: updatedUser);
+      return true;
+    } catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        error: _parseError(e, 'Failed to delete project'),
+      );
       return false;
     }
   }

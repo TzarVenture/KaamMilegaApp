@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../app/theme/app_colors.dart';
+import '../../../app/auth_guard.dart';
 import '../providers/auth_provider.dart';
 
 /// Create Account / Registration Screen
@@ -72,7 +73,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       setState(() => _isLoading = false);
       if (success) {
         _showSnackBar('Account created successfully! Welcome to KaamMilega.');
-        context.go('/home');
+        // Return to the screen the user wanted before sign-up (or Home)
+        context.go(AuthGuard.takePendingPath());
       } else {
         final error = ref.read(authProvider).error;
         _showSnackBar(

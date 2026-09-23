@@ -64,6 +64,7 @@ class _ApplyModalSheetState extends ConsumerState<ApplyModalSheet> {
           .applyToJob(
             widget.job.id,
             coverLetter: _coverLetterController.text.trim(),
+            resumeUrl: ref.read(authProvider).user?.resumeUrl ?? '',
           );
 
       ref.invalidate(myApplicationsProvider);

@@ -63,7 +63,7 @@ class FeedScreen extends ConsumerWidget {
             ),
             const SizedBox(height: 6),
             const Text(
-              'No resources available at this time.',
+              'Career resources are coming soon.',
               style: TextStyle(
                 fontSize: 13,
                 color: AppColors.textSecondary,
