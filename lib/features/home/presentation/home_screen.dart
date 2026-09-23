@@ -242,207 +242,224 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       backgroundColor: Colors.white,
       endDrawer: ProfileDrawer(onNavigateTab: widget.onNavigateTab),
       body: SafeArea(
-        child: SingleChildScrollView(
-          controller: _scrollController,
-          physics: const BouncingScrollPhysics(),
-          padding: const EdgeInsets.only(bottom: 24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // 1. TOP APP BAR (Logo + Search, Notification Bell with red dot, Three-line Menu)
-              _buildTopHeader(currentCity, unreadCount),
+        child: Column(
+          children: [
+            // 1. TOP APP BAR — pinned outside the scroll view so it stays
+            // visible while scrolling (Logo, Search, Notification Bell, Menu)
+            _buildTopBar(unreadCount),
 
-              const SizedBox(height: 10),
+            Expanded(
+              child: SingleChildScrollView(
+                controller: _scrollController,
+                physics: const BouncingScrollPhysics(),
+                padding: const EdgeInsets.only(bottom: 24),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // City selector scrolls with the content
+                    _buildLocationSelector(currentCity),
 
-              // 2. INSTANTMILEGA™ PROMO BANNER (Purple Card)
-              _buildInstantMilegaBanner(),
+                    const SizedBox(height: 10),
 
-              const SizedBox(height: 18),
+                    // 2. INSTANTMILEGA™ PROMO BANNER (Purple Card)
+                    _buildInstantMilegaBanner(),
 
-              // 3. QUICK ACTION CIRCULAR ICONS ROW (Jobs, Instant Work, Skills, Experts, Services, More)
-              _buildQuickActionIcons(),
+                    const SizedBox(height: 18),
 
-              const SizedBox(height: 22),
+                    // 3. QUICK ACTION CIRCULAR ICONS ROW (Jobs, Instant Work, Skills, Experts, Services, More)
+                    _buildQuickActionIcons(),
 
-              // 4. POPULAR CATEGORIES SECTION
-              _buildPopularCategories(),
+                    const SizedBox(height: 22),
 
-              const SizedBox(height: 22),
+                    // 4. POPULAR CATEGORIES SECTION
+                    _buildPopularCategories(),
 
-              // 5. RECOMMENDED FOR YOU SECTION (Side by side cards)
-              _buildRecommendedSection(jobsState.jobs, jobsState.isLoading),
+                    const SizedBox(height: 22),
 
-              const SizedBox(height: 22),
+                    // 5. RECOMMENDED FOR YOU SECTION (Side by side cards)
+                    _buildRecommendedSection(jobsState.jobs, jobsState.isLoading),
 
-              // 6. UNLOCK ALL BENEFITS WITH ₹99 ACCESS BANNER
-              _build99AccessBanner(),
+                    const SizedBox(height: 22),
 
-              const SizedBox(height: 22),
+                    // 6. UNLOCK ALL BENEFITS WITH ₹99 ACCESS BANNER
+                    _build99AccessBanner(),
 
-              // 7. TOP PICKS SECTION (Vertical List Card)
-              _buildTopPicksSection(jobsState.jobs),
-            ],
-          ),
+                    const SizedBox(height: 22),
+
+                    // 7. TOP PICKS SECTION (Vertical List Card)
+                    _buildTopPicksSection(jobsState.jobs),
+                  ],
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
   }
 
   // ==========================================
-  // 1. TOP APP BAR & CITY SELECTOR
+  // 1. TOP APP BAR (pinned: stays visible while the page scrolls,
+  //    same behaviour as the Jobs tab app bar)
   // ==========================================
-  Widget _buildTopHeader(String currentCity, int unreadCount) {
-    return Padding(
+  Widget _buildTopBar(int unreadCount) {
+    return Container(
       padding: const EdgeInsets.fromLTRB(16, 10, 16, 8),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        border: Border(bottom: BorderSide(color: Color(0xFFF1F5F9))),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              // Logo: clickable navigating to home & scrolling to top
-              Expanded(
-                child: GestureDetector(
-                  onTap: () {
-                    if (_scrollController.hasClients) {
-                      _scrollController.animateTo(
-                        0,
-                        duration: const Duration(milliseconds: 300),
-                        curve: Curves.easeOut,
-                      );
-                    }
-                    if (widget.onNavigateTab != null) {
-                      widget.onNavigateTab!(0);
-                    } else {
-                      try {
-                        context.go('/home');
-                      } catch (_) {}
-                    }
-                  },
-                  child: FittedBox(
-                    fit: BoxFit.scaleDown,
-                    alignment: Alignment.centerLeft,
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Image.asset(
-                          'assets/images/logo.png',
-                          height: 30,
-                          fit: BoxFit.contain,
-                        ),
-                        const SizedBox(width: 8),
-                        Image.asset(
-                          'assets/images/logo_text.png',
-                          height: 18,
-                          fit: BoxFit.contain,
-                        ),
-                      ],
+          // Logo: clickable navigating to home & scrolling to top
+          Expanded(
+            child: GestureDetector(
+              onTap: () {
+                if (_scrollController.hasClients) {
+                  _scrollController.animateTo(
+                    0,
+                    duration: const Duration(milliseconds: 300),
+                    curve: Curves.easeOut,
+                  );
+                }
+                if (widget.onNavigateTab != null) {
+                  widget.onNavigateTab!(0);
+                } else {
+                  try {
+                    context.go('/home');
+                  } catch (_) {}
+                }
+              },
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerLeft,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Image.asset(
+                      'assets/images/logo.png',
+                      height: 30,
+                      fit: BoxFit.contain,
                     ),
-                  ),
+                    const SizedBox(width: 8),
+                    Image.asset(
+                      'assets/images/logo_text.png',
+                      height: 18,
+                      fit: BoxFit.contain,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+
+          // Right Action Icons Row: Search + Notification Bell + Three-line Hamburger
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Search Icon Button (Left of Notification Bell)
+              IconButton(
+                onPressed: () => _goToJobsTabWithQuery(''),
+                icon: const Icon(
+                  Icons.search_rounded,
+                  color: Color(0xFF1E293B),
+                  size: 24,
+                ),
+                splashRadius: 22,
+                padding: const EdgeInsets.all(6),
+                constraints: const BoxConstraints(),
+              ),
+              const SizedBox(width: 8),
+
+              // Notification Bell with dynamic unread indicator dot
+              GestureDetector(
+                onTap: () => context.push('/notifications'),
+                child: Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(6),
+                      child: const Icon(
+                        Icons.notifications_none_rounded,
+                        color: Color(0xFF1E293B),
+                        size: 24,
+                      ),
+                    ),
+                    if (unreadCount > 0)
+                      Positioned(
+                        top: 4,
+                        right: 4,
+                        child: Container(
+                          width: 8,
+                          height: 8,
+                          decoration: const BoxDecoration(
+                            color: Color(0xFFEF4444),
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                      ),
+                  ],
                 ),
               ),
               const SizedBox(width: 8),
 
-              // Right Action Icons Row: Search + Notification Bell + Three-line Hamburger
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // Search Icon Button (Left of Notification Bell)
-                  IconButton(
-                    onPressed: () => _goToJobsTabWithQuery(''),
-                    icon: const Icon(
-                      Icons.search_rounded,
-                      color: Color(0xFF1E293B),
-                      size: 24,
-                    ),
-                    splashRadius: 22,
-                    padding: const EdgeInsets.all(6),
-                    constraints: const BoxConstraints(),
-                  ),
-                  const SizedBox(width: 8),
-
-                  // Notification Bell with dynamic unread indicator dot
-                  GestureDetector(
-                    onTap: () => context.push('/notifications'),
-                    child: Stack(
-                      clipBehavior: Clip.none,
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(6),
-                          child: const Icon(
-                            Icons.notifications_none_rounded,
-                            color: Color(0xFF1E293B),
-                            size: 24,
-                          ),
-                        ),
-                        if (unreadCount > 0)
-                          Positioned(
-                            top: 4,
-                            right: 4,
-                            child: Container(
-                              width: 8,
-                              height: 8,
-                              decoration: const BoxDecoration(
-                                color: Color(0xFFEF4444),
-                                shape: BoxShape.circle,
-                              ),
-                            ),
-                          ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-
-                  // Three-line Hamburger Option Button (Right of Notification Bell)
-                  IconButton(
-                    onPressed: () {
-                      _scaffoldKey.currentState?.openEndDrawer();
-                    },
-                    icon: const Icon(
-                      Icons.menu_rounded,
-                      color: Color(0xFF1E293B),
-                      size: 24,
-                    ),
-                    splashRadius: 22,
-                    padding: const EdgeInsets.all(6),
-                    constraints: const BoxConstraints(),
-                  ),
-                ],
+              // Three-line Hamburger Option Button (Right of Notification Bell)
+              IconButton(
+                onPressed: () {
+                  _scaffoldKey.currentState?.openEndDrawer();
+                },
+                icon: const Icon(
+                  Icons.menu_rounded,
+                  color: Color(0xFF1E293B),
+                  size: 24,
+                ),
+                splashRadius: 22,
+                padding: const EdgeInsets.all(6),
+                constraints: const BoxConstraints(),
               ),
             ],
           ),
-          const SizedBox(height: 6),
-          // Location Selector
-          GestureDetector(
-            onTap: () => _openCitySelector(currentCity),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(
-                  Icons.location_on_rounded,
-                  color: AppColors.accent,
-                  size: 16,
-                ),
-                const SizedBox(width: 4),
-                Text(
-                  currentCity,
-                  style: const TextStyle(
-                    fontSize: 13.5,
-                    fontWeight: FontWeight.w800,
-                    color: Color(0xFF0F172A),
-                  ),
-                ),
-                const SizedBox(width: 2),
-                const Icon(
-                  Icons.keyboard_arrow_down_rounded,
-                  color: Color(0xFF0F172A),
-                  size: 18,
-                ),
-              ],
-            ),
-          ),
         ],
+      ),
+    );
+  }
+
+  // ==========================================
+  // 1b. CITY SELECTOR (scrolls with the page content)
+  // ==========================================
+  Widget _buildLocationSelector(String currentCity) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
+      child: GestureDetector(
+        onTap: () => _openCitySelector(currentCity),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(
+              Icons.location_on_rounded,
+              color: AppColors.accent,
+              size: 16,
+            ),
+            const SizedBox(width: 4),
+            Text(
+              currentCity,
+              style: const TextStyle(
+                fontSize: 13.5,
+                fontWeight: FontWeight.w800,
+                color: Color(0xFF0F172A),
+              ),
+            ),
+            const SizedBox(width: 2),
+            const Icon(
+              Icons.keyboard_arrow_down_rounded,
+              color: Color(0xFF0F172A),
+              size: 18,
+            ),
+          ],
+        ),
       ),
     );
   }
