@@ -1,50 +1,14 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 
 import '../../../app/theme/app_colors.dart';
 import '../../../app/theme/app_text_styles.dart';
-import '../../../core/storage/local_storage.dart';
 import '../../../shared/widgets/app_logo.dart';
 
-class SplashScreen extends StatefulWidget {
+/// Shown while the saved login session is checked at app start. It does not
+/// navigate by itself: the router (AuthGuard.redirect) leaves Splash for Home
+/// or Login as soon as the check in authProvider finishes.
+class SplashScreen extends StatelessWidget {
   const SplashScreen({super.key});
-
-  @override
-  State<SplashScreen> createState() => _SplashScreenState();
-}
-
-class _SplashScreenState extends State<SplashScreen> {
-  Timer? _timer;
-
-  @override
-  void initState() {
-    super.initState();
-    _startApp();
-  }
-
-  Future<void> _startApp() async {
-    await LocalStorage.init();
-    _timer = Timer(const Duration(milliseconds: 1500), () {
-      if (mounted) {
-        final token = LocalStorage.getToken();
-        if (token != null && token.isNotEmpty) {
-          context.go('/home');
-        } else {
-          context.go(
-            '/home',
-          ); // Allow guest browsing the website landing page directly
-        }
-      }
-    });
-  }
-
-  @override
-  void dispose() {
-    _timer?.cancel();
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {

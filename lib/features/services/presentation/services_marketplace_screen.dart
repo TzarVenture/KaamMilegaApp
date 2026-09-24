@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 
+import '../../../app/auth_guard.dart';
 import '../../profile/presentation/widgets/profile_drawer.dart';
 import '../../../shared/widgets/category_top_header.dart';
 import '../../../shared/widgets/themed_category_bottom_nav.dart';
@@ -278,7 +278,10 @@ class _ServicesMarketplaceScreenState extends State<ServicesMarketplaceScreen> {
                         SizedBox(
                           width: double.infinity,
                           child: ElevatedButton(
-                            onPressed: () => context.push('/apply-expert'),
+                            onPressed: () => AuthGuard.openProtected(
+                              context,
+                              '/apply-expert',
+                            ),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: const Color(0xFFE11D48),
                               foregroundColor: Colors.white,

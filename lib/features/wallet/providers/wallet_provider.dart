@@ -102,7 +102,9 @@ class WalletNotifier extends Notifier<WalletState> {
     if (cached.data != null) {
       try {
         final s = cached.data!['summary'];
-        if (s is Map<String, dynamic>) cachedSummary = WalletSummary.fromJson(s);
+        if (s is Map<String, dynamic>) {
+          cachedSummary = WalletSummary.fromJson(s);
+        }
         final t = cached.data!['transactions'];
         if (t is List) {
           cachedTxns = t

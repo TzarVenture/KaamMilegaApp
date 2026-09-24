@@ -13,11 +13,21 @@ class AuthState {
   final bool isAuthenticated;
   final String? error;
 
+  /// True while the saved session is being checked at app start. The router
+  /// keeps the Splash screen visible until this is false.
+  final bool isChecking;
+
+  /// True after "Explore Jobs as Guest". Kept in memory only (a restart starts
+  /// at Login again) and never counts as signed in.
+  final bool isGuest;
+
   const AuthState({
     this.user,
     this.isLoading = false,
     this.isAuthenticated = false,
     this.error,
+    this.isChecking = false,
+    this.isGuest = false,
   });
 
   AuthState copyWith({
@@ -25,12 +35,16 @@ class AuthState {
     bool? isLoading,
     bool? isAuthenticated,
     String? error,
+    bool? isChecking,
+    bool? isGuest,
   }) {
     return AuthState(
       user: user ?? this.user,
       isLoading: isLoading ?? this.isLoading,
       isAuthenticated: isAuthenticated ?? this.isAuthenticated,
       error: error,
+      isChecking: isChecking ?? this.isChecking,
+      isGuest: isGuest ?? this.isGuest,
     );
   }
 }
@@ -72,20 +86,41 @@ class AuthNotifier extends Notifier<AuthState> {
     });
 
     Future.microtask(() => checkAuthStatus());
-    return const AuthState();
+    // Not signed in and not logged out yet: the session is still unknown.
+    return const AuthState(isChecking: true);
   }
 
-  /// Check if user has an active saved session & refresh profile data
+  /// Startup session check. Splash stays visible until it finishes, then the
+  /// router opens Home (valid session) or Login (no or rejected session).
   Future<void> checkAuthStatus() async {
     final token = LocalStorage.getToken();
-    if (token != null && token.isNotEmpty) {
-      final cachedUser = LocalStorage.getUser();
-      state = state.copyWith(
-        isAuthenticated: true,
-        user: cachedUser != null ? UserProfile.fromJson(cachedUser) : null,
-      );
-      await refreshProfile();
+    if (token == null || token.isEmpty) {
+      state = state.copyWith(isChecking: false, isAuthenticated: false);
+      return;
     }
+
+    final cachedUser = LocalStorage.getUser();
+    if (cachedUser != null) {
+      state = state.copyWith(user: UserProfile.fromJson(cachedUser));
+    }
+
+    // Validate the saved token with the server. If the server rejects it
+    // (HTTP 401), ApiClient clears the saved session. When offline or the
+    // server is down, the token stays and the cached profile is used.
+    await refreshProfile();
+    if (!ref.mounted) return;
+
+    final tokenStillValid = (LocalStorage.getToken() ?? '').isNotEmpty;
+    state = tokenStillValid
+        ? state.copyWith(isChecking: false, isAuthenticated: true)
+        : const AuthState();
+  }
+
+  /// "Explore Jobs as Guest": browse public screens without an account.
+  /// No token is created; account-only actions still ask the user to log in.
+  void enterGuestMode() {
+    if (state.isAuthenticated) return;
+    state = state.copyWith(isGuest: true);
   }
 
   /// Refresh latest candidate profile from backend API

@@ -7,6 +7,14 @@ class ApiConstants {
   /// or http://localhost:8000/api (desktop / web)
   static const String baseUrl = 'https://api.kaammilega.com/api';
 
+  /// KaamMilega website (km-frontend). Same domain the website itself uses.
+  static const String websiteUrl = 'https://kaammilega.com';
+
+  /// Public profile page on the website: `/profile/{userId}`, the same link
+  /// the website builds for a user's profile (it loads GET /user/:id).
+  static String publicProfileUrl(String userId) =>
+      '$websiteUrl/profile/$userId';
+
   /// Resolves any relative, partial, or malformed image/file URL into a full absolute HTTP/HTTPS URL.
   static String resolveImageUrl(String? url) {
     if (url == null) return '';
@@ -72,17 +80,21 @@ class ApiConstants {
   static const String userSkill = '/user/skill';
   static const String userEducation = '/user/education';
   static const String userExperience = '/user/experience';
-  static const String userProject = '/user/project'; // POST add, PUT/DELETE /:id
+  static const String userProject =
+      '/user/project'; // POST add, PUT/DELETE /:id
   static const String userPassword = '/user/password'; // PUT
   static const String userApplyExpert = '/user/apply-expert'; // POST
   static const String userSettings = '/user/settings'; // GET / PUT
-  static const String userBookmark = '/user/bookmark/'; // POST toggle, append :jobId
+  static const String userBookmark =
+      '/user/bookmark/'; // POST toggle, append :jobId
   // NOTE: GET /user/bookmarks and GET /user/settings return 500 on the current
   // backend (shadowed by GET /user/:id). The app reads both from GET /user/profile.
-  static const String userBookmarks = '/user/bookmarks'; // GET (not used, see note)
+  static const String userBookmarks =
+      '/user/bookmarks'; // GET (not used, see note)
   static const String userSearch = '/user/search'; // GET ?q=
   static const String userById = '/user/'; // GET, append :id
-  static const String applicationCheck = '/applications/check/'; // GET, append :jobId
+  static const String applicationCheck =
+      '/applications/check/'; // GET, append :jobId
 
   // --- File Upload ---
   static const String fileUpload = '/files/upload';
@@ -116,17 +128,22 @@ class ApiConstants {
 
   // --- Wallet Endpoints (live on backend main since 23 Sep 2026) ---
   static const String walletBalance = '/wallet/balance'; // GET summary
-  static const String walletTransactions = '/wallet/transactions'; // GET ?page&limit&type
-  static const String walletTopupCreateOrder = '/wallet/topup/create-order'; // POST {amount}
-  static const String walletTopupVerify = '/wallet/topup/verify'; // POST razorpay ids + amount
+  static const String walletTransactions =
+      '/wallet/transactions'; // GET ?page&limit&type
+  static const String walletTopupCreateOrder =
+      '/wallet/topup/create-order'; // POST {amount}
+  static const String walletTopupVerify =
+      '/wallet/topup/verify'; // POST razorpay ids + amount
   // Not built on backend yet (screens show "coming soon"):
   static const String walletWithdraw = '/wallet/withdraw';
   static const String walletTransfer = '/wallet/transfer';
 
   // --- Paid mentorship booking (backend F76) ---
   static const String mentorshipBookWallet = '/mentorships/book-wallet'; // POST
-  static const String mentorshipCreateOrder = '/mentorships/create-order'; // POST
-  static const String mentorshipVerifyPayment = '/mentorships/verify-payment'; // POST
+  static const String mentorshipCreateOrder =
+      '/mentorships/create-order'; // POST
+  static const String mentorshipVerifyPayment =
+      '/mentorships/verify-payment'; // POST
 
   // --- Company Hub Endpoints ---
   static const String adminCompanies = '/admin/companies';

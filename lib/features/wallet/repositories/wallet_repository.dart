@@ -45,10 +45,7 @@ class WalletRepository {
       if (data is Map<String, dynamic>) return WalletSummary.fromJson(data);
       throw const WalletApiException('Invalid response from wallet service');
     } on AppNotFoundException {
-      throw const WalletApiException(
-        comingSoonMessage,
-        isBackendPending: true,
-      );
+      throw const WalletApiException(comingSoonMessage, isBackendPending: true);
     }
   }
 
@@ -77,10 +74,7 @@ class WalletRepository {
           .map(WalletTransaction.fromJson)
           .toList();
     } on AppNotFoundException {
-      throw const WalletApiException(
-        comingSoonMessage,
-        isBackendPending: true,
-      );
+      throw const WalletApiException(comingSoonMessage, isBackendPending: true);
     }
   }
 
@@ -130,7 +124,8 @@ class WalletRepository {
       },
     );
     final data = response.data;
-    if (data is Map<String, dynamic> && data['wallet'] is Map<String, dynamic>) {
+    if (data is Map<String, dynamic> &&
+        data['wallet'] is Map<String, dynamic>) {
       return WalletSummary.fromJson(data['wallet'] as Map<String, dynamic>);
     }
     return null;

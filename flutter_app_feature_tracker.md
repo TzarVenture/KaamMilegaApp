@@ -1,9 +1,9 @@
 # KaamMilega™ — Mobile Application Feature Tracking (Candidate & Gig Workers)
 
 > **Exact Google Sheets Format**: Mirrored to your 8-column tracking schema (`Seq #`, `Feature ID`, `Feature Name`, `Module / Phase`, `Milestone & Sprint`, `Current Status`, `Branch / PR Reference`, `Live Progress & Developer Notes`).
+> **Last updated**: 2026-09-23, verified against the app code and the latest backend `main`. Branch `fix/backend-alignment-wallet-payments (a30fa29)` = work done in that branch (not merged to `main` yet).
 > **Files Available**:
-> - [flutter_app_feature_tracker.tsv](file:///D:/Desktop/Kaammilega%20App/KaamMilegaApp/flutter_app_feature_tracker.tsv) *(Direct 1-Click Copy-Paste into Google Sheets)*
-> - [flutter_app_feature_tracker.csv](file:///D:/Desktop/Kaammilega%20App/KaamMilegaApp/flutter_app_feature_tracker.csv) *(Native Google Sheets Import)*
+> - [flutter_app_feature_tracker.csv](flutter_app_feature_tracker.csv) *(Google Sheets: File → Import → Upload)*
 
 ---
 
@@ -11,10 +11,10 @@
 
 | Status Category | Feature Count | Description |
 | :--- | :---: | :--- |
-| 🟢 **Fully Implemented** | **35** | Core Auth, Profile Strength, Portfolio & Projects, Job Search & Discovery, 1-Click Apply, Bookmarking, My Applications, Interviews, Real-Time WebSocket Chat, Events Registration |
-| 🟡 **Partially Implemented** | **17** | Community Feed, Wallet Withdrawals, KYC Modal, Instant Work "Free Now" Toggle & 60s Dispatch Card, Services Marketplace, AI Assistant Chat |
-| ⏳ **Pending Implementation** | **5** | Razorpay SDK Checkout, FCM Push Notifications, 30s Background GPS (`geolocator`) |
-| 🚀 **Upcoming / Not Started** | **15** | Rs 99 Access Pass Quota, Refer & Earn, Bonus Offers, WebRTC P2P Calling |
+| 🟢 **Fully Implemented** | **38** | Core Auth, Profile (info, education, experience, skills, photo, resume, projects, strength bar), Job Search & Filters, 1-Click Apply, Bookmarks, My Applications, Interviews, Experts (apply, directory, free & paid booking), Wallet Balance, Add Money via Razorpay, Transactions, Connections, WebSocket Chat, Events, Settings, Guest Mode & Login Guard |
+| 🟡 **Partially Implemented** | **6** | Chat Unread Badges, Android & iOS release setup (signing pending), Wallet Withdrawals, Expert Earnings, Services Category Browse |
+| ⏳ **Pending Implementation** | **3** | Paid Event Tickets, 30s GPS Tracking, FCM Push Notifications (all waiting on backend) |
+| 🚀 **Upcoming / Not Started** | **25** | Rs 99 Pass & Quota, Free Now Toggle, Gig Dispatch, KYC, Services Booking, Community Feed, Chat Attachments & Block/Report, AI Assistant, WebRTC Calling, Refer & Earn, Offers |
 | **Total Tracked Mobile Features** | **72** | **Milestones 1 to 5 (Candidate & Gig Workers Exclusive)** |
 
 ---
@@ -23,41 +23,41 @@
 
 | Seq # | Feature ID | Feature Name | Module / Phase | Milestone & Sprint | Current Status | Branch / PR Reference | Live Progress & Developer Notes |
 | :---: | :---: | :--- | :--- | :---: | :---: | :---: | :--- |
-| **1** | **F01** | Candidate Registration - OTP Phone Verification | Core Auth | M1 - Week 1 | `Fully Implemented` | `main` | Flutter LoginScreen & OtpScreen wired to backend POST /auth/otp/send & /auth/otp/verify. SMS OTP flow working. |
-| **2** | **F02** | Candidate Registration - Email & Profile Setup | Core Auth | M1 - Week 1 | `Fully Implemented` | `main` | Flutter RegisterScreen wired to POST /user/register with name, city, gender, education. |
-| **3** | **F04** | User Login - OTP-Based Phone Login | Core Auth | M1 - Week 1 | `Fully Implemented` | `main` | Phone OTP-based login returning signed JWT with role claims; stored in LocalStorage via SharedPreferences. |
-| **4** | **F05** | User Login - Email + Password Login | Core Auth | M1 - Week 1 | `Fully Implemented` | `feat/forgot-password` | Bcrypt password login & role verification built in LoginScreen. Ready to merge into main. |
-| **5** | **F06** | Forgot Password & Password Reset Flow | Core Auth | M1 - Week 1 | `Fully Implemented` | `feat/forgot-password` | Brevo SMTP email OTP reset flow built in ForgotPasswordScreen on feat/forgot-password. Ready to merge. |
-| **6** | **F07** | JWT Authentication Middleware & RBAC | Core Auth | M1 - Week 1 | `Fully Implemented` | `main` | Dio ApiClient interceptor automatically attaches Authorization Bearer JWT token with role claims verification. |
-| **7** | **F08** | SMS OTP Service Integration | Core Auth | M1 - Week 1 | `Fully Implemented` | `main` | SMS OTP generation and dispatch service for phone validation in production. |
-| **8** | **F09** | File Upload Service (Images, PDFs, Docs) | Core Auth | M1 - Week 1 | `Fully Implemented` | `main` | Backend POST /api/files/upload handles local filesystem storage & static URL serving for avatars, resumes, documents. |
-| **9** | **F10** | Candidate Profile - Personal & Professional Info | Candidate Profile | M1 - Week 1 | `Fully Implemented` | `main` | ProfileScreen displays profile and EditProfileDialog calls PATCH /user/profile with bio, headline, and city. |
-| **10** | **F11** | Candidate Profile - Education History | Candidate Profile | M1 - Week 1 | `Fully Implemented` | `main` | ProfileScreen AddEducationDialog calls POST /user/education to record school, degree, field of study. |
-| **11** | **F12** | Candidate Profile - Work Experience | Candidate Profile | M1 - Week 1 | `Fully Implemented` | `main` | ProfileScreen AddExperienceDialog calls POST /user/experience with company, role, dates, description. |
-| **12** | **F13** | Candidate Profile - Skills Tagging & Multi-Select | Candidate Profile | M1 - Week 1 | `Fully Implemented` | `main` | ProfileScreen AddSkillDialog allows tagging skills via POST /user/skill with catalog search and validation. |
-| **13** | **F14** | Candidate Profile - Profile Photo Upload | Candidate Profile | M1 - Week 1 | `Fully Implemented` | `main` | Profile photo upload & cropping modal with instant preview and fallback avatar. |
-| **14** | **F15** | Candidate Profile - Resume Upload & Download | Candidate Profile | M1 - Week 1 | `Fully Implemented` | `main` | Candidate profile loads resume PDF URL; supports viewing in-app and opening via url_launcher. |
-| **15** | **F16** | Candidate Profile - Profile Strength Bar | Candidate Profile | M1 - Week 1 | `Fully Implemented` | `feat/portfolio-projects` | Dynamic ProfileStrengthCard built with weighted completeness calculation, checklist and 1-tap actions. Ready to merge. |
-| **16** | **F17** | Candidate Profile - Portfolio Links & Projects | Candidate Profile | M1 - Week 1 | `Fully Implemented` | `feat/portfolio-projects` | Portfolio links & multiple project showcase modals + backend endpoints built. Ready to merge. |
-| **17** | **F21** | Candidate - Job Search & Discovery Engine | Jobs & Hiring | M1 - Week 1 | `Fully Implemented` | `main` | HomeScreen & JobsScreen query GET /api/jobs with debounced search (400ms), recommended jobs, top picks, and guest browsing. |
-| **18** | **F22** | Candidate - Category & City Filters | Jobs & Hiring | M1 - Week 1 | `Fully Implemented` | `main` | FilterModalSheet & CitySelectorSheet support multi-select filtering for Job Type, City, Gender, Education, Salary, Experience. |
-| **19** | **F23** | Candidate - Job Detail View & 1-Click Apply | Jobs & Hiring | M1 - Week 1 | `Fully Implemented` | `main` | Resolved 500 error: added semantic HTTP codes (404, 409, 400), input hex validation, /check/:jobId endpoint, and frontend Already Applied button state. |
-| **20** | **F24** | Candidate - Save / Bookmark Jobs | Jobs & Hiring | M1 - Week 1 | `Fully Implemented` | `main` | Added bookmarked_jobs array to User model + bookmark toggle on job cards with local & backend persistence. |
-| **21** | **F25** | Candidate - My Applications Dashboard | Jobs & Hiring | M1 - Week 1 | `Fully Implemented` | `main` | MyApplicationsScreen fetches GET /applications/my displaying status pill badges (Applied, Shortlisted, Interview, Rejected). |
-| **22** | **F29** | Candidate - Interview Calendar & Schedule View | Jobs & Hiring | M1 - Week 1 | `Fully Implemented` | `main` | InterviewsScreen fetches GET /interviews/my displaying interview date, time, location, mode, and recruiter notes. |
-| **23** | **F42** | Experts - Become an Expert Registration | Skills & Experts | M1 - Week 1 | `Fully Implemented` | `main` | Become an Expert application form with bio, hourly pricing, category, and proof documents calling POST /user/apply-expert. |
-| **24** | **F43** | Experts - Verified Expert Public Directory | Skills & Experts | M1 - Week 1 | `Fully Implemented` | `main` | Public verified expert directory with category search, rating cards, and pricing querying GET /admin/users (role=expert). |
-| **25** | **F44** | Experts - Book 1-on-1 Mentorship Session | Skills & Experts | M1 - Week 1 | `Fully Implemented` | `main` | 1-on-1 mentorship session booking bottom sheet calling POST /mentorships with slot selection. |
-| **26** | **F54** | Networking - Professional Connections Hub | Social & Chat | M1 - Week 1 | `Fully Implemented` | `main` | NetworkScreen supports tabs for Active Connections & Pending Invitations with Accept, Ignore, Connect, Delete. |
-| **27** | **F56** | Real-Time Chat - Conversation List & Badges | Social & Chat | M1 - Week 1 | `Fully Implemented` | `main` | ChatListScreen & navigation shell dynamically render live unread notification badges without hardcoded counts. |
-| **28** | **F57** | Real-Time Chat - Instant WebSocket Delivery | Social & Chat | M1 - Week 1 | `Fully Implemented` | `main` | ChatWebSocketService maintains real-time connection to ws://.../api/ws/chats with exponential backoff & deduplication. |
-| **29** | **F61** | Events - Public Event Directory & Category Stream | Events & Community | M1 - Week 1 | `Fully Implemented` | `main` | EventsScreen queries GET /api/events with category stream (workshops, hiring drives, webinars), shimmer loading, and refresh. |
-| **30** | **F62** | Events - One-Click Event Registration | Events & Community | M1 - Week 1 | `Fully Implemented` | `main` | Wired 'Register Event' button to POST /api/events/:id/register with Riverpod AsyncNotifier and My Registered Events view. |
-| **31** | **F92** | Platform - WebSocket Hub (Real-Time Engine) | Platform Utilities | M1 - Week 1 | `Fully Implemented` | `main` | WebSocket hub infrastructure (chat/hub.go) powering real-time mobile chat and notification updates. |
-| **32** | **F93** | Platform - Settings & Account Preferences | Platform Utilities | M1 - Week 1 | `Fully Implemented` | `main` | SettingsScreen & ProfileScreen provide account management, notification settings, privacy preferences, and logout. |
-| **33** | **F97** | Mobile App - Native Android Application | Mobile Client | M1 - Week 1 | `Fully Implemented` | `main` | Flutter Cross-Platform Application configured and ready for Android deployment. |
-| **34** | **F98** | Mobile App - Native iOS Application | Mobile Client | M1 - Week 1 | `Fully Implemented` | `main` | Flutter Cross-Platform Application configured and ready for iOS deployment. |
-| **35** | **F99** | Platform - Guest User Mode & Auth Guards | Mobile Client | M1 - Week 1 | `Fully Implemented` | `main` | Complete guest browsing for jobs & content with auth prompt popups on apply, notifications, company follow, and profile edits. |
+| **1** | **F01** | Candidate Registration - OTP Phone Verification | Core Auth | M1 - Week 1 | `Fully Implemented` | `main` | LoginScreen & OtpScreen wired to POST /auth/otp/send & /auth/otp/verify. SMS OTP flow working. |
+| **2** | **F02** | Candidate Registration - Email & Profile Setup | Core Auth | M1 - Week 1 | `Fully Implemented` | `main` | RegisterScreen wired to POST /user/register with name, city, gender, education. |
+| **3** | **F04** | User Login - OTP-Based Phone Login | Core Auth | M1 - Week 1 | `Fully Implemented` | `main` | Phone OTP login returns signed JWT with role claims; token stored in LocalStorage (SharedPreferences). |
+| **4** | **F05** | User Login - Email + Password Login | Core Auth | M1 - Week 1 | `Fully Implemented` | `main` | Email + password login built in LoginScreen and available on main. |
+| **5** | **F06** | Forgot Password & Password Reset Flow | Core Auth | M1 - Week 1 | `Fully Implemented` | `main` | ForgotPasswordScreen email OTP reset flow (backend sends the email) available on main. |
+| **6** | **F07** | JWT Authentication Middleware & RBAC | Core Auth | M1 - Week 1 | `Fully Implemented` | `main` | Dio ApiClient interceptor attaches Authorization Bearer JWT; 401 errors mapped to AppAuthException. |
+| **7** | **F08** | SMS OTP Service Integration | Core Auth | M1 - Week 1 | `Fully Implemented` | `main` | SMS OTP is sent by the backend; app calls /auth/otp/send and /auth/otp/verify. |
+| **8** | **F09** | File Upload Service (Images, PDFs, Docs) | Core Auth | M1 - Week 1 | `Fully Implemented` | `main` | App uploads avatars and documents via backend POST /api/files/upload and uses the returned URL. |
+| **9** | **F10** | Candidate Profile - Personal & Professional Info | Candidate Profile | M1 - Week 1 | `Fully Implemented` | `fix/backend-alignment-wallet-payments (a30fa29)` | EditProfileDialog calls PATCH /user/profile for name, headline, gender and about. Profile read from GET /user/profile. |
+| **10** | **F11** | Candidate Profile - Education History | Candidate Profile | M1 - Week 1 | `Fully Implemented` | `fix/backend-alignment-wallet-payments (a30fa29)` | AddEducationDialog calls POST /user/education. Add only: edit removed because the backend supports add only. |
+| **11** | **F12** | Candidate Profile - Work Experience | Candidate Profile | M1 - Week 1 | `Fully Implemented` | `fix/backend-alignment-wallet-payments (a30fa29)` | AddExperienceDialog calls POST /user/experience. Add only: edit removed because the backend supports add only. |
+| **12** | **F13** | Candidate Profile - Skills Tagging & Multi-Select | Candidate Profile | M1 - Week 1 | `Fully Implemented` | `fix/backend-alignment-wallet-payments (a30fa29)` | AddSkillDialog calls POST /user/skill; only pre-defined catalog skills can be added (dialog says so). |
+| **13** | **F14** | Candidate Profile - Profile Photo Upload | Candidate Profile | M1 - Week 1 | `Fully Implemented` | `main` | Profile photo upload and remove with instant preview and fallback avatar. No image cropping. |
+| **14** | **F15** | Candidate Profile - Resume Upload & Download | Candidate Profile | M1 - Week 1 | `Fully Implemented` | `fix/backend-alignment-wallet-payments (a30fa29)` | Resume picked and uploaded on device, sent as resume_url when applying to a job. Waiting on backend: no resume field on the user profile, so it is not saved to the profile. |
+| **15** | **F16** | Candidate Profile - Profile Strength Bar | Candidate Profile | M1 - Week 1 | `Fully Implemented` | `main` | ProfileStrengthCard with weighted completeness calculation, checklist and 1-tap actions. |
+| **16** | **F17** | Candidate Profile - Portfolio Links & Projects | Candidate Profile | M1 - Week 1 | `Fully Implemented` | `main` | Projects add, edit (PUT) and delete, plus portfolio_label. Available on main. |
+| **17** | **F21** | Candidate - Job Search & Discovery Engine | Jobs & Hiring | M1 - Week 1 | `Fully Implemented` | `main` | HomeScreen & JobsScreen query GET /api/jobs with 400ms debounced search, recommended jobs and guest browsing. |
+| **18** | **F22** | Candidate - Category & City Filters | Jobs & Hiring | M1 - Week 1 | `Fully Implemented` | `main` | FilterModalSheet & CitySelectorSheet multi-select filters for Job Type, City, Gender, Education, Salary, Experience. |
+| **19** | **F23** | Candidate - Job Detail View & 1-Click Apply | Jobs & Hiring | M1 - Week 1 | `Fully Implemented` | `fix/backend-alignment-wallet-payments (a30fa29)` | Job detail with 1-click apply; Already Applied state from GET /applications/check/:jobId. Errors shown with clear messages. |
+| **20** | **F24** | Candidate - Save / Bookmark Jobs | Jobs & Hiring | M1 - Week 1 | `Fully Implemented` | `fix/backend-alignment-wallet-payments (a30fa29)` | Bookmark toggle synced with backend. Saved list read from GET /user/profile because GET /user/bookmarks returns 500 (backend route-order issue). |
+| **21** | **F25** | Candidate - My Applications Dashboard | Jobs & Hiring | M1 - Week 1 | `Fully Implemented` | `main` | MyApplicationsScreen fetches GET /applications/my with status badges (Applied, Shortlisted, Interview, Rejected). |
+| **22** | **F29** | Candidate - Interview Calendar & Schedule View | Jobs & Hiring | M1 - Week 1 | `Fully Implemented` | `main` | InterviewsScreen fetches GET /interviews/my showing date, time (UTC handled), location, mode and notes. |
+| **23** | **F42** | Experts - Become an Expert Registration | Skills & Experts | M1 - Week 1 | `Fully Implemented` | `fix/backend-alignment-wallet-payments (a30fa29)` | Become an Expert form now calls real POST /user/apply-expert (no fake success). |
+| **24** | **F43** | Experts - Verified Expert Public Directory | Skills & Experts | M1 - Week 1 | `Fully Implemented` | `fix/backend-alignment-wallet-payments (a30fa29)` | Expert directory reads GET /mentorships (not /admin/users). No fake ratings shown. |
+| **25** | **F44** | Experts - Book 1-on-1 Mentorship Session | Skills & Experts | M1 - Week 1 | `Fully Implemented` | `fix/backend-alignment-wallet-payments (a30fa29)` | Free sessions booked via POST /mentorships/book; paid sessions via wallet (POST /mentorships/book-wallet) or Razorpay (create-order + verify-payment). |
+| **26** | **F54** | Networking - Professional Connections Hub | Social & Chat | M1 - Week 1 | `Fully Implemented` | `fix/backend-alignment-wallet-payments (a30fa29)` | NetworkScreen: Active Connections & Pending Invitations (Accept, Ignore, Connect, Delete). Connect also available from application detail. |
+| **27** | **F56** | Real-Time Chat - Conversation List & Badges | Social & Chat | M1 - Week 1 | `Partially Implemented` | `fix/backend-alignment-wallet-payments (a30fa29)` | ChatListScreen lists conversations. Unread badge is fixed at 0. Waiting on backend: unread message count. |
+| **28** | **F57** | Real-Time Chat - Instant WebSocket Delivery | Social & Chat | M1 - Week 1 | `Fully Implemented` | `main` | ChatWebSocketService on /api/ws/chats with auto-reconnect (exponential backoff) and deduplication. |
+| **29** | **F61** | Events - Public Event Directory & Category Stream | Events & Community | M1 - Week 1 | `Fully Implemented` | `main` | EventsScreen: GET /api/events list and search, shimmer loading and refresh. No category filter. |
+| **30** | **F62** | Events - One-Click Event Registration | Events & Community | M1 - Week 1 | `Fully Implemented` | `main` | Register Event button calls POST /api/events/:id/register; My Registered Events view. |
+| **31** | **F92** | Platform - WebSocket Hub (Real-Time Engine) | Platform Utilities | M1 - Week 1 | `Fully Implemented` | `main` | Backend WebSocket hub powers real-time chat; app connects via ChatWebSocketService. |
+| **32** | **F93** | Platform - Settings & Account Preferences | Platform Utilities | M1 - Week 1 | `Fully Implemented` | `fix/backend-alignment-wallet-payments (a30fa29)` | SettingsScreen syncs settings via GET /user/profile + PUT /user/settings; change password, logout. |
+| **33** | **F97** | Mobile App - Native Android Application | Mobile Client | M1 - Week 1 | `Partially Implemented` | `fix/backend-alignment-wallet-payments (a30fa29)` | Android app ID set to com.kaammilega.app with ProGuard rules. Pending: release signing key (planned for later). |
+| **34** | **F98** | Mobile App - Native iOS Application | Mobile Client | M1 - Week 1 | `Partially Implemented` | `fix/backend-alignment-wallet-payments (a30fa29)` | iOS bundle ID set to com.kaammilega.app. Pending: Apple team / signing setup. |
+| **35** | **F99** | Platform - Guest User Mode & Auth Guards | Mobile Client | M1 - Week 1 | `Fully Implemented` | `fix/backend-alignment-wallet-payments (a30fa29)` | Guest browsing with login prompts on apply, notifications, follow and profile edits, plus a router login guard for protected screens. |
 
 ---
 
@@ -65,17 +65,17 @@
 
 | Seq # | Feature ID | Feature Name | Module / Phase | Milestone & Sprint | Current Status | Branch / PR Reference | Live Progress & Developer Notes |
 | :---: | :---: | :--- | :--- | :---: | :---: | :---: | :--- |
-| **36** | **F68** | Multi-Type Wallet - Balance Ledger (Main/Earnings/Locked/Bonus) | Payments & Wallet | M2 - Week 2 | `Fully Implemented` | `main` | Multi-type wallet balance ledger with atomic balance mutations in MongoDB. WalletScreen UI displaying 4 balance types. |
-| **37** | **F70** | Multi-Type Wallet - Add Money via Razorpay | Payments & Wallet | M2 - Week 2 | `Pending Implementation` | `main` | Add Money via Razorpay (UPI, Card, NetBanking) with webhook signature verification in mobile app. |
-| **38** | **F72** | Multi-Type Wallet - Transaction History & Ledger Logs | Payments & Wallet | M2 - Week 2 | `Fully Implemented` | `main` | WalletTransactionsScreen with credit/debit filters and ledger logs for candidate and gig worker earnings. |
-| **39** | **F74** | Rs 99 One-Time Platform Access Pass (10 Gigs Quota) | Payments & Wallet | M2 - Week 2 | `Upcoming` | `main` | Rs 99 platform access pass purchase in mobile app allocating 10 accepted gig dispatches. |
-| **40** | **F76** | Paid Expert Mentorship Session Checkout (Razorpay) | Payments & Wallet | M2 - Week 2 | `Pending Implementation` | `main` | Paid 1-on-1 mentorship session checkout via Razorpay with booking slot lock in Flutter app. |
-| **41** | **F63** | Events - Paid Event Ticket Checkout (Razorpay) | Events & Community | M2 - Week 2 | `Pending Implementation` | `main` | Paid event ticket purchase checkout via Razorpay with instant mobile ticket confirmation. |
-| **42** | **F75** | Paid Tier - Become a Professional / Expert Subscription | Payments & Wallet | M2 - Week 2 | `Upcoming` | `main` | Paid tier expert monthly subscription checkout unlocking featured directory badge and listing. |
-| **43** | **F69** | Multi-Type Wallet - Aadhaar & PAN KYC Identity Verification | Payments & Wallet | M2 - Week 2 | `Partially Implemented` | `main` | Aadhaar & PAN identity verification modal built; pending Digio API integration before bank withdrawals. |
-| **44** | **F71** | Multi-Type Wallet - Bank Payout API (Withdraw Earnings) | Payments & Wallet | M2 - Week 2 | `Partially Implemented` | `main` | WalletWithdrawScreen built with fee calculation; pending direct bank withdrawal payout via Razorpay Payouts. |
-| **45** | **F73** | Multi-Type Wallet - Refunds & Dispute Handling | Payments & Wallet | M2 - Week 2 | `Upcoming` | `main` | Refund request and dispute resolution state machine with in-app tracking for candidates & gig workers. |
-| **46** | **F66** | Notifications - Transactional Email Automation (Brevo SMTP) | Notifications & AI | M2 - Week 2 | `Fully Implemented` | `main` | Expand active Brevo SMTP service to send automated interview invites, application updates, and receipts. |
+| **36** | **F68** | Multi-Type Wallet - Balance Ledger (Main/Earnings/Locked/Bonus) | Payments & Wallet | M2 - Week 2 | `Fully Implemented` | `fix/backend-alignment-wallet-payments (a30fa29)` | WalletScreen shows real balances from GET /wallet/balance. No fake amounts. |
+| **37** | **F70** | Multi-Type Wallet - Add Money via Razorpay | Payments & Wallet | M2 - Week 2 | `Fully Implemented` | `fix/backend-alignment-wallet-payments (a30fa29)` | Add Money: POST /wallet/topup/create-order -> Razorpay checkout -> POST /wallet/topup/verify. Money shown only after server confirms. Needs Razorpay TEST-mode testing. Backend note: verify credits the amount sent by the client. |
+| **38** | **F72** | Multi-Type Wallet - Transaction History & Ledger Logs | Payments & Wallet | M2 - Week 2 | `Fully Implemented` | `fix/backend-alignment-wallet-payments (a30fa29)` | WalletTransactionsScreen reads GET /wallet/transactions with credit/debit filters. |
+| **39** | **F74** | Rs 99 One-Time Platform Access Pass (10 Gigs Quota) | Payments & Wallet | M2 - Week 2 | `Upcoming` | `fix/backend-alignment-wallet-payments (a30fa29)` | Rs 99 pass shows a coming soon message. Waiting on backend: access pass / quota API. |
+| **40** | **F76** | Paid Expert Mentorship Session Checkout (Razorpay) | Payments & Wallet | M2 - Week 2 | `Fully Implemented` | `fix/backend-alignment-wallet-payments (a30fa29)` | Paid mentorship checkout: book-wallet or Razorpay create-order + verify-payment. Needs Razorpay TEST-mode testing. |
+| **41** | **F63** | Events - Paid Event Ticket Checkout (Razorpay) | Events & Community | M2 - Week 2 | `Pending Implementation` | `main` | Waiting on backend: no paid event ticket API yet. |
+| **42** | **F75** | Paid Tier - Become a Professional / Expert Subscription | Payments & Wallet | M2 - Week 2 | `Upcoming` | `main` | Waiting on backend: no expert subscription API yet. |
+| **43** | **F69** | Multi-Type Wallet - Aadhaar & PAN KYC Identity Verification | Payments & Wallet | M2 - Week 2 | `Upcoming` | `fix/backend-alignment-wallet-payments (a30fa29)` | Not built in the app (no KYC screen). Waiting on backend: KYC API. |
+| **44** | **F71** | Multi-Type Wallet - Bank Payout API (Withdraw Earnings) | Payments & Wallet | M2 - Week 2 | `Partially Implemented` | `fix/backend-alignment-wallet-payments (a30fa29)` | WalletWithdrawScreen shows the real withdrawable balance. Waiting on backend: /wallet/withdraw payout API. |
+| **45** | **F73** | Multi-Type Wallet - Refunds & Dispute Handling | Payments & Wallet | M2 - Week 2 | `Upcoming` | `main` | Waiting on backend: refund and dispute API. |
+| **46** | **F66** | Notifications - Transactional Email Automation (Brevo SMTP) | Notifications & AI | M2 - Week 2 | `Fully Implemented` | `fix/backend-alignment-wallet-payments (a30fa29)` | Transactional emails are sent by the backend; app settings has the email notification toggle. |
 
 ---
 
@@ -83,13 +83,13 @@
 
 | Seq # | Feature ID | Feature Name | Module / Phase | Milestone & Sprint | Current Status | Branch / PR Reference | Live Progress & Developer Notes |
 | :---: | :---: | :--- | :--- | :---: | :---: | :---: | :--- |
-| **47** | **F30** | InstantMilega - Gig Worker "Free Now" Real-Time Toggle | InstantMilega Gig | M3 - Week 3 | `Partially Implemented` | `main` | Gig worker 'Free Now' availability toggle switch built on HomeScreen header; pending backend is_free_now route. |
-| **48** | **F31** | InstantMilega - 30-Second Real-Time GPS Location Tracking | InstantMilega Gig | M3 - Week 3 | `Pending Implementation` | `main` | 30-second background GPS location broadcast via flutter geolocator updating worker coordinates. |
-| **49** | **F32** | InstantMilega - MongoDB 2dsphere Spatial Indexing Engine | InstantMilega Gig | M3 - Week 3 | `Upcoming` | `main` | Spatial indexing on users.location and $nearSphere geospatial queries within configurable radius. |
-| **50** | **F35** | InstantMilega - 60-Second WebSocket Job Dispatch Card | InstantMilega Gig | M3 - Week 3 | `Partially Implemented` | `main` | 60-second dispatch popup card widget pushed to nearest gig worker via WebSocket with auto timeout fall-through queue. |
-| **51** | **F36** | InstantMilega - Rs 99 Gig Access & Quota Engine | InstantMilega Gig | M3 - Week 3 | `Upcoming` | `main` | Deduct 1 gig dispatch quota from candidate Rs 99 pass upon accepted gig in mobile app. |
-| **52** | **F37** | WebRTC - In-App P2P Audio Calling | InstantMilega Gig | M3 - Week 3 | `Upcoming` | `main` | In-app peer-to-peer WebRTC audio calling with microphone controls via flutter_webrtc plugin. |
-| **53** | **F38** | WebRTC - In-App P2P Video Calling | InstantMilega Gig | M3 - Week 3 | `Upcoming` | `main` | In-app peer-to-peer WebRTC video calling with camera toggle and screen share via flutter_webrtc plugin. |
+| **47** | **F30** | InstantMilega - Gig Worker "Free Now" Real-Time Toggle | InstantMilega Gig | M3 - Week 3 | `Upcoming` | `fix/backend-alignment-wallet-payments (a30fa29)` | Free Now card removed from the app (no fake toggle). Waiting on backend: is_free_now route. |
+| **48** | **F31** | InstantMilega - 30-Second Real-Time GPS Location Tracking | InstantMilega Gig | M3 - Week 3 | `Pending Implementation` | `main` | Waiting on backend: worker location update API. GPS tracking not built in the app. |
+| **49** | **F32** | InstantMilega - MongoDB 2dsphere Spatial Indexing Engine | InstantMilega Gig | M3 - Week 3 | `Upcoming` | `main` | Backend-only feature (spatial index). Nothing to build in the app until F31/F35 APIs exist. |
+| **50** | **F35** | InstantMilega - 60-Second WebSocket Job Dispatch Card | InstantMilega Gig | M3 - Week 3 | `Upcoming` | `fix/backend-alignment-wallet-payments (a30fa29)` | Not built in the app (no dispatch card). Waiting on backend: gig dispatch over WebSocket. |
+| **51** | **F36** | InstantMilega - Rs 99 Gig Access & Quota Engine | InstantMilega Gig | M3 - Week 3 | `Upcoming` | `fix/backend-alignment-wallet-payments (a30fa29)` | Rs 99 quota shows a coming soon message. Waiting on backend: quota engine API. |
+| **52** | **F37** | WebRTC - In-App P2P Audio Calling | InstantMilega Gig | M3 - Week 3 | `Upcoming` | `main` | Not started. Waiting on backend: WebRTC signaling. |
+| **53** | **F38** | WebRTC - In-App P2P Video Calling | InstantMilega Gig | M3 - Week 3 | `Upcoming` | `main` | Not started. Waiting on backend: WebRTC signaling. |
 
 ---
 
@@ -97,21 +97,21 @@
 
 | Seq # | Feature ID | Feature Name | Module / Phase | Milestone & Sprint | Current Status | Branch / PR Reference | Live Progress & Developer Notes |
 | :---: | :---: | :--- | :--- | :---: | :---: | :---: | :--- |
-| **54** | **F39** | Skills Marketplace - Skill Profile Showcase | Skills & Experts | M4 - Week 4 | `Fully Implemented` | `main` | Skill profile showcase with categorized skills, master catalog tagging, and endorsements on mobile profile. |
-| **55** | **F41** | Skills Marketplace - Skill Certifications & Badges | Skills & Experts | M4 - Week 4 | `Upcoming` | `main` | Verified skill assessment badges & certification showcase display on candidate profile. |
-| **56** | **F45** | Experts - Expert Session Rating & Reviews | Skills & Experts | M4 - Week 4 | `Upcoming` | `main` | Expert session rating (1-5 stars) and review submission modal + profile display. |
-| **57** | **F46** | Experts - Expert Earnings Dashboard & Session History | Skills & Experts | M4 - Week 4 | `Partially Implemented` | `main` | Expert earnings dashboard displaying completed mentorship sessions and withdrawable balance. |
-| **58** | **F47** | Services - Service Directory & Category Browse | Services Market | M4 - Week 4 | `Partially Implemented` | `main` | Services directory in mobile app with category browsing (electrician, plumber, technician, carpenter). |
-| **59** | **F48** | Services - Book Local Handyman / Technician | Services Market | M4 - Week 4 | `Partially Implemented` | `main` | Book local handyman service with address, problem description, and requested slot in Flutter app. |
-| **60** | **F49** | Services - Provider Profile & Service Quotes | Services Market | M4 - Week 4 | `Partially Implemented` | `main` | Gig worker service provider profile setup with hourly rates, past works, and quote responses. |
-| **61** | **F50** | Services - Real-Time Provider GPS Tracking on Map | Services Market | M4 - Week 4 | `Upcoming` | `main` | Real-time provider GPS tracking on map for assigned service bookings in Flutter app. |
-| **62** | **F51** | Social Feed - Professional Community Discussion Feed | Social & Chat | M4 - Week 4 | `Partially Implemented` | `main` | Community discussion feed with live post creation, timeline feed, and author details in Flutter app. |
-| **63** | **F52** | Social Feed - Post Multimedia Sharing (Images/Videos) | Social & Chat | M4 - Week 4 | `Upcoming` | `main` | Post multimedia attachment uploads supporting multiple images and MP4 video clips. |
-| **64** | **F53** | Social Feed - Hashtags, Likes, Comments & Shares | Social & Chat | M4 - Week 4 | `Upcoming` | `main` | Social interactions: post likes counter, nested comments, and clickable #hashtags. |
-| **65** | **F55** | Networking - People You May Know / Suggested Connections | Social & Chat | M4 - Week 4 | `Upcoming` | `main` | People You May Know connection recommendation engine based on city and skills in NetworkScreen. |
-| **66** | **F58** | Real-Time Chat - Media & Document Attachment Sharing | Social & Chat | M4 - Week 4 | `Partially Implemented` | `main` | Chat media & document file attachment sharing (PDFs, images, contracts) in ChatDetailScreen. |
-| **67** | **F59** | Real-Time Chat - Block User & Report Conversation | Social & Chat | M4 - Week 4 | `Fully Implemented` | `main` | Block user and report offensive chat conversation functionality in ChatDetailScreen. |
-| **68** | **F64** | Events - Attendee List Modal (Clickable Join Count) | Events & Community | M4 - Week 4 | `Upcoming` | `main` | Clickable event attendee list modal displaying joined users with direct Connect CTA in EventsScreen. |
+| **54** | **F39** | Skills Marketplace - Skill Profile Showcase | Skills & Experts | M4 - Week 4 | `Fully Implemented` | `main` | Skills shown on profile with master catalog browse and tagging. No endorsements. |
+| **55** | **F41** | Skills Marketplace - Skill Certifications & Badges | Skills & Experts | M4 - Week 4 | `Upcoming` | `main` | Not started. Waiting on backend: certification / badge API. |
+| **56** | **F45** | Experts - Expert Session Rating & Reviews | Skills & Experts | M4 - Week 4 | `Upcoming` | `main` | Not started. Waiting on backend: session rating and review API. |
+| **57** | **F46** | Experts - Expert Earnings Dashboard & Session History | Skills & Experts | M4 - Week 4 | `Partially Implemented` | `fix/backend-alignment-wallet-payments (a30fa29)` | Expert earnings balance shown in the wallet. No session history screen yet. Waiting on backend: expert session history API. |
+| **58** | **F47** | Services - Service Directory & Category Browse | Services Market | M4 - Week 4 | `Partially Implemented` | `fix/backend-alignment-wallet-payments (a30fa29)` | Service category tiles shown with a coming soon state (no fake providers). Waiting on backend: services API. |
+| **59** | **F48** | Services - Book Local Handyman / Technician | Services Market | M4 - Week 4 | `Upcoming` | `fix/backend-alignment-wallet-payments (a30fa29)` | Not built in the app (coming soon state only). Waiting on backend: service booking API. |
+| **60** | **F49** | Services - Provider Profile & Service Quotes | Services Market | M4 - Week 4 | `Upcoming` | `fix/backend-alignment-wallet-payments (a30fa29)` | Not built in the app (coming soon state only). Waiting on backend: provider profile and quotes API. |
+| **61** | **F50** | Services - Real-Time Provider GPS Tracking on Map | Services Market | M4 - Week 4 | `Upcoming` | `main` | Not started. Waiting on backend: provider location tracking. |
+| **62** | **F51** | Social Feed - Professional Community Discussion Feed | Social & Chat | M4 - Week 4 | `Upcoming` | `fix/backend-alignment-wallet-payments (a30fa29)` | Feed shows a coming soon placeholder (no fake posts). Waiting on backend: community feed API. |
+| **63** | **F52** | Social Feed - Post Multimedia Sharing (Images/Videos) | Social & Chat | M4 - Week 4 | `Upcoming` | `main` | Not started. Depends on F51 feed API. |
+| **64** | **F53** | Social Feed - Hashtags, Likes, Comments & Shares | Social & Chat | M4 - Week 4 | `Upcoming` | `main` | Not started. Depends on F51 feed API. |
+| **65** | **F55** | Networking - People You May Know / Suggested Connections | Social & Chat | M4 - Week 4 | `Upcoming` | `main` | Not started. Waiting on backend: suggested connections API. |
+| **66** | **F58** | Real-Time Chat - Media & Document Attachment Sharing | Social & Chat | M4 - Week 4 | `Upcoming` | `fix/backend-alignment-wallet-payments (a30fa29)` | Not built in the app (no attachment sending). Waiting on backend: chat attachment support. |
+| **67** | **F59** | Real-Time Chat - Block User & Report Conversation | Social & Chat | M4 - Week 4 | `Upcoming` | `fix/backend-alignment-wallet-payments (a30fa29)` | Not built in the app (no block/report actions). Waiting on backend: block and report API. |
+| **68** | **F64** | Events - Attendee List Modal (Clickable Join Count) | Events & Community | M4 - Week 4 | `Upcoming` | `main` | Attending count is shown on events; the attendee list modal is not built. Waiting on backend: event attendees API. |
 
 ---
 
@@ -119,7 +119,7 @@
 
 | Seq # | Feature ID | Feature Name | Module / Phase | Milestone & Sprint | Current Status | Branch / PR Reference | Live Progress & Developer Notes |
 | :---: | :---: | :--- | :--- | :---: | :---: | :---: | :--- |
-| **69** | **F65** | Notifications - Firebase FCM Push Notifications | Notifications & AI | M5 - Week 5 | `Pending Implementation` | `main` | System-wide Firebase FCM push notifications for gigs, chat messages, and application status updates in mobile app. |
-| **70** | **F67** | AI Assistant - Chat with AI (Prompt Chips + Paywall) | Notifications & AI | M5 - Week 5 | `Partially Implemented` | `main` | Interactive AI Assistant chat screen with prompt chips for resume review & interview prep with 4th message paywall. |
-| **71** | **F94** | Platform - Refer & Earn (Referral Links & Rewards) | Platform Utilities | M5 - Week 5 | `Upcoming` | `main` | Refer & Earn unique referral link generator, invite tracking, and reward ledger in mobile app. |
-| **72** | **F95** | Platform - Offers & Cashback (Bonus Wallet) | Platform Utilities | M5 - Week 5 | `Upcoming` | `main` | Platform promotional offers and cashback credit to bonus wallet on milestone actions in mobile app. |
+| **69** | **F65** | Notifications - Firebase FCM Push Notifications | Notifications & AI | M5 - Week 5 | `Pending Implementation` | `main` | Not started. Waiting on backend: FCM device token and push sending. |
+| **70** | **F67** | AI Assistant - Chat with AI (Prompt Chips + Paywall) | Notifications & AI | M5 - Week 5 | `Upcoming` | `fix/backend-alignment-wallet-payments (a30fa29)` | Not built in the app (no AI chat screen). Waiting on backend: AI assistant API. |
+| **71** | **F94** | Platform - Refer & Earn (Referral Links & Rewards) | Platform Utilities | M5 - Week 5 | `Upcoming` | `main` | Not started. Waiting on backend: referral API. |
+| **72** | **F95** | Platform - Offers & Cashback (Bonus Wallet) | Platform Utilities | M5 - Week 5 | `Upcoming` | `main` | Not started. Waiting on backend: offers and bonus wallet API. |

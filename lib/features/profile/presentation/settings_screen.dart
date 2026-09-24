@@ -565,7 +565,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             title: 'Search Engine Indexing',
             subtitle: 'Allow public search engines (Google Jobs) to index your candidate public profile link.',
             value: _searchEngineIndexing,
-            onChanged: (val) => _updateSetting(() => _searchEngineIndexing = val),
+            onChanged: (val) =>
+                _updateSetting(() => _searchEngineIndexing = val),
           ),
         ],
       ),

@@ -27,9 +27,7 @@ class NotificationNotifier extends AsyncNotifier<List<NotificationItem>> {
     // do not trigger repeated network calls on routine rebuilds/tab switches.
     // Manual pull-to-refresh / retry will probe the endpoint again.
     if (_isEndpointUnavailable) {
-      throw const AppNotFoundException(
-        'Notifications are coming soon.',
-      );
+      throw const AppNotFoundException('Notifications are coming soon.');
     }
 
     try {

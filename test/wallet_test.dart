@@ -80,10 +80,7 @@ void main() {
             walletProvider.overrideWith(
               () => _MockWalletNotifier(
                 const WalletState(
-                  summary: WalletSummary(
-                    totalBalance: 1250,
-                    mainBalance: 1250,
-                  ),
+                  summary: WalletSummary(totalBalance: 1250, mainBalance: 1250),
                 ),
               ),
             ),

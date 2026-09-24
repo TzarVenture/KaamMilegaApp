@@ -99,9 +99,8 @@ class _WalletAddMoneyScreenState extends ConsumerState<WalletAddMoneyScreen> {
           context.pop();
           break;
         case TopupOutcome.cancelled:
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(result.message)),
-          );
+          ScaffoldMessenger.of(context)
+              .showSnackBar(SnackBar(content: Text(result.message)));
           break;
         case TopupOutcome.comingSoon:
           _showBackendNotice(context, amount, result.message);

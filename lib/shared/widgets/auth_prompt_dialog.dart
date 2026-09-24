@@ -76,7 +76,7 @@ Future<void> showAuthPromptDialog(
             elevation: 0,
           ),
           child: const Text(
-            'Sign In',
+            'Login',
             style: TextStyle(fontWeight: FontWeight.w800),
           ),
         ),

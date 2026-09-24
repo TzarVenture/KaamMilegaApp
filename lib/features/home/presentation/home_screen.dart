@@ -277,7 +277,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     const SizedBox(height: 22),
 
                     // 5. RECOMMENDED FOR YOU SECTION (Side by side cards)
-                    _buildRecommendedSection(jobsState.jobs, jobsState.isLoading),
+                    _buildRecommendedSection(
+                      jobsState.jobs,
+                      jobsState.isLoading,
+                    ),
 
                     const SizedBox(height: 22),
 

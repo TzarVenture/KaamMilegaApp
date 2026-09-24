@@ -56,7 +56,9 @@ class _ExpertDetailScreenState extends ConsumerState<ExpertDetailScreen> {
       _showMessage('Please log in to book an expert session');
       return;
     }
-    if (_scheduledAt.isBefore(DateTime.now().add(const Duration(minutes: 30)))) {
+    if (_scheduledAt.isBefore(
+      DateTime.now().add(const Duration(minutes: 30)),
+    )) {
       _showMessage(
         'Please choose a time at least 30 minutes from now.',
         isError: true,
@@ -110,7 +112,8 @@ class _ExpertDetailScreenState extends ConsumerState<ExpertDetailScreen> {
     await ref.read(walletProvider.notifier).loadWallet();
     if (!mounted) return null;
     final summary = ref.read(walletProvider).summary;
-    final walletLive = summary != null && !ref.read(walletProvider).isComingSoon;
+    final walletLive =
+        summary != null && !ref.read(walletProvider).isComingSoon;
     final mainBalance = summary?.mainBalance ?? 0;
     final canUseWallet = walletLive && mainBalance >= price;
 

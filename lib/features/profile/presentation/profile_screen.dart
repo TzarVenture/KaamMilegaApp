@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../../app/auth_guard.dart';
 import '../../../app/theme/app_colors.dart';
 import '../../../core/constants/api_constants.dart';
 import '../../../shared/widgets/auth_prompt_dialog.dart';
@@ -3021,7 +3022,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   // REFILL WALLET CREDITS / ADD MONEY
   // -------------------------------------------------------------------
   void _showRefillWalletModal() {
-    context.push('/wallet/add-money');
+    AuthGuard.openProtected(
+      context,
+      '/wallet/add-money',
+      message: 'Please login to access your wallet.',
+    );
   }
 
   // -------------------------------------------------------------------
@@ -3126,6 +3131,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   // MORE PROFILE OPTIONS SHEET
   // -------------------------------------------------------------------
   void _showMoreProfileMenu(UserProfile? user) {
+    // More Actions are for signed-in users only; guests never open the sheet.
+    if (!AuthGuard.isSignedIn(ref.read(authProvider))) return;
+
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
@@ -3156,13 +3164,28 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 subtitle: const Text(
                   'Share your digital CV link with recruiters',
                 ),
-                onTap: () {
+                onTap: () async {
                   Navigator.pop(ctx);
+                  final userId = user?.id ?? '';
+                  if (userId.isEmpty) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text(
+                          'Profile link is not available yet. Please try again.',
+                        ),
+                        behavior: SnackBarBehavior.floating,
+                      ),
+                    );
+                    return;
+                  }
+                  final profileUrl = ApiConstants.publicProfileUrl(userId);
+                  await Clipboard.setData(ClipboardData(text: profileUrl));
+                  if (!mounted) return;
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text(
-                        'Profile URL copied: www.kaammilega.com/in/${user?.id ?? ''}',
-                      ),
+                      content: Text('Profile link copied: $profileUrl'),
+                      backgroundColor: AppColors.success,
+                      behavior: SnackBarBehavior.floating,
                     ),
                   );
                 },
@@ -3422,7 +3445,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       style: TextStyle(color: AppColors.textLight),
                     ),
                     GestureDetector(
-                      onTap: () => context.push('/network'),
+                      onTap: () => AuthGuard.openProtected(context, '/network'),
                       child: Text(
                         '$connectionsCount Connections',
                         style: const TextStyle(
@@ -3653,7 +3676,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       ),
                     ),
                     OutlinedButton(
-                      onPressed: () => _showMoreProfileMenu(user),
+                      // Disabled (greyed out) for guests: no More Actions.
+                      onPressed: AuthGuard.isSignedIn(ref.watch(authProvider))
+                          ? () => _showMoreProfileMenu(user)
+                          : null,
                       style: OutlinedButton.styleFrom(
                         foregroundColor: AppColors.textPrimary,
                         side: const BorderSide(color: AppColors.border),
@@ -3686,7 +3712,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   // -------------------------------------------------------------------
   Widget _buildWalletCreditsCard(UserProfile? user) {
     return InkWell(
-      onTap: () => context.push('/wallet'),
+      onTap: () => AuthGuard.openProtected(
+        context,
+        '/wallet',
+        message: 'Please login to access your wallet.',
+      ),
       borderRadius: BorderRadius.circular(16),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
@@ -4622,7 +4652,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
               ),
               TextButton(
-                onPressed: () => context.push('/network'),
+                onPressed: () => AuthGuard.openProtected(context, '/network'),
                 child: const Text(
                   'View All',
                   style: TextStyle(fontWeight: FontWeight.w700),

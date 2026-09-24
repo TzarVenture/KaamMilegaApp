@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../app/auth_guard.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../core/constants/api_constants.dart';
 import '../../../auth/providers/auth_provider.dart';
@@ -295,7 +296,7 @@ class ProfileDrawer extends ConsumerWidget {
                       title: 'Network',
                       onTap: () {
                         Navigator.pop(context);
-                        context.push('/network');
+                        AuthGuard.openProtected(context, '/network');
                       },
                     ),
                     _DrawerIconTile(
@@ -367,35 +368,39 @@ class ProfileDrawer extends ConsumerWidget {
                       title: 'Digital Wallet & Ledger',
                       onTap: () {
                         Navigator.pop(context);
-                        context.push('/wallet');
+                        AuthGuard.openProtected(
+                          context,
+                          '/wallet',
+                          message: 'Please login to access your wallet.',
+                        );
                       },
                     ),
                     _DrawerTextTile(
                       title: 'Setting & Privacy',
                       onTap: () {
                         Navigator.pop(context);
-                        context.push('/settings');
+                        AuthGuard.openProtected(context, '/settings');
                       },
                     ),
                     _DrawerTextTile(
                       title: 'Applied Jobs Status',
                       onTap: () {
                         Navigator.pop(context);
-                        context.push('/my-applications');
+                        AuthGuard.openProtected(context, '/my-applications');
                       },
                     ),
                     _DrawerTextTile(
                       title: 'Interviews',
                       onTap: () {
                         Navigator.pop(context);
-                        context.push('/interviews');
+                        AuthGuard.openProtected(context, '/interviews');
                       },
                     ),
                     _DrawerTextTile(
                       title: 'Apply to be an Expert',
                       onTap: () {
                         Navigator.pop(context);
-                        context.push('/apply-expert');
+                        AuthGuard.openProtected(context, '/apply-expert');
                       },
                     ),
 

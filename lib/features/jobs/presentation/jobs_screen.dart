@@ -128,8 +128,7 @@ class _JobsScreenState extends ConsumerState<JobsScreen> {
       showAuthPromptDialog(
         context,
         title: 'Sign In to Chat',
-        message:
-            'Please sign in to your KaamMilega account to chat with the recruiter.',
+        message: 'Please sign in to your KaamMilega account to chat with the recruiter.',
       );
       return;
     }

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 
+import '../../../app/auth_guard.dart';
 import '../../profile/presentation/widgets/profile_drawer.dart';
 import '../../../shared/widgets/category_top_header.dart';
 import '../../../shared/widgets/shimmer_loading.dart';
@@ -328,7 +328,7 @@ class _ExpertsScreenState extends ConsumerState<ExpertsScreen> {
           ),
           const SizedBox(height: 16),
           ElevatedButton(
-            onPressed: () => context.push('/apply-expert'),
+            onPressed: () => AuthGuard.openProtected(context, '/apply-expert'),
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF4F46E5),
               foregroundColor: Colors.white,

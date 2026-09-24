@@ -685,7 +685,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         // Explore Jobs as Guest Link
         Center(
           child: TextButton(
-            onPressed: () => context.go('/jobs'),
+            onPressed: () {
+              // Guest mode lives in memory only; it is not a login.
+              ref.read(authProvider.notifier).enterGuestMode();
+              context.go('/jobs');
+            },
             child: const Text(
               'Explore Jobs as Guest ↗',
               style: TextStyle(
