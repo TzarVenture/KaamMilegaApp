@@ -13,8 +13,10 @@ import '../../../shared/widgets/auth_prompt_dialog.dart';
 import '../../../shared/widgets/shimmer_loading.dart';
 import '../../auth/models/user_profile.dart';
 import '../../auth/providers/auth_provider.dart';
+import '../../jobs/models/job.dart';
 import '../../wallet/providers/wallet_provider.dart';
 import '../../network/providers/network_provider.dart';
+import '../providers/profile_jobs_provider.dart';
 
 /// Full-featured Candidate Profile & CV Screen
 /// Specialized exclusively for Job Seekers / Candidates
@@ -2833,7 +2835,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   // -------------------------------------------------------------------
   // OPEN TO WORK & PROVIDING SERVICES MODAL
   // -------------------------------------------------------------------
-  void _showOpenToModal(UserProfile user) {
+  /// [focusServices]: null = no field focused (existing callers), false =
+  /// focus "Open to Work", true = focus "Providing Services".
+  void _showOpenToModal(UserProfile user, {bool? focusServices}) {
     if (!ref.read(authProvider).isAuthenticated) {
       showAuthPromptDialog(
         context,
@@ -2895,6 +2899,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               const SizedBox(height: 6),
               TextField(
                 controller: workCtrl,
+                autofocus: focusServices == false,
                 maxLines: 2,
                 decoration: InputDecoration(
                   hintText: 'e.g. Software Engineering, Delivery Driver',
@@ -2911,6 +2916,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               const SizedBox(height: 6),
               TextField(
                 controller: servicesCtrl,
+                autofocus: focusServices == true,
                 maxLines: 2,
                 decoration: InputDecoration(
                   hintText: 'e.g. Web Development, AC Repair, Delivery',
@@ -3032,93 +3038,296 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   // -------------------------------------------------------------------
   // ADD PROFILE SECTION SHEET
   // -------------------------------------------------------------------
-  void _showAddSectionSheet() {
-    if (!ref.read(authProvider).isAuthenticated) {
+  void _showAddSectionMenu(UserProfile? user) {
+    if (!AuthGuard.isSignedIn(ref.read(authProvider))) {
       showAuthPromptDialog(
         context,
-        title: 'Sign In Required',
-        message: 'Please sign in to customize your profile sections.',
+        title: 'Login Required',
+        message: 'Please login to customize your profile sections.',
       );
       return;
     }
+    if (user == null) return; // profile still loading
 
+    String countBadge(int n) => '$n added';
+    String addOrEdit(bool hasValue) => hasValue ? 'Edit' : 'Add';
+
+    _showActionSheet(
+      title: 'Add Profile Section',
+      subtitle: 'Add or update your profile details',
+      children: [
+        _sheetSectionLabel('Profile details'),
+        _sheetTile(
+          icon: Icons.work_outline_rounded,
+          title: 'Work Experience',
+          subtitle: 'Add new position or role',
+          badge: countBadge(user.experience.length),
+          onTap: () => _openAddExperienceDialog(),
+        ),
+        _sheetTile(
+          icon: Icons.school_outlined,
+          title: 'Education',
+          subtitle: 'Add school, degree or field',
+          badge: countBadge(user.education.length),
+          onTap: () => _openAddEducationDialog(),
+        ),
+        _sheetTile(
+          icon: Icons.verified_outlined,
+          title: 'Skills',
+          subtitle: 'Highlight your capabilities',
+          badge: countBadge(user.skills.length),
+          onTap: _openAddSkillDialog,
+        ),
+        _sheetTile(
+          icon: Icons.folder_open_rounded,
+          title: 'Projects',
+          subtitle: 'Showcase practical assignments',
+          badge: countBadge(user.projects.length),
+          onTap: () => _openAddProjectDialog(),
+        ),
+        _sheetSectionLabel('More about you'),
+        _sheetTile(
+          icon: Icons.edit_note_rounded,
+          title: 'About Summary',
+          subtitle: 'Brief summary for recruiters',
+          badge: addOrEdit(user.about.trim().isNotEmpty),
+          onTap: () => _showEditAboutDialog(user),
+        ),
+        _sheetTile(
+          icon: Icons.language_rounded,
+          title: 'Portfolio Link',
+          subtitle: 'Add GitHub, site or Behance',
+          badge: addOrEdit(user.portfolioUrl.trim().isNotEmpty),
+          onTap: () => _showCustomPortfolioDialog(user),
+        ),
+        _sheetTile(
+          icon: Icons.picture_as_pdf_outlined,
+          title: 'Resume',
+          subtitle: 'Upload your CV (PDF / DOC)',
+          badge: user.resumeUrl.trim().isNotEmpty ? 'Update' : 'Add',
+          onTap: _pickAndUploadResumePdf,
+        ),
+      ],
+    );
+  }
+
+  // -------------------------------------------------------------------
+  // OPEN TO SHEET (career & service status)
+  // -------------------------------------------------------------------
+  void _showOpenToMenu(UserProfile? user) {
+    if (!AuthGuard.isSignedIn(ref.read(authProvider))) {
+      showAuthPromptDialog(
+        context,
+        title: 'Login Required',
+        message: 'Please login to update your career preferences.',
+      );
+      return;
+    }
+    if (user == null) return; // profile still loading
+
+    _showActionSheet(
+      title: 'Open To',
+      subtitle: 'Career & service status',
+      children: [
+        _sheetTile(
+          icon: Icons.work_outline_rounded,
+          title: 'Finding a new job',
+          subtitle: 'Show recruiters you are open to work',
+          badge: user.openToWork.trim().isNotEmpty ? 'On' : 'Off',
+          badgeHighlighted: user.openToWork.trim().isNotEmpty,
+          onTap: () => _showOpenToModal(user, focusServices: false),
+        ),
+        _sheetTile(
+          icon: Icons.build_outlined,
+          iconColor: const Color(0xFFEA580C),
+          iconBackground: const Color(0xFFFFF7ED),
+          title: 'Providing services',
+          subtitle: 'Showcase direct trades and services you offer',
+          badge: user.providingServices.trim().isNotEmpty ? 'On' : 'Off',
+          badgeHighlighted: user.providingServices.trim().isNotEmpty,
+          onTap: () => _showOpenToModal(user, focusServices: true),
+        ),
+      ],
+    );
+  }
+
+  // -------------------------------------------------------------------
+  // MORE SHEET (signed-in users only)
+  // -------------------------------------------------------------------
+  void _showMoreProfileMenu(UserProfile? user) {
+    // More Actions are for signed-in users only; guests never open the sheet.
+    if (!AuthGuard.isSignedIn(ref.read(authProvider))) return;
+
+    _showActionSheet(
+      title: 'More Actions',
+      children: [
+        _sheetTile(
+          icon: Icons.copy_rounded,
+          title: 'Copy Profile Link',
+          subtitle: 'Share your profile with recruiters',
+          onTap: () => _copyProfileLink(user),
+        ),
+        _sheetTile(
+          icon: Icons.open_in_new_rounded,
+          title: 'View Public Profile',
+          subtitle: 'See how others see your profile',
+          onTap: () => _viewPublicProfile(user),
+        ),
+        _sheetTile(
+          icon: Icons.download_rounded,
+          title: 'Download Resume PDF',
+          subtitle: 'Open your uploaded resume',
+          onTap: () => _viewResume(user?.resumeUrl ?? ''),
+        ),
+        _sheetTile(
+          icon: Icons.headset_mic_outlined,
+          title: 'Call HR Helpline',
+          subtitle: 'Talk to the KaamMilega support team',
+          onTap: _callHR,
+        ),
+      ],
+    );
+  }
+
+  /// Copies the website profile link (`/profile/{userId}`) to the clipboard.
+  Future<void> _copyProfileLink(UserProfile? user) async {
+    final userId = user?.id ?? '';
+    if (userId.isEmpty) {
+      _showProfileLinkUnavailable();
+      return;
+    }
+    final profileUrl = ApiConstants.publicProfileUrl(userId);
+    await Clipboard.setData(ClipboardData(text: profileUrl));
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Profile link copied: $profileUrl'),
+        backgroundColor: AppColors.success,
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
+  /// Opens the user's public profile page on the website in the browser.
+  Future<void> _viewPublicProfile(UserProfile? user) async {
+    final userId = user?.id ?? '';
+    if (userId.isEmpty) {
+      _showProfileLinkUnavailable();
+      return;
+    }
+    final uri = Uri.parse(ApiConstants.publicProfileUrl(userId));
+    var opened = false;
+    try {
+      opened = await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } catch (_) {
+      opened = false;
+    }
+    if (!opened && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Could not open the browser. Link: $uri'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
+  }
+
+  void _showProfileLinkUnavailable() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Profile link is not available yet. Please try again.'),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
+  // -------------------------------------------------------------------
+  // MOBILE ACTION SHEET BUILDING BLOCKS (shared by the three sheets above)
+  // -------------------------------------------------------------------
+
+  /// Bottom sheet with a drag handle, title, close button and a scrollable
+  /// list of [children] (tiles and section labels).
+  void _showActionSheet({
+    required String title,
+    String? subtitle,
+    required List<Widget> children,
+  }) {
     showModalBottomSheet(
       context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
       backgroundColor: Colors.transparent,
-      builder: (ctx) => Material(
-        color: Colors.white,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
-        clipBehavior: Clip.antiAlias,
-        child: Container(
-          padding: const EdgeInsets.all(20),
+      builder: (sheetContext) => Container(
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.of(sheetContext).size.height * 0.85,
+        ),
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        child: SafeArea(
+          top: false,
           child: Column(
             mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const Text(
-                'Add Profile Section',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+              // Drag handle
+              Center(
+                child: Container(
+                  margin: const EdgeInsets.only(top: 10, bottom: 6),
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFCBD5E1),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                ),
               ),
-              const SizedBox(height: 16),
-              ListTile(
-                leading: const Icon(
-                  Icons.school_rounded,
-                  color: AppColors.primary,
+              // Title row
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 6, 8, 6),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            title,
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w800,
+                              color: AppColors.textPrimary,
+                            ),
+                          ),
+                          if (subtitle != null) ...[
+                            const SizedBox(height: 2),
+                            Text(
+                              subtitle,
+                              style: const TextStyle(
+                                fontSize: 13,
+                                color: AppColors.textSecondary,
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.close_rounded),
+                      color: AppColors.textSecondary,
+                      onPressed: () => Navigator.pop(sheetContext),
+                    ),
+                  ],
                 ),
-                title: const Text(
-                  'Add Education History',
-                  style: TextStyle(fontWeight: FontWeight.w700),
-                ),
-                subtitle: const Text('School, college, or university degree'),
-                onTap: () {
-                  Navigator.pop(ctx);
-                  _openAddEducationDialog();
-                },
               ),
-              ListTile(
-                leading: const Icon(
-                  Icons.business_center_rounded,
-                  color: AppColors.primary,
+              const Divider(height: 1, color: Color(0xFFF1F5F9)),
+              Flexible(
+                child: ListView(
+                  shrinkWrap: true,
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+                  children: children,
                 ),
-                title: const Text(
-                  'Add Work Experience',
-                  style: TextStyle(fontWeight: FontWeight.w700),
-                ),
-                subtitle: const Text('Past job roles and companies'),
-                onTap: () {
-                  Navigator.pop(ctx);
-                  _openAddExperienceDialog();
-                },
-              ),
-              ListTile(
-                leading: const Icon(
-                  Icons.star_rounded,
-                  color: AppColors.primary,
-                ),
-                title: const Text(
-                  'Add Skill Tag',
-                  style: TextStyle(fontWeight: FontWeight.w700),
-                ),
-                subtitle: const Text('Key skills to attract recruiters'),
-                onTap: () {
-                  Navigator.pop(ctx);
-                  _openAddSkillDialog();
-                },
-              ),
-              ListTile(
-                leading: const Icon(
-                  Icons.picture_as_pdf_rounded,
-                  color: AppColors.primary,
-                ),
-                title: const Text(
-                  'Upload Resume (PDF / DOC)',
-                  style: TextStyle(fontWeight: FontWeight.w700),
-                ),
-                subtitle: const Text('Upload your CV document'),
-                onTap: () {
-                  Navigator.pop(ctx);
-                  _pickAndUploadResumePdf();
-                },
               ),
             ],
           ),
@@ -3127,98 +3336,119 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     );
   }
 
-  // -------------------------------------------------------------------
-  // MORE PROFILE OPTIONS SHEET
-  // -------------------------------------------------------------------
-  void _showMoreProfileMenu(UserProfile? user) {
-    // More Actions are for signed-in users only; guests never open the sheet.
-    if (!AuthGuard.isSignedIn(ref.read(authProvider))) return;
+  /// Small grey section heading inside an action sheet.
+  Widget _sheetSectionLabel(String text) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(4, 12, 4, 6),
+      child: Text(
+        text.toUpperCase(),
+        style: const TextStyle(
+          fontSize: 11,
+          fontWeight: FontWeight.w800,
+          letterSpacing: 0.8,
+          color: Color(0xFF94A3B8),
+        ),
+      ),
+    );
+  }
 
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      builder: (ctx) => Material(
-        color: Colors.white,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
-        clipBehavior: Clip.antiAlias,
-        child: Container(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'More Actions',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
-              ),
-              const SizedBox(height: 16),
-              ListTile(
-                leading: const Icon(
-                  Icons.share_rounded,
-                  color: AppColors.primary,
-                ),
-                title: const Text(
-                  'Share Profile Link',
-                  style: TextStyle(fontWeight: FontWeight.w700),
-                ),
-                subtitle: const Text(
-                  'Share your digital CV link with recruiters',
-                ),
-                onTap: () async {
-                  Navigator.pop(ctx);
-                  final userId = user?.id ?? '';
-                  if (userId.isEmpty) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text(
-                          'Profile link is not available yet. Please try again.',
-                        ),
-                        behavior: SnackBarBehavior.floating,
-                      ),
-                    );
-                    return;
-                  }
-                  final profileUrl = ApiConstants.publicProfileUrl(userId);
-                  await Clipboard.setData(ClipboardData(text: profileUrl));
-                  if (!mounted) return;
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Profile link copied: $profileUrl'),
-                      backgroundColor: AppColors.success,
-                      behavior: SnackBarBehavior.floating,
+  /// One tappable row of an action sheet: icon, title, description,
+  /// optional status badge and an arrow. Closes the sheet, then runs [onTap].
+  Widget _sheetTile({
+    required IconData icon,
+    required String title,
+    String? subtitle,
+    String? badge,
+    bool badgeHighlighted = false,
+    Color iconColor = AppColors.primary,
+    Color iconBackground = AppColors.primaryLight,
+    required VoidCallback onTap,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Material(
+        color: const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(16),
+        child: Builder(
+          builder: (tileContext) => InkWell(
+            borderRadius: BorderRadius.circular(16),
+            onTap: () {
+              Navigator.pop(tileContext);
+              onTap();
+            },
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              child: Row(
+                children: [
+                  Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      color: iconBackground,
+                      borderRadius: BorderRadius.circular(12),
                     ),
-                  );
-                },
+                    child: Icon(icon, size: 22, color: iconColor),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          title,
+                          style: const TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.textPrimary,
+                          ),
+                        ),
+                        if (subtitle != null) ...[
+                          const SizedBox(height: 3),
+                          Text(
+                            subtitle,
+                            style: const TextStyle(
+                              fontSize: 12.5,
+                              color: AppColors.textSecondary,
+                              height: 1.3,
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                  if (badge != null) ...[
+                    const SizedBox(width: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 9,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: badgeHighlighted
+                            ? AppColors.successLight
+                            : const Color(0xFFE2E8F0),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Text(
+                        badge,
+                        style: TextStyle(
+                          fontSize: 11.5,
+                          fontWeight: FontWeight.w700,
+                          color: badgeHighlighted
+                              ? AppColors.success
+                              : const Color(0xFF475569),
+                        ),
+                      ),
+                    ),
+                  ],
+                  const SizedBox(width: 4),
+                  const Icon(
+                    Icons.chevron_right_rounded,
+                    color: Color(0xFF94A3B8),
+                  ),
+                ],
               ),
-              ListTile(
-                leading: const Icon(
-                  Icons.download_rounded,
-                  color: AppColors.primary,
-                ),
-                title: const Text(
-                  'Download Resume PDF',
-                  style: TextStyle(fontWeight: FontWeight.w700),
-                ),
-                onTap: () {
-                  Navigator.pop(ctx);
-                  _viewResume(user?.resumeUrl ?? '');
-                },
-              ),
-              ListTile(
-                leading: const Icon(
-                  Icons.headset_mic_rounded,
-                  color: AppColors.primary,
-                ),
-                title: const Text(
-                  'Call HR Helpline',
-                  style: TextStyle(fontWeight: FontWeight.w700),
-                ),
-                onTap: () {
-                  Navigator.pop(ctx);
-                  _callHR();
-                },
-              ),
-            ],
+            ),
           ),
         ),
       ),
@@ -3239,6 +3469,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         (profileImage.startsWith('http://') ||
             profileImage.startsWith('https://'));
     final isAuth = ref.watch(authProvider).isAuthenticated;
+    // Signed-in users only (guests see More greyed out).
+    final canOpenMore = AuthGuard.isSignedIn(ref.watch(authProvider));
 
     return Container(
       width: double.infinity,
@@ -3636,8 +3868,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   runSpacing: 8,
                   children: [
                     ElevatedButton(
-                      onPressed: () =>
-                          user != null ? _showOpenToModal(user) : null,
+                      onPressed: () => _showOpenToMenu(user),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.primary,
                         foregroundColor: Colors.white,
@@ -3649,13 +3880,20 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                           borderRadius: BorderRadius.circular(20),
                         ),
                       ),
-                      child: const Text(
-                        'Open To',
-                        style: TextStyle(fontWeight: FontWeight.w800),
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            'Open To',
+                            style: TextStyle(fontWeight: FontWeight.w800),
+                          ),
+                          SizedBox(width: 4),
+                          Icon(Icons.keyboard_arrow_down_rounded, size: 18),
+                        ],
                       ),
                     ),
                     OutlinedButton(
-                      onPressed: _showAddSectionSheet,
+                      onPressed: () => _showAddSectionMenu(user),
                       style: OutlinedButton.styleFrom(
                         foregroundColor: AppColors.primary,
                         side: const BorderSide(
@@ -3670,14 +3908,21 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                           borderRadius: BorderRadius.circular(20),
                         ),
                       ),
-                      child: const Text(
-                        'Add Profile Section',
-                        style: TextStyle(fontWeight: FontWeight.w700),
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            'Add Profile Section',
+                            style: TextStyle(fontWeight: FontWeight.w700),
+                          ),
+                          SizedBox(width: 4),
+                          Icon(Icons.add_rounded, size: 18),
+                        ],
                       ),
                     ),
                     OutlinedButton(
                       // Disabled (greyed out) for guests: no More Actions.
-                      onPressed: AuthGuard.isSignedIn(ref.watch(authProvider))
+                      onPressed: canOpenMore
                           ? () => _showMoreProfileMenu(user)
                           : null,
                       style: OutlinedButton.styleFrom(
@@ -6050,18 +6295,14 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   }
 
   // -------------------------------------------------------------------
-  // JOBS BASED ON YOUR PROFILE CARD (media_1789560057906.png)
+  // JOBS BASED ON YOUR PROFILE CARD (real jobs from GET /jobs)
   // -------------------------------------------------------------------
-  Widget _buildJobsBasedOnProfileCard() {
-    final jobCategories = [
-      {'title': 'Fintech', 'hiring': '1.4K+ Are Actively Hiring'},
-      {'title': 'Internet', 'hiring': '1.4K+ Are Actively Hiring'},
-      {'title': 'Fortune 500', 'hiring': '1.4K+ Are Actively Hiring'},
-      {'title': 'MNCs', 'hiring': '2.1K+ Are Actively Hiring'},
-    ];
+  Widget _buildJobsBasedOnProfileCard(UserProfile? user) {
+    final city = user?.city ?? '';
+    final jobsAsync = ref.watch(profileJobsProvider(city));
 
     return Container(
-      padding: const EdgeInsets.all(18),
+      padding: const EdgeInsets.symmetric(vertical: 18),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
@@ -6070,97 +6311,292 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Jobs Based On Your Profile',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w800,
-              color: AppColors.textPrimary,
-            ),
-          ),
-          const SizedBox(height: 14),
-          SizedBox(
-            height: 110,
-            child: ListView.separated(
-              scrollDirection: Axis.horizontal,
-              itemCount: jobCategories.length,
-              separatorBuilder: (ctx, idx) => const SizedBox(width: 12),
-              itemBuilder: (ctx, idx) {
-                final cat = jobCategories[idx];
-                return InkWell(
-                  onTap: () => context.go('/jobs'),
-                  borderRadius: BorderRadius.circular(16),
-                  child: Container(
-                    width: 150,
-                    padding: const EdgeInsets.all(14),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFFAFAFA),
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: Colors.grey.shade200),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              cat['title']!,
-                              style: const TextStyle(
-                                fontWeight: FontWeight.w800,
-                                fontSize: 13.5,
-                                color: AppColors.textPrimary,
-                              ),
-                            ),
-                            const Icon(
-                              Icons.chevron_right_rounded,
-                              size: 16,
-                              color: AppColors.textLight,
-                            ),
-                          ],
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 18),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Jobs Based On Your Profile',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w800,
+                          color: AppColors.textPrimary,
                         ),
-                        Text(
-                          cat['hiring']!,
-                          style: const TextStyle(
-                            fontSize: 10,
-                            color: AppColors.textSecondary,
-                          ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        jobsAsync.maybeWhen(
+                          data: (result) => result.city != null
+                              ? 'Jobs in ${result.city} first, then latest openings'
+                              : 'Latest openings on KaamMilega',
+                          orElse: () => 'Finding jobs for you...',
                         ),
-                        Row(
-                          children: List.generate(
-                            4,
-                            (i) => Padding(
-                              padding: const EdgeInsets.only(right: 4),
-                              child: CircleAvatar(
-                                radius: 8,
-                                backgroundColor: Colors.grey.shade300,
-                              ),
-                            ),
-                          ),
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: AppColors.textSecondary,
                         ),
-                      ],
+                      ),
+                    ],
+                  ),
+                ),
+                TextButton(
+                  onPressed: () => context.go('/jobs'),
+                  child: const Text(
+                    'See All',
+                    style: TextStyle(
+                      color: AppColors.primary,
+                      fontWeight: FontWeight.w800,
+                      fontSize: 13,
                     ),
                   ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 12),
+          SizedBox(
+            height: 176,
+            child: jobsAsync.when(
+              loading: () => ListView.separated(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(horizontal: 18),
+                itemCount: 2,
+                separatorBuilder: (_, _) => const SizedBox(width: 12),
+                itemBuilder: (_, _) => const ShimmerBox(
+                  width: 250,
+                  height: 176,
+                  borderRadius: 16,
+                ),
+              ),
+              error: (_, _) => _buildProfileJobsMessage(
+                icon: Icons.wifi_off_rounded,
+                message: 'Could not load jobs right now.',
+                actionLabel: 'Retry',
+                onAction: () => ref.invalidate(profileJobsProvider(city)),
+              ),
+              data: (result) {
+                if (result.jobs.isEmpty) {
+                  return _buildProfileJobsMessage(
+                    icon: Icons.work_off_outlined,
+                    message: 'No jobs available right now.',
+                    actionLabel: 'Browse Jobs',
+                    onAction: () => context.go('/jobs'),
+                  );
+                }
+                return ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.symmetric(horizontal: 18),
+                  itemCount: result.jobs.length,
+                  separatorBuilder: (_, _) => const SizedBox(width: 12),
+                  itemBuilder: (_, index) =>
+                      _buildProfileJobCard(result.jobs[index]),
                 );
               },
             ),
           ),
-          const SizedBox(height: 12),
-          Center(
-            child: TextButton(
-              onPressed: () => context.go('/jobs'),
-              child: const Text(
-                'See All Jobs',
-                style: TextStyle(
-                  color: Color(0xFF9333EA),
+        ],
+      ),
+    );
+  }
+
+  /// One real job (from GET /jobs). Tapping opens Job Detail.
+  Widget _buildProfileJobCard(Job job) {
+    final company = job.company.trim();
+    final initial = company.isNotEmpty ? company[0].toUpperCase() : 'J';
+    final location = job.formattedLocation;
+
+    return Material(
+      color: const Color(0xFFF8FAFC),
+      borderRadius: BorderRadius.circular(16),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(16),
+        onTap: job.id.isEmpty
+            ? null
+            : () => context.push('/jobs/${job.id}', extra: job),
+        child: Container(
+          width: 250,
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: const Color(0xFFE2E8F0)),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    width: 40,
+                    height: 40,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: AppColors.primaryLight,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      initial,
+                      style: const TextStyle(
+                        fontSize: 17,
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.primary,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          job.title,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w800,
+                            color: AppColors.textPrimary,
+                            height: 1.25,
+                          ),
+                        ),
+                        if (company.isNotEmpty) ...[
+                          const SizedBox(height: 2),
+                          Text(
+                            company,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const Spacer(),
+              if (location.isNotEmpty)
+                _buildProfileJobInfoRow(Icons.location_on_outlined, location),
+              const SizedBox(height: 4),
+              _buildProfileJobInfoRow(
+                Icons.payments_outlined,
+                job.formattedSalary,
+              ),
+              const SizedBox(height: 10),
+              Row(
+                children: [
+                  if (job.jobType.isNotEmpty)
+                    Flexible(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 3,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppColors.primaryLight,
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Text(
+                          job.jobType,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.primary,
+                          ),
+                        ),
+                      ),
+                    ),
+                  const Spacer(),
+                  const Text(
+                    'View',
+                    style: TextStyle(
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.w800,
+                      color: AppColors.primary,
+                    ),
+                  ),
+                  const Icon(
+                    Icons.chevron_right_rounded,
+                    size: 18,
+                    color: AppColors.primary,
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildProfileJobInfoRow(IconData icon, String text) {
+    return Row(
+      children: [
+        Icon(icon, size: 14, color: AppColors.textSecondary),
+        const SizedBox(width: 4),
+        Expanded(
+          child: Text(
+            text,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              fontSize: 12,
+              color: AppColors.textSecondary,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// Empty / error state inside the jobs section.
+  Widget _buildProfileJobsMessage({
+    required IconData icon,
+    required String message,
+    required String actionLabel,
+    required VoidCallback onAction,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 18),
+      child: Container(
+        width: double.infinity,
+        decoration: BoxDecoration(
+          color: const Color(0xFFF8FAFC),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: const Color(0xFFE2E8F0)),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, size: 30, color: const Color(0xFF94A3B8)),
+            const SizedBox(height: 8),
+            Text(
+              message,
+              style: const TextStyle(
+                fontSize: 13,
+                color: AppColors.textSecondary,
+              ),
+            ),
+            TextButton(
+              onPressed: onAction,
+              child: Text(
+                actionLabel,
+                style: const TextStyle(
+                  color: AppColors.primary,
                   fontWeight: FontWeight.w800,
-                  fontSize: 13,
                 ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -6285,7 +6721,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                           const SizedBox(height: 16),
 
                           // 7. Jobs Based On Your Profile (media_1789560057906.png)
-                          _buildJobsBasedOnProfileCard(),
+                          _buildJobsBasedOnProfileCard(user),
 
                           const SizedBox(height: 16),
 
