@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../models/wallet_transaction.dart';
 import '../providers/wallet_provider.dart';
+import '../../../shared/widgets/fade_slide_in.dart';
 
 class WalletTransactionsScreen extends ConsumerStatefulWidget {
   const WalletTransactionsScreen({super.key});
@@ -164,86 +165,91 @@ class _WalletTransactionsScreenState
       padding: const EdgeInsets.all(16),
       itemCount: transactions.length,
       separatorBuilder: (context, index) => const SizedBox(height: 10),
-      itemBuilder: (context, index) {
-        final txn = transactions[index];
-        final isCredit = txn.type == TransactionType.credit;
+      itemBuilder: (context, index) => FadeSlideIn(
+        index: index,
+        child: Builder(
+          builder: (context) {
+            final txn = transactions[index];
+            final isCredit = txn.type == TransactionType.credit;
 
-        return InkWell(
-          onTap: () => _showTransactionDetailModal(context, txn),
-          borderRadius: BorderRadius.circular(14),
-          child: Container(
-            padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(
-              color: Colors.white,
+            return InkWell(
+              onTap: () => _showTransactionDetailModal(context, txn),
               borderRadius: BorderRadius.circular(14),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.02),
-                  blurRadius: 6,
-                  offset: const Offset(0, 2),
+              child: Container(
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(14),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.02),
+                      blurRadius: 6,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
                 ),
-              ],
-            ),
-            child: Row(
-              children: [
-                Container(
-                  width: 42,
-                  height: 42,
-                  decoration: BoxDecoration(
-                    color: isCredit
-                        ? const Color(0xFF10B981).withValues(alpha: 0.12)
-                        : const Color(0xFFEF4444).withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Icon(
-                    isCredit
-                        ? Icons.arrow_downward_rounded
-                        : Icons.arrow_upward_rounded,
-                    color: isCredit
-                        ? const Color(0xFF10B981)
-                        : const Color(0xFFEF4444),
-                    size: 20,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        txn.title,
-                        style: const TextStyle(
-                          fontWeight: FontWeight.w600,
-                          fontSize: 14,
-                          color: Color(0xFF0F172A),
-                        ),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 42,
+                      height: 42,
+                      decoration: BoxDecoration(
+                        color: isCredit
+                            ? const Color(0xFF10B981).withValues(alpha: 0.12)
+                            : const Color(0xFFEF4444).withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(12),
                       ),
-                      const SizedBox(height: 2),
-                      Text(
-                        '${txn.createdAt.day}/${txn.createdAt.month}/${txn.createdAt.year} • ${txn.status.label}',
-                        style: const TextStyle(
-                          fontSize: 11,
-                          color: Color(0xFF64748B),
-                        ),
+                      child: Icon(
+                        isCredit
+                            ? Icons.arrow_downward_rounded
+                            : Icons.arrow_upward_rounded,
+                        color: isCredit
+                            ? const Color(0xFF10B981)
+                            : const Color(0xFFEF4444),
+                        size: 20,
                       ),
-                    ],
-                  ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            txn.title,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.w600,
+                              fontSize: 14,
+                              color: Color(0xFF0F172A),
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            '${txn.createdAt.day}/${txn.createdAt.month}/${txn.createdAt.year} • ${txn.status.label}',
+                            style: const TextStyle(
+                              fontSize: 11,
+                              color: Color(0xFF64748B),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Text(
+                      '${isCredit ? "+" : "-"}₹${txn.amount.toStringAsFixed(0)}',
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w800,
+                        color: isCredit
+                            ? const Color(0xFF10B981)
+                            : const Color(0xFF0F172A),
+                      ),
+                    ),
+                  ],
                 ),
-                Text(
-                  '${isCredit ? "+" : "-"}₹${txn.amount.toStringAsFixed(0)}',
-                  style: TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w800,
-                    color: isCredit
-                        ? const Color(0xFF10B981)
-                        : const Color(0xFF0F172A),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
+              ),
+            );
+          },
+        ),
+      ),
     );
   }
 

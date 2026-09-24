@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../notifications/providers/notification_provider.dart';
 import '../../profile/presentation/widgets/profile_drawer.dart';
+import '../../../shared/widgets/app_dialog.dart';
 
 /// Screen allowing candidates/professionals to apply to be an Expert on KaamMilega
 /// Matches the web portal design & responsive mobile layout.
@@ -129,7 +130,7 @@ class _ApplyExpertScreenState extends ConsumerState<ApplyExpertScreen> {
       return;
     }
 
-    showDialog(
+    showAppDialog(
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),

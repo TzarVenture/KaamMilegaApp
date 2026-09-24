@@ -9,6 +9,9 @@ import '../../auth/providers/auth_provider.dart';
 import '../models/wallet_summary.dart';
 import '../models/wallet_transaction.dart';
 import '../providers/wallet_provider.dart';
+import '../../../shared/widgets/app_dialog.dart';
+import '../../../shared/widgets/fade_slide_in.dart';
+import '../../../shared/widgets/pressable_scale.dart';
 
 class WalletScreen extends ConsumerWidget {
   const WalletScreen({super.key});
@@ -191,7 +194,8 @@ class WalletScreen extends ConsumerWidget {
     WalletSummary? summary,
     bool isVerified,
   ) {
-    return Container(
+    return FadeSlideIn(
+      child: Container(
       width: double.infinity,
       padding: const EdgeInsets.all(22),
       decoration: BoxDecoration(
@@ -356,12 +360,15 @@ class WalletScreen extends ConsumerWidget {
           ),
         ],
       ),
+      ),
     );
   }
 
   /// 4 Quick Action Buttons designed for mobile touch
   Widget _buildQuickActions(BuildContext context) {
-    return Container(
+    return FadeSlideIn(
+      index: 1,
+      child: Container(
       padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 8),
       decoration: BoxDecoration(
         color: Colors.white,
@@ -407,6 +414,7 @@ class WalletScreen extends ConsumerWidget {
           ),
         ],
       ),
+      ),
     );
   }
 
@@ -417,7 +425,8 @@ class WalletScreen extends ConsumerWidget {
     required Color color,
     required VoidCallback onTap,
   }) {
-    return InkWell(
+    return PressableScale(
+      child: InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(12),
       child: Padding(
@@ -446,12 +455,15 @@ class WalletScreen extends ConsumerWidget {
           ],
         ),
       ),
+      ),
     );
   }
 
   /// Wallet Types Breakdown Card
   Widget _buildWalletTypesSection(WalletSummary? summary) {
-    return Container(
+    return FadeSlideIn(
+      index: 2,
+      child: Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
@@ -509,6 +521,7 @@ class WalletScreen extends ConsumerWidget {
           ),
         ],
       ),
+      ),
     );
   }
 
@@ -564,7 +577,9 @@ class WalletScreen extends ConsumerWidget {
 
   /// KYC & Limits Status Card
   Widget _buildKycAndLimitsCard(BuildContext context, bool isVerified) {
-    return Container(
+    return FadeSlideIn(
+      index: 3,
+      child: Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: const Color(0xFFF1F5F9),
@@ -652,6 +667,7 @@ class WalletScreen extends ConsumerWidget {
             ),
           ),
         ],
+      ),
       ),
     );
   }
@@ -817,58 +833,66 @@ class WalletScreen extends ConsumerWidget {
           itemCount: walletState.transactions.take(5).length,
           separatorBuilder: (context, index) =>
               const Divider(height: 1, color: Color(0xFFF1F5F9)),
-          itemBuilder: (context, index) {
-            final txn = walletState.transactions[index];
-            final isCredit = txn.type == TransactionType.credit;
-            return ListTile(
-              leading: CircleAvatar(
-                backgroundColor: isCredit
-                    ? const Color(0xFF10B981).withValues(alpha: 0.12)
-                    : const Color(0xFFEF4444).withValues(alpha: 0.12),
-                child: Icon(
-                  isCredit
-                      ? Icons.arrow_downward_rounded
-                      : Icons.arrow_upward_rounded,
-                  color: isCredit
-                      ? const Color(0xFF10B981)
-                      : const Color(0xFFEF4444),
-                  size: 18,
-                ),
-              ),
-              title: Text(
-                txn.title,
-                style: const TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                  color: Color(0xFF0F172A),
-                ),
-              ),
-              subtitle: Text(
-                txn.createdAt.toLocal().toString().split('.').first,
-                style: const TextStyle(fontSize: 11, color: Color(0xFF94A3B8)),
-              ),
-              trailing: Text(
-                '${isCredit ? "+" : "-"}₹${txn.amount.toStringAsFixed(0)}',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
-                  color: isCredit
-                      ? const Color(0xFF10B981)
-                      : const Color(0xFF0F172A),
-                ),
-              ),
-            );
-          },
+          itemBuilder: (context, index) => FadeSlideIn(
+            index: index,
+            child: Builder(
+              builder: (context) {
+                final txn = walletState.transactions[index];
+                final isCredit = txn.type == TransactionType.credit;
+                return ListTile(
+                  leading: CircleAvatar(
+                    backgroundColor: isCredit
+                        ? const Color(0xFF10B981).withValues(alpha: 0.12)
+                        : const Color(0xFFEF4444).withValues(alpha: 0.12),
+                    child: Icon(
+                      isCredit
+                          ? Icons.arrow_downward_rounded
+                          : Icons.arrow_upward_rounded,
+                      color: isCredit
+                          ? const Color(0xFF10B981)
+                          : const Color(0xFFEF4444),
+                      size: 18,
+                    ),
+                  ),
+                  title: Text(
+                    txn.title,
+                    style: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF0F172A),
+                    ),
+                  ),
+                  subtitle: Text(
+                    txn.createdAt.toLocal().toString().split('.').first,
+                    style: const TextStyle(
+                      fontSize: 11,
+                      color: Color(0xFF94A3B8),
+                    ),
+                  ),
+                  trailing: Text(
+                    '${isCredit ? "+" : "-"}₹${txn.amount.toStringAsFixed(0)}',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                      color: isCredit
+                          ? const Color(0xFF10B981)
+                          : const Color(0xFF0F172A),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
         ),
       ),
     );
   }
 
   void _showWalletInfoDialog(BuildContext context) {
-    showDialog(
+    showAppDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: const Row(
           children: [
             Icon(Icons.info_outline_rounded, color: Color(0xFF1A2B8C)),

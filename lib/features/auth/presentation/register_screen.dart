@@ -180,6 +180,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
         child: Center(
           child: SingleChildScrollView(
             physics: const BouncingScrollPhysics(),
+            keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
             child: Container(
               constraints: const BoxConstraints(maxWidth: 480),
@@ -456,28 +457,33 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                               backgroundColor: const Color(
                                 0xFF1A2B8C,
                               ), // Official KaamMilega Deep Blue
+                              // Stay blue while loading.
+                              disabledBackgroundColor: const Color(0xFF1A2B8C),
                               elevation: 0,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(24),
                               ),
                             ),
-                            child: _isLoading
-                                ? const SizedBox(
-                                    width: 20,
-                                    height: 20,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2.5,
-                                      color: Colors.white,
+                            child: AnimatedSwitcher(
+                              duration: const Duration(milliseconds: 180),
+                              child: _isLoading
+                                  ? const SizedBox(
+                                      width: 20,
+                                      height: 20,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2.5,
+                                        color: Colors.white,
+                                      ),
+                                    )
+                                  : const Text(
+                                      'Create Account & Continue',
+                                      style: TextStyle(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.w800,
+                                        color: Colors.white,
+                                      ),
                                     ),
-                                  )
-                                : const Text(
-                                    'Create Account & Continue',
-                                    style: TextStyle(
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.w800,
-                                      color: Colors.white,
-                                    ),
-                                  ),
+                            ),
                           ),
                         ),
 
@@ -485,8 +491,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
                         // FOOTER: ALREADY HAVE AN ACCOUNT? SIGN IN
                         Center(
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
+                          child: Wrap(
+                            alignment: WrapAlignment.center,
+                            crossAxisAlignment: WrapCrossAlignment.center,
                             children: [
                               const Text(
                                 'Already have an account? ',

@@ -14,6 +14,7 @@ import '../../chat/presentation/open_chat.dart';
 import '../../network/models/connection_request.dart';
 import '../../network/providers/network_provider.dart';
 import '../../network/repositories/network_repository.dart';
+import '../../../shared/widgets/fade_slide_in.dart';
 
 class PeerToPeerScreen extends ConsumerStatefulWidget {
   const PeerToPeerScreen({super.key});
@@ -489,11 +490,13 @@ class _PeerToPeerScreenState extends ConsumerState<PeerToPeerScreen>
                         color: Color(0xFF94A3B8),
                       ),
                       const SizedBox(width: 2),
-                      Text(
+                      Flexible(
+                        child: Text(
                         user.city,
                         style: const TextStyle(
                           fontSize: 10,
                           color: Color(0xFF94A3B8),
+                        ),
                         ),
                       ),
                     ],
@@ -562,63 +565,68 @@ class _PeerToPeerScreenState extends ConsumerState<PeerToPeerScreen>
           padding: const EdgeInsets.all(16),
           itemCount: connections.length,
           separatorBuilder: (context, index) => const SizedBox(height: 10),
-          itemBuilder: (context, index) {
-            final connId = connections[index];
-            return Container(
-              padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: const Color(0xFFF1F5F9)),
-              ),
-              child: Row(
-                children: [
-                  const CircleAvatar(
-                    backgroundColor: Color(0xFFF3E8FF),
-                    child: Icon(
-                      Icons.person_rounded,
-                      color: Color(0xFF9333EA),
-                      size: 20,
-                    ),
+          itemBuilder: (context, index) => FadeSlideIn(
+            index: index,
+            child: Builder(
+              builder: (context) {
+                final connId = connections[index];
+                return Container(
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: const Color(0xFFF1F5F9)),
                   ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'Connected Colleague',
-                          style: TextStyle(
-                            fontWeight: FontWeight.w700,
-                            fontSize: 14,
-                          ),
+                  child: Row(
+                    children: [
+                      const CircleAvatar(
+                        backgroundColor: Color(0xFFF3E8FF),
+                        child: Icon(
+                          Icons.person_rounded,
+                          color: Color(0xFF9333EA),
+                          size: 20,
                         ),
-                        Text(
-                          'ID: $connId',
-                          style: const TextStyle(
-                            fontSize: 11,
-                            color: Color(0xFF94A3B8),
-                          ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Connected Colleague',
+                              style: TextStyle(
+                                fontWeight: FontWeight.w700,
+                                fontSize: 14,
+                              ),
+                            ),
+                            Text(
+                              'ID: $connId',
+                              style: const TextStyle(
+                                fontSize: 11,
+                                color: Color(0xFF94A3B8),
+                              ),
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
+                      ),
+                      IconButton(
+                        icon: const Icon(
+                          Icons.chat_bubble_outline_rounded,
+                          color: Color(0xFF9333EA),
+                        ),
+                        onPressed: () => openChatWithUser(
+                          context,
+                          ref,
+                          receiverId: connId,
+                          title: 'Chat',
+                        ),
+                      ),
+                    ],
                   ),
-                  IconButton(
-                    icon: const Icon(
-                      Icons.chat_bubble_outline_rounded,
-                      color: Color(0xFF9333EA),
-                    ),
-                    onPressed: () => openChatWithUser(
-                      context,
-                      ref,
-                      receiverId: connId,
-                      title: 'Chat',
-                    ),
-                  ),
-                ],
-              ),
-            );
-          },
+                );
+              },
+            ),
+          ),
         );
       },
       loading: () => const Padding(
@@ -671,73 +679,78 @@ class _PeerToPeerScreenState extends ConsumerState<PeerToPeerScreen>
           padding: const EdgeInsets.all(16),
           itemCount: pending.length,
           separatorBuilder: (context, index) => const SizedBox(height: 10),
-          itemBuilder: (context, index) {
-            final item = pending[index];
-            return Container(
-              padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: const Color(0xFFF1F5F9)),
-              ),
-              child: Row(
-                children: [
-                  CircleAvatar(
-                    backgroundColor: const Color(0xFFF3E8FF),
-                    child: const Icon(
-                      Icons.person_add_rounded,
-                      color: Color(0xFF9333EA),
-                      size: 20,
-                    ),
+          itemBuilder: (context, index) => FadeSlideIn(
+            index: index,
+            child: Builder(
+              builder: (context) {
+                final item = pending[index];
+                return Container(
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: const Color(0xFFF1F5F9)),
                   ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'User #${item.senderId.substring(0, item.senderId.length > 8 ? 8 : item.senderId.length)}',
-                          style: const TextStyle(
-                            fontWeight: FontWeight.w700,
-                            fontSize: 14,
-                          ),
+                  child: Row(
+                    children: [
+                      CircleAvatar(
+                        backgroundColor: const Color(0xFFF3E8FF),
+                        child: const Icon(
+                          Icons.person_add_rounded,
+                          color: Color(0xFF9333EA),
+                          size: 20,
                         ),
-                        const Text(
-                          'Wants to connect with you',
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'User #${item.senderId.substring(0, item.senderId.length > 8 ? 8 : item.senderId.length)}',
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w700,
+                                fontSize: 14,
+                              ),
+                            ),
+                            const Text(
+                              'Wants to connect with you',
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: Color(0xFF64748B),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      ElevatedButton(
+                        onPressed: () => _handleAccept(item.senderId),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF10B981),
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 6,
+                          ),
+                          elevation: 0,
+                        ),
+                        child: const Text(
+                          'Accept',
                           style: TextStyle(
-                            fontSize: 11,
-                            color: Color(0xFF64748B),
+                            fontWeight: FontWeight.w700,
+                            fontSize: 12,
                           ),
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
-                  ElevatedButton(
-                    onPressed: () => _handleAccept(item.senderId),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF10B981),
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 14,
-                        vertical: 6,
-                      ),
-                      elevation: 0,
-                    ),
-                    child: const Text(
-                      'Accept',
-                      style: TextStyle(
-                        fontWeight: FontWeight.w700,
-                        fontSize: 12,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            );
-          },
+                );
+              },
+            ),
+          ),
         );
       },
       loading: () => const Padding(

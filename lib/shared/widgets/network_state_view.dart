@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 
 import '../../../app/theme/app_colors.dart';
 import 'shimmer_loading.dart';
+import 'fade_slide_in.dart';
 
 /// Reusable widget for presenting consistent API screen states:
 /// Loading, Success, Empty, Offline, and Error with Retry.
@@ -36,193 +37,62 @@ class NetworkStateView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Smooth cross-fade when switching between loading / error / empty /
+    // content (the content itself is not rebuilt differently).
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 220),
+      switchInCurve: Curves.easeOut,
+      switchOutCurve: Curves.easeIn,
+      child: KeyedSubtree(key: ValueKey(_stateKey), child: _buildState()),
+    );
+  }
+
+  String get _stateKey {
+    if (isLoading) return 'loading';
+    if (isOffline) return 'offline';
+    if (errorMessage != null && errorMessage!.isNotEmpty) return 'error';
+    if (isEmpty) return 'empty';
+    return 'content';
+  }
+
+  Widget _buildState() {
     if (isLoading) {
       return loadingWidget ??
           const ShimmerLoadingList(count: 4, itemHeight: 90);
     }
 
     if (isOffline) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(32),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(18),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFFEF2F2),
-                  shape: BoxShape.circle,
-                  border: Border.all(color: const Color(0xFFFECACA)),
-                ),
-                child: const Icon(
-                  Icons.wifi_off_rounded,
-                  color: Color(0xFFE11D48),
-                  size: 40,
-                ),
-              ),
-              const SizedBox(height: 20),
-              const Text(
-                'No Internet Connection',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w800,
-                  color: Color(0xFF0F172A),
-                ),
-              ),
-              const SizedBox(height: 8),
-              const Text(
-                'Please check your internet connection and try again.',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 13,
-                  color: Color(0xFF64748B),
-                  height: 1.4,
-                ),
-              ),
-              if (onRetry != null) ...[
-                const SizedBox(height: 24),
-                ElevatedButton.icon(
-                  onPressed: onRetry,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 24,
-                      vertical: 12,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                    elevation: 0,
-                  ),
-                  icon: const Icon(Icons.refresh_rounded, size: 18),
-                  label: const Text(
-                    'Retry',
-                    style: TextStyle(fontWeight: FontWeight.w800, fontSize: 14),
-                  ),
-                ),
-              ],
-            ],
-          ),
-        ),
+      return _StateMessage(
+        icon: Icons.wifi_off_rounded,
+        iconColor: const Color(0xFFE11D48),
+        iconBackground: const Color(0xFFFEF2F2),
+        iconBorder: const Color(0xFFFECACA),
+        title: 'No Internet Connection',
+        message: 'Please check your internet connection and try again.',
+        action: onRetry == null ? null : _RetryButton(onRetry: onRetry!),
       );
     }
 
     if (errorMessage != null && errorMessage!.isNotEmpty) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(32),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(18),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFFFFBEB),
-                  shape: BoxShape.circle,
-                  border: Border.all(color: const Color(0xFFFDE68A)),
-                ),
-                child: const Icon(
-                  Icons.error_outline_rounded,
-                  color: Color(0xFFD97706),
-                  size: 40,
-                ),
-              ),
-              const SizedBox(height: 20),
-              const Text(
-                'Unable to Load Data',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w800,
-                  color: Color(0xFF0F172A),
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                errorMessage!,
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  fontSize: 13,
-                  color: Color(0xFF64748B),
-                  height: 1.4,
-                ),
-              ),
-              if (onRetry != null) ...[
-                const SizedBox(height: 24),
-                ElevatedButton.icon(
-                  onPressed: onRetry,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 24,
-                      vertical: 12,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                    elevation: 0,
-                  ),
-                  icon: const Icon(Icons.refresh_rounded, size: 18),
-                  label: const Text(
-                    'Retry',
-                    style: TextStyle(fontWeight: FontWeight.w800, fontSize: 14),
-                  ),
-                ),
-              ],
-            ],
-          ),
-        ),
+      return _StateMessage(
+        icon: Icons.error_outline_rounded,
+        iconColor: const Color(0xFFD97706),
+        iconBackground: const Color(0xFFFFFBEB),
+        iconBorder: const Color(0xFFFDE68A),
+        title: 'Unable to Load Data',
+        message: errorMessage!,
+        action: onRetry == null ? null : _RetryButton(onRetry: onRetry!),
       );
     }
 
     if (isEmpty) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(32),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(18),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF1F5F9),
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(
-                  Icons.inbox_rounded,
-                  color: Color(0xFF94A3B8),
-                  size: 40,
-                ),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                emptyTitle ?? 'No Records Found',
-                style: const TextStyle(
-                  fontSize: 17,
-                  fontWeight: FontWeight.w800,
-                  color: Color(0xFF0F172A),
-                ),
-              ),
-              if (emptyMessage != null) ...[
-                const SizedBox(height: 6),
-                Text(
-                  emptyMessage!,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    fontSize: 13,
-                    color: Color(0xFF64748B),
-                  ),
-                ),
-              ],
-              if (emptyAction != null) ...[
-                const SizedBox(height: 20),
-                emptyAction!,
-              ],
-            ],
-          ),
-        ),
+      return _StateMessage(
+        icon: Icons.inbox_rounded,
+        iconColor: const Color(0xFF94A3B8),
+        iconBackground: const Color(0xFFF1F5F9),
+        title: emptyTitle ?? 'No Records Found',
+        message: emptyMessage,
+        action: emptyAction,
       );
     }
 
@@ -236,6 +106,122 @@ class NetworkStateView extends StatelessWidget {
     }
 
     return child;
+  }
+}
+
+/// Shared layout for the offline / error / empty states: soft round icon,
+/// bold title, readable message and an optional action. Scrolls instead of
+/// overflowing on small screens or with large font settings.
+class _StateMessage extends StatelessWidget {
+  const _StateMessage({
+    required this.icon,
+    required this.iconColor,
+    required this.iconBackground,
+    required this.title,
+    this.iconBorder,
+    this.message,
+    this.action,
+  });
+
+  final IconData icon;
+  final Color iconColor;
+  final Color iconBackground;
+  final Color? iconBorder;
+  final String title;
+  final String? message;
+  final Widget? action;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) => SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            minHeight: constraints.hasBoundedHeight ? constraints.maxHeight : 0,
+          ),
+          child: Center(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 40),
+              child: FadeSlideIn(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 80,
+                      height: 80,
+                      decoration: BoxDecoration(
+                        color: iconBackground,
+                        shape: BoxShape.circle,
+                        border: iconBorder == null
+                            ? null
+                            : Border.all(color: iconBorder!),
+                      ),
+                      child: Icon(icon, color: iconColor, size: 38),
+                    ),
+                    const SizedBox(height: 20),
+                    Text(
+                      title,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w800,
+                        color: Color(0xFF0F172A),
+                        height: 1.3,
+                      ),
+                    ),
+                    if (message != null && message!.isNotEmpty) ...[
+                      const SizedBox(height: 8),
+                      ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 320),
+                        child: Text(
+                          message!,
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            fontSize: 13.5,
+                            color: Color(0xFF64748B),
+                            height: 1.45,
+                          ),
+                        ),
+                      ),
+                    ],
+                    if (action != null) ...[
+                      const SizedBox(height: 24),
+                      action!,
+                    ],
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _RetryButton extends StatelessWidget {
+  const _RetryButton({required this.onRetry});
+
+  final VoidCallback onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    return ElevatedButton.icon(
+      onPressed: onRetry,
+      style: ElevatedButton.styleFrom(
+        backgroundColor: AppColors.primary,
+        foregroundColor: Colors.white,
+        padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 12),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        elevation: 0,
+      ),
+      icon: const Icon(Icons.refresh_rounded, size: 18),
+      label: const Text(
+        'Retry',
+        style: TextStyle(fontWeight: FontWeight.w800, fontSize: 14),
+      ),
+    );
   }
 }
 
@@ -258,12 +244,14 @@ class CachedDataBadge extends StatelessWidget {
         children: [
           const Icon(Icons.history_rounded, size: 14, color: Color(0xFF92400E)),
           const SizedBox(width: 6),
-          Text(
+          Flexible(
+            child: Text(
             'Showing saved data (Updated: $formatted)',
             style: const TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.w700,
               color: Color(0xFF92400E),
+            ),
             ),
           ),
         ],

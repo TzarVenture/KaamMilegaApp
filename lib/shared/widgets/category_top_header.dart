@@ -206,12 +206,14 @@ class CategoryTopHeader extends ConsumerWidget {
               children: [
                 Icon(Icons.location_on_rounded, color: themeColor, size: 16),
                 const SizedBox(width: 4),
-                Text(
+                Flexible(
+                  child: Text(
                   currentCity,
                   style: const TextStyle(
                     fontSize: 13.5,
                     fontWeight: FontWeight.w800,
                     color: Color(0xFF0F172A),
+                  ),
                   ),
                 ),
                 const SizedBox(width: 2),

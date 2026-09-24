@@ -10,6 +10,7 @@ import '../../../shared/widgets/themed_category_bottom_nav.dart';
 import '../../jobs/models/job.dart';
 import '../../jobs/presentation/job_detail_screen.dart';
 import '../providers/instant_work_provider.dart';
+import '../../../shared/widgets/fade_slide_in.dart';
 
 class InstantWorkScreen extends ConsumerStatefulWidget {
   const InstantWorkScreen({super.key});
@@ -185,7 +186,8 @@ class _InstantWorkScreenState extends ConsumerState<InstantWorkScreen> {
   }
 
   Widget _buildHeroBanner(BuildContext context) {
-    return Container(
+    return FadeSlideIn(
+      child: Container(
       width: double.infinity,
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
@@ -239,11 +241,13 @@ class _InstantWorkScreenState extends ConsumerState<InstantWorkScreen> {
           ),
         ],
       ),
+      ),
     );
   }
 
   Widget _buildEmptyState() {
-    return Container(
+    return FadeSlideIn(
+      child: Container(
       padding: const EdgeInsets.all(32),
       decoration: BoxDecoration(
         color: Colors.white,
@@ -302,11 +306,13 @@ class _InstantWorkScreenState extends ConsumerState<InstantWorkScreen> {
           ),
         ],
       ),
+      ),
     );
   }
 
   Widget _buildWorkCard(BuildContext context, Job job) {
-    return Container(
+    return FadeSlideIn(
+      child: Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -343,12 +349,14 @@ class _InstantWorkScreenState extends ConsumerState<InstantWorkScreen> {
                   ),
                 ),
               ),
-              Text(
+              Flexible(
+                child: Text(
                 job.formattedSalary,
                 style: const TextStyle(
                   color: Color(0xFF0F172A),
                   fontSize: 15,
                   fontWeight: FontWeight.w900,
+                ),
                 ),
               ),
             ],
@@ -483,6 +491,7 @@ class _InstantWorkScreenState extends ConsumerState<InstantWorkScreen> {
             ],
           ),
         ],
+      ),
       ),
     );
   }

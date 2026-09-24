@@ -44,31 +44,16 @@ class AppTextField extends StatelessWidget {
       maxLength: maxLength,
       maxLines: maxLines,
       enabled: enabled,
-      style: AppTextStyles.body,
+      style: AppTextStyles.body.copyWith(color: AppColors.textPrimary),
+      // Borders, padding, focus / error / disabled states, hint and label
+      // styles and icon colours all come from the app theme
+      // (AppTheme.inputDecorationTheme), so every field looks the same.
       decoration: InputDecoration(
         hintText: hintText,
         labelText: labelText,
-        hintStyle: AppTextStyles.bodySecondary,
         prefixIcon: prefixIcon,
         suffixIcon: suffixIcon,
-        filled: true,
-        fillColor: AppColors.white,
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 16,
-        ),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: AppColors.border),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: AppColors.border),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
-        ),
+        fillColor: enabled ? AppColors.white : AppColors.background,
       ),
     );
   }

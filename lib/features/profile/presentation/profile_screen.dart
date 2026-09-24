@@ -17,6 +17,10 @@ import '../../jobs/models/job.dart';
 import '../../wallet/providers/wallet_provider.dart';
 import '../../network/providers/network_provider.dart';
 import '../providers/profile_jobs_provider.dart';
+import '../../../shared/widgets/app_dialog.dart';
+import '../../../shared/widgets/sheet_drag_handle.dart';
+import '../../../shared/widgets/pressable_scale.dart';
+import '../../../shared/widgets/fade_slide_in.dart';
 
 /// Full-featured Candidate Profile & CV Screen
 /// Specialized exclusively for Job Seekers / Candidates
@@ -302,12 +306,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         coverImage.isNotEmpty &&
         (coverImage.startsWith('http://') || coverImage.startsWith('https://'));
 
-    showDialog(
+    showAppDialog(
       context: context,
       builder: (ctx) {
         return Dialog(
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(24),
+            borderRadius: BorderRadius.circular(20),
           ),
           clipBehavior: Clip.antiAlias,
           child: Container(
@@ -480,12 +484,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         (profileImage.startsWith('http://') ||
             profileImage.startsWith('https://'));
 
-    showDialog(
+    showAppDialog(
       context: context,
       builder: (ctx) {
         return Dialog(
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(24),
+            borderRadius: BorderRadius.circular(20),
           ),
           clipBehavior: Clip.antiAlias,
           child: Container(
@@ -678,6 +682,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                const SheetDragHandle(),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -1110,6 +1115,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  const SheetDragHandle(),
                   // Header
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -1264,12 +1270,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     final urlCtrl = TextEditingController(text: user.portfolioUrl);
     final textCtrl = TextEditingController(text: user.portfolioText);
 
-    showDialog(
+    showAppDialog(
       context: context,
       builder: (ctx) {
         return Dialog(
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(24),
+            borderRadius: BorderRadius.circular(20),
           ),
           clipBehavior: Clip.antiAlias,
           child: Container(
@@ -1605,10 +1611,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         ),
         decoration: const BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
         ),
         child: Column(
           children: [
+            const SheetDragHandle(),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -2030,10 +2037,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             ),
             decoration: const BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+              borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
             ),
             child: Column(
               children: [
+                const SheetDragHandle(),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -2358,12 +2366,13 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               ),
               decoration: const BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+                borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
               ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  const SheetDragHandle(),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -2654,12 +2663,13 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             ),
             decoration: const BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+              borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                const SheetDragHandle(),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -2871,13 +2881,14 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         ),
         decoration: const BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
         ),
         child: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              const SheetDragHandle(),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -2981,12 +2992,13 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         padding: const EdgeInsets.all(24),
         decoration: const BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            const SheetDragHandle(),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -4188,6 +4200,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              const SheetDragHandle(),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -4441,12 +4454,18 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           const SizedBox(height: 12),
           ClipRRect(
             borderRadius: BorderRadius.circular(10),
-            child: LinearProgressIndicator(
-              value: percentage / 100.0,
-              minHeight: 8,
-              backgroundColor: const Color(0xFFF3E8FF),
-              valueColor: const AlwaysStoppedAnimation<Color>(
-                Color(0xFF9333EA),
+            // Fills smoothly up to the current completeness.
+            child: TweenAnimationBuilder<double>(
+              tween: Tween(begin: 0, end: percentage / 100.0),
+              duration: const Duration(milliseconds: 800),
+              curve: Curves.easeOutCubic,
+              builder: (context, value, _) => LinearProgressIndicator(
+                value: value,
+                minHeight: 8,
+                backgroundColor: const Color(0xFFF3E8FF),
+                valueColor: const AlwaysStoppedAnimation<Color>(
+                  Color(0xFF9333EA),
+                ),
               ),
             ),
           ),
@@ -5109,6 +5128,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                const SheetDragHandle(),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -6366,11 +6386,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 padding: const EdgeInsets.symmetric(horizontal: 18),
                 itemCount: 2,
                 separatorBuilder: (_, _) => const SizedBox(width: 12),
-                itemBuilder: (_, _) => const ShimmerBox(
-                  width: 250,
-                  height: 176,
-                  borderRadius: 16,
-                ),
+                itemBuilder: (_, _) =>
+                    const ShimmerBox(width: 250, height: 176, borderRadius: 16),
               ),
               error: (_, _) => _buildProfileJobsMessage(
                 icon: Icons.wifi_off_rounded,
@@ -6409,128 +6426,130 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     final initial = company.isNotEmpty ? company[0].toUpperCase() : 'J';
     final location = job.formattedLocation;
 
-    return Material(
-      color: const Color(0xFFF8FAFC),
-      borderRadius: BorderRadius.circular(16),
-      child: InkWell(
+    return PressableScale(
+      child: Material(
+        color: const Color(0xFFF8FAFC),
         borderRadius: BorderRadius.circular(16),
-        onTap: job.id.isEmpty
-            ? null
-            : () => context.push('/jobs/${job.id}', extra: job),
-        child: Container(
-          width: 250,
-          padding: const EdgeInsets.all(14),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: const Color(0xFFE2E8F0)),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    width: 40,
-                    height: 40,
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                      color: AppColors.primaryLight,
-                      borderRadius: BorderRadius.circular(12),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(16),
+          onTap: job.id.isEmpty
+              ? null
+              : () => context.push('/jobs/${job.id}', extra: job),
+          child: Container(
+            width: 250,
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: const Color(0xFFE2E8F0)),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      width: 40,
+                      height: 40,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color: AppColors.primaryLight,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        initial,
+                        style: const TextStyle(
+                          fontSize: 17,
+                          fontWeight: FontWeight.w800,
+                          color: AppColors.primary,
+                        ),
+                      ),
                     ),
-                    child: Text(
-                      initial,
-                      style: const TextStyle(
-                        fontSize: 17,
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            job.title,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w800,
+                              color: AppColors.textPrimary,
+                              height: 1.25,
+                            ),
+                          ),
+                          if (company.isNotEmpty) ...[
+                            const SizedBox(height: 2),
+                            Text(
+                              company,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                fontSize: 12,
+                                color: AppColors.textSecondary,
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const Spacer(),
+                if (location.isNotEmpty)
+                  _buildProfileJobInfoRow(Icons.location_on_outlined, location),
+                const SizedBox(height: 4),
+                _buildProfileJobInfoRow(
+                  Icons.payments_outlined,
+                  job.formattedSalary,
+                ),
+                const SizedBox(height: 10),
+                Row(
+                  children: [
+                    if (job.jobType.isNotEmpty)
+                      Flexible(
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 3,
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppColors.primaryLight,
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Text(
+                            job.jobType,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.primary,
+                            ),
+                          ),
+                        ),
+                      ),
+                    const Spacer(),
+                    const Text(
+                      'View',
+                      style: TextStyle(
+                        fontSize: 12.5,
                         fontWeight: FontWeight.w800,
                         color: AppColors.primary,
                       ),
                     ),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          job.title,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w800,
-                            color: AppColors.textPrimary,
-                            height: 1.25,
-                          ),
-                        ),
-                        if (company.isNotEmpty) ...[
-                          const SizedBox(height: 2),
-                          Text(
-                            company,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                              fontSize: 12,
-                              color: AppColors.textSecondary,
-                            ),
-                          ),
-                        ],
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-              const Spacer(),
-              if (location.isNotEmpty)
-                _buildProfileJobInfoRow(Icons.location_on_outlined, location),
-              const SizedBox(height: 4),
-              _buildProfileJobInfoRow(
-                Icons.payments_outlined,
-                job.formattedSalary,
-              ),
-              const SizedBox(height: 10),
-              Row(
-                children: [
-                  if (job.jobType.isNotEmpty)
-                    Flexible(
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 3,
-                        ),
-                        decoration: BoxDecoration(
-                          color: AppColors.primaryLight,
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Text(
-                          job.jobType,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w700,
-                            color: AppColors.primary,
-                          ),
-                        ),
-                      ),
-                    ),
-                  const Spacer(),
-                  const Text(
-                    'View',
-                    style: TextStyle(
-                      fontSize: 12.5,
-                      fontWeight: FontWeight.w800,
+                    const Icon(
+                      Icons.chevron_right_rounded,
+                      size: 18,
                       color: AppColors.primary,
                     ),
-                  ),
-                  const Icon(
-                    Icons.chevron_right_rounded,
-                    size: 18,
-                    color: AppColors.primary,
-                  ),
-                ],
-              ),
-            ],
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -6642,7 +6661,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // 1. Hero Cover & Header Card (Edge-to-edge: 0 horizontal margin)
-                    _buildHeroBanner(user, connectionsCount),
+                    FadeSlideIn(
+                      index: 0,
+                      child: _buildHeroBanner(user, connectionsCount),
+                    ),
 
                     const SizedBox(height: 16),
 
@@ -6652,18 +6674,27 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           // 2. Twin Cards: Open To Work & Providing Services (media_1789560057886.png)
-                          _buildTwinOpenToCards(user),
+                          FadeSlideIn(
+                            index: 1,
+                            child: _buildTwinOpenToCards(user),
+                          ),
 
                           const SizedBox(height: 16),
 
                           // 3. Profile Strength & Completeness Breakdown Card (media_1789560057886.png)
-                          _buildProfileCompletenessCard(user),
+                          FadeSlideIn(
+                            index: 2,
+                            child: _buildProfileCompletenessCard(user),
+                          ),
 
                           const SizedBox(height: 16),
 
                           // ("Free Now for Gigs" card removed on request.)
                           // 5. Analytics Card - Private To You (media_1789560057892.png)
-                          _buildAnalyticsCard(user),
+                          FadeSlideIn(
+                            index: 3,
+                            child: _buildAnalyticsCard(user),
+                          ),
 
                           const SizedBox(height: 16),
 
@@ -6721,7 +6752,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                           const SizedBox(height: 16),
 
                           // 7. Jobs Based On Your Profile (media_1789560057906.png)
-                          _buildJobsBasedOnProfileCard(user),
+                          FadeSlideIn(
+                            index: 5,
+                            child: _buildJobsBasedOnProfileCard(user),
+                          ),
 
                           const SizedBox(height: 16),
 
@@ -6943,7 +6977,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                           const SizedBox(height: 16),
 
                           // 10. Projects & Assignments Card (media_1789560057895.png)
-                          _buildProjectsCard(user),
+                          FadeSlideIn(
+                            index: 7,
+                            child: _buildProjectsCard(user),
+                          ),
 
                           const SizedBox(height: 16),
 
@@ -7186,7 +7223,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   }
 
   void _showLogoutConfirmationDialog() {
-    showDialog(
+    showAppDialog(
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),

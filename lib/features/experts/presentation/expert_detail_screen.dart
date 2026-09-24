@@ -7,6 +7,8 @@ import '../../auth/providers/auth_provider.dart';
 import '../../wallet/providers/wallet_provider.dart';
 import '../models/expert_profile.dart';
 import '../repositories/expert_repository.dart';
+import '../../../shared/widgets/app_dialog.dart';
+import '../../../shared/widgets/sheet_drag_handle.dart';
 
 class ExpertDetailScreen extends ConsumerStatefulWidget {
   final ExpertItem expert;
@@ -129,6 +131,7 @@ class _ExpertDetailScreenState extends ConsumerState<ExpertDetailScreen> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              const SheetDragHandle(),
               Text(
                 'Pay ₹${price.toStringAsFixed(0)} for this session',
                 style: const TextStyle(
@@ -280,10 +283,10 @@ class _ExpertDetailScreenState extends ConsumerState<ExpertDetailScreen> {
     String message, {
     bool closeScreen = true,
   }) async {
-    await showDialog<void>(
+    await showAppDialog<void>(
       context: context,
       builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: Row(
           children: [
             Icon(
@@ -382,12 +385,14 @@ class _ExpertDetailScreenState extends ConsumerState<ExpertDetailScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text(
+                    Flexible(
+                      child: Text(
                       expert.expertName,
                       style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w800,
                         color: Color(0xFF0F172A),
+                      ),
                       ),
                     ),
                     const SizedBox(width: 4),

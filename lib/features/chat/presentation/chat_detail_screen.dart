@@ -5,6 +5,8 @@ import '../../../app/theme/app_colors.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../providers/chat_provider.dart';
 import '../services/chat_websocket_service.dart';
+import '../../../shared/widgets/fade_slide_in.dart';
+import '../../../shared/widgets/pressable_scale.dart';
 
 /// Screen for 1-on-1 Real-Time Chat Conversation
 class ChatDetailScreen extends ConsumerStatefulWidget {
@@ -181,12 +183,16 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: const [
-                            Icon(
-                              Icons.chat_bubble_outline_rounded,
-                              size: 48,
-                              color: AppColors.textLight,
+                            CircleAvatar(
+                              radius: 36,
+                              backgroundColor: AppColors.primaryLight,
+                              child: Icon(
+                                Icons.chat_bubble_outline_rounded,
+                                size: 32,
+                                color: AppColors.primary,
+                              ),
                             ),
-                            SizedBox(height: 12),
+                            SizedBox(height: 14),
                             Text(
                               'Say hello!',
                               style: TextStyle(
@@ -198,6 +204,7 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
                             SizedBox(height: 4),
                             Text(
                               'Send a message to start real-time conversation.',
+                              textAlign: TextAlign.center,
                               style: TextStyle(
                                 fontSize: 12,
                                 color: AppColors.textSecondary,
@@ -215,67 +222,73 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
                         final msg = messages[index];
                         final isMe = msg.senderId == currentUserId;
 
-                        return Align(
-                          alignment: isMe
-                              ? Alignment.centerRight
-                              : Alignment.centerLeft,
-                          child: Container(
-                            margin: const EdgeInsets.only(bottom: 10),
-                            constraints: BoxConstraints(
-                              maxWidth:
-                                  MediaQuery.of(context).size.width * 0.75,
-                            ),
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 10,
-                            ),
-                            decoration: BoxDecoration(
-                              color: isMe ? AppColors.primary : Colors.white,
-                              borderRadius: BorderRadius.only(
-                                topLeft: const Radius.circular(18),
-                                topRight: const Radius.circular(18),
-                                bottomLeft: isMe
-                                    ? const Radius.circular(18)
-                                    : const Radius.circular(4),
-                                bottomRight: isMe
-                                    ? const Radius.circular(4)
-                                    : const Radius.circular(18),
+                        // Only the newest message eases in (sent or
+                        // received); older history appears instantly.
+                        return FadeSlideIn(
+                          index: index == messages.length - 1 ? 0 : -1,
+                          offsetY: 8,
+                          child: Align(
+                            alignment: isMe
+                                ? Alignment.centerRight
+                                : Alignment.centerLeft,
+                            child: Container(
+                              margin: const EdgeInsets.only(bottom: 10),
+                              constraints: BoxConstraints(
+                                maxWidth:
+                                    MediaQuery.of(context).size.width * 0.75,
                               ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withValues(alpha: 0.03),
-                                  blurRadius: 6,
-                                  offset: const Offset(0, 2),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 10,
+                              ),
+                              decoration: BoxDecoration(
+                                color: isMe ? AppColors.primary : Colors.white,
+                                borderRadius: BorderRadius.only(
+                                  topLeft: const Radius.circular(18),
+                                  topRight: const Radius.circular(18),
+                                  bottomLeft: isMe
+                                      ? const Radius.circular(18)
+                                      : const Radius.circular(4),
+                                  bottomRight: isMe
+                                      ? const Radius.circular(4)
+                                      : const Radius.circular(18),
                                 ),
-                              ],
-                            ),
-                            child: Column(
-                              crossAxisAlignment: isMe
-                                  ? CrossAxisAlignment.end
-                                  : CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  msg.content,
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    height: 1.4,
-                                    color: isMe
-                                        ? Colors.white
-                                        : AppColors.textPrimary,
-                                    fontWeight: FontWeight.w500,
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withValues(alpha: 0.03),
+                                    blurRadius: 6,
+                                    offset: const Offset(0, 2),
                                   ),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  msg.formattedTime,
-                                  style: TextStyle(
-                                    fontSize: 10,
-                                    color: isMe
-                                        ? Colors.white70
-                                        : AppColors.textLight,
+                                ],
+                              ),
+                              child: Column(
+                                crossAxisAlignment: isMe
+                                    ? CrossAxisAlignment.end
+                                    : CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    msg.content,
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      height: 1.4,
+                                      color: isMe
+                                          ? Colors.white
+                                          : AppColors.textPrimary,
+                                      fontWeight: FontWeight.w500,
+                                    ),
                                   ),
-                                ),
-                              ],
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    msg.formattedTime,
+                                    style: TextStyle(
+                                      fontSize: 10,
+                                      color: isMe
+                                          ? Colors.white70
+                                          : AppColors.textLight,
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                         );
@@ -317,31 +330,48 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
                           borderRadius: BorderRadius.circular(24),
                           borderSide: BorderSide.none,
                         ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(24),
+                          borderSide: BorderSide.none,
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(24),
+                          borderSide: BorderSide(
+                            color: AppColors.primary.withValues(alpha: 0.5),
+                            width: 1.2,
+                          ),
+                        ),
                       ),
                     ),
                   ),
                   const SizedBox(width: 8),
-                  Container(
-                    decoration: const BoxDecoration(
-                      color: AppColors.primary,
-                      shape: BoxShape.circle,
-                    ),
-                    child: IconButton(
-                      icon: _isSending
-                          ? const SizedBox(
-                              width: 18,
-                              height: 18,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: Colors.white,
-                              ),
-                            )
-                          : const Icon(
-                              Icons.send_rounded,
-                              color: Colors.white,
-                              size: 20,
-                            ),
-                      onPressed: _isSending ? null : _sendMessage,
+                  PressableScale(
+                    pressedScale: 0.9,
+                    child: Container(
+                      decoration: const BoxDecoration(
+                        color: AppColors.primary,
+                        shape: BoxShape.circle,
+                      ),
+                      child: IconButton(
+                        icon: AnimatedSwitcher(
+                          duration: const Duration(milliseconds: 160),
+                          child: _isSending
+                              ? const SizedBox(
+                                  width: 18,
+                                  height: 18,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: Colors.white,
+                                  ),
+                                )
+                              : const Icon(
+                                  Icons.send_rounded,
+                                  color: Colors.white,
+                                  size: 20,
+                                ),
+                        ),
+                        onPressed: _isSending ? null : _sendMessage,
+                      ),
                     ),
                   ),
                 ],

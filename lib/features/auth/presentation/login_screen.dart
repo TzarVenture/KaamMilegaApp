@@ -6,6 +6,7 @@ import '../../../app/theme/app_colors.dart';
 import '../../../shared/widgets/app_logo.dart';
 import '../../../app/auth_guard.dart';
 import '../providers/auth_provider.dart';
+import '../../../shared/widgets/fade_slide_in.dart';
 
 enum LoginTab { otp, password }
 
@@ -153,77 +154,110 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
+            keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-            child: Container(
-              constraints: const BoxConstraints(maxWidth: 480),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(24),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.05),
-                    blurRadius: 20,
-                    offset: const Offset(0, 8),
-                  ),
-                ],
-                border: Border.all(color: AppColors.border),
-              ),
-              padding: EdgeInsets.all(isDesktopOrTablet ? 32 : 24),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // App Logo Branding
-                  const Center(
-                    child: AppBrandBarLogo(
-                      iconHeight: 44,
-                      textHeight: 26,
-                      spacing: 10,
+            child: FadeSlideIn(
+              child: Container(
+                constraints: const BoxConstraints(maxWidth: 480),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(24),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.05),
+                      blurRadius: 20,
+                      offset: const Offset(0, 8),
                     ),
-                  ),
-                  const SizedBox(height: 24),
-
-                  // TOP SEGMENTED SWITCHER (Login with OTP | Login with Password)
-                  _buildSegmentedTabSwitcher(),
-
-                  const SizedBox(height: 28),
-
-                  // TAB TITLE & SUBTITLE
-                  Text(
-                    _activeTab == LoginTab.password
-                        ? 'Sign In With Password'
-                        : 'Sign In With OTP',
-                    style: const TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.w900,
-                      color: AppColors.textPrimary,
-                      letterSpacing: -0.5,
+                  ],
+                  border: Border.all(color: AppColors.border),
+                ),
+                padding: EdgeInsets.all(isDesktopOrTablet ? 32 : 24),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // App Logo Branding
+                    const Center(
+                      child: AppBrandBarLogo(
+                        iconHeight: 44,
+                        textHeight: 26,
+                        spacing: 10,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    _activeTab == LoginTab.password
-                        ? 'Welcome back! Sign in to access your jobs'
-                        : 'Welcome back! Enter your mobile number to sign in',
-                    style: const TextStyle(
-                      fontSize: 13,
-                      color: AppColors.textSecondary,
+                    const SizedBox(height: 24),
+
+                    // TOP SEGMENTED SWITCHER (Login with OTP | Login with Password)
+                    _buildSegmentedTabSwitcher(),
+
+                    const SizedBox(height: 28),
+
+                    // TAB TITLE, SUBTITLE & FORM: cross-fade when switching tabs
+                    AnimatedSize(
+                      duration: const Duration(milliseconds: 220),
+                      curve: Curves.easeOutCubic,
+                      alignment: Alignment.topCenter,
+                      child: AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 220),
+                        switchInCurve: Curves.easeOut,
+                        switchOutCurve: Curves.easeIn,
+                        layoutBuilder: (current, previous) => Stack(
+                          alignment: Alignment.topLeft,
+                          children: [...previous, ?current],
+                        ),
+                        transitionBuilder: (child, animation) => FadeTransition(
+                          opacity: animation,
+                          child: SlideTransition(
+                            position: Tween<Offset>(
+                              begin: const Offset(0, 0.03),
+                              end: Offset.zero,
+                            ).animate(animation),
+                            child: child,
+                          ),
+                        ),
+                        child: Column(
+                          key: ValueKey(_activeTab),
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              _activeTab == LoginTab.password
+                                  ? 'Sign In With Password'
+                                  : 'Sign In With OTP',
+                              style: const TextStyle(
+                                fontSize: 22,
+                                fontWeight: FontWeight.w900,
+                                color: AppColors.textPrimary,
+                                letterSpacing: -0.5,
+                              ),
+                            ),
+                            const SizedBox(height: 6),
+                            Text(
+                              _activeTab == LoginTab.password
+                                  ? 'Welcome back! Sign in to access your jobs'
+                                  : 'Welcome back! Enter your mobile number to sign in',
+                              style: const TextStyle(
+                                fontSize: 13,
+                                color: AppColors.textSecondary,
+                              ),
+                            ),
+
+                            const SizedBox(height: 24),
+
+                            // TAB FORM CONTENT
+                            if (_activeTab == LoginTab.password)
+                              _buildPasswordLoginForm()
+                            else
+                              _buildOtpLoginForm(),
+                          ],
+                        ),
+                      ),
                     ),
-                  ),
 
-                  const SizedBox(height: 24),
+                    const SizedBox(height: 20),
 
-                  // TAB FORM CONTENT
-                  if (_activeTab == LoginTab.password)
-                    _buildPasswordLoginForm()
-                  else
-                    _buildOtpLoginForm(),
-
-                  const SizedBox(height: 20),
-
-                  // FOOTER LINKS
-                  _buildFooterLinks(),
-                ],
+                    // FOOTER LINKS
+                    _buildFooterLinks(),
+                  ],
+                ),
               ),
             ),
           ),
@@ -414,15 +448,19 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text(
-              'PASSWORD',
-              style: TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.w900,
-                color: Color(0xFF64748B),
-                letterSpacing: 0.5,
+            const Flexible(
+              child: Text(
+                'PASSWORD',
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w900,
+                  color: Color(0xFF64748B),
+                  letterSpacing: 0.5,
+                ),
               ),
             ),
+            const SizedBox(width: 8),
             GestureDetector(
               onTap: _showForgotPasswordDialog,
               child: const Text(
@@ -488,28 +526,33 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               backgroundColor: const Color(
                 0xFF1A2B8C,
               ), // Primary KaamMilega Blue
+              // Stay blue while signing in (disabled only while loading).
+              disabledBackgroundColor: const Color(0xFF1A2B8C),
               elevation: 0,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(24),
               ),
             ),
-            child: _isLoading
-                ? const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2.5,
-                      color: Colors.white,
+            child: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 180),
+              child: _isLoading
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2.5,
+                        color: Colors.white,
+                      ),
+                    )
+                  : const Text(
+                      'Sign In',
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w800,
+                        color: Colors.white,
+                      ),
                     ),
-                  )
-                : const Text(
-                    'Sign In',
-                    style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w800,
-                      color: Colors.white,
-                    ),
-                  ),
+            ),
           ),
         ),
       ],
@@ -588,28 +631,33 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               backgroundColor: const Color(
                 0xFF1A2B8C,
               ), // Primary KaamMilega Blue
+              // Stay blue while signing in (disabled only while loading).
+              disabledBackgroundColor: const Color(0xFF1A2B8C),
               elevation: 0,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(24),
               ),
             ),
-            child: _isLoading
-                ? const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2.5,
-                      color: Colors.white,
+            child: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 180),
+              child: _isLoading
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2.5,
+                        color: Colors.white,
+                      ),
+                    )
+                  : const Text(
+                      'Send OTP & Sign In',
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w800,
+                        color: Colors.white,
+                      ),
                     ),
-                  )
-                : const Text(
-                    'Send OTP & Sign In',
-                    style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w800,
-                      color: Colors.white,
-                    ),
-                  ),
+            ),
           ),
         ),
       ],
@@ -624,8 +672,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       children: [
         // Create Account Link
         Center(
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
+          child: Wrap(
+            alignment: WrapAlignment.center,
+            crossAxisAlignment: WrapCrossAlignment.center,
             children: [
               const Text(
                 "Don't have an account yet? ",
@@ -650,8 +699,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
         // Switch Mode Link (Or Login with OTP / Or Login with Password)
         Center(
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
+          child: Wrap(
+            alignment: WrapAlignment.center,
+            crossAxisAlignment: WrapCrossAlignment.center,
             children: [
               const Text(
                 'Or ',

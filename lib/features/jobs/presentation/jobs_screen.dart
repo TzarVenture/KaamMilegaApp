@@ -21,6 +21,7 @@ import 'widgets/filter_modal.dart';
 import 'widgets/job_card.dart';
 import 'widgets/pagination_bar.dart';
 import 'widgets/promo_banner.dart';
+import '../../../shared/widgets/fade_slide_in.dart';
 
 /// Main Jobs Screen matching https://kaammilega.com/jobs
 class JobsScreen extends ConsumerStatefulWidget {
@@ -292,46 +293,60 @@ class _JobsScreenState extends ConsumerState<JobsScreen> {
             // Expandable Sleek Search Bar (When search icon is clicked)
             if (_isSearchVisible)
               SliverToBoxAdapter(
-                child: Container(
-                  color: Colors.white,
-                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
-                  child: TextField(
-                    controller: _searchController,
-                    autofocus: true,
-                    onChanged: _onSearchChanged,
-                    onSubmitted: (val) {
-                      _debounceTimer?.cancel();
-                      ref
-                          .read(jobsProvider.notifier)
-                          .setSearchQuery(val.trim());
-                    },
-                    decoration: InputDecoration(
-                      hintText: 'Search jobs, role, or company...',
-                      prefixIcon: const Icon(
-                        Icons.search_rounded,
-                        color: AppColors.primary,
-                      ),
-                      suffixIcon: _searchController.text.isNotEmpty
-                          ? IconButton(
-                              icon: const Icon(Icons.clear_rounded, size: 18),
-                              onPressed: () {
-                                _debounceTimer?.cancel();
-                                _searchController.clear();
-                                ref
-                                    .read(jobsProvider.notifier)
-                                    .setSearchQuery('');
-                              },
-                            )
-                          : null,
-                      filled: true,
-                      fillColor: const Color(0xFFF1F5F9),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(16),
-                        borderSide: BorderSide.none,
-                      ),
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 12,
+                child: FadeSlideIn(
+                  offsetY: 8,
+                  child: Container(
+                    color: Colors.white,
+                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+                    child: TextField(
+                      controller: _searchController,
+                      autofocus: true,
+                      onChanged: _onSearchChanged,
+                      onSubmitted: (val) {
+                        _debounceTimer?.cancel();
+                        ref
+                            .read(jobsProvider.notifier)
+                            .setSearchQuery(val.trim());
+                      },
+                      decoration: InputDecoration(
+                        hintText: 'Search jobs, role, or company...',
+                        prefixIcon: const Icon(
+                          Icons.search_rounded,
+                          color: AppColors.primary,
+                        ),
+                        suffixIcon: _searchController.text.isNotEmpty
+                            ? IconButton(
+                                icon: const Icon(Icons.clear_rounded, size: 18),
+                                onPressed: () {
+                                  _debounceTimer?.cancel();
+                                  _searchController.clear();
+                                  ref
+                                      .read(jobsProvider.notifier)
+                                      .setSearchQuery('');
+                                },
+                              )
+                            : null,
+                        filled: true,
+                        fillColor: const Color(0xFFF1F5F9),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(16),
+                          borderSide: BorderSide.none,
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(16),
+                          borderSide: BorderSide.none,
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(16),
+                          borderSide: const BorderSide(
+                            color: AppColors.primary,
+                            width: 1.5,
+                          ),
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 12,
+                        ),
                       ),
                     ),
                   ),
@@ -794,122 +809,144 @@ class _JobsScreenState extends ConsumerState<JobsScreen> {
               )
             else if (jobsState.errorMessage != null && jobsState.jobs.isEmpty)
               SliverToBoxAdapter(
-                child: Container(
-                  margin: const EdgeInsets.all(24),
-                  padding: const EdgeInsets.all(32),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(24),
-                    border: Border.all(color: AppColors.border),
-                  ),
-                  child: Column(
-                    children: [
-                      const Icon(
-                        Icons.wifi_off_rounded,
-                        size: 48,
-                        color: AppColors.error,
-                      ),
-                      const SizedBox(height: 12),
-                      const Text(
-                        'Unable to load jobs',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w800,
-                          color: AppColors.textPrimary,
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                      const Text(
-                        'Please check your internet connection or try again in a few moments.',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: AppColors.textSecondary,
-                        ),
-                      ),
-                      const SizedBox(height: 18),
-                      ElevatedButton.icon(
-                        onPressed: () =>
-                            ref.read(jobsProvider.notifier).fetchJobs(),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primary,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 24,
-                            vertical: 12,
+                child: FadeSlideIn(
+                  child: Container(
+                    margin: const EdgeInsets.all(24),
+                    padding: const EdgeInsets.all(32),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(24),
+                      border: Border.all(color: AppColors.border),
+                    ),
+                    child: Column(
+                      children: [
+                        Container(
+                          width: 80,
+                          height: 80,
+                          decoration: const BoxDecoration(
+                            color: Color(0xFFFEF2F2),
+                            shape: BoxShape.circle,
                           ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
+                          child: const Icon(
+                            Icons.wifi_off_rounded,
+                            size: 38,
+                            color: AppColors.error,
                           ),
                         ),
-                        icon: const Icon(Icons.refresh_rounded, size: 18),
-                        label: const Text(
-                          'Retry Connection',
-                          style: TextStyle(fontWeight: FontWeight.w800),
+                        const SizedBox(height: 4),
+                        const SizedBox(height: 12),
+                        const Text(
+                          'Unable to load jobs',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w800,
+                            color: AppColors.textPrimary,
+                          ),
                         ),
-                      ),
-                    ],
+                        const SizedBox(height: 6),
+                        const Text(
+                          'Please check your internet connection or try again in a few moments.',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
+                        const SizedBox(height: 18),
+                        ElevatedButton.icon(
+                          onPressed: () =>
+                              ref.read(jobsProvider.notifier).fetchJobs(),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.primary,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 24,
+                              vertical: 12,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                          ),
+                          icon: const Icon(Icons.refresh_rounded, size: 18),
+                          label: const Text(
+                            'Retry Connection',
+                            style: TextStyle(fontWeight: FontWeight.w800),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               )
             else if (displayedJobs.isEmpty)
               SliverToBoxAdapter(
-                child: Container(
-                  margin: const EdgeInsets.all(24),
-                  padding: const EdgeInsets.all(32),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(24),
-                    border: Border.all(color: AppColors.border),
-                  ),
-                  child: Column(
-                    children: [
-                      const Icon(
-                        Icons.search_off_rounded,
-                        size: 48,
-                        color: AppColors.textLight,
-                      ),
-                      const SizedBox(height: 12),
-                      Text(
-                        _filterSavedOnly ? 'No saved jobs' : 'No jobs found',
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w800,
-                          color: AppColors.textPrimary,
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        _filterSavedOnly
-                            ? 'Bookmark jobs to easily view them here'
-                            : 'Try adjusting your search query or removing filters',
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(
-                          fontSize: 13,
-                          color: AppColors.textSecondary,
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      OutlinedButton(
-                        onPressed: () {
-                          _debounceTimer?.cancel();
-                          _searchController.clear();
-                          setState(() {
-                            _filterSavedOnly = false;
-                            _selectedSort = 'Newest First';
-                          });
-                          ref.read(jobsProvider.notifier).clearAllFilters();
-                        },
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: AppColors.primary,
-                          side: const BorderSide(color: AppColors.primary),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(20),
+                child: FadeSlideIn(
+                  child: Container(
+                    margin: const EdgeInsets.all(24),
+                    padding: const EdgeInsets.all(32),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(24),
+                      border: Border.all(color: AppColors.border),
+                    ),
+                    child: Column(
+                      children: [
+                        Container(
+                          width: 80,
+                          height: 80,
+                          decoration: const BoxDecoration(
+                            color: Color(0xFFF1F5F9),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.search_off_rounded,
+                            size: 38,
+                            color: AppColors.textLight,
                           ),
                         ),
-                        child: const Text('Clear All Filters'),
-                      ),
-                    ],
+                        const SizedBox(height: 4),
+                        const SizedBox(height: 12),
+                        Text(
+                          _filterSavedOnly ? 'No saved jobs' : 'No jobs found',
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w800,
+                            color: AppColors.textPrimary,
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          _filterSavedOnly
+                              ? 'Bookmark jobs to easily view them here'
+                              : 'Try adjusting your search query or removing filters',
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            fontSize: 13,
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        OutlinedButton(
+                          onPressed: () {
+                            _debounceTimer?.cancel();
+                            _searchController.clear();
+                            setState(() {
+                              _filterSavedOnly = false;
+                              _selectedSort = 'Newest First';
+                            });
+                            ref.read(jobsProvider.notifier).clearAllFilters();
+                          },
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: AppColors.primary,
+                            side: const BorderSide(color: AppColors.primary),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                          ),
+                          child: const Text('Clear All Filters'),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               )
@@ -919,18 +956,21 @@ class _JobsScreenState extends ConsumerState<JobsScreen> {
                   final job = displayedJobs[index];
                   final isTopMatch = filter.page == 1 && index == 0;
 
-                  return JobCard(
-                    job: job,
-                    isTopMatch: isTopMatch,
-                    isApplying: _applyingJobId == job.id,
-                    isApplied: appliedJobIds.contains(job.id),
-                    isSaved: jobsState.savedJobIds.contains(job.id),
-                    onBookmarkToggle: () =>
-                        ref.read(jobsProvider.notifier).toggleSaveJob(job.id),
-                    onTap: () => context.push('/jobs/${job.id}', extra: job),
-                    onApply: () => _handleApply(job.id),
-                    onChat: () => _handleChat(job),
-                    onCall: _handleCall,
+                  return FadeSlideIn(
+                    index: index,
+                    child: JobCard(
+                      job: job,
+                      isTopMatch: isTopMatch,
+                      isApplying: _applyingJobId == job.id,
+                      isApplied: appliedJobIds.contains(job.id),
+                      isSaved: jobsState.savedJobIds.contains(job.id),
+                      onBookmarkToggle: () =>
+                          ref.read(jobsProvider.notifier).toggleSaveJob(job.id),
+                      onTap: () => context.push('/jobs/${job.id}', extra: job),
+                      onApply: () => _handleApply(job.id),
+                      onChat: () => _handleChat(job),
+                      onCall: _handleCall,
+                    ),
                   );
                 }, childCount: displayedJobs.length),
               ),

@@ -10,6 +10,7 @@ import '../../../shared/widgets/shimmer_loading.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../models/notification_item.dart';
 import '../providers/notification_provider.dart';
+import '../../../shared/widgets/fade_slide_in.dart';
 
 class NotificationsScreen extends ConsumerStatefulWidget {
   const NotificationsScreen({super.key});
@@ -203,10 +204,15 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                           itemCount: filteredItems.length,
                           separatorBuilder: (context, index) =>
                               const Divider(height: 1),
-                          itemBuilder: (context, index) {
-                            final item = filteredItems[index];
-                            return _buildNotificationTile(item);
-                          },
+                          itemBuilder: (context, index) => FadeSlideIn(
+                            index: index,
+                            child: Builder(
+                              builder: (context) {
+                                final item = filteredItems[index];
+                                return _buildNotificationTile(item);
+                              },
+                            ),
+                          ),
                         );
                       },
                       loading: () => ListView.builder(

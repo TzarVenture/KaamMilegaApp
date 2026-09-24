@@ -9,6 +9,7 @@ import '../../../shared/widgets/themed_category_bottom_nav.dart';
 import '../models/expert_profile.dart';
 import '../providers/expert_provider.dart';
 import 'expert_detail_screen.dart';
+import '../../../shared/widgets/fade_slide_in.dart';
 
 class ExpertsScreen extends ConsumerStatefulWidget {
   const ExpertsScreen({super.key});
@@ -165,50 +166,55 @@ class _ExpertsScreenState extends ConsumerState<ExpertsScreen> {
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
                         itemCount: 3,
-                        itemBuilder: (context, index) {
-                          return Container(
-                            margin: const EdgeInsets.only(bottom: 12),
-                            padding: const EdgeInsets.all(16),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(16),
-                              border: Border.all(
-                                color: const Color(0xFFF1F5F9),
-                              ),
-                            ),
-                            child: Row(
-                              children: [
-                                const ShimmerCircle(size: 52),
-                                const SizedBox(width: 14),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: const [
-                                      ShimmerBox(
-                                        width: 140,
-                                        height: 16,
-                                        borderRadius: 4,
-                                      ),
-                                      SizedBox(height: 6),
-                                      ShimmerBox(
-                                        width: 100,
-                                        height: 12,
-                                        borderRadius: 4,
-                                      ),
-                                      SizedBox(height: 10),
-                                      ShimmerBox(
-                                        width: 80,
-                                        height: 18,
-                                        borderRadius: 6,
-                                      ),
-                                    ],
+                        itemBuilder: (context, index) => FadeSlideIn(
+                          index: index,
+                          child: Builder(
+                            builder: (context) {
+                              return Container(
+                                margin: const EdgeInsets.only(bottom: 12),
+                                padding: const EdgeInsets.all(16),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(16),
+                                  border: Border.all(
+                                    color: const Color(0xFFF1F5F9),
                                   ),
                                 ),
-                              ],
-                            ),
-                          );
-                        },
+                                child: Row(
+                                  children: [
+                                    const ShimmerCircle(size: 52),
+                                    const SizedBox(width: 14),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: const [
+                                          ShimmerBox(
+                                            width: 140,
+                                            height: 16,
+                                            borderRadius: 4,
+                                          ),
+                                          SizedBox(height: 6),
+                                          ShimmerBox(
+                                            width: 100,
+                                            height: 12,
+                                            borderRadius: 4,
+                                          ),
+                                          SizedBox(height: 10),
+                                          ShimmerBox(
+                                            width: 80,
+                                            height: 18,
+                                            borderRadius: 6,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            },
+                          ),
+                        ),
                       )
                     else if (state.error != null)
                       _buildErrorState(state.error!)
@@ -231,7 +237,8 @@ class _ExpertsScreenState extends ConsumerState<ExpertsScreen> {
   }
 
   Widget _buildHeroBanner(BuildContext context) {
-    return Container(
+    return FadeSlideIn(
+      child: Container(
       width: double.infinity,
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
@@ -285,11 +292,13 @@ class _ExpertsScreenState extends ConsumerState<ExpertsScreen> {
           ),
         ],
       ),
+      ),
     );
   }
 
   Widget _buildEmptyState() {
-    return Container(
+    return FadeSlideIn(
+      child: Container(
       padding: const EdgeInsets.all(32),
       decoration: BoxDecoration(
         color: Colors.white,
@@ -344,11 +353,13 @@ class _ExpertsScreenState extends ConsumerState<ExpertsScreen> {
           ),
         ],
       ),
+      ),
     );
   }
 
   Widget _buildErrorState(String error) {
-    return Container(
+    return FadeSlideIn(
+      child: Container(
       padding: const EdgeInsets.all(32),
       decoration: BoxDecoration(
         color: Colors.white,
@@ -403,6 +414,7 @@ class _ExpertsScreenState extends ConsumerState<ExpertsScreen> {
             ),
           ),
         ],
+      ),
       ),
     );
   }

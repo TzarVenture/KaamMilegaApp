@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/network/connectivity_provider.dart';
 import '../providers/wallet_provider.dart';
+import '../../../shared/widgets/app_dialog.dart';
 
 class WalletAddMoneyScreen extends ConsumerStatefulWidget {
   const WalletAddMoneyScreen({super.key});
@@ -107,7 +108,7 @@ class _WalletAddMoneyScreenState extends ConsumerState<WalletAddMoneyScreen> {
           break;
         case TopupOutcome.paidButUnverified:
           // Money may have left the user's account: explain clearly
-          await showDialog<void>(
+          await showAppDialog<void>(
             context: context,
             builder: (ctx) => AlertDialog(
               title: const Text('Payment received, confirming'),

@@ -4,6 +4,7 @@ import '../../../app/auth_guard.dart';
 import '../../profile/presentation/widgets/profile_drawer.dart';
 import '../../../shared/widgets/category_top_header.dart';
 import '../../../shared/widgets/themed_category_bottom_nav.dart';
+import '../../../shared/widgets/fade_slide_in.dart';
 
 class ServicesMarketplaceScreen extends StatefulWidget {
   const ServicesMarketplaceScreen({super.key});
@@ -312,7 +313,8 @@ class _ServicesMarketplaceScreenState extends State<ServicesMarketplaceScreen> {
   }
 
   Widget _buildHeroBanner() {
-    return Container(
+    return FadeSlideIn(
+      child: Container(
       width: double.infinity,
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
@@ -366,6 +368,7 @@ class _ServicesMarketplaceScreenState extends State<ServicesMarketplaceScreen> {
           ),
         ],
       ),
+      ),
     );
   }
 
@@ -375,7 +378,8 @@ class _ServicesMarketplaceScreenState extends State<ServicesMarketplaceScreen> {
     IconData icon,
     Color color,
   ) {
-    return Container(
+    return FadeSlideIn(
+      child: Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: Colors.white,
@@ -420,6 +424,7 @@ class _ServicesMarketplaceScreenState extends State<ServicesMarketplaceScreen> {
             style: const TextStyle(fontSize: 10, color: Color(0xFF64748B)),
           ),
         ],
+      ),
       ),
     );
   }

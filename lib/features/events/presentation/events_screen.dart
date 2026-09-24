@@ -11,6 +11,8 @@ import '../../../shared/widgets/themed_category_bottom_nav.dart';
 import '../models/event.dart';
 import '../providers/event_provider.dart';
 import 'event_detail_screen.dart';
+import '../../../shared/widgets/fade_slide_in.dart';
+import '../../../shared/widgets/pressable_scale.dart';
 
 class EventsScreen extends ConsumerStatefulWidget {
   const EventsScreen({super.key});
@@ -146,7 +148,8 @@ class _EventsScreenState extends ConsumerState<EventsScreen> {
                         children: [
                           _buildHeroBanner(),
                           const SizedBox(height: 48),
-                          Center(
+                          FadeSlideIn(
+                            child: Center(
                             child: Padding(
                               padding: const EdgeInsets.all(32),
                               child: Column(
@@ -183,6 +186,7 @@ class _EventsScreenState extends ConsumerState<EventsScreen> {
                                 ],
                               ),
                             ),
+                            ),
                           ),
                         ],
                       );
@@ -200,7 +204,10 @@ class _EventsScreenState extends ConsumerState<EventsScreen> {
                           final isRegistering = _registeringEventIds.contains(
                             event.id,
                           );
-                          return _buildEventCard(event, isRegistering);
+                          return FadeSlideIn(
+                            index: filteredEvents.indexOf(event),
+                            child: _buildEventCard(event, isRegistering),
+                          );
                         }),
                       ],
                     );
@@ -217,7 +224,8 @@ class _EventsScreenState extends ConsumerState<EventsScreen> {
                       SizedBox(
                         height: MediaQuery.of(context).size.height * 0.25,
                       ),
-                      Center(
+                      FadeSlideIn(
+                        child: Center(
                         child: Padding(
                           padding: const EdgeInsets.all(24),
                           child: Column(
@@ -262,6 +270,7 @@ class _EventsScreenState extends ConsumerState<EventsScreen> {
                             ],
                           ),
                         ),
+                        ),
                       ),
                     ],
                   ),
@@ -275,7 +284,8 @@ class _EventsScreenState extends ConsumerState<EventsScreen> {
   }
 
   Widget _buildEventCard(EventItem event, bool isRegistering) {
-    return InkWell(
+    return PressableScale(
+      child: InkWell(
       onTap: () {
         Navigator.push(
           context,
@@ -428,11 +438,13 @@ class _EventsScreenState extends ConsumerState<EventsScreen> {
           ],
         ),
       ),
+      ),
     );
   }
 
   Widget _buildHeroBanner() {
-    return Container(
+    return FadeSlideIn(
+      child: Container(
       width: double.infinity,
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
@@ -485,6 +497,7 @@ class _EventsScreenState extends ConsumerState<EventsScreen> {
             style: TextStyle(color: Colors.white70, fontSize: 12),
           ),
         ],
+      ),
       ),
     );
   }

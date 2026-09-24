@@ -111,7 +111,7 @@ class _ApplyModalSheetState extends ConsumerState<ApplyModalSheet> {
         padding: const EdgeInsets.all(24),
         decoration: const BoxDecoration(
           color: AppColors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,

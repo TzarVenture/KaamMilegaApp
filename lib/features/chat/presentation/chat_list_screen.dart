@@ -9,6 +9,7 @@ import '../../notifications/providers/notification_provider.dart';
 import '../../profile/presentation/widgets/profile_drawer.dart';
 import '../providers/chat_provider.dart';
 import '../providers/user_lookup_provider.dart';
+import '../../../shared/widgets/fade_slide_in.dart';
 
 /// Screen displaying the Candidate's Active Chat Conversations matching web design
 class ChatListScreen extends ConsumerStatefulWidget {
@@ -441,105 +442,111 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                     itemCount: filteredConvs.length,
                     separatorBuilder: (ctx, idx) =>
                         const Divider(height: 1, color: Color(0xFFF1F5F9)),
-                    itemBuilder: (context, index) {
-                      final conv = filteredConvs[index];
-                      final otherUserId = conv.getOtherParticipant(
-                        currentUserId,
-                      );
-                      final otherUser = ref
-                          .watch(userLookupProvider(otherUserId))
-                          .value;
-                      final displayName = displayNameFor(otherUser);
-                      final avatarUrl = otherUser?.profileImage ?? '';
-
-                      return InkWell(
-                        onTap: () {
-                          context.push(
-                            '/chats/${conv.id}',
-                            extra: {
-                              'receiverId': otherUserId,
-                              'title': displayName,
-                            },
+                    itemBuilder: (context, index) => FadeSlideIn(
+                      index: index,
+                      child: Builder(
+                        builder: (context) {
+                          final conv = filteredConvs[index];
+                          final otherUserId = conv.getOtherParticipant(
+                            currentUserId,
                           );
-                        },
-                        borderRadius: BorderRadius.circular(14),
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 12,
-                          ),
-                          child: Row(
-                            children: [
-                              CircleAvatar(
-                                backgroundColor: AppColors.primaryLight,
-                                radius: 24,
-                                backgroundImage: avatarUrl.isNotEmpty
-                                    ? NetworkImage(avatarUrl)
-                                    : null,
-                                child: avatarUrl.isNotEmpty
-                                    ? null
-                                    : Text(
-                                        displayName.isNotEmpty
-                                            ? displayName[0].toUpperCase()
-                                            : 'U',
-                                        style: const TextStyle(
-                                          color: AppColors.primary,
-                                          fontWeight: FontWeight.w800,
-                                          fontSize: 16,
-                                        ),
-                                      ),
+                          final otherUser = ref
+                              .watch(userLookupProvider(otherUserId))
+                              .value;
+                          final displayName = displayNameFor(otherUser);
+                          final avatarUrl = otherUser?.profileImage ?? '';
+
+                          return InkWell(
+                            onTap: () {
+                              context.push(
+                                '/chats/${conv.id}',
+                                extra: {
+                                  'receiverId': otherUserId,
+                                  'title': displayName,
+                                },
+                              );
+                            },
+                            borderRadius: BorderRadius.circular(14),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 12,
                               ),
-                              const SizedBox(width: 14),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Expanded(
-                                          child: Text(
-                                            displayName,
+                              child: Row(
+                                children: [
+                                  CircleAvatar(
+                                    backgroundColor: AppColors.primaryLight,
+                                    radius: 24,
+                                    backgroundImage: avatarUrl.isNotEmpty
+                                        ? NetworkImage(avatarUrl)
+                                        : null,
+                                    child: avatarUrl.isNotEmpty
+                                        ? null
+                                        : Text(
+                                            displayName.isNotEmpty
+                                                ? displayName[0].toUpperCase()
+                                                : 'U',
                                             style: const TextStyle(
-                                              fontSize: 15,
+                                              color: AppColors.primary,
                                               fontWeight: FontWeight.w800,
-                                              color: Color(0xFF0F172A),
+                                              fontSize: 16,
                                             ),
-                                            maxLines: 1,
-                                            overflow: TextOverflow.ellipsis,
                                           ),
+                                  ),
+                                  const SizedBox(width: 14),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            Expanded(
+                                              child: Text(
+                                                displayName,
+                                                style: const TextStyle(
+                                                  fontSize: 15,
+                                                  fontWeight: FontWeight.w800,
+                                                  color: Color(0xFF0F172A),
+                                                ),
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                            ),
+                                            Text(
+                                              conv.formattedTime,
+                                              style: const TextStyle(
+                                                fontSize: 11,
+                                                color: Color(0xFF94A3B8),
+                                                fontWeight: FontWeight.w500,
+                                              ),
+                                            ),
+                                          ],
                                         ),
+                                        const SizedBox(height: 4),
                                         Text(
-                                          conv.formattedTime,
+                                          conv.lastMessage.isNotEmpty
+                                              ? conv.lastMessage
+                                              : 'Tap to start conversation',
                                           style: const TextStyle(
-                                            fontSize: 11,
-                                            color: Color(0xFF94A3B8),
-                                            fontWeight: FontWeight.w500,
+                                            fontSize: 13,
+                                            color: Color(0xFF64748B),
                                           ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
                                         ),
                                       ],
                                     ),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      conv.lastMessage.isNotEmpty
-                                          ? conv.lastMessage
-                                          : 'Tap to start conversation',
-                                      style: const TextStyle(
-                                        fontSize: 13,
-                                        color: Color(0xFF64748B),
-                                      ),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  ],
-                                ),
+                                  ),
+                                ],
                               ),
-                            ],
-                          ),
-                        ),
-                      );
-                    },
+                            ),
+                          );
+                        },
+                      ),
+                    ),
                   );
                 },
                 loading: () => ListView.builder(

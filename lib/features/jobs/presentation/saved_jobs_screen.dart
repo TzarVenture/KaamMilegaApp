@@ -6,6 +6,7 @@ import '../../../app/theme/app_colors.dart';
 import '../models/job.dart';
 import '../providers/jobs_provider.dart';
 import 'widgets/job_card.dart';
+import '../../../shared/widgets/fade_slide_in.dart';
 
 /// Screen for displaying Bookmarked / Saved Jobs
 /// Matching the exact design from KaamMilega (media_1789975854042.png)
@@ -184,22 +185,29 @@ class _SavedJobsScreenState extends ConsumerState<SavedJobsScreen> {
                     physics: const NeverScrollableScrollPhysics(),
                     itemCount: displayedJobs.length,
                     separatorBuilder: (_, _) => const SizedBox(height: 12),
-                    itemBuilder: (context, index) {
-                      final job = displayedJobs[index];
-                      return JobCard(
-                        job: job,
-                        isSaved: true,
-                        onTap: () =>
-                            context.push('/jobs/${job.id}', extra: job),
-                        onBookmarkToggle: () {
-                          ref.read(jobsProvider.notifier).toggleSaveJob(job.id);
+                    itemBuilder: (context, index) => FadeSlideIn(
+                      index: index,
+                      child: Builder(
+                        builder: (context) {
+                          final job = displayedJobs[index];
+                          return JobCard(
+                            job: job,
+                            isSaved: true,
+                            onTap: () =>
+                                context.push('/jobs/${job.id}', extra: job),
+                            onBookmarkToggle: () {
+                              ref
+                                  .read(jobsProvider.notifier)
+                                  .toggleSaveJob(job.id);
+                            },
+                            onApply: () =>
+                                context.push('/jobs/${job.id}', extra: job),
+                            onChat: () => context.push('/chat'),
+                            onCall: () {},
+                          );
                         },
-                        onApply: () =>
-                            context.push('/jobs/${job.id}', extra: job),
-                        onChat: () => context.push('/chat'),
-                        onCall: () {},
-                      );
-                    },
+                      ),
+                    ),
                   ),
               ],
             ],

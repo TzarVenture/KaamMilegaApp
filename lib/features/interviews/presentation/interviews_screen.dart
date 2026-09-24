@@ -6,6 +6,7 @@ import '../../../app/theme/app_colors.dart';
 import '../../../shared/widgets/shimmer_loading.dart';
 import '../models/interview.dart';
 import '../repositories/interview_repository.dart';
+import '../../../shared/widgets/fade_slide_in.dart';
 
 /// Candidate Interview Schedule & Tracking Screen
 class InterviewsScreen extends ConsumerWidget {
@@ -100,10 +101,15 @@ class InterviewsScreen extends ConsumerWidget {
               padding: const EdgeInsets.all(16),
               itemCount: interviews.length,
               separatorBuilder: (_, _) => const SizedBox(height: 12),
-              itemBuilder: (context, index) {
-                final interview = interviews[index];
-                return _InterviewCard(interview: interview);
-              },
+              itemBuilder: (context, index) => FadeSlideIn(
+                index: index,
+                child: Builder(
+                  builder: (context) {
+                    final interview = interviews[index];
+                    return _InterviewCard(interview: interview);
+                  },
+                ),
+              ),
             );
           },
           loading: () => const MyApplicationsSkeleton(),
@@ -318,11 +324,13 @@ class _InterviewCard extends StatelessWidget {
                   color: AppColors.textLight,
                 ),
                 const SizedBox(width: 4),
-                Text(
+                Flexible(
+                  child: Text(
                   'Interviewer: ${interview.recruiterName}',
                   style: const TextStyle(
                     fontSize: 12,
                     color: AppColors.textSecondary,
+                  ),
                   ),
                 ),
               ],
