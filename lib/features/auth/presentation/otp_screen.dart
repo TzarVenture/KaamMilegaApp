@@ -25,6 +25,7 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
   );
   final List<FocusNode> _focusNodes = List.generate(4, (_) => FocusNode());
   bool _isLoading = false;
+  bool _isResending = false;
 
   @override
   void dispose() {
@@ -38,6 +39,9 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
   }
 
   void _verifyOtp() async {
+    // One verification at a time (the 4th digit and the button both trigger).
+    if (_isLoading) return;
+
     final otp = _controllers.map((e) => e.text).join();
     if (otp.length < 4) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -52,33 +56,82 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
         .read(authProvider.notifier)
         .verifyOtp(widget.phone, otp);
 
-    if (mounted) {
-      setState(() => _isLoading = false);
-      if (result.isRegistered &&
-          result.user != null &&
-          result.user!.name.isNotEmpty &&
-          result.user!.name != 'Candidate') {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Welcome back, ${result.user!.name}!'),
-            backgroundColor: const Color(0xFF16A34A),
+    if (!mounted) return;
+    setState(() => _isLoading = false);
+
+    // Verification failed (wrong / expired OTP, network...): stay here, show
+    // why and let the user type the code again. Never treated as a new user.
+    if (result == null) {
+      _clearOtp();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            ref.read(authProvider).error ??
+                'Could not verify OTP. Please try again.',
           ),
-        );
-        // Return to the screen the user wanted before login (or Home)
-        context.go(AuthGuard.takePendingPath());
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
-              'No registered account found for this number. Please create an account first.',
-            ),
-            backgroundColor: Color(0xFF1E293B),
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
-        context.go('/register');
-      }
+          backgroundColor: AppColors.error,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
     }
+
+    // OTP correct. The backend's is_registered decides the next screen:
+    // false means this number has no completed account yet.
+    if (result.isRegistered) {
+      final name = result.user?.name.trim() ?? '';
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            name.isNotEmpty ? 'Welcome back, $name!' : 'Welcome back!',
+          ),
+          backgroundColor: const Color(0xFF16A34A),
+        ),
+      );
+      // Return to the screen the user wanted before login (or Home)
+      context.go(AuthGuard.takePendingPath());
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Phone verified. No account found for this number yet. Please complete your registration.',
+          ),
+          backgroundColor: Color(0xFF1E293B),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      context.go('/register');
+    }
+  }
+
+  /// Empties the 4 OTP boxes and puts the cursor back in the first one.
+  void _clearOtp() {
+    for (final c in _controllers) {
+      c.clear();
+    }
+    _focusNodes.first.requestFocus();
+  }
+
+  Future<void> _resendOtp() async {
+    if (_isResending || _isLoading) return;
+    setState(() => _isResending = true);
+
+    final sent = await ref.read(authProvider.notifier).sendOtp(widget.phone);
+
+    if (!mounted) return;
+    setState(() => _isResending = false);
+    if (sent) _clearOtp();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          sent
+              ? 'A new OTP has been sent!'
+              : (ref.read(authProvider).error ??
+                    'Could not send OTP. Please try again.'),
+        ),
+        backgroundColor: sent ? null : AppColors.error,
+      ),
+    );
   }
 
   @override
@@ -169,14 +222,9 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
                       style: AppTextStyles.bodySecondary,
                     ),
                     TextButton(
-                      onPressed: () {
-                        ref.read(authProvider.notifier).sendOtp(widget.phone);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('A new OTP has been sent!'),
-                          ),
-                        );
-                      },
+                      onPressed: _isResending || _isLoading
+                          ? null
+                          : _resendOtp,
                       child: const Text(
                         'Resend',
                         style: TextStyle(

@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/network/app_exception.dart';
 import '../../../core/network/connectivity_provider.dart';
 import '../../../core/network/network_status.dart';
 import '../../../core/storage/local_storage.dart';
@@ -149,11 +150,24 @@ class AuthNotifier extends Notifier<AuthState> {
     }
   }
 
-  /// Verify OTP and store token & user profile
-  Future<AuthVerificationResult> verifyOtp(String mobile, String code) async {
+  /// Verify OTP and store token & user profile.
+  ///
+  /// Returns the backend result on success; `is_registered` in it tells
+  /// whether the number already has a completed account. Returns null when
+  /// verification failed (wrong or expired OTP, network error, ...); the
+  /// user-facing reason is then in [AuthState.error]. A failed verification
+  /// never means "new user".
+  Future<AuthVerificationResult?> verifyOtp(String mobile, String code) async {
     state = state.copyWith(isLoading: true, error: null);
     try {
       final result = await _repository.verifyOtp(mobile, code);
+      if ((result.token ?? '').isEmpty) {
+        state = state.copyWith(
+          isLoading: false,
+          error: 'Could not verify OTP. Please try again.',
+        );
+        return null;
+      }
       state = state.copyWith(
         isLoading: false,
         isAuthenticated: true,
@@ -162,10 +176,57 @@ class AuthNotifier extends Notifier<AuthState> {
       await refreshProfile();
       return result;
     } catch (e) {
-      final errorMsg = _parseError(e, 'Invalid OTP code.');
-      state = state.copyWith(isLoading: false, error: errorMsg);
-      return const AuthVerificationResult();
+      state = state.copyWith(isLoading: false, error: otpErrorMessage(e));
+      return null;
     }
+  }
+
+  /// User-facing message for a failed POST /auth/otp/verify.
+  /// km-backend answers HTTP 400 with {"error": "Invalid OTP"} for a wrong
+  /// code and {"error": "OTP not found or expired"} for an expired or
+  /// already used code.
+  static String otpErrorMessage(Object e) {
+    if (e is AppValidationException) {
+      final msg = e.message.trim();
+      final lower = msg.toLowerCase();
+      if (lower == 'invalid otp') return 'Incorrect OTP. Please try again.';
+      if (lower.contains('not found or expired')) {
+        return 'This OTP has expired or was already used. '
+            'Tap Resend to get a new code.';
+      }
+      // Role mismatch, e.g. "this mobile number is already registered as a
+      // recruiter" (safe, meaningful backend text).
+      if (lower.contains('registered as')) return msg;
+      return 'Could not verify OTP. Please try again.';
+    }
+    // Network / timeout / server errors already carry app-written messages.
+    if (e is AppException) return e.message;
+    return 'Could not verify OTP. Please try again.';
+  }
+
+  /// User-facing message for a failed POST /auth/login/password.
+  /// km-backend answers HTTP 401 with {"error": "invalid email or password"}
+  /// for both a wrong password and an unknown email (it does not say which).
+  static String passwordLoginErrorMessage(Object e) {
+    if (e is AppAuthException || e is AppValidationException) {
+      final msg = (e as AppException).message.trim();
+      final lower = msg.toLowerCase();
+      if (lower == 'invalid email or password') {
+        return 'Incorrect email or password. Please try again.';
+      }
+      if (lower == 'email and password are required') {
+        return 'Please enter your email and password.';
+      }
+      // Meaningful backend texts: "No password has been set for this
+      // account..." and "This account is registered as a Recruiter...".
+      if (lower.startsWith('no password has been set') ||
+          lower.contains('registered as')) {
+        return msg;
+      }
+      return 'Login failed. Please try again.';
+    }
+    if (e is AppException) return e.message;
+    return 'Login failed. Please try again.';
   }
 
   /// Login with Password
@@ -181,8 +242,10 @@ class AuthNotifier extends Notifier<AuthState> {
       await refreshProfile();
       return true;
     } catch (e) {
-      final errorMsg = _parseError(e, 'Invalid email or password');
-      state = state.copyWith(isLoading: false, error: errorMsg);
+      state = state.copyWith(
+        isLoading: false,
+        error: passwordLoginErrorMessage(e),
+      );
       return false;
     }
   }
