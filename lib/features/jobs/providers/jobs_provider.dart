@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/network/app_exception.dart';
 import '../../../core/network/connectivity_provider.dart';
 import '../../../core/network/network_status.dart';
 import '../../../core/storage/local_storage.dart';
@@ -88,10 +89,18 @@ class JobsNotifier extends Notifier<JobsState> {
       } catch (_) {}
     }
 
-    // Sync bookmarks with the server when a user signs in
+    // Sync bookmarks with the server when a user signs in; forget them on
+    // logout (they belong to that account, not to the next user or guest).
     ref.listen<AuthState>(authProvider, (prev, next) {
-      if ((prev?.isAuthenticated ?? false) == false && next.isAuthenticated) {
+      final wasSignedIn = prev?.isAuthenticated ?? false;
+      if (!wasSignedIn && next.isAuthenticated) {
         syncSavedJobs();
+      } else if (wasSignedIn && !next.isAuthenticated) {
+        state = state.copyWith(
+          savedJobIds: const <String>{},
+          cachedTimestamp: state.cachedTimestamp,
+        );
+        LocalStorage.saveSavedJobIds(const <String>{});
       }
     });
 
@@ -347,3 +356,58 @@ class JobsNotifier extends Notifier<JobsState> {
 final jobsProvider = NotifierProvider<JobsNotifier, JobsState>(
   JobsNotifier.new,
 );
+
+/// One saved (bookmarked) job for the Saved Jobs screen.
+class SavedJobEntry {
+  final String id;
+
+  /// The job from the server, or null when it no longer exists (the
+  /// backend answered HTTP 404 "Job not found", e.g. the job was deleted).
+  final Job? job;
+
+  const SavedJobEntry({required this.id, this.job});
+
+  bool get isUnavailable => job == null;
+}
+
+/// Details of one saved job: GET /jobs/:id (public endpoint).
+///
+/// A job already loaded on the Jobs tab is reused (same server data, no
+/// extra request). HTTP 404 means the job is gone -> null. Any other failure
+/// is an error (never shown as "no saved jobs").
+final savedJobDetailProvider = FutureProvider.autoDispose.family<Job?, String>((
+  ref,
+  jobId,
+) async {
+  final loaded = ref
+      .read(jobsProvider)
+      .jobs
+      .where((job) => job.id == jobId)
+      .firstOrNull;
+  if (loaded != null) return loaded;
+  try {
+    return await ref.watch(jobRepositoryProvider).getJobById(jobId);
+  } on AppNotFoundException {
+    return null;
+  }
+});
+
+/// All saved jobs, loaded by their saved IDs (not taken from the current
+/// Jobs page, which only holds one page of results).
+///
+/// The dedicated GET /user/bookmarks endpoint currently answers HTTP 500
+/// (km-backend registers GET /user/:id before it), so each saved job is
+/// loaded with GET /jobs/:id instead. Each job is cached separately, so
+/// removing a bookmark does not reload the others.
+final savedJobsProvider = FutureProvider.autoDispose<List<SavedJobEntry>>((
+  ref,
+) async {
+  final ids = ref.watch(jobsProvider.select((s) => s.savedJobIds)).toList();
+  final jobs = await Future.wait([
+    for (final id in ids) ref.watch(savedJobDetailProvider(id).future),
+  ]);
+  return [
+    for (var i = 0; i < ids.length; i++)
+      SavedJobEntry(id: ids[i], job: jobs[i]),
+  ];
+});

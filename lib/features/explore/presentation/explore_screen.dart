@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../app/auth_guard.dart';
 import '../../../app/theme/app_colors.dart';
 import '../../profile/presentation/widgets/profile_drawer.dart';
 import '../../../shared/widgets/category_top_header.dart';
@@ -257,7 +258,15 @@ class _ExploreScreenState extends State<ExploreScreen> {
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          onTap: () => context.push(route),
+          // Account-only modules show the Login Required popup to guests
+          // instead of opening (and calling login-only APIs).
+          onTap: () {
+            if (AuthGuard.isProtected(route)) {
+              AuthGuard.openProtected(context, route);
+            } else {
+              context.push(route);
+            }
+          },
           borderRadius: BorderRadius.circular(18),
           child: Padding(
             padding: const EdgeInsets.all(16),

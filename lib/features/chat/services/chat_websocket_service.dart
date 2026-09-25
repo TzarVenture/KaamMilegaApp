@@ -9,6 +9,7 @@ import '../../../core/constants/api_constants.dart';
 import '../../../core/network/connectivity_service.dart';
 import '../../../core/network/network_status.dart';
 import '../../../core/storage/local_storage.dart';
+import '../../auth/providers/auth_provider.dart';
 import '../models/chat_message.dart';
 
 enum WebSocketStatus { disconnected, connecting, connected, error }
@@ -159,7 +160,11 @@ class ChatWebSocketService {
   }
 }
 
+/// One socket per signed-in account: on logout or account switch the old
+/// service is disposed (socket closed) and a new one is created, which only
+/// connects when a token exists.
 final chatWebSocketServiceProvider = Provider<ChatWebSocketService>((ref) {
+  ref.watch(sessionUserIdProvider);
   final service = ChatWebSocketService();
   ref.onDispose(() => service.dispose());
   return service;

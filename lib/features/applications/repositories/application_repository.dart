@@ -6,6 +6,7 @@ import '../../../core/network/app_exception.dart';
 import '../../../core/network/connectivity_service.dart';
 import '../../../core/storage/local_storage.dart';
 import '../models/application.dart';
+import '../../auth/providers/auth_provider.dart';
 
 /// Repository for handling candidate applications with offline caching and write safety
 class ApplicationRepository {
@@ -52,51 +53,50 @@ class ApplicationRepository {
   }
 
   /// Get candidate's submitted applications (with offline cache fallback)
+  /// The signed-in user's applications (GET /applications/my).
+  ///
+  /// Errors are thrown (401, 404, 5xx, bad data), never turned into an empty
+  /// list. Only when the device is offline / the request timed out is the
+  /// last successful list shown (read-only cache).
   Future<List<ApplicationItem>> getMyApplications() async {
     try {
       final response = await _client.get(ApiConstants.myApplications);
       final dynamic body = response.data;
-      List<dynamic> list = [];
+      List<dynamic> list;
 
       if (body is List) {
         list = body;
       } else if (body is Map<String, dynamic> && body['data'] is List) {
-        list = body['data'];
+        list = body['data'] as List;
+      } else {
+        throw const AppValidationException(
+          'Unexpected response from server. Please try again.',
+        );
       }
 
-      final apps = list
-          .map((e) => ApplicationItem.fromJson(e as Map<String, dynamic>))
-          .toList();
+      final items = list.whereType<Map<String, dynamic>>().toList();
+      final apps = items.map(ApplicationItem.fromJson).toList();
 
-      // Cache successful response
+      // Cache the server items as received, so the offline copy keeps the
+      // job title / company (nested `job`) exactly like the live list.
       try {
-        final cacheList = apps
-            .map(
-              (a) => {
-                'id': a.id,
-                'job_id': a.jobId,
-                'candidate_id': a.candidateId,
-                'job_title': a.jobTitle,
-                'company_name': a.companyName,
-                'status': a.status,
-                'cover_letter': a.coverLetter,
-                'created_at': a.createdAt?.toIso8601String(),
-              },
-            )
-            .toList();
-        LocalStorage.saveCachedApplications(cacheList);
+        LocalStorage.saveCachedApplications(items);
       } catch (_) {}
 
       return apps;
-    } catch (_) {
-      // Fallback to offline cache
-      final cached = LocalStorage.getCachedApplications();
-      if (cached.apps.isNotEmpty) {
-        try {
-          return cached.apps.map((m) => ApplicationItem.fromJson(m)).toList();
-        } catch (_) {}
+    } on AppException catch (e) {
+      final offline = e is AppNetworkException || e is AppTimeoutException;
+      if (offline) {
+        final cached = LocalStorage.getCachedApplications();
+        if (cached.apps.isNotEmpty) {
+          try {
+            return cached.apps.map(ApplicationItem.fromJson).toList();
+          } catch (_) {
+            // Unreadable cache: report the real (offline) error below.
+          }
+        }
       }
-      return [];
+      rethrow;
     }
   }
 }
@@ -105,6 +105,11 @@ final applicationRepositoryProvider = Provider<ApplicationRepository>((ref) {
   return ApplicationRepository(ref.watch(apiClientProvider));
 });
 
+/// The signed-in user's applications. Rebuilt on logout / account switch;
+/// guests have no applications and no request is made for them.
 final myApplicationsProvider = FutureProvider<List<ApplicationItem>>((ref) {
+  if (ref.watch(sessionUserIdProvider) == null) {
+    return const <ApplicationItem>[];
+  }
   return ref.watch(applicationRepositoryProvider).getMyApplications();
 });

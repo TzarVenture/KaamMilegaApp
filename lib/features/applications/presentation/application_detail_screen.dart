@@ -161,6 +161,10 @@ class ApplicationDetailScreen extends ConsumerWidget {
     ApplicationItem app,
   ) {
     final timeAgoStr = _formatTimeAgo(app.createdAt);
+    final companyLine = [
+      app.companyName,
+      app.cityName,
+    ].map((part) => part.trim()).where((part) => part.isNotEmpty).join(' • ');
 
     return SingleChildScrollView(
       physics: const BouncingScrollPhysics(),
@@ -168,7 +172,7 @@ class ApplicationDetailScreen extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // 1. Top Header: Job Title, Rating & Reviews, View Similar Jobs Link
+          // 1. Top Header: Job Title, Company, View Similar Jobs Link
           Padding(
             padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
             child: Column(
@@ -185,34 +189,32 @@ class ApplicationDetailScreen extends ConsumerWidget {
                 ),
                 const SizedBox(height: 8),
 
-                // Rating & Reviews row
-                Row(
-                  children: [
-                    const Icon(
-                      Icons.star_rounded,
-                      size: 18,
-                      color: Color(0xFFFFB800),
-                    ),
-                    const SizedBox(width: 4),
-                    const Text(
-                      '4.2',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w800,
-                        color: AppColors.textPrimary,
-                      ),
-                    ),
-                    const SizedBox(width: 6),
-                    const Text(
-                      '|   4.4K+ Reviews',
-                      style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
+                // Company and city from the application's job (API data).
+                // (Replaces a hard-coded "4.2 | 4.4K+ Reviews" row: the
+                // backend has no company ratings.)
+                if (companyLine.isNotEmpty)
+                  Row(
+                    children: [
+                      const Icon(
+                        Icons.business_rounded,
+                        size: 17,
                         color: AppColors.textSecondary,
                       ),
-                    ),
-                  ],
-                ),
+                      const SizedBox(width: 6),
+                      Expanded(
+                        child: Text(
+                          companyLine,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            fontSize: 13.5,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
 
                 const SizedBox(height: 12),
 

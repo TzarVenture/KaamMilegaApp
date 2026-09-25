@@ -11,6 +11,8 @@ import '../shared/widgets/auth_prompt_dialog.dart';
 /// Used as the global `redirect` of [GoRouter]:
 /// - Session still being checked at app start, or Splash not yet shown for
 ///   its minimum time: stay on Splash.
+/// - Signed in but not registered yet (new phone number after OTP, new email
+///   sign-up): only Complete Profile (`/complete-profile`) is open.
 /// - Signed in: Splash goes to Home; every screen is open.
 /// - Guest ("Explore Jobs as Guest"): public screens such as Jobs and Job
 ///   details are open; account-only screens go to Login.
@@ -28,10 +30,12 @@ class AuthGuard {
     '/my-applications',
     '/applications',
     '/interviews',
+    '/my-sessions', // booked mentorship sessions
     '/network',
     '/apply-expert',
     '/settings',
     '/wallet',
+    '/peer-to-peer', // people search + connections (account-only APIs)
   ];
 
   /// Screens used to sign in. Always open.
@@ -41,6 +45,10 @@ class AuthGuard {
     '/otp',
     '/forgot-password',
   ];
+
+  /// Registration step for a signed-in account that is not registered yet
+  /// (see [AuthState.needsProfileCompletion]).
+  static const String completeProfilePath = '/complete-profile';
 
   static String? _pendingPath;
 
@@ -77,8 +85,27 @@ class AuthGuard {
 
     final signedIn = isSignedIn(auth);
 
+    final needsProfile = signedIn && auth.needsProfileCompletion;
+
     // 2. Check finished: leave Splash for the final screen.
-    if (path == '/splash') return signedIn ? '/home' : '/login';
+    if (path == '/splash') {
+      if (!signedIn) return '/login';
+      return needsProfile ? completeProfilePath : '/home';
+    }
+
+    // 2b. Signed in but registration not completed: only the Complete
+    // Profile screen is open. Its Back / "Use a different account" actions
+    // log out, so no half-registered session can use the app.
+    if (needsProfile) {
+      return path == completeProfilePath ? null : completeProfilePath;
+    }
+
+    // 2c. Complete Profile is only for unregistered, signed-in accounts.
+    // Right after registration, continue to the screen the user wanted
+    // (not cleared here; the Complete Profile screen takes it).
+    if (path == completeProfilePath) {
+      return signedIn ? (_pendingPath ?? '/home') : '/login';
+    }
 
     if (signedIn || _isAuthScreen(path)) return null;
 

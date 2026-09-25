@@ -31,6 +31,15 @@ class AuthState {
     this.isGuest = false,
   });
 
+  /// True when the user is signed in but has not completed registration yet
+  /// (for example a new phone number right after OTP, or a new email
+  /// sign-up). Such a session may only use the Complete Profile screen.
+  /// Unknown while the profile is not loaded ([user] is null).
+  bool get needsProfileCompletion {
+    final u = user;
+    return isAuthenticated && u != null && !hasCompletedRegistration(u);
+  }
+
   AuthState copyWith({
     UserProfile? user,
     bool? isLoading,
@@ -49,6 +58,16 @@ class AuthState {
     );
   }
 }
+
+/// Whether [user] has completed registration (POST /user/register).
+///
+/// km-backend sets `is_registered` to true on registration. Older accounts
+/// may not have that flag even though their profile is complete, so, like the
+/// KaamMilega website (km-frontend register page), a profile with both an
+/// education level and a city also counts as registered.
+bool hasCompletedRegistration(UserProfile user) =>
+    user.isRegistered ||
+    (user.educationLevel.trim().isNotEmpty && user.city.trim().isNotEmpty);
 
 class AuthNotifier extends Notifier<AuthState> {
   late final AuthRepository _repository;
@@ -277,17 +296,29 @@ class AuthNotifier extends Notifier<AuthState> {
     }
   }
 
-  /// Register Candidate Profile
-  Future<bool> registerCandidate({
+  /// Completes registration of the signed-in account (POST /user/register),
+  /// the same account that was created by phone OTP or email sign-up. It
+  /// never creates a second account.
+  ///
+  /// The backend overwrites `email` and `is_email_verified` with whatever is
+  /// sent, so the values already on the account are sent back unchanged.
+  Future<bool> completeRegistration({
     required String name,
     required String gender,
     required String educationLevel,
     required String workExperience,
     required String city,
     required List<String> jobCategories,
-    String experienceDetail = '',
-    String email = '',
+    required String experienceDetail,
   }) async {
+    final current = state.user;
+    if (!state.isAuthenticated || current == null) {
+      state = state.copyWith(
+        error: 'Your session is not ready yet. Please try again.',
+      );
+      return false;
+    }
+
     state = state.copyWith(isLoading: true, error: null);
     try {
       final user = await _repository.registerCandidate(
@@ -298,16 +329,24 @@ class AuthNotifier extends Notifier<AuthState> {
         city: city,
         jobCategories: jobCategories,
         experienceDetail: experienceDetail,
-        email: email,
+        email: current.email,
+        isEmailVerified: current.isEmailVerified,
       );
-      state = state.copyWith(
-        isLoading: false,
-        isAuthenticated: true,
-        user: user,
-      );
+      if (!ref.mounted) return true;
+      state = state.copyWith(isLoading: false, user: user);
       return true;
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString());
+      if (!ref.mounted) return false;
+      final message = e is AppException
+          ? e.message
+          : 'Could not complete registration. Please try again.';
+      // HTTP 401: ApiClient has already cleared the saved session. Reset the
+      // state too, so the router returns to Login instead of keeping a
+      // half-signed-in session.
+      final tokenCleared = (LocalStorage.getToken() ?? '').isEmpty;
+      state = tokenCleared
+          ? AuthState(error: message)
+          : state.copyWith(isLoading: false, error: message);
       return false;
     }
   }
@@ -423,6 +462,136 @@ class AuthNotifier extends Notifier<AuthState> {
       );
       return false;
     }
+  }
+
+  /// Runs a profile edit that returns the updated profile from the server,
+  /// and shows the server's result (never a local-only change).
+  Future<bool> _applyProfileEdit(
+    Future<UserProfile> Function() request,
+    String fallbackError,
+  ) async {
+    state = state.copyWith(isLoading: true, error: null);
+    try {
+      final updatedUser = await request();
+      if (!ref.mounted) return true;
+      state = state.copyWith(isLoading: false, user: updatedUser);
+      return true;
+    } catch (e) {
+      if (!ref.mounted) return false;
+      state = state.copyWith(
+        isLoading: false,
+        error: e is AppException ? e.message : _parseError(e, fallbackError),
+      );
+      return false;
+    }
+  }
+
+  /// Edit an existing education entry (PUT /user/education/:id).
+  Future<bool> updateEducation({
+    required String id,
+    required String schoolName,
+    required String degree,
+    required String fieldOfStudy,
+    required String startDate,
+    required String endDate,
+    String grade = '',
+    String description = '',
+  }) {
+    return _applyProfileEdit(
+      () => _repository.updateEducation(
+        id: id,
+        schoolName: schoolName,
+        degree: degree,
+        fieldOfStudy: fieldOfStudy,
+        startDate: startDate,
+        endDate: endDate,
+        grade: grade,
+        description: description,
+      ),
+      'Failed to update education',
+    );
+  }
+
+  /// Delete an education entry (DELETE /user/education/:id).
+  Future<bool> deleteEducation(String id) {
+    return _applyProfileEdit(
+      () => _repository.deleteEducation(id),
+      'Failed to delete education',
+    );
+  }
+
+  /// Edit an existing experience entry (PUT /user/experience/:id). Its
+  /// [skills] are sent back unchanged.
+  Future<bool> updateExperience({
+    required String id,
+    required String title,
+    required String companyName,
+    required String employmentType,
+    required String location,
+    required String startDate,
+    required String endDate,
+    String description = '',
+    List<String> skills = const [],
+  }) {
+    return _applyProfileEdit(
+      () => _repository.updateExperience(
+        id: id,
+        title: title,
+        companyName: companyName,
+        employmentType: employmentType,
+        location: location,
+        startDate: startDate,
+        endDate: endDate,
+        description: description,
+        skills: skills,
+      ),
+      'Failed to update experience',
+    );
+  }
+
+  /// Delete an experience entry (DELETE /user/experience/:id).
+  Future<bool> deleteExperience(String id) {
+    return _applyProfileEdit(
+      () => _repository.deleteExperience(id),
+      'Failed to delete experience',
+    );
+  }
+
+  /// Save Open To Work (PATCH /user/open-to-work). The profile shown
+  /// afterwards is the one returned by the server.
+  Future<bool> saveOpenToWork(OpenToWorkPreferences prefs) => _applyProfileEdit(
+    () => _repository.updateOpenToWork(prefs),
+    'Failed to save Open To Work',
+  );
+
+  /// Save Providing Services (PATCH /user/providing-services).
+  Future<bool> saveProvidingServices(ProvidingServicesPreferences prefs) =>
+      _applyProfileEdit(
+        () => _repository.updateProvidingServices(prefs),
+        'Failed to save Providing Services',
+      );
+
+  /// Remove a skill (DELETE /user/skill/:skillName).
+  ///
+  /// Succeeds only if the profile returned by the server no longer has the
+  /// skill (the backend answers 200 even when it did not match the name).
+  Future<bool> removeSkill(String skill) async {
+    final ok = await _applyProfileEdit(
+      () => _repository.deleteSkill(skill),
+      'Failed to remove skill',
+    );
+    if (!ok || !ref.mounted) return false;
+    final target = skill.trim().toLowerCase();
+    final stillThere = (state.user?.skills ?? const <String>[]).any(
+      (s) => s.trim().toLowerCase() == target,
+    );
+    if (stillThere) {
+      state = state.copyWith(
+        error: 'Could not remove "$skill". Please try again later.',
+      );
+      return false;
+    }
+    return true;
   }
 
   /// Add skill tag
@@ -718,3 +887,19 @@ class AuthNotifier extends Notifier<AuthState> {
 final authProvider = NotifierProvider<AuthNotifier, AuthState>(
   AuthNotifier.new,
 );
+
+/// ID of the signed-in account, or null for guests / logged-out users.
+///
+/// Providers that hold one user's data (applications, chats, connections,
+/// ...) watch this, so Riverpod rebuilds or disposes them on logout, login
+/// or an account switch and the previous user's data is never shown to the
+/// next one. While it is null they must not call account-only APIs.
+final sessionUserIdProvider = Provider<String?>((ref) {
+  return ref.watch(
+    authProvider.select((s) {
+      if (!s.isAuthenticated) return null;
+      final id = s.user?.id ?? '';
+      return id.isEmpty ? null : id;
+    }),
+  );
+});

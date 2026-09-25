@@ -64,6 +64,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     if (mounted) {
       setState(() => _isLoading = false);
       if (success) {
+        if (ref.read(authProvider).needsProfileCompletion) {
+          // Account exists but registration was never completed.
+          _showSnackBar('Signed in. Please complete your profile to continue.');
+          context.go(AuthGuard.completeProfilePath);
+          return;
+        }
         _showSnackBar('Signed in successfully! Welcome back.');
         // Return to the screen the user wanted before login (or Home)
         context.go(AuthGuard.takePendingPath());

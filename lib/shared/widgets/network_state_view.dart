@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import '../../../app/theme/app_colors.dart';
+import '../../core/network/app_exception.dart';
 import 'shimmer_loading.dart';
 import 'fade_slide_in.dart';
 
@@ -34,6 +35,39 @@ class NetworkStateView extends StatelessWidget {
     this.emptyAction,
     this.cachedTimestamp,
   });
+
+  /// Error state for a failed request, picked from the error type: no
+  /// internet, timeout, feature not available (HTTP 404), session problem
+  /// (401 / 403) or the server's message. Never shown as "no data".
+  factory NetworkStateView.fromError(
+    Object error, {
+    Key? key,
+    VoidCallback? onRetry,
+  }) {
+    return NetworkStateView(
+      key: key,
+      isOffline: error is AppNetworkException,
+      errorMessage: errorMessageFor(error),
+      onRetry: onRetry,
+      child: const SizedBox.shrink(),
+    );
+  }
+
+  /// User-facing text for a failed request.
+  static String errorMessageFor(Object error) {
+    if (error is AppNotFoundException) {
+      return 'This is not available right now. Please try again later.';
+    }
+    if (error is AppAuthException) {
+      return error.statusCode == 403
+          ? 'You do not have access to this.'
+          : 'Your session has expired. Please sign in again.';
+    }
+    if (error is AppException && error.message.trim().isNotEmpty) {
+      return error.message;
+    }
+    return 'Something went wrong while loading. Please try again.';
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -246,12 +280,12 @@ class CachedDataBadge extends StatelessWidget {
           const SizedBox(width: 6),
           Flexible(
             child: Text(
-            'Showing saved data (Updated: $formatted)',
-            style: const TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.w700,
-              color: Color(0xFF92400E),
-            ),
+              'Showing saved data (Updated: $formatted)',
+              style: const TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w700,
+                color: Color(0xFF92400E),
+              ),
             ),
           ),
         ],

@@ -387,12 +387,12 @@ class _ExpertDetailScreenState extends ConsumerState<ExpertDetailScreen> {
                   children: [
                     Flexible(
                       child: Text(
-                      expert.expertName,
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w800,
-                        color: Color(0xFF0F172A),
-                      ),
+                        expert.expertName,
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w800,
+                          color: Color(0xFF0F172A),
+                        ),
                       ),
                     ),
                     const SizedBox(width: 4),

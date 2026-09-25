@@ -8,6 +8,7 @@ import '../models/application.dart';
 import '../repositories/application_repository.dart';
 import '../../../shared/widgets/fade_slide_in.dart';
 import '../../../shared/widgets/pressable_scale.dart';
+import '../../../shared/widgets/network_state_view.dart';
 
 /// Screen displaying the candidate's applied jobs with real-time status
 class MyApplicationsScreen extends ConsumerWidget {
@@ -210,48 +211,9 @@ class MyApplicationsScreen extends ConsumerWidget {
             );
           },
           loading: () => const MyApplicationsSkeleton(),
-          error: (err, _) => Center(
-            child: Padding(
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Container(
-                    width: 80,
-                    height: 80,
-                    decoration: const BoxDecoration(
-                      color: Color(0xFFFEF2F2),
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(
-                      Icons.error_outline_rounded,
-                      color: AppColors.error,
-                      size: 38,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  const SizedBox(height: 12),
-                  Text(
-                    'Failed to load applications: $err',
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(color: AppColors.textSecondary),
-                  ),
-                  const SizedBox(height: 16),
-                  ElevatedButton.icon(
-                    onPressed: () => ref.invalidate(myApplicationsProvider),
-                    icon: const Icon(Icons.refresh_rounded),
-                    label: const Text('Retry'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primary,
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
+          error: (err, _) => NetworkStateView.fromError(
+            err,
+            onRetry: () => ref.invalidate(myApplicationsProvider),
           ),
         ),
       ),
@@ -280,6 +242,10 @@ class _ApplicationCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final appliedBadgeStr = _formatAppliedBadgeTime(application.createdAt);
+    final companyLine = [
+      application.companyName,
+      application.cityName,
+    ].map((part) => part.trim()).where((part) => part.isNotEmpty).join(' • ');
 
     return PressableScale(
       child: Container(
@@ -324,42 +290,39 @@ class _ApplicationCard extends StatelessWidget {
                     ),
                   ),
 
-                  const SizedBox(height: 6),
-
-                  // Rating & Reviews row
-                  Row(
-                    children: [
-                      const Icon(
-                        Icons.star_rounded,
-                        size: 16,
-                        color: Color(0xFFFFB800),
-                      ),
-                      const SizedBox(width: 4),
-                      const Text(
-                        '4.2',
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w800,
-                          color: AppColors.textPrimary,
-                        ),
-                      ),
-                      const SizedBox(width: 6),
-                      const Text(
-                        '|   4.4K+ Reviews',
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
+                  // Company and city from the application's job (API data).
+                  // (Replaces a hard-coded "4.2 | 4.4K+ Reviews" row: the
+                  // backend has no company ratings.)
+                  if (companyLine.isNotEmpty) ...[
+                    const SizedBox(height: 6),
+                    Row(
+                      children: [
+                        const Icon(
+                          Icons.business_rounded,
+                          size: 15,
                           color: AppColors.textSecondary,
                         ),
-                      ),
-                    ],
-                  ),
+                        const SizedBox(width: 6),
+                        Expanded(
+                          child: Text(
+                            companyLine,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
 
                   const SizedBox(height: 14),
 
-                  // Applied Badge & Recruiter Last Active Row
+                  // Applied badge
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       // Green Applied Badge
                       Container(
@@ -397,22 +360,6 @@ class _ApplicationCard extends StatelessWidget {
                               ),
                             ),
                           ],
-                        ),
-                      ),
-
-                      // Recruiter Last Active (shrinks instead of overflowing)
-                      const SizedBox(width: 8),
-                      const Flexible(
-                        child: Text(
-                          'Recruiter last active 5w ago',
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          textAlign: TextAlign.end,
-                          style: TextStyle(
-                            fontSize: 11,
-                            color: AppColors.textLight,
-                            fontWeight: FontWeight.w500,
-                          ),
                         ),
                       ),
                     ],

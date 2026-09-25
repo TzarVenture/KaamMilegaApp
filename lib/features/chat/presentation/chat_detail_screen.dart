@@ -7,6 +7,8 @@ import '../providers/chat_provider.dart';
 import '../services/chat_websocket_service.dart';
 import '../../../shared/widgets/fade_slide_in.dart';
 import '../../../shared/widgets/pressable_scale.dart';
+import '../../../shared/widgets/shimmer_loading.dart';
+import '../../../shared/widgets/network_state_view.dart';
 
 /// Screen for 1-on-1 Real-Time Chat Conversation
 class ChatDetailScreen extends ConsumerStatefulWidget {
@@ -176,7 +178,16 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
 
             // Messages List
             Expanded(
-              child: messages.isEmpty
+              // History loading / failed: shimmer or error with Retry (a
+              // failed load is never shown as an empty chat).
+              child: messages.isEmpty && chatNotifier.isLoading
+                  ? const ShimmerLoadingList(count: 5, itemHeight: 56)
+                  : messages.isEmpty && chatNotifier.error != null
+                  ? NetworkStateView.fromError(
+                      chatNotifier.error!,
+                      onRetry: chatNotifier.retryHistory,
+                    )
+                  : messages.isEmpty
                   ? Center(
                       child: Padding(
                         padding: const EdgeInsets.all(32),

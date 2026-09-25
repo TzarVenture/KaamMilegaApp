@@ -72,6 +72,13 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     if (mounted) {
       setState(() => _isLoading = false);
       if (success) {
+        if (ref.read(authProvider).needsProfileCompletion) {
+          // km-backend creates email accounts unregistered: finish the same
+          // account on Complete Profile (POST /user/register).
+          _showSnackBar('Account created. Please complete your profile.');
+          context.go(AuthGuard.completeProfilePath);
+          return;
+        }
         _showSnackBar('Account created successfully! Welcome to KaamMilega.');
         // Return to the screen the user wanted before sign-up (or Home)
         context.go(AuthGuard.takePendingPath());

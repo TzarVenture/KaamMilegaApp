@@ -196,170 +196,173 @@ class WalletScreen extends ConsumerWidget {
   ) {
     return FadeSlideIn(
       child: Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(22),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF0C1738), Color(0xFF172B5E)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF0C1738).withValues(alpha: 0.25),
-            blurRadius: 16,
-            offset: const Offset(0, 8),
+        width: double.infinity,
+        padding: const EdgeInsets.all(22),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: [Color(0xFF0C1738), Color(0xFF172B5E)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
           ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 4,
-                ),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: const Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      Icons.account_balance_wallet_outlined,
-                      size: 14,
-                      color: Colors.white70,
-                    ),
-                    SizedBox(width: 6),
-                    Text(
-                      'TOTAL BALANCE',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 11,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: 0.8,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFF0C1738).withValues(alpha: 0.25),
+              blurRadius: 16,
+              offset: const Offset(0, 8),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.account_balance_wallet_outlined,
+                        size: 14,
+                        color: Colors.white70,
                       ),
-                    ),
-                  ],
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: isVerified
-                      ? const Color(0xFF10B981).withValues(alpha: 0.2)
-                      : const Color(0xFFF59E0B).withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(
-                    color: isVerified
-                        ? const Color(0xFF10B981).withValues(alpha: 0.4)
-                        : const Color(0xFFF59E0B).withValues(alpha: 0.4),
+                      SizedBox(width: 6),
+                      Text(
+                        'TOTAL BALANCE',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 0.8,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      isVerified
-                          ? Icons.verified_rounded
-                          : Icons.info_outline_rounded,
-                      size: 13,
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: isVerified
+                        ? const Color(0xFF10B981).withValues(alpha: 0.2)
+                        : const Color(0xFFF59E0B).withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
                       color: isVerified
-                          ? const Color(0xFF34D399)
-                          : const Color(0xFFFBBF24),
+                          ? const Color(0xFF10B981).withValues(alpha: 0.4)
+                          : const Color(0xFFF59E0B).withValues(alpha: 0.4),
                     ),
-                    const SizedBox(width: 4),
-                    Text(
-                      isVerified ? 'Verified' : 'Not verified',
-                      style: TextStyle(
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        isVerified
+                            ? Icons.verified_rounded
+                            : Icons.info_outline_rounded,
+                        size: 13,
                         color: isVerified
                             ? const Color(0xFF34D399)
                             : const Color(0xFFFBBF24),
-                        fontSize: 11,
-                        fontWeight: FontWeight.w600,
                       ),
-                    ),
-                  ],
+                      const SizedBox(width: 4),
+                      Text(
+                        isVerified ? 'Verified' : 'Not verified',
+                        style: TextStyle(
+                          color: isVerified
+                              ? const Color(0xFF34D399)
+                              : const Color(0xFFFBBF24),
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 18),
-          Text(
-            _inr(summary?.totalBalance ?? 0),
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 36,
-              fontWeight: FontWeight.w900,
-              letterSpacing: -1,
+              ],
             ),
-          ),
-          const SizedBox(height: 4),
-          const Text(
-            'Total balance (added money + earnings + bonus)',
-            style: TextStyle(
-              color: Colors.white60,
-              fontSize: 12,
-              fontWeight: FontWeight.w400,
+            const SizedBox(height: 18),
+            Text(
+              _inr(summary?.totalBalance ?? 0),
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 36,
+                fontWeight: FontWeight.w900,
+                letterSpacing: -1,
+              ),
             ),
-          ),
-          const SizedBox(height: 18),
-          const Divider(height: 1, color: Colors.white12),
-          const SizedBox(height: 14),
-          Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Earnings',
-                      style: TextStyle(color: Colors.white60, fontSize: 11),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      _inr(summary?.earningsBalance ?? 0),
-                      style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.95),
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ],
-                ),
+            const SizedBox(height: 4),
+            const Text(
+              'Total balance (added money + earnings + bonus)',
+              style: TextStyle(
+                color: Colors.white60,
+                fontSize: 12,
+                fontWeight: FontWeight.w400,
               ),
-              Container(width: 1, height: 28, color: Colors.white12),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'In Escrow',
-                      style: TextStyle(color: Colors.white60, fontSize: 11),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      _inr(summary?.lockedBalance ?? 0),
-                      style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.95),
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
+            ),
+            const SizedBox(height: 18),
+            const Divider(height: 1, color: Colors.white12),
+            const SizedBox(height: 14),
+            Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Earnings',
+                        style: TextStyle(color: Colors.white60, fontSize: 11),
                       ),
-                    ),
-                  ],
+                      const SizedBox(height: 2),
+                      Text(
+                        _inr(summary?.earningsBalance ?? 0),
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.95),
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            ],
-          ),
-        ],
-      ),
+                Container(width: 1, height: 28, color: Colors.white12),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'In Escrow',
+                        style: TextStyle(color: Colors.white60, fontSize: 11),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        _inr(summary?.lockedBalance ?? 0),
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.95),
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -369,51 +372,51 @@ class WalletScreen extends ConsumerWidget {
     return FadeSlideIn(
       index: 1,
       child: Container(
-      padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 8),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: [
-          _buildActionButton(
-            context: context,
-            icon: Icons.add_circle_outline_rounded,
-            label: 'Add Money',
-            color: const Color(0xFF1A2B8C),
-            onTap: () => context.push('/wallet/add-money'),
-          ),
-          _buildActionButton(
-            context: context,
-            icon: Icons.payments_outlined,
-            label: 'Pay',
-            color: const Color(0xFF6366F1),
-            onTap: () => _showPayModal(context),
-          ),
-          _buildActionButton(
-            context: context,
-            icon: Icons.arrow_circle_up_rounded,
-            label: 'Withdraw',
-            color: const Color(0xFFF97316),
-            onTap: () => context.push('/wallet/withdraw'),
-          ),
-          _buildActionButton(
-            context: context,
-            icon: Icons.swap_horiz_rounded,
-            label: 'Transfer',
-            color: const Color(0xFF10B981),
-            onTap: () => context.push('/wallet/transfer'),
-          ),
-        ],
-      ),
+        padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 8),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.03),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: [
+            _buildActionButton(
+              context: context,
+              icon: Icons.add_circle_outline_rounded,
+              label: 'Add Money',
+              color: const Color(0xFF1A2B8C),
+              onTap: () => context.push('/wallet/add-money'),
+            ),
+            _buildActionButton(
+              context: context,
+              icon: Icons.payments_outlined,
+              label: 'Pay',
+              color: const Color(0xFF6366F1),
+              onTap: () => _showPayModal(context),
+            ),
+            _buildActionButton(
+              context: context,
+              icon: Icons.arrow_circle_up_rounded,
+              label: 'Withdraw',
+              color: const Color(0xFFF97316),
+              onTap: () => context.push('/wallet/withdraw'),
+            ),
+            _buildActionButton(
+              context: context,
+              icon: Icons.swap_horiz_rounded,
+              label: 'Transfer',
+              color: const Color(0xFF10B981),
+              onTap: () => context.push('/wallet/transfer'),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -427,34 +430,34 @@ class WalletScreen extends ConsumerWidget {
   }) {
     return PressableScale(
       child: InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 48,
-              height: 48,
-              decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(14),
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: Icon(icon, color: color, size: 24),
               ),
-              child: Icon(icon, color: color, size: 24),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              label,
-              style: const TextStyle(
-                color: Color(0xFF1E293B),
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
+              const SizedBox(height: 8),
+              Text(
+                label,
+                style: const TextStyle(
+                  color: Color(0xFF1E293B),
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
-      ),
       ),
     );
   }
@@ -464,63 +467,63 @@ class WalletScreen extends ConsumerWidget {
     return FadeSlideIn(
       index: 2,
       child: Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Wallet Accounts',
-            style: TextStyle(
-              color: Color(0xFF0F172A),
-              fontSize: 15,
-              fontWeight: FontWeight.w700,
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.03),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
             ),
-          ),
-          const SizedBox(height: 12),
-          _buildWalletTypeRow(
-            title: 'Main Wallet (Added Money)',
-            subtitle: 'Use for session bookings and services',
-            amount: _inr(summary?.mainBalance ?? 0),
-            icon: Icons.wallet_rounded,
-            color: const Color(0xFF1A2B8C),
-          ),
-          const Divider(height: 18, color: Color(0xFFF1F5F9)),
-          _buildWalletTypeRow(
-            title: 'Earnings',
-            subtitle: 'Money you earned (withdrawable)',
-            amount: _inr(summary?.earningsBalance ?? 0),
-            icon: Icons.monetization_on_outlined,
-            color: const Color(0xFF10B981),
-          ),
-          const Divider(height: 18, color: Color(0xFFF1F5F9)),
-          _buildWalletTypeRow(
-            title: 'Escrow Protected',
-            subtitle: 'Held safely until the session is completed',
-            amount: _inr(summary?.lockedBalance ?? 0),
-            icon: Icons.shield_outlined,
-            color: const Color(0xFFF59E0B),
-          ),
-          const Divider(height: 18, color: Color(0xFFF1F5F9)),
-          _buildWalletTypeRow(
-            title: 'Bonus Credits',
-            subtitle: 'Promotional rewards (not withdrawable)',
-            amount: _inr(summary?.bonusBalance ?? 0),
-            icon: Icons.card_giftcard_rounded,
-            color: const Color(0xFF9333EA),
-          ),
-        ],
-      ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Wallet Accounts',
+              style: TextStyle(
+                color: Color(0xFF0F172A),
+                fontSize: 15,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            const SizedBox(height: 12),
+            _buildWalletTypeRow(
+              title: 'Main Wallet (Added Money)',
+              subtitle: 'Use for session bookings and services',
+              amount: _inr(summary?.mainBalance ?? 0),
+              icon: Icons.wallet_rounded,
+              color: const Color(0xFF1A2B8C),
+            ),
+            const Divider(height: 18, color: Color(0xFFF1F5F9)),
+            _buildWalletTypeRow(
+              title: 'Earnings',
+              subtitle: 'Money you earned (withdrawable)',
+              amount: _inr(summary?.earningsBalance ?? 0),
+              icon: Icons.monetization_on_outlined,
+              color: const Color(0xFF10B981),
+            ),
+            const Divider(height: 18, color: Color(0xFFF1F5F9)),
+            _buildWalletTypeRow(
+              title: 'Escrow Protected',
+              subtitle: 'Held safely until the session is completed',
+              amount: _inr(summary?.lockedBalance ?? 0),
+              icon: Icons.shield_outlined,
+              color: const Color(0xFFF59E0B),
+            ),
+            const Divider(height: 18, color: Color(0xFFF1F5F9)),
+            _buildWalletTypeRow(
+              title: 'Bonus Credits',
+              subtitle: 'Promotional rewards (not withdrawable)',
+              amount: _inr(summary?.bonusBalance ?? 0),
+              icon: Icons.card_giftcard_rounded,
+              color: const Color(0xFF9333EA),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -580,94 +583,94 @@ class WalletScreen extends ConsumerWidget {
     return FadeSlideIn(
       index: 3,
       child: Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF1F5F9),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Row(
-                children: [
-                  Icon(
-                    Icons.security_rounded,
-                    size: 18,
-                    color: Color(0xFF1A2B8C),
-                  ),
-                  SizedBox(width: 8),
-                  Text(
-                    'Limits & Compliance',
-                    style: TextStyle(
-                      color: Color(0xFF0F172A),
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: const Color(0xFFF1F5F9),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: const Color(0xFFE2E8F0)),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Row(
+                  children: [
+                    Icon(
+                      Icons.security_rounded,
+                      size: 18,
+                      color: Color(0xFF1A2B8C),
                     ),
+                    SizedBox(width: 8),
+                    Text(
+                      'Limits & Compliance',
+                      style: TextStyle(
+                        color: Color(0xFF0F172A),
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
+                ),
+                Text(
+                  // Email verification is not KYC; real KYC is not built yet
+                  isVerified ? 'Email verified' : 'Email not verified',
+                  style: const TextStyle(
+                    color: Color(0xFF64748B),
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
                   ),
-                ],
-              ),
-              Text(
-                // Email verification is not KYC; real KYC is not built yet
-                isVerified ? 'Email verified' : 'Email not verified',
-                style: const TextStyle(
-                  color: Color(0xFF64748B),
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          const Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'Daily Transfer Limit',
-                style: TextStyle(color: Color(0xFF64748B), fontSize: 12),
-              ),
-              Text(
-                '₹50,000 / day',
-                style: TextStyle(
-                  color: Color(0xFF1E293B),
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 6),
-          const Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'Monthly Withdrawal Limit',
-                style: TextStyle(color: Color(0xFF64748B), fontSize: 12),
-              ),
-              Text(
-                '₹2,00,000 / month',
-                style: TextStyle(
-                  color: Color(0xFF1E293B),
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 10),
-          const Text(
-            'Payments are processed securely by Razorpay. Withdrawal limits and KYC will apply once withdrawals go live.',
-            style: TextStyle(
-              color: Color(0xFF94A3B8),
-              fontSize: 11,
-              fontStyle: FontStyle.italic,
+              ],
             ),
-          ),
-        ],
-      ),
+            const SizedBox(height: 12),
+            const Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Daily Transfer Limit',
+                  style: TextStyle(color: Color(0xFF64748B), fontSize: 12),
+                ),
+                Text(
+                  '₹50,000 / day',
+                  style: TextStyle(
+                    color: Color(0xFF1E293B),
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 6),
+            const Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Monthly Withdrawal Limit',
+                  style: TextStyle(color: Color(0xFF64748B), fontSize: 12),
+                ),
+                Text(
+                  '₹2,00,000 / month',
+                  style: TextStyle(
+                    color: Color(0xFF1E293B),
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            const Text(
+              'Payments are processed securely by Razorpay. Withdrawal limits and KYC will apply once withdrawals go live.',
+              style: TextStyle(
+                color: Color(0xFF94A3B8),
+                fontSize: 11,
+                fontStyle: FontStyle.italic,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

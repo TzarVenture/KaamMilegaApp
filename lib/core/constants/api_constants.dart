@@ -77,12 +77,18 @@ class ApiConstants {
   static const String skills = '/skills';
 
   // --- User Profile Endpoints ---
-  static const String userSkill = '/user/skill';
-  static const String userEducation = '/user/education';
-  static const String userExperience = '/user/experience';
+  static const String userSkill =
+      '/user/skill'; // POST add, DELETE /:skillName (URL-encoded)
+  static const String userEducation =
+      '/user/education'; // POST add, PUT/DELETE /:id
+  static const String userExperience =
+      '/user/experience'; // POST add, PUT/DELETE /:id
   static const String userProject =
       '/user/project'; // POST add, PUT/DELETE /:id
   static const String userPassword = '/user/password'; // PUT
+  static const String userOpenToWork = '/user/open-to-work'; // PATCH
+  static const String userProvidingServices =
+      '/user/providing-services'; // PATCH
   static const String userApplyExpert = '/user/apply-expert'; // POST
   static const String userSettings = '/user/settings'; // GET / PUT
   static const String userBookmark =
@@ -134,8 +140,9 @@ class ApiConstants {
       '/wallet/topup/create-order'; // POST {amount}
   static const String walletTopupVerify =
       '/wallet/topup/verify'; // POST razorpay ids + amount
-  // Not built on backend yet (screens show "coming soon"):
-  static const String walletWithdraw = '/wallet/withdraw';
+  static const String walletWithdraw =
+      '/wallet/withdraw'; // POST WithdrawalRequest (payout of earnings)
+  // Not built on backend yet (screen shows "coming soon"):
   static const String walletTransfer = '/wallet/transfer';
 
   // --- Paid mentorship booking (backend F76) ---
@@ -144,6 +151,8 @@ class ApiConstants {
       '/mentorships/create-order'; // POST
   static const String mentorshipVerifyPayment =
       '/mentorships/verify-payment'; // POST
+  static const String mentorshipMyBookings =
+      '/mentorships/bookings/my'; // GET sessions booked by the user
 
   // --- Company Hub Endpoints ---
   static const String adminCompanies = '/admin/companies';

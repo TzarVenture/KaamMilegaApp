@@ -460,12 +460,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             const SizedBox(width: 4),
             Flexible(
               child: Text(
-              currentCity,
-              style: const TextStyle(
-                fontSize: 13.5,
-                fontWeight: FontWeight.w800,
-                color: Color(0xFF0F172A),
-              ),
+                currentCity,
+                style: const TextStyle(
+                  fontSize: 13.5,
+                  fontWeight: FontWeight.w800,
+                  color: Color(0xFF0F172A),
+                ),
               ),
             ),
             const SizedBox(width: 2),

@@ -26,8 +26,20 @@ class UserProfile {
   final String coverImage;
   final bool isEmailVerified;
   final String resumeUrl;
+
+  /// Text typed in the app's Open To sheet (kept on this device only).
   final String openToWork;
+
+  /// Text typed in the app's Open To sheet (kept on this device only).
   final String providingServices;
+
+  /// Open To Work status stored by the backend (`open_to_work` object).
+  /// Null when the backend has not stored one for this user.
+  final OpenToWorkPreferences? openToWorkPreferences;
+
+  /// Providing Services status stored by the backend (`providing_services`
+  /// object). Null when the backend has not stored one for this user.
+  final ProvidingServicesPreferences? providingServicesPreferences;
   final bool isAvailableForGigs;
   final int walletBalance;
   final int profileViewsCount;
@@ -62,6 +74,8 @@ class UserProfile {
     this.resumeUrl = '',
     this.openToWork = '',
     this.providingServices = '',
+    this.openToWorkPreferences,
+    this.providingServicesPreferences,
     this.isAvailableForGigs = true,
     this.walletBalance = 0,
     this.profileViewsCount = 0,
@@ -79,6 +93,32 @@ class UserProfile {
   String get fullPublicProfileUrl => id.isNotEmpty
       ? 'https://www.kaammilega.com/in/$id'
       : 'https://www.kaammilega.com';
+
+  /// Whether the user is open to work. The backend value is used when the
+  /// backend has one; otherwise the text saved on this device decides.
+  bool get isOpenToWork => openToWorkPreferences != null
+      ? openToWorkPreferences!.isOpen
+      : openToWork.trim().isNotEmpty;
+
+  /// Readable Open To Work text for the Profile screen (never raw JSON).
+  String get openToWorkSummary {
+    final prefs = openToWorkPreferences;
+    if (prefs != null) return prefs.isOpen ? prefs.summary : '';
+    return openToWork.trim();
+  }
+
+  /// Whether the user is providing services. The backend value is used when
+  /// the backend has one; otherwise the text saved on this device decides.
+  bool get isProvidingServices => providingServicesPreferences != null
+      ? providingServicesPreferences!.isProviding
+      : providingServices.trim().isNotEmpty;
+
+  /// Readable Providing Services text for the Profile screen (never raw JSON).
+  String get providingServicesSummary {
+    final prefs = providingServicesPreferences;
+    if (prefs != null) return prefs.isProviding ? prefs.summary : '';
+    return providingServices.trim();
+  }
 
   factory UserProfile.fromJson(Map<String, dynamic> rawJson) {
     final json = (rawJson['user'] is Map<String, dynamic>)
@@ -124,6 +164,24 @@ class UserProfile {
       return [];
     }
 
+    // Backend object fields (`open_to_work`, `providing_services`)
+    Map<String, dynamic>? parseObject(dynamic val) =>
+        val is Map ? Map<String, dynamic>.from(val) : null;
+
+    // Text typed in the app's Open To sheet. It is saved on this device;
+    // profiles cached before this change kept it as a string under [key].
+    String deviceText(String key) {
+      final cached = json[key];
+      if (cached is String) return cached;
+      final saved = LocalStorage.getDeviceProfilePrefs()[key];
+      return saved is String ? saved : '';
+    }
+
+    int parseCount(dynamic val) => val is num ? val.toInt() : 0;
+
+    final openToWorkJson = parseObject(json['open_to_work']);
+    final providingServicesJson = parseObject(json['providing_services']);
+
     return UserProfile(
       id: json['id']?.toString() ?? json['_id']?.toString() ?? '',
       mobile: json['mobile']?.toString() ?? '',
@@ -164,26 +222,22 @@ class UserProfile {
             // Server profile has no resume field yet: use the device copy
             LocalStorage.getResumeUrl(),
       ),
-      // Not stored by the backend yet: fall back to the copy kept on device
-      openToWork:
-          json['open_to_work']?.toString() ??
-          LocalStorage.getDeviceProfilePrefs()['open_to_work']?.toString() ??
-          '',
-      providingServices:
-          json['providing_services']?.toString() ??
-          LocalStorage.getDeviceProfilePrefs()['providing_services']
-              ?.toString() ??
-          '',
+      openToWork: deviceText('open_to_work'),
+      providingServices: deviceText('providing_services'),
+      openToWorkPreferences: openToWorkJson == null
+          ? null
+          : OpenToWorkPreferences.fromJson(openToWorkJson),
+      providingServicesPreferences: providingServicesJson == null
+          ? null
+          : ProvidingServicesPreferences.fromJson(providingServicesJson),
       isAvailableForGigs:
           (json['is_available_for_gigs'] ??
               LocalStorage.getDeviceProfilePrefs()['is_available_for_gigs']) !=
           false,
       walletBalance: (json['wallet_balance'] as num?)?.toInt() ?? 0,
-      profileViewsCount: (json['profile_views_count'] as num?)?.toInt() ?? 0,
-      postImpressionsCount:
-          (json['post_impressions_count'] as num?)?.toInt() ?? 0,
-      searchAppearancesCount:
-          (json['search_appearances_count'] as num?)?.toInt() ?? 0,
+      profileViewsCount: parseCount(json['profile_views']),
+      postImpressionsCount: parseCount(json['post_impressions']),
+      searchAppearancesCount: parseCount(json['search_appearances']),
       portfolioUrl:
           json['portfolio_url']?.toString() ??
           json['portfolioUrl']?.toString() ??
@@ -222,13 +276,17 @@ class UserProfile {
     'cover_image': coverImage,
     'is_email_verified': isEmailVerified,
     'resume_url': resumeUrl,
-    'open_to_work': openToWork,
-    'providing_services': providingServices,
+    // Same shapes as the backend. Device-typed Open To text is not written
+    // here: it stays in the device prefs (see UserProfile.fromJson).
+    if (openToWorkPreferences != null)
+      'open_to_work': openToWorkPreferences!.toJson(),
+    if (providingServicesPreferences != null)
+      'providing_services': providingServicesPreferences!.toJson(),
     'is_available_for_gigs': isAvailableForGigs,
     'wallet_balance': walletBalance,
-    'profile_views_count': profileViewsCount,
-    'post_impressions_count': postImpressionsCount,
-    'search_appearances_count': searchAppearancesCount,
+    'profile_views': profileViewsCount,
+    'post_impressions': postImpressionsCount,
+    'search_appearances': searchAppearancesCount,
     'portfolio_url': portfolioUrl,
     'portfolio_text': portfolioText,
   };
@@ -256,6 +314,8 @@ class UserProfile {
     String? resumeUrl,
     String? openToWork,
     String? providingServices,
+    OpenToWorkPreferences? openToWorkPreferences,
+    ProvidingServicesPreferences? providingServicesPreferences,
     bool? isAvailableForGigs,
     int? walletBalance,
     int? profileViewsCount,
@@ -290,6 +350,10 @@ class UserProfile {
       resumeUrl: resumeUrl ?? this.resumeUrl,
       openToWork: openToWork ?? this.openToWork,
       providingServices: providingServices ?? this.providingServices,
+      openToWorkPreferences:
+          openToWorkPreferences ?? this.openToWorkPreferences,
+      providingServicesPreferences:
+          providingServicesPreferences ?? this.providingServicesPreferences,
       isAvailableForGigs: isAvailableForGigs ?? this.isAvailableForGigs,
       walletBalance: walletBalance ?? this.walletBalance,
       profileViewsCount: profileViewsCount ?? this.profileViewsCount,
@@ -476,3 +540,123 @@ class ProjectItem {
     'is_current': isCurrentlyWorking,
   };
 }
+
+/// Open To Work status stored by the backend (`open_to_work` on the user).
+class OpenToWorkPreferences {
+  final bool isOpen;
+  final List<String> jobTitles;
+  final List<String> jobTypes;
+  final List<String> locations;
+
+  /// Who can see it: "all" or "recruiters" (empty when not set).
+  final String visibility;
+
+  /// Job types offered on the KaamMilega website's Open To Work form. The
+  /// backend stores any text; these are the values the website sends.
+  static const List<String> jobTypeOptions = [
+    'Full-time',
+    'Part-time',
+    'Contract',
+    'Freelance',
+    'Hourly',
+  ];
+
+  /// Backend visibility values (`OpenToWorkPreferences.Visibility`); the
+  /// backend saves "all" when none is sent.
+  static const String visibilityAll = 'all';
+  static const String visibilityRecruiters = 'recruiters';
+
+  const OpenToWorkPreferences({
+    this.isOpen = false,
+    this.jobTitles = const [],
+    this.jobTypes = const [],
+    this.locations = const [],
+    this.visibility = '',
+  });
+
+  factory OpenToWorkPreferences.fromJson(Map<String, dynamic> json) =>
+      OpenToWorkPreferences(
+        isOpen: json['is_open'] == true,
+        jobTitles: _stringList(json['job_titles']),
+        jobTypes: _stringList(json['job_types']),
+        locations: _stringList(json['locations']),
+        visibility: json['visibility']?.toString() ?? '',
+      );
+
+  Map<String, dynamic> toJson() => {
+    'is_open': isOpen,
+    'job_titles': jobTitles,
+    'job_types': jobTypes,
+    'locations': locations,
+    'visibility': visibility,
+  };
+
+  /// e.g. "Flutter Developer, Backend Developer · Full-time · Pune"
+  String get summary => _joinGroups([jobTitles, jobTypes, locations]);
+}
+
+/// Providing Services status stored by the backend (`providing_services`).
+class ProvidingServicesPreferences {
+  final bool isProviding;
+  final List<String> services;
+
+  /// 0 when the backend has no hourly rate.
+  final double hourlyRate;
+  final String currency;
+  final String description;
+
+  /// Currency the backend saves when none is sent (the website always
+  /// sends it).
+  static const String defaultCurrency = 'INR';
+
+  const ProvidingServicesPreferences({
+    this.isProviding = false,
+    this.services = const [],
+    this.hourlyRate = 0,
+    this.currency = '',
+    this.description = '',
+  });
+
+  factory ProvidingServicesPreferences.fromJson(Map<String, dynamic> json) {
+    final rate = json['hourly_rate'];
+    return ProvidingServicesPreferences(
+      isProviding: json['is_providing'] == true,
+      services: _stringList(json['services']),
+      hourlyRate: rate is num ? rate.toDouble() : 0.0,
+      currency: json['currency']?.toString() ?? '',
+      description: json['description']?.toString() ?? '',
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+    'is_providing': isProviding,
+    'services': services,
+    'hourly_rate': hourlyRate,
+    'currency': currency,
+    'description': description,
+  };
+
+  /// e.g. "Web Development, AC Repair · INR 500/hr". Uses the description
+  /// when no services are listed.
+  String get summary {
+    final main = services.isNotEmpty ? services.join(', ') : description.trim();
+    if (hourlyRate <= 0) return main;
+    final amount = hourlyRate == hourlyRate.roundToDouble()
+        ? hourlyRate.toInt().toString()
+        : hourlyRate.toStringAsFixed(2);
+    final rate = '${currency.trim()} $amount/hr'.trim();
+    return main.isEmpty ? rate : '$main · $rate';
+  }
+}
+
+List<String> _stringList(dynamic val) {
+  if (val is! List) return const [];
+  return val
+      .where((e) => e != null)
+      .map((e) => e.toString().trim())
+      .where((e) => e.isNotEmpty)
+      .toList();
+}
+
+String _joinGroups(List<List<String>> groups) =>
+    groups.where((g) => g.isNotEmpty).map((g) => g.join(', ')).join(' · ');

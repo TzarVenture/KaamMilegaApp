@@ -3,7 +3,10 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/network/app_exception.dart';
 import '../../../core/network/connectivity_provider.dart';
+import '../../auth/providers/auth_provider.dart';
+import '../models/withdrawal.dart';
 import '../providers/wallet_provider.dart';
 import '../repositories/wallet_repository.dart';
 
@@ -17,123 +20,177 @@ class WalletWithdrawScreen extends ConsumerStatefulWidget {
 
 class _WalletWithdrawScreenState extends ConsumerState<WalletWithdrawScreen> {
   final TextEditingController _amountController = TextEditingController();
-  final TextEditingController _destinationController = TextEditingController();
+  final TextEditingController _upiController = TextEditingController();
+  final TextEditingController _accountNumberController =
+      TextEditingController();
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _ifscController = TextEditingController();
+  final TextEditingController _bankNameController = TextEditingController();
+  late final TextEditingController _phoneController;
 
   String _destinationType = 'UPI'; // 'UPI' or 'BANK'
   bool _isProcessing = false;
 
+  static final RegExp _upiPattern = RegExp(r'^[\w.\-]{2,}@[a-zA-Z][\w.\-]*$');
+  static final RegExp _ifscPattern = RegExp(r'^[A-Z]{4}0[A-Z0-9]{6}$');
+  static final RegExp _accountNumberPattern = RegExp(r'^[0-9]{9,18}$');
+  static final RegExp _phonePattern = RegExp(r'^\+?[0-9]{10,13}$');
+
+  @override
+  void initState() {
+    super.initState();
+    // Optional contact number for the payout; pre-filled from the account.
+    _phoneController = TextEditingController(
+      text: ref.read(authProvider).user?.mobile.trim() ?? '',
+    );
+  }
+
   @override
   void dispose() {
     _amountController.dispose();
-    _destinationController.dispose();
+    _upiController.dispose();
+    _accountNumberController.dispose();
     _nameController.dispose();
     _ifscController.dispose();
+    _bankNameController.dispose();
+    _phoneController.dispose();
     super.dispose();
   }
 
-  Future<void> _handleWithdraw(int currentBalance) async {
-    if (_isProcessing) return;
+  void _showError(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: const Color(0xFFEF4444),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
 
-    if (!ref.read(isOnlineProvider)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'Internet connection required to perform this transaction.',
-          ),
-          backgroundColor: Color(0xFFE11D48),
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
-      return;
-    }
-
+  /// Builds the backend request from the form, or shows why it cannot be
+  /// sent. Limits follow km-backend RequestWithdrawal.
+  WithdrawalRequest? _buildRequest(int withdrawableBalance) {
     final amount = double.tryParse(_amountController.text.trim());
     if (amount == null || amount <= 0) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please enter a valid withdrawal amount'),
-          behavior: SnackBarBehavior.floating,
-        ),
+      _showError('Please enter a valid withdrawal amount');
+      return null;
+    }
+    if (amount < WithdrawalRequest.minAmount) {
+      _showError('Minimum withdrawal amount is ₹50');
+      return null;
+    }
+    if (amount > WithdrawalRequest.maxAmount) {
+      _showError('Maximum single withdrawal amount is ₹5,00,000');
+      return null;
+    }
+    if (amount > withdrawableBalance) {
+      _showError(
+        'Amount exceeds your withdrawable earnings (₹$withdrawableBalance)',
       );
+      return null;
+    }
+
+    final phone = _phoneController.text.replaceAll(' ', '').trim();
+    if (phone.isNotEmpty && !_phonePattern.hasMatch(phone)) {
+      _showError('Please enter a valid phone number or leave it empty');
+      return null;
+    }
+    final holder = _nameController.text.trim();
+
+    if (_destinationType == 'UPI') {
+      final upiId = _upiController.text.trim();
+      if (upiId.isEmpty) {
+        _showError('Please enter your UPI ID');
+        return null;
+      }
+      if (!_upiPattern.hasMatch(upiId)) {
+        _showError('Please enter a valid UPI ID (e.g. name@bank)');
+        return null;
+      }
+      return WithdrawalRequest.upi(
+        amount: amount,
+        upiId: upiId,
+        accountHolder: holder,
+        phoneNumber: phone,
+      );
+    }
+
+    final accountNumber = _accountNumberController.text.replaceAll(' ', '');
+    if (accountNumber.isEmpty) {
+      _showError('Please enter your Bank Account number');
+      return null;
+    }
+    if (!_accountNumberPattern.hasMatch(accountNumber)) {
+      _showError('Account number must be 9 to 18 digits');
+      return null;
+    }
+    final ifsc = _ifscController.text.trim().toUpperCase();
+    if (ifsc.isEmpty) {
+      _showError('Please enter the IFSC code');
+      return null;
+    }
+    if (!_ifscPattern.hasMatch(ifsc)) {
+      _showError('Please enter a valid IFSC code (e.g. HDFC0000123)');
+      return null;
+    }
+    return WithdrawalRequest.bank(
+      amount: amount,
+      accountNumber: accountNumber,
+      ifscCode: ifsc,
+      accountHolder: holder,
+      bankName: _bankNameController.text.trim(),
+      phoneNumber: phone,
+    );
+  }
+
+  Future<void> _handleWithdraw(int withdrawableBalance) async {
+    if (_isProcessing || ref.read(walletProvider).isActionLoading) return;
+    FocusScope.of(context).unfocus();
+
+    if (!ref.read(isOnlineProvider)) {
+      _showError('Internet connection required to perform this transaction.');
       return;
     }
 
-    if (amount > currentBalance) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Amount exceeds your available wallet balance'),
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
-      return;
-    }
+    final request = _buildRequest(withdrawableBalance);
+    if (request == null) return;
 
-    if (amount < 100) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Minimum withdrawal amount is ₹100'),
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
-      return;
-    }
-
-    final destination = _destinationController.text.trim();
-    if (destination.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            _destinationType == 'UPI'
-                ? 'Please enter your UPI ID'
-                : 'Please enter your Bank Account number',
-          ),
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
-      return;
-    }
+    // The backend deducts the amount as soon as it accepts the request.
+    final confirmed = await _confirmWithdrawal(request);
+    if (confirmed != true || !mounted) return;
 
     setState(() => _isProcessing = true);
-
     try {
-      await ref
-          .read(walletProvider.notifier)
-          .withdraw(
-            amount: amount,
-            destinationType: _destinationType,
-            destinationDetail: destination,
-          );
+      final result = await ref.read(walletProvider.notifier).withdraw(request);
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Withdrawal request of ₹$amount placed successfully'),
+          content: Text(result.message),
           backgroundColor: const Color(0xFF10B981),
+          behavior: SnackBarBehavior.floating,
         ),
       );
-      context.pop();
+      if (context.canPop()) {
+        context.pop();
+      } else {
+        context.go('/wallet');
+      }
     } on WalletApiException catch (e) {
       if (!mounted) return;
       if (e.isBackendPending) {
-        _showBackendNotice(context, amount, destination, e.message);
+        _showBackendNotice(context, request, e.message);
+      } else if (e.isOutcomeUnknown) {
+        _showOutcomeUnknown(e.message);
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(e.toString()),
-            backgroundColor: const Color(0xFFEF4444),
-          ),
-        );
+        _showError(e.message);
       }
-    } catch (e) {
-      // Offline / server error: show the real reason, not a "coming soon" notice
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(e.toString()),
-          backgroundColor: const Color(0xFFEF4444),
-        ),
-      );
+    } on AppException catch (e) {
+      // Offline, session expired, ...: nothing was sent or accepted.
+      if (mounted) _showError(e.message);
+    } catch (_) {
+      if (mounted) {
+        _showError('Could not submit the withdrawal. Please try again.');
+      }
     } finally {
       if (mounted) {
         setState(() => _isProcessing = false);
@@ -141,10 +198,104 @@ class _WalletWithdrawScreenState extends ConsumerState<WalletWithdrawScreen> {
     }
   }
 
+  Future<bool?> _confirmWithdrawal(WithdrawalRequest request) {
+    return showModalBottomSheet<bool>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => SafeArea(
+        child: Container(
+          padding: const EdgeInsets.all(24),
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              const Text(
+                'Confirm withdrawal',
+                style: TextStyle(
+                  fontSize: 17,
+                  fontWeight: FontWeight.w800,
+                  color: Color(0xFF0F172A),
+                ),
+              ),
+              const SizedBox(height: 14),
+              _buildSummaryRow(
+                'Amount',
+                '₹${request.amount.toStringAsFixed(0)}',
+              ),
+              const SizedBox(height: 8),
+              _buildSummaryRow(
+                'Method',
+                request.method == PayoutMethod.upi ? 'UPI' : 'Bank Transfer',
+              ),
+              const SizedBox(height: 8),
+              _buildSummaryRow('To', request.maskedDestination),
+              const SizedBox(height: 14),
+              const Text(
+                'The amount is deducted from your earnings as soon as the '
+                'request is submitted. Please check the details carefully.',
+                style: TextStyle(fontSize: 12.5, color: Color(0xFF64748B)),
+              ),
+              const SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: () => Navigator.of(ctx).pop(true),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF1A2B8C),
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                ),
+                child: const Text(
+                  'Confirm & Request Payout',
+                  style: TextStyle(fontWeight: FontWeight.w700),
+                ),
+              ),
+              const SizedBox(height: 6),
+              TextButton(
+                onPressed: () => Navigator.of(ctx).pop(false),
+                child: const Text('Cancel'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// No answer from the server: the payout may or may not have been
+  /// recorded, so the user is asked to check before trying again.
+  void _showOutcomeUnknown(String message) {
+    showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Withdrawal not confirmed'),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('OK'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.of(ctx).pop();
+              context.push('/wallet/transactions');
+            },
+            child: const Text('Check transactions'),
+          ),
+        ],
+      ),
+    );
+  }
+
   void _showBackendNotice(
     BuildContext context,
-    double amount,
-    String destination,
+    WithdrawalRequest request,
     String message,
   ) {
     showModalBottomSheet(
@@ -221,11 +372,19 @@ class _WalletWithdrawScreenState extends ConsumerState<WalletWithdrawScreen> {
               ),
               child: Column(
                 children: [
-                  _buildSummaryRow('Amount', '₹${amount.toStringAsFixed(0)}'),
+                  _buildSummaryRow(
+                    'Amount',
+                    '₹${request.amount.toStringAsFixed(0)}',
+                  ),
                   const SizedBox(height: 8),
-                  _buildSummaryRow('Method', _destinationType),
+                  _buildSummaryRow(
+                    'Method',
+                    request.method == PayoutMethod.upi
+                        ? 'UPI'
+                        : 'Bank Transfer',
+                  ),
                   const SizedBox(height: 8),
-                  _buildSummaryRow('Destination', destination),
+                  _buildSummaryRow('Destination', request.maskedDestination),
                 ],
               ),
             ),
@@ -266,6 +425,54 @@ class _WalletWithdrawScreenState extends ConsumerState<WalletWithdrawScreen> {
     );
   }
 
+  Widget _buildOptionalFieldLabel(String text) {
+    return Text.rich(
+      TextSpan(
+        text: text,
+        style: const TextStyle(
+          fontSize: 13,
+          fontWeight: FontWeight.w600,
+          color: Color(0xFF334155),
+        ),
+        children: const [
+          TextSpan(
+            text: '  (optional)',
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+              color: Color(0xFF94A3B8),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildOptionalTextField({
+    required TextEditingController controller,
+    required String hintText,
+    required TextInputType keyboardType,
+  }) {
+    return TextField(
+      controller: controller,
+      keyboardType: keyboardType,
+      decoration: InputDecoration(
+        hintText: hintText,
+        hintStyle: const TextStyle(color: Color(0xFF94A3B8)),
+        filled: true,
+        fillColor: Colors.white,
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 14,
+        ),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Color(0xFFCBD5E1)),
+        ),
+      ),
+    );
+  }
+
   Widget _buildSummaryRow(String label, String value) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -274,12 +481,17 @@ class _WalletWithdrawScreenState extends ConsumerState<WalletWithdrawScreen> {
           label,
           style: const TextStyle(fontSize: 12, color: Color(0xFF64748B)),
         ),
-        Text(
-          value,
-          style: const TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.w700,
-            color: Color(0xFF0F172A),
+        const SizedBox(width: 12),
+        // Long UPI IDs / bank names wrap instead of overflowing.
+        Flexible(
+          child: Text(
+            value,
+            textAlign: TextAlign.end,
+            style: const TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+              color: Color(0xFF0F172A),
+            ),
           ),
         ),
       ],
@@ -424,7 +636,7 @@ class _WalletWithdrawScreenState extends ConsumerState<WalletWithdrawScreen> {
                       ),
                       decoration: const InputDecoration(
                         border: InputBorder.none,
-                        hintText: 'Min ₹100',
+                        hintText: 'Min ₹50',
                         hintStyle: TextStyle(color: Color(0xFF94A3B8)),
                       ),
                     ),
@@ -527,7 +739,9 @@ class _WalletWithdrawScreenState extends ConsumerState<WalletWithdrawScreen> {
               ),
               const SizedBox(height: 8),
               TextField(
-                controller: _destinationController,
+                controller: _upiController,
+                keyboardType: TextInputType.emailAddress,
+                autocorrect: false,
                 decoration: InputDecoration(
                   hintText: 'e.g. yourname@okhdfcbank',
                   hintStyle: const TextStyle(color: Color(0xFF94A3B8)),
@@ -544,14 +758,7 @@ class _WalletWithdrawScreenState extends ConsumerState<WalletWithdrawScreen> {
                 ),
               ),
             ] else ...[
-              const Text(
-                'Account Holder Name',
-                style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                  color: Color(0xFF334155),
-                ),
-              ),
+              _buildOptionalFieldLabel('Account Holder Name'),
               const SizedBox(height: 8),
               TextField(
                 controller: _nameController,
@@ -580,8 +787,9 @@ class _WalletWithdrawScreenState extends ConsumerState<WalletWithdrawScreen> {
               ),
               const SizedBox(height: 8),
               TextField(
-                controller: _destinationController,
+                controller: _accountNumberController,
                 keyboardType: TextInputType.number,
+                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                 decoration: InputDecoration(
                   hintText: 'Enter 9-18 digit account number',
                   filled: true,
@@ -623,7 +831,24 @@ class _WalletWithdrawScreenState extends ConsumerState<WalletWithdrawScreen> {
                   ),
                 ),
               ),
+              const SizedBox(height: 14),
+              _buildOptionalFieldLabel('Bank Name'),
+              const SizedBox(height: 8),
+              _buildOptionalTextField(
+                controller: _bankNameController,
+                hintText: 'e.g. HDFC Bank',
+                keyboardType: TextInputType.text,
+              ),
             ],
+
+            const SizedBox(height: 14),
+            _buildOptionalFieldLabel('Phone Number'),
+            const SizedBox(height: 8),
+            _buildOptionalTextField(
+              controller: _phoneController,
+              hintText: 'Contact number for this payout',
+              keyboardType: TextInputType.phone,
+            ),
 
             const SizedBox(height: 24),
 
@@ -645,7 +870,9 @@ class _WalletWithdrawScreenState extends ConsumerState<WalletWithdrawScreen> {
                   SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      'UPI transfers are processed in under 15 minutes. Bank transfers may take 2-4 hours on banking days.',
+                      'The amount is deducted from your earnings when you '
+                      'submit. Your payout request is then processed by '
+                      'KaamMilega and you can track it in your transactions.',
                       style: TextStyle(fontSize: 11, color: Color(0xFF64748B)),
                     ),
                   ),
@@ -659,7 +886,7 @@ class _WalletWithdrawScreenState extends ConsumerState<WalletWithdrawScreen> {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: walletState.isActionLoading
+                onPressed: (walletState.isActionLoading || _isProcessing)
                     ? null
                     : () => _handleWithdraw(currentBalance),
                 style: ElevatedButton.styleFrom(
@@ -671,7 +898,7 @@ class _WalletWithdrawScreenState extends ConsumerState<WalletWithdrawScreen> {
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   elevation: 0,
                 ),
-                child: walletState.isActionLoading
+                child: (walletState.isActionLoading || _isProcessing)
                     ? const SizedBox(
                         width: 20,
                         height: 20,

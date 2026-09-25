@@ -17,6 +17,7 @@ import '../../jobs/models/job.dart';
 import '../../wallet/providers/wallet_provider.dart';
 import '../../network/providers/network_provider.dart';
 import '../providers/profile_jobs_provider.dart';
+import 'widgets/open_to_sheets.dart';
 import '../../../shared/widgets/app_dialog.dart';
 import '../../../shared/widgets/sheet_drag_handle.dart';
 import '../../../shared/widgets/pressable_scale.dart';
@@ -1866,18 +1867,30 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     onPressed: () async {
                       if (schoolCtrl.text.trim().isEmpty) return;
                       Navigator.pop(ctx);
-                      final ok = await ref
-                          .read(authProvider.notifier)
-                          .addEducation(
-                            id: existingEdu?.id,
-                            schoolName: schoolCtrl.text,
-                            degree: degreeCtrl.text,
-                            fieldOfStudy: fieldCtrl.text,
-                            startDate: startCtrl.text,
-                            endDate: endCtrl.text,
-                            grade: gradeCtrl.text,
-                            description: descCtrl.text,
-                          );
+                      final auth = ref.read(authProvider.notifier);
+                      final editId = existingEdu?.id ?? '';
+                      // Existing entry: PUT /user/education/:id (edits it
+                      // in place). New entry: POST /user/education.
+                      final ok = editId.isNotEmpty
+                          ? await auth.updateEducation(
+                              id: editId,
+                              schoolName: schoolCtrl.text,
+                              degree: degreeCtrl.text,
+                              fieldOfStudy: fieldCtrl.text,
+                              startDate: startCtrl.text,
+                              endDate: endCtrl.text,
+                              grade: gradeCtrl.text,
+                              description: descCtrl.text,
+                            )
+                          : await auth.addEducation(
+                              schoolName: schoolCtrl.text,
+                              degree: degreeCtrl.text,
+                              fieldOfStudy: fieldCtrl.text,
+                              startDate: startCtrl.text,
+                              endDate: endCtrl.text,
+                              grade: gradeCtrl.text,
+                              description: descCtrl.text,
+                            );
                       if (mounted) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
@@ -2209,17 +2222,33 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                     return;
                                   }
                                   Navigator.pop(ctx);
-                                  final ok = await ref
-                                      .read(authProvider.notifier)
-                                      .addExperience(
-                                        title: titleCtrl.text,
-                                        companyName: companyCtrl.text,
-                                        employmentType: selectedEmpType,
-                                        location: locationCtrl.text,
-                                        startDate: startCtrl.text,
-                                        endDate: endCtrl.text,
-                                        description: descCtrl.text,
-                                      );
+                                  final auth = ref.read(authProvider.notifier);
+                                  final editId = existingExp?.id ?? '';
+                                  // Existing entry: PUT (keeps its skills).
+                                  // New entry: POST /user/experience.
+                                  final ok = editId.isNotEmpty
+                                      ? await auth.updateExperience(
+                                          id: editId,
+                                          title: titleCtrl.text,
+                                          companyName: companyCtrl.text,
+                                          employmentType: selectedEmpType,
+                                          location: locationCtrl.text,
+                                          startDate: startCtrl.text,
+                                          endDate: endCtrl.text,
+                                          description: descCtrl.text,
+                                          skills:
+                                              existingExp?.skills ??
+                                              const <String>[],
+                                        )
+                                      : await auth.addExperience(
+                                          title: titleCtrl.text,
+                                          companyName: companyCtrl.text,
+                                          employmentType: selectedEmpType,
+                                          location: locationCtrl.text,
+                                          startDate: startCtrl.text,
+                                          endDate: endCtrl.text,
+                                          description: descCtrl.text,
+                                        );
                                   if (mounted) {
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       SnackBar(
@@ -2847,7 +2876,118 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   // -------------------------------------------------------------------
   /// [focusServices]: null = no field focused (existing callers), false =
   /// focus "Open to Work", true = focus "Providing Services".
-  void _showOpenToModal(UserProfile user, {bool? focusServices}) {
+  // -------------------------------------------------------------------
+  // EDIT / DELETE EDUCATION, EXPERIENCE AND SKILLS (server-confirmed)
+  // -------------------------------------------------------------------
+  void _showEducationActions(EducationItem edu) {
+    _showActionSheet(
+      title: edu.schoolName.isNotEmpty ? edu.schoolName : 'Education',
+      children: [
+        _sheetTile(
+          icon: Icons.edit_outlined,
+          title: 'Edit education',
+          onTap: () => _openAddEducationDialog(edu),
+        ),
+        _sheetTile(
+          icon: Icons.delete_outline_rounded,
+          title: 'Delete education',
+          iconColor: AppColors.error,
+          iconBackground: const Color(0xFFFEF2F2),
+          onTap: () => _confirmAndDelete(
+            what: 'this education entry',
+            action: () =>
+                ref.read(authProvider.notifier).deleteEducation(edu.id),
+            doneMessage: 'Education deleted.',
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _showExperienceActions(ExperienceItem exp) {
+    _showActionSheet(
+      title: exp.title.isNotEmpty ? exp.title : 'Experience',
+      children: [
+        _sheetTile(
+          icon: Icons.edit_outlined,
+          title: 'Edit experience',
+          onTap: () => _openAddExperienceDialog(exp),
+        ),
+        _sheetTile(
+          icon: Icons.delete_outline_rounded,
+          title: 'Delete experience',
+          iconColor: AppColors.error,
+          iconBackground: const Color(0xFFFEF2F2),
+          onTap: () => _confirmAndDelete(
+            what: 'this experience entry',
+            action: () =>
+                ref.read(authProvider.notifier).deleteExperience(exp.id),
+            doneMessage: 'Experience deleted.',
+          ),
+        ),
+      ],
+    );
+  }
+
+  Future<void> _removeSkill(String skill) {
+    return _confirmAndDelete(
+      what: 'the skill "$skill"',
+      action: () => ref.read(authProvider.notifier).removeSkill(skill),
+      doneMessage: 'Skill removed.',
+      confirmLabel: 'Remove',
+    );
+  }
+
+  /// Asks first, then deletes on the server. The profile only changes when
+  /// the server confirms; otherwise the server's reason is shown.
+  Future<void> _confirmAndDelete({
+    required String what,
+    required Future<bool> Function() action,
+    required String doneMessage,
+    String confirmLabel = 'Delete',
+  }) async {
+    final confirmed = await showAppDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text('$confirmLabel?'),
+        content: Text('Do you want to ${confirmLabel.toLowerCase()} $what?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: TextButton.styleFrom(foregroundColor: AppColors.error),
+            child: Text(confirmLabel),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+
+    final ok = await action();
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          ok
+              ? doneMessage
+              : (ref.read(authProvider).error ??
+                    'Could not complete this. Please try again.'),
+        ),
+        backgroundColor: ok ? AppColors.success : AppColors.error,
+      ),
+    );
+  }
+
+  /// Opens the Open To Work sheet, or Providing Services when [services]
+  /// is true. Both save to the server (PATCH /user/open-to-work and
+  /// /user/providing-services).
+  Future<void> _showOpenToModal(
+    UserProfile user, {
+    bool services = false,
+  }) async {
     if (!ref.read(authProvider).isAuthenticated) {
       showAuthPromptDialog(
         context,
@@ -2857,127 +2997,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       return;
     }
 
-    final workCtrl = TextEditingController(
-      text: user.openToWork.isNotEmpty
-          ? user.openToWork
-          : 'Computer Science roles, Software Engineering Internships',
-    );
-    final servicesCtrl = TextEditingController(
-      text: user.providingServices.isNotEmpty
-          ? user.providingServices
-          : 'Web Development, Technical Writing, and Go Microservices',
-    );
-
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (ctx) => Container(
-        padding: EdgeInsets.only(
-          bottom: MediaQuery.of(ctx).viewInsets.bottom + 20,
-          top: 24,
-          left: 20,
-          right: 20,
-        ),
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-        ),
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SheetDragHandle(),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    'Open To Preferences',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.close),
-                    onPressed: () => Navigator.pop(ctx),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 14),
-              const Text(
-                'Open to Work (Target Job Roles)',
-                style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
-              ),
-              const SizedBox(height: 6),
-              TextField(
-                controller: workCtrl,
-                autofocus: focusServices == false,
-                maxLines: 2,
-                decoration: InputDecoration(
-                  hintText: 'e.g. Software Engineering, Delivery Driver',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 14),
-              const Text(
-                'Providing Services (Freelance / Gig Services)',
-                style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
-              ),
-              const SizedBox(height: 6),
-              TextField(
-                controller: servicesCtrl,
-                autofocus: focusServices == true,
-                maxLines: 2,
-                decoration: InputDecoration(
-                  hintText: 'e.g. Web Development, AC Repair, Delivery',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: () async {
-                  Navigator.pop(ctx);
-                  final ok = await ref
-                      .read(authProvider.notifier)
-                      .updateProfile({
-                        'open_to_work': workCtrl.text.trim(),
-                        'providing_services': servicesCtrl.text.trim(),
-                      });
-                  if (mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(
-                          ok
-                              ? 'Preferences saved on this device. Online sync is coming soon.'
-                              : 'Failed to update preferences.',
-                        ),
-                        backgroundColor: ok
-                            ? AppColors.success
-                            : AppColors.error,
-                      ),
-                    );
-                  }
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  foregroundColor: Colors.white,
-                  minimumSize: const Size(double.infinity, 50),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                ),
-                child: const Text(
-                  'Save Preferences',
-                  style: TextStyle(fontWeight: FontWeight.w800),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
+    final message = services
+        ? await showProvidingServicesSheet(context, user)
+        : await showOpenToWorkSheet(context, user);
+    if (message == null || !mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message), backgroundColor: AppColors.success),
     );
   }
 
@@ -3145,9 +3170,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           icon: Icons.work_outline_rounded,
           title: 'Finding a new job',
           subtitle: 'Show recruiters you are open to work',
-          badge: user.openToWork.trim().isNotEmpty ? 'On' : 'Off',
-          badgeHighlighted: user.openToWork.trim().isNotEmpty,
-          onTap: () => _showOpenToModal(user, focusServices: false),
+          badge: user.isOpenToWork ? 'On' : 'Off',
+          badgeHighlighted: user.isOpenToWork,
+          onTap: () => _showOpenToModal(user),
         ),
         _sheetTile(
           icon: Icons.build_outlined,
@@ -3155,9 +3180,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           iconBackground: const Color(0xFFFFF7ED),
           title: 'Providing services',
           subtitle: 'Showcase direct trades and services you offer',
-          badge: user.providingServices.trim().isNotEmpty ? 'On' : 'Off',
-          badgeHighlighted: user.providingServices.trim().isNotEmpty,
-          onTap: () => _showOpenToModal(user, focusServices: true),
+          badge: user.isProvidingServices ? 'On' : 'Off',
+          badgeHighlighted: user.isProvidingServices,
+          onTap: () => _showOpenToModal(user, services: true),
         ),
       ],
     );
@@ -4298,13 +4323,19 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   ],
                 ),
                 const SizedBox(height: 6),
+                // The user's own value, or an empty-state prompt (never
+                // example text that looks like the user's answer).
                 Text(
-                  user?.openToWork.isNotEmpty == true ? user!.openToWork : 'Computer Science roles, Software Engineering Internships...',
+                  user?.openToWorkSummary.isNotEmpty == true
+                      ? user!.openToWorkSummary
+                      : 'Not added yet. Add the job roles you are looking for.',
                   maxLines: 3,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 12,
-                    color: AppColors.textPrimary,
+                    color: user?.openToWorkSummary.isNotEmpty == true
+                        ? AppColors.textPrimary
+                        : AppColors.textSecondary,
                   ),
                 ),
               ],
@@ -4340,7 +4371,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     ),
                     if (user != null)
                       InkWell(
-                        onTap: () => _showOpenToModal(user),
+                        onTap: () => _showOpenToModal(user, services: true),
                         borderRadius: BorderRadius.circular(12),
                         child: const Padding(
                           padding: EdgeInsets.all(4),
@@ -4354,15 +4385,19 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   ],
                 ),
                 const SizedBox(height: 6),
+                // The user's own value, or an empty-state prompt (never
+                // example text that looks like the user's answer).
                 Text(
-                  user?.providingServices.isNotEmpty == true
-                      ? user!.providingServices
-                      : 'Web Development, Technical Writing, and Go Microservices...',
+                  user?.providingServicesSummary.isNotEmpty == true
+                      ? user!.providingServicesSummary
+                      : 'Not added yet. Add the services you offer.',
                   maxLines: 3,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 12,
-                    color: AppColors.textPrimary,
+                    color: user?.providingServicesSummary.isNotEmpty == true
+                        ? AppColors.textPrimary
+                        : AppColors.textSecondary,
                   ),
                 ),
               ],
@@ -6172,149 +6207,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   }
 
   // -------------------------------------------------------------------
-  // COMPANIES TO FOLLOW CARD (media_1789560057892.png)
-  // -------------------------------------------------------------------
-  Widget _buildCompaniesToFollowCard() {
-    final companies = [
-      {
-        'id': 'c1',
-        'name': 'Technova',
-        'category': 'Software Solutions • IT Services',
-        'logo': 'TN',
-      },
-      {
-        'id': 'c2',
-        'name': 'Infosys Digital',
-        'category': 'IT Services & Consulting',
-        'logo': 'INF',
-      },
-      {
-        'id': 'c3',
-        'name': 'TCS Global',
-        'category': 'Enterprise Solutions & Tech',
-        'logo': 'TCS',
-      },
-    ];
-
-    return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.border),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Companies',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w800,
-              color: AppColors.textPrimary,
-            ),
-          ),
-          const Divider(height: 16),
-          StatefulBuilder(
-            builder: (ctx, setCompState) {
-              return Column(
-                children: companies.map((c) {
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 12),
-                    child: Row(
-                      children: [
-                        Container(
-                          width: 42,
-                          height: 42,
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF1E293B),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          alignment: Alignment.center,
-                          child: Text(
-                            c['logo']!,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.w900,
-                              fontSize: 11,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                c['name']!,
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.w800,
-                                  fontSize: 13.5,
-                                ),
-                              ),
-                              Text(
-                                c['category']!,
-                                style: const TextStyle(
-                                  color: AppColors.textSecondary,
-                                  fontSize: 11,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        ElevatedButton(
-                          onPressed: () {
-                            if (!ref.read(authProvider).isAuthenticated) {
-                              showAuthPromptDialog(
-                                context,
-                                title: 'Sign In Required',
-                                message: 'Please sign in to follow companies and receive job updates.',
-                              );
-                              return;
-                            }
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  'You are now following ${c['name']}',
-                                ),
-                                duration: const Duration(seconds: 2),
-                              ),
-                            );
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF9333EA),
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 6,
-                            ),
-                            minimumSize: Size.zero,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                            elevation: 0,
-                          ),
-                          child: const Text(
-                            'Follow',
-                            style: TextStyle(
-                              fontSize: 11,
-                              fontWeight: FontWeight.w800,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  );
-                }).toList(),
-              );
-            },
-          ),
-        ],
-      ),
-    );
-  }
-
-  // -------------------------------------------------------------------
   // JOBS BASED ON YOUR PROFILE CARD (real jobs from GET /jobs)
   // -------------------------------------------------------------------
   Widget _buildJobsBasedOnProfileCard(UserProfile? user) {
@@ -6856,6 +6748,23 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                                 ],
                                               ),
                                             ),
+                                            // Edit / delete (entries saved
+                                            // without an id cannot be changed).
+                                            if (exp.id.isNotEmpty)
+                                              IconButton(
+                                                tooltip:
+                                                    'Edit or delete experience',
+                                                visualDensity:
+                                                    VisualDensity.compact,
+                                                icon: const Icon(
+                                                  Icons.more_vert_rounded,
+                                                  color:
+                                                      AppColors.textSecondary,
+                                                  size: 20,
+                                                ),
+                                                onPressed: () =>
+                                                    _showExperienceActions(exp),
+                                              ),
                                           ],
                                         ),
                                       );
@@ -6965,6 +6874,23 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                                 ],
                                               ),
                                             ),
+                                            // Edit / delete (entries saved
+                                            // without an id cannot be changed).
+                                            if (edu.id.isNotEmpty)
+                                              IconButton(
+                                                tooltip:
+                                                    'Edit or delete education',
+                                                visualDensity:
+                                                    VisualDensity.compact,
+                                                icon: const Icon(
+                                                  Icons.more_vert_rounded,
+                                                  color:
+                                                      AppColors.textSecondary,
+                                                  size: 20,
+                                                ),
+                                                onPressed: () =>
+                                                    _showEducationActions(edu),
+                                              ),
                                           ],
                                         ),
                                       );
@@ -7031,6 +6957,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                     children: user.skills.map((s) {
                                       return Chip(
                                         label: Text(s),
+                                        // DELETE /user/skill/:name
+                                        onDeleted: () => _removeSkill(s),
+                                        deleteButtonTooltipMessage: 'Remove $s',
+                                        deleteIconColor: AppColors.primary,
                                         backgroundColor: AppColors.primaryLight,
                                         labelStyle: const TextStyle(
                                           color: AppColors.primary,
@@ -7046,10 +6976,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
                           const SizedBox(height: 16),
 
-                          // 12. Companies To Follow Card (media_1789560057892.png)
-                          _buildCompaniesToFollowCard(),
-
-                          const SizedBox(height: 16),
+                          // 12. "Companies to follow" card removed: it listed
+                          // invented companies and faked following. Shown
+                          // again only when a real companies API exists.
 
                           // 13. People Who Viewed / Network Suggestions Card (media_1789560057886.png)
                           _buildPeopleWhoViewedCard(),

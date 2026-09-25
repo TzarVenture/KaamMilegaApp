@@ -96,6 +96,8 @@ class LocalStorage {
     await _prefs!.remove(_walletCacheTimeKey);
     await _prefs!.remove(_appsCacheKey);
     await _prefs!.remove(_appsCacheTimeKey);
+    // Saved (bookmarked) jobs of this account
+    await _prefs!.remove(_savedJobsKey);
   }
 
   /// Save profile fields that the backend cannot store yet

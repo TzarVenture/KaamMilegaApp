@@ -7,6 +7,8 @@ import '../models/job.dart';
 import '../providers/jobs_provider.dart';
 import 'widgets/job_card.dart';
 import '../../../shared/widgets/fade_slide_in.dart';
+import '../../../shared/widgets/shimmer_loading.dart';
+import '../../../shared/widgets/network_state_view.dart';
 
 /// Screen for displaying Bookmarked / Saved Jobs
 /// Matching the exact design from KaamMilega (media_1789975854042.png)
@@ -29,24 +31,12 @@ class _SavedJobsScreenState extends ConsumerState<SavedJobsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final jobsState = ref.watch(jobsProvider);
-    final savedJobIds = jobsState.savedJobIds;
-
-    // Filter jobs that are saved
-    final List<Job> savedJobs = jobsState.jobs
-        .where((job) => savedJobIds.contains(job.id))
-        .toList();
-
-    // Apply optional search filter
-    final List<Job> displayedJobs = _searchQuery.trim().isEmpty
-        ? savedJobs
-        : savedJobs.where((job) {
-            final query = _searchQuery.toLowerCase();
-            return job.title.toLowerCase().contains(query) ||
-                job.company.toLowerCase().contains(query) ||
-                job.cityName.toLowerCase().contains(query) ||
-                job.location.toLowerCase().contains(query);
-          }).toList();
+    final savedJobIds = ref.watch(jobsProvider.select((s) => s.savedJobIds));
+    // Every saved job, loaded by ID (not only the ones on the current Jobs
+    // page). No request at all when nothing is saved.
+    final savedAsync = savedJobIds.isEmpty
+        ? null
+        : ref.watch(savedJobsProvider);
 
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC), // Smooth page background
@@ -117,7 +107,7 @@ class _SavedJobsScreenState extends ConsumerState<SavedJobsScreen> {
 
               // 3. Subtitle
               Text(
-                '${savedJobs.length} ${savedJobs.length == 1 ? 'job' : 'jobs'} saved for later',
+                '${savedJobIds.length} ${savedJobIds.length == 1 ? 'job' : 'jobs'} saved for later',
                 style: const TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
@@ -127,92 +117,181 @@ class _SavedJobsScreenState extends ConsumerState<SavedJobsScreen> {
 
               const SizedBox(height: 24),
 
-              // 4. Content (Empty State or Saved Jobs List)
-              if (savedJobs.isEmpty)
+              // 4. Content: empty / loading / error / saved jobs
+              if (savedAsync == null)
                 _buildEmptyState()
-              else ...[
-                // Search Bar for saved jobs
-                Container(
-                  margin: const EdgeInsets.only(bottom: 16),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: AppColors.border),
+              else
+                savedAsync.when(
+                  // Keep the list on screen while it refreshes (e.g. after
+                  // removing a bookmark).
+                  skipLoadingOnReload: true,
+                  loading: () => const Column(
+                    children: [
+                      JobCardSkeleton(),
+                      SizedBox(height: 12),
+                      JobCardSkeleton(),
+                      SizedBox(height: 12),
+                      JobCardSkeleton(),
+                    ],
                   ),
-                  child: TextField(
-                    controller: _searchController,
-                    onChanged: (val) {
-                      setState(() {
-                        _searchQuery = val;
-                      });
-                    },
-                    decoration: InputDecoration(
-                      hintText: 'Search saved jobs...',
-                      hintStyle: const TextStyle(
-                        color: AppColors.textSecondary,
-                        fontSize: 14,
-                      ),
-                      prefixIcon: const Icon(
-                        Icons.search,
-                        color: AppColors.textSecondary,
-                        size: 20,
-                      ),
-                      suffixIcon: _searchQuery.isNotEmpty
-                          ? IconButton(
-                              icon: const Icon(Icons.clear, size: 18),
-                              onPressed: () {
-                                _searchController.clear();
-                                setState(() {
-                                  _searchQuery = '';
-                                });
-                              },
-                            )
-                          : null,
-                      border: InputBorder.none,
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 14,
-                      ),
+                  error: (error, _) => SizedBox(
+                    // The state view scrolls, so it needs a bounded height
+                    // inside this scrolling page.
+                    height: 420,
+                    child: NetworkStateView.fromError(
+                      error,
+                      onRetry: () {
+                        // Re-run the failed per-job requests too.
+                        ref.invalidate(savedJobDetailProvider);
+                        ref.invalidate(savedJobsProvider);
+                      },
                     ),
                   ),
+                  data: _buildSavedJobs,
                 ),
-
-                if (displayedJobs.isEmpty)
-                  _buildNoSearchResults()
-                else
-                  ListView.separated(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: displayedJobs.length,
-                    separatorBuilder: (_, _) => const SizedBox(height: 12),
-                    itemBuilder: (context, index) => FadeSlideIn(
-                      index: index,
-                      child: Builder(
-                        builder: (context) {
-                          final job = displayedJobs[index];
-                          return JobCard(
-                            job: job,
-                            isSaved: true,
-                            onTap: () =>
-                                context.push('/jobs/${job.id}', extra: job),
-                            onBookmarkToggle: () {
-                              ref
-                                  .read(jobsProvider.notifier)
-                                  .toggleSaveJob(job.id);
-                            },
-                            onApply: () =>
-                                context.push('/jobs/${job.id}', extra: job),
-                            onChat: () => context.push('/chat'),
-                            onCall: () {},
-                          );
-                        },
-                      ),
-                    ),
-                  ),
-              ],
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildSavedJobs(List<SavedJobEntry> entries) {
+    final query = _searchQuery.trim().toLowerCase();
+    final available = entries.where((e) => e.job != null).map((e) => e.job!);
+    final List<Job> displayedJobs = query.isEmpty
+        ? available.toList()
+        : available.where((job) {
+            return job.title.toLowerCase().contains(query) ||
+                job.company.toLowerCase().contains(query) ||
+                job.cityName.toLowerCase().contains(query) ||
+                job.location.toLowerCase().contains(query);
+          }).toList();
+    // Saved jobs the server no longer has (HTTP 404), listed after the rest
+    // so the user can remove them. Hidden while searching.
+    final unavailable = query.isEmpty
+        ? entries.where((e) => e.isUnavailable).toList()
+        : const <SavedJobEntry>[];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        // Search Bar for saved jobs
+        Container(
+          margin: const EdgeInsets.only(bottom: 16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: AppColors.border),
+          ),
+          child: TextField(
+            controller: _searchController,
+            onChanged: (val) {
+              setState(() {
+                _searchQuery = val;
+              });
+            },
+            decoration: InputDecoration(
+              hintText: 'Search saved jobs...',
+              hintStyle: const TextStyle(
+                color: AppColors.textSecondary,
+                fontSize: 14,
+              ),
+              prefixIcon: const Icon(
+                Icons.search,
+                color: AppColors.textSecondary,
+                size: 20,
+              ),
+              suffixIcon: _searchQuery.isNotEmpty
+                  ? IconButton(
+                      icon: const Icon(Icons.clear, size: 18),
+                      onPressed: () {
+                        _searchController.clear();
+                        setState(() {
+                          _searchQuery = '';
+                        });
+                      },
+                    )
+                  : null,
+              border: InputBorder.none,
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 14,
+              ),
+            ),
+          ),
+        ),
+
+        if (displayedJobs.isEmpty && unavailable.isEmpty)
+          _buildNoSearchResults()
+        else
+          ListView.separated(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: displayedJobs.length,
+            separatorBuilder: (_, _) => const SizedBox(height: 12),
+            itemBuilder: (context, index) => FadeSlideIn(
+              index: index,
+              child: Builder(
+                builder: (context) {
+                  final job = displayedJobs[index];
+                  return JobCard(
+                    job: job,
+                    isSaved: true,
+                    onTap: () => context.push('/jobs/${job.id}', extra: job),
+                    onBookmarkToggle: () {
+                      ref.read(jobsProvider.notifier).toggleSaveJob(job.id);
+                    },
+                    onApply: () => context.push('/jobs/${job.id}', extra: job),
+                    onChat: () => context.push('/chat'),
+                    onCall: () {},
+                  );
+                },
+              ),
+            ),
+          ),
+
+        for (final entry in unavailable) ...[
+          const SizedBox(height: 12),
+          _buildUnavailableJob(entry.id),
+        ],
+      ],
+    );
+  }
+
+  /// A saved job that no longer exists on the server (HTTP 404).
+  Widget _buildUnavailableJob(String jobId) {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(16, 14, 8, 14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Row(
+        children: [
+          const Icon(
+            Icons.work_off_outlined,
+            color: AppColors.textSecondary,
+            size: 22,
+          ),
+          const SizedBox(width: 12),
+          const Expanded(
+            child: Text(
+              'This saved job is no longer available.',
+              style: TextStyle(
+                fontSize: 13.5,
+                fontWeight: FontWeight.w600,
+                color: AppColors.textSecondary,
+              ),
+            ),
+          ),
+          TextButton(
+            onPressed: () =>
+                ref.read(jobsProvider.notifier).toggleSaveJob(jobId),
+            child: const Text('Remove'),
+          ),
+        ],
       ),
     );
   }

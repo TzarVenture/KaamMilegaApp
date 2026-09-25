@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/constants/api_constants.dart';
 import '../../../core/network/api_client.dart';
+import '../../../core/network/app_exception.dart';
 import '../../../core/storage/local_storage.dart';
 import '../models/user_profile.dart';
 
@@ -128,7 +129,12 @@ class AuthRepository {
     );
   }
 
-  /// Register Candidate Profile on km-backend
+  /// Complete registration of the signed-in account (POST /user/register).
+  ///
+  /// Body = km-backend `RegisterRequest` (same fields the KaamMilega website
+  /// sends). The backend replaces `email`, `is_email_verified` and `roles` on
+  /// the account with these values, so callers pass the account's current
+  /// email and verification status. Response: the updated `User`.
   Future<UserProfile> registerCandidate({
     required String name,
     required String gender,
@@ -136,29 +142,65 @@ class AuthRepository {
     required String workExperience,
     required String city,
     required List<String> jobCategories,
-    String experienceDetail = '',
-    String email = '',
+    required String experienceDetail,
+    required String email,
+    required bool isEmailVerified,
   }) async {
     final response = await _client.post(
       ApiConstants.userRegister,
-      data: {
-        'roles': ['user'],
-        'name': name.trim(),
-        'gender': gender,
-        'education_level': educationLevel,
-        'work_experience': workExperience,
-        'city': city,
-        'job_categories': jobCategories,
-        'experience_detail': experienceDetail.trim(),
-        'email': email.trim(),
-        'is_email_verified': false,
-      },
+      data: registerRequestBody(
+        name: name,
+        gender: gender,
+        educationLevel: educationLevel,
+        workExperience: workExperience,
+        city: city,
+        jobCategories: jobCategories,
+        experienceDetail: experienceDetail,
+        email: email,
+        isEmailVerified: isEmailVerified,
+      ),
     );
 
-    final data = response.data as Map<String, dynamic>? ?? {};
+    final data = response.data;
+    if (data is! Map<String, dynamic>) {
+      throw const AppValidationException(
+        'Unexpected response from server. Please try again.',
+      );
+    }
     final user = UserProfile.fromJson(data);
+    if (user.id.isEmpty) {
+      throw const AppValidationException(
+        'Unexpected response from server. Please try again.',
+      );
+    }
     await LocalStorage.saveUser(user.toJson());
     return user;
+  }
+
+  /// JSON body for POST /user/register (km-backend `RegisterRequest`).
+  static Map<String, dynamic> registerRequestBody({
+    required String name,
+    required String gender,
+    required String educationLevel,
+    required String workExperience,
+    required String city,
+    required List<String> jobCategories,
+    required String experienceDetail,
+    required String email,
+    required bool isEmailVerified,
+  }) {
+    return {
+      'roles': ['user'],
+      'name': name.trim(),
+      'gender': gender,
+      'education_level': educationLevel,
+      'work_experience': workExperience,
+      'city': city.trim(),
+      'job_categories': jobCategories,
+      'experience_detail': experienceDetail,
+      'email': email.trim(),
+      'is_email_verified': isEmailVerified,
+    };
   }
 
   /// Update Candidate Profile (headline, about, city, gender, profile photo, etc.)
@@ -233,6 +275,140 @@ class AuthRepository {
     final user = UserProfile.fromJson(data);
     await LocalStorage.saveUser(user.toJson());
     return user;
+  }
+
+  /// Updated profile from a profile-editing response. The backend answers
+  /// with the whole `User`; anything else is an error (never an empty user).
+  Future<UserProfile> _userFromResponse(dynamic data) async {
+    if (data is! Map<String, dynamic>) {
+      throw const AppValidationException(
+        'Unexpected response from server. Please try again.',
+      );
+    }
+    final user = UserProfile.fromJson(data);
+    if (user.id.isEmpty) {
+      throw const AppValidationException(
+        'Unexpected response from server. Please try again.',
+      );
+    }
+    await LocalStorage.saveUser(user.toJson());
+    return user;
+  }
+
+  static void _requireId(String id) {
+    if (id.trim().isEmpty) {
+      throw const AppValidationException(
+        'This entry cannot be changed. Please refresh your profile.',
+      );
+    }
+  }
+
+  /// Update an education entry (PUT /user/education/:id). The backend
+  /// replaces the whole entry and keeps its id. Returns the updated profile.
+  Future<UserProfile> updateEducation({
+    required String id,
+    required String schoolName,
+    required String degree,
+    required String fieldOfStudy,
+    required String startDate,
+    required String endDate,
+    String grade = '',
+    String description = '',
+  }) async {
+    _requireId(id);
+    final response = await _client.put(
+      '${ApiConstants.userEducation}/$id',
+      data: {
+        'school_name': schoolName.trim(),
+        'degree': degree.trim(),
+        'field_of_study': fieldOfStudy.trim(),
+        'start_date': startDate.trim(),
+        'end_date': endDate.trim(),
+        'grade': grade.trim(),
+        'description': description.trim(),
+      },
+    );
+    return _userFromResponse(response.data);
+  }
+
+  /// Delete an education entry (DELETE /user/education/:id).
+  Future<UserProfile> deleteEducation(String id) async {
+    _requireId(id);
+    final response = await _client.delete('${ApiConstants.userEducation}/$id');
+    return _userFromResponse(response.data);
+  }
+
+  /// Update an experience entry (PUT /user/experience/:id). The backend
+  /// replaces the whole entry, so its existing [skills] are sent back too
+  /// (they are not edited in the app but must not be lost).
+  Future<UserProfile> updateExperience({
+    required String id,
+    required String title,
+    required String companyName,
+    required String employmentType,
+    required String location,
+    required String startDate,
+    required String endDate,
+    String description = '',
+    List<String> skills = const [],
+  }) async {
+    _requireId(id);
+    final response = await _client.put(
+      '${ApiConstants.userExperience}/$id',
+      data: {
+        'title': title.trim(),
+        'company_name': companyName.trim(),
+        'employment_type': employmentType.trim(),
+        'location': location.trim(),
+        'start_date': startDate.trim(),
+        'end_date': endDate.trim(),
+        'description': description.trim(),
+        'skills': skills,
+      },
+    );
+    return _userFromResponse(response.data);
+  }
+
+  /// Delete an experience entry (DELETE /user/experience/:id).
+  Future<UserProfile> deleteExperience(String id) async {
+    _requireId(id);
+    final response = await _client.delete('${ApiConstants.userExperience}/$id');
+    return _userFromResponse(response.data);
+  }
+
+  /// Remove a skill (DELETE /user/skill/:skillName, name URL-encoded like
+  /// the KaamMilega website does). Returns the updated profile.
+  Future<UserProfile> deleteSkill(String skillName) async {
+    final name = skillName.trim();
+    if (name.isEmpty) {
+      throw const AppValidationException('Please choose a skill to remove.');
+    }
+    final response = await _client.delete(
+      '${ApiConstants.userSkill}/${Uri.encodeComponent(name)}',
+    );
+    return _userFromResponse(response.data);
+  }
+
+  /// Save Open To Work (PATCH /user/open-to-work). The backend replaces the
+  /// whole object and answers with the updated profile under `user`.
+  Future<UserProfile> updateOpenToWork(OpenToWorkPreferences prefs) async {
+    final response = await _client.patch(
+      ApiConstants.userOpenToWork,
+      data: prefs.toJson(),
+    );
+    return _userFromResponse(response.data);
+  }
+
+  /// Save Providing Services (PATCH /user/providing-services). The backend
+  /// replaces the whole object and answers with the updated profile.
+  Future<UserProfile> updateProvidingServices(
+    ProvidingServicesPreferences prefs,
+  ) async {
+    final response = await _client.patch(
+      ApiConstants.userProvidingServices,
+      data: prefs.toJson(),
+    );
+    return _userFromResponse(response.data);
   }
 
   /// Add a Skill tag to Candidate profile

@@ -3,7 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/constants/api_constants.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/network/app_exception.dart';
+import '../../../core/network/response_list.dart';
+import '../../auth/providers/auth_provider.dart';
 import '../../wallet/models/wallet_summary.dart';
+import '../models/booking.dart';
 import '../models/expert_profile.dart';
 
 final expertRepositoryProvider = Provider<ExpertRepository>((ref) {
@@ -152,4 +155,31 @@ class ExpertRepository {
       },
     );
   }
+
+  /// Sessions booked by the signed-in user (GET /mentorships/bookings/my),
+  /// newest first. Throws on failure (never shown as "no sessions").
+  Future<List<BookingItem>> getMyBookings() async {
+    final response = await _apiClient.get(ApiConstants.mentorshipMyBookings);
+    final bookings = readListResponse(response.data)
+        .map(BookingItem.fromJson)
+        .toList();
+    bookings.sort((a, b) {
+      final at = a.scheduledAt, bt = b.scheduledAt;
+      if (at == null && bt == null) return 0;
+      if (at == null) return 1;
+      if (bt == null) return -1;
+      return bt.compareTo(at);
+    });
+    return bookings;
+  }
 }
+
+/// The signed-in user's booked mentorship sessions. Loaded fresh each time
+/// the My Sessions screen opens (so a just-booked session shows), rebuilt on
+/// logout / account switch, and no request without a session.
+final myBookingsProvider = FutureProvider.autoDispose<List<BookingItem>>((ref) {
+  if (ref.watch(sessionUserIdProvider) == null) {
+    return const <BookingItem>[];
+  }
+  return ref.watch(expertRepositoryProvider).getMyBookings();
+});

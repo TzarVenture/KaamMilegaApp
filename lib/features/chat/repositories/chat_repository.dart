@@ -4,6 +4,7 @@ import '../../../core/constants/api_constants.dart';
 import '../../../core/network/api_client.dart';
 import '../models/chat_message.dart';
 import '../models/conversation.dart';
+import '../../../core/network/response_list.dart';
 
 /// Repository for handling Chat HTTP API calls with km-backend
 class ChatRepository {
@@ -12,24 +13,12 @@ class ChatRepository {
   ChatRepository(this._client);
 
   /// Fetch candidate's active conversations
+  /// Throws on failure so the screen can show an error, not "no chats".
   Future<List<ConversationItem>> getConversations() async {
-    try {
-      final response = await _client.get(ApiConstants.chats);
-      final dynamic body = response.data;
-      List<dynamic> list = [];
-
-      if (body is List) {
-        list = body;
-      } else if (body is Map<String, dynamic> && body['data'] is List) {
-        list = body['data'];
-      }
-
-      return list
-          .map((e) => ConversationItem.fromJson(e as Map<String, dynamic>))
-          .toList();
-    } catch (_) {
-      return [];
-    }
+    final response = await _client.get(ApiConstants.chats);
+    return readListResponse(response.data)
+        .map(ConversationItem.fromJson)
+        .toList();
   }
 
   /// Send a message to a user
@@ -45,31 +34,17 @@ class ChatRepository {
   }
 
   /// Fetch message history for a specific conversation ID
+  /// Throws on failure so the chat can show an error, not an empty chat.
   Future<List<ChatMessage>> getMessages(
     String conversationId, {
     int limit = 50,
     int offset = 0,
   }) async {
-    try {
-      final response = await _client.get(
-        '${ApiConstants.chatMessagesList}$conversationId/messages',
-        queryParameters: {'limit': limit, 'offset': offset},
-      );
-      final dynamic body = response.data;
-      List<dynamic> list = [];
-
-      if (body is List) {
-        list = body;
-      } else if (body is Map<String, dynamic> && body['data'] is List) {
-        list = body['data'];
-      }
-
-      return list
-          .map((e) => ChatMessage.fromJson(e as Map<String, dynamic>))
-          .toList();
-    } catch (_) {
-      return [];
-    }
+    final response = await _client.get(
+      '${ApiConstants.chatMessagesList}$conversationId/messages',
+      queryParameters: {'limit': limit, 'offset': offset},
+    );
+    return readListResponse(response.data).map(ChatMessage.fromJson).toList();
   }
 }
 

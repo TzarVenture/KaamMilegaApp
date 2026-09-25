@@ -15,6 +15,7 @@ import '../../network/models/connection_request.dart';
 import '../../network/providers/network_provider.dart';
 import '../../network/repositories/network_repository.dart';
 import '../../../shared/widgets/fade_slide_in.dart';
+import '../../../shared/widgets/network_state_view.dart';
 
 class PeerToPeerScreen extends ConsumerStatefulWidget {
   const PeerToPeerScreen({super.key});
@@ -492,11 +493,11 @@ class _PeerToPeerScreenState extends ConsumerState<PeerToPeerScreen>
                       const SizedBox(width: 2),
                       Flexible(
                         child: Text(
-                        user.city,
-                        style: const TextStyle(
-                          fontSize: 10,
-                          color: Color(0xFF94A3B8),
-                        ),
+                          user.city,
+                          style: const TextStyle(
+                            fontSize: 10,
+                            color: Color(0xFF94A3B8),
+                          ),
                         ),
                       ),
                     ],
@@ -633,7 +634,10 @@ class _PeerToPeerScreenState extends ConsumerState<PeerToPeerScreen>
         padding: EdgeInsets.symmetric(vertical: 8),
         child: ShimmerLoadingList(count: 4, itemHeight: 80),
       ),
-      error: (e, _) => Center(child: Text('Error: $e')),
+      error: (e, _) => NetworkStateView.fromError(
+        e,
+        onRetry: () => ref.invalidate(connectionsProvider),
+      ),
     );
   }
 
@@ -757,7 +761,10 @@ class _PeerToPeerScreenState extends ConsumerState<PeerToPeerScreen>
         padding: EdgeInsets.symmetric(vertical: 8),
         child: ShimmerLoadingList(count: 3, itemHeight: 80),
       ),
-      error: (e, _) => Center(child: Text('Error: $e')),
+      error: (e, _) => NetworkStateView.fromError(
+        e,
+        onRetry: () => ref.invalidate(pendingInvitationsProvider),
+      ),
     );
   }
 }

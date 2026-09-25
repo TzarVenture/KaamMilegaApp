@@ -11,6 +11,7 @@ import '../../auth/providers/auth_provider.dart';
 import '../models/notification_item.dart';
 import '../providers/notification_provider.dart';
 import '../../../shared/widgets/fade_slide_in.dart';
+import '../../../shared/widgets/login_required_view.dart';
 
 class NotificationsScreen extends ConsumerStatefulWidget {
   const NotificationsScreen({super.key});
@@ -97,69 +98,11 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
           // Notifications ListView or Guest Prompt
           Expanded(
             child: !isAuthenticated
-                ? Center(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 24),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(18),
-                            decoration: const BoxDecoration(
-                              color: AppColors.primaryLight,
-                              shape: BoxShape.circle,
-                            ),
-                            child: const Icon(
-                              Icons.lock_outline_rounded,
-                              size: 44,
-                              color: AppColors.primary,
-                            ),
-                          ),
-                          const SizedBox(height: 18),
-                          const Text(
-                            'Sign in to view notifications',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w800,
-                              color: AppColors.textPrimary,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          const Text(
-                            'Get real-time job alerts, application updates, and network notifications by signing in.',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontSize: 13.5,
-                              color: AppColors.textSecondary,
-                              height: 1.4,
-                            ),
-                          ),
-                          const SizedBox(height: 22),
-                          ElevatedButton(
-                            onPressed: () => context.push('/login'),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.primary,
-                              foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 28,
-                                vertical: 12,
-                              ),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(14),
-                              ),
-                              elevation: 0,
-                            ),
-                            child: const Text(
-                              'Sign In',
-                              style: TextStyle(
-                                fontWeight: FontWeight.w800,
-                                fontSize: 14,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
+                ? const LoginRequiredView(
+                    title: 'Sign in to view notifications',
+                    message:
+                        'Get real-time job alerts, application updates, and '
+                        'network notifications by signing in.',
                   )
                 : RefreshIndicator(
                     onRefresh: () =>

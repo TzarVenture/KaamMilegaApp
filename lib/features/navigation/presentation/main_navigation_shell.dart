@@ -4,7 +4,6 @@ import 'package:go_router/go_router.dart';
 
 import '../../../app/theme/app_colors.dart';
 import '../../chat/presentation/chat_list_screen.dart';
-import '../../chat/providers/chat_provider.dart';
 import '../../home/presentation/home_screen.dart';
 import '../../jobs/presentation/jobs_screen.dart';
 import '../../profile/presentation/profile_screen.dart';
@@ -162,12 +161,10 @@ class _MainNavigationShellState extends ConsumerState<MainNavigationShell> {
 
   @override
   Widget build(BuildContext context) {
-    final convosAsync = ref.watch(conversationsProvider);
-    final unreadChats = convosAsync.maybeWhen(
-      data: (convos) =>
-          0, // Update with real unread count logic when backend supports it
-      orElse: () => 0,
-    );
+    // The chats API has no unread counts yet, so there is no badge. (The
+    // conversations list is not loaded here: it is account-only data and
+    // must not be requested for guests.)
+    const unreadChats = 0;
 
     final screens = [
       HomeScreen(

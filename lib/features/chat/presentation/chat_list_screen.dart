@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../app/auth_guard.dart';
 import '../../../app/theme/app_colors.dart';
+import '../../../shared/widgets/login_required_view.dart';
 import '../../../shared/widgets/shimmer_loading.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../notifications/providers/notification_provider.dart';
@@ -10,6 +12,7 @@ import '../../profile/presentation/widgets/profile_drawer.dart';
 import '../providers/chat_provider.dart';
 import '../providers/user_lookup_provider.dart';
 import '../../../shared/widgets/fade_slide_in.dart';
+import '../../../shared/widgets/network_state_view.dart';
 
 /// Screen displaying the Candidate's Active Chat Conversations matching web design
 class ChatListScreen extends ConsumerStatefulWidget {
@@ -120,8 +123,14 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final conversationsAsync = ref.watch(conversationsProvider);
-    final currentUser = ref.watch(authProvider).user;
+    final auth = ref.watch(authProvider);
+    // Chats are account-only: guests get a sign-in prompt and the
+    // conversations API is not called for them.
+    final signedIn = AuthGuard.isSignedIn(auth);
+    final conversationsAsync = signedIn
+        ? ref.watch(conversationsProvider)
+        : null;
+    final currentUser = auth.user;
     final currentUserId = currentUser?.id ?? '';
     final unreadNotifs = ref.watch(unreadNotificationsCountProvider);
 
@@ -225,409 +234,402 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
           const SizedBox(width: 6),
         ],
       ),
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // ============================================================
-          // 1. MESSAGES HEADER (Matching Web Screenshot)
-          // ============================================================
-          Padding(
-            padding: const EdgeInsets.fromLTRB(18, 16, 12, 12),
-            child: Column(
+      body: conversationsAsync == null
+          ? const LoginRequiredView(
+              title: 'Sign in to view your chats',
+              message:
+                  'Chat with recruiters and your connections after signing '
+                  'in.',
+            )
+          : Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Title Row: "Messages" + "..." + Compose Icon
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text(
-                      'Messages',
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.w900,
-                        color: Color(0xFF0F172A),
-                        letterSpacing: -0.5,
-                      ),
-                    ),
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        IconButton(
-                          icon: const Icon(
-                            Icons.more_horiz_rounded,
-                            color: Color(0xFF64748B),
-                            size: 24,
+                // ============================================================
+                // 1. MESSAGES HEADER (Matching Web Screenshot)
+                // ============================================================
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(18, 16, 12, 12),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Title Row: "Messages" + "..." + Compose Icon
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text(
+                            'Messages',
+                            style: TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.w900,
+                              color: Color(0xFF0F172A),
+                              letterSpacing: -0.5,
+                            ),
                           ),
-                          splashRadius: 20,
-                          padding: const EdgeInsets.all(6),
-                          constraints: const BoxConstraints(),
-                          onPressed: _showMoreOptions,
-                        ),
-                        const SizedBox(width: 8),
-                        IconButton(
-                          icon: const Icon(
-                            Icons.edit_square,
-                            color: Color(0xFF64748B),
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              IconButton(
+                                icon: const Icon(
+                                  Icons.more_horiz_rounded,
+                                  color: Color(0xFF64748B),
+                                  size: 24,
+                                ),
+                                splashRadius: 20,
+                                padding: const EdgeInsets.all(6),
+                                constraints: const BoxConstraints(),
+                                onPressed: _showMoreOptions,
+                              ),
+                              const SizedBox(width: 8),
+                              IconButton(
+                                icon: const Icon(
+                                  Icons.edit_square,
+                                  color: Color(0xFF64748B),
+                                  size: 20,
+                                ),
+                                splashRadius: 20,
+                                padding: const EdgeInsets.all(6),
+                                constraints: const BoxConstraints(),
+                                onPressed: _startNewChat,
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+
+                      const SizedBox(height: 14),
+
+                      // Search People Input Box
+                      TextField(
+                        controller: _searchController,
+                        focusNode: _searchFocusNode,
+                        onChanged: (_) => setState(() {}),
+                        decoration: InputDecoration(
+                          hintText: 'Search people...',
+                          hintStyle: const TextStyle(
+                            color: Color(0xFF94A3B8),
+                            fontSize: 14,
+                            fontWeight: FontWeight.w400,
+                          ),
+                          prefixIcon: const Icon(
+                            Icons.search_rounded,
+                            color: Color(0xFF94A3B8),
                             size: 20,
                           ),
-                          splashRadius: 20,
-                          padding: const EdgeInsets.all(6),
-                          constraints: const BoxConstraints(),
-                          onPressed: _startNewChat,
+                          suffixIcon: _searchController.text.isNotEmpty
+                              ? IconButton(
+                                  icon: const Icon(
+                                    Icons.clear_rounded,
+                                    size: 18,
+                                    color: Color(0xFF94A3B8),
+                                  ),
+                                  onPressed: () {
+                                    _searchController.clear();
+                                    setState(() {});
+                                  },
+                                )
+                              : null,
+                          filled: true,
+                          fillColor: const Color(0xFFF8FAFC),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: const BorderSide(
+                              color: Color(0xFFE2E8F0),
+                            ),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: const BorderSide(
+                              color: Color(0xFFE2E8F0),
+                            ),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: const BorderSide(
+                              color: AppColors.primary,
+                              width: 1.5,
+                            ),
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 12,
+                          ),
                         ),
-                      ],
-                    ),
-                  ],
+                      ),
+                    ],
+                  ),
                 ),
 
-                const SizedBox(height: 14),
+                const Divider(height: 1, color: Color(0xFFF1F5F9)),
 
-                // Search People Input Box
-                TextField(
-                  controller: _searchController,
-                  focusNode: _searchFocusNode,
-                  onChanged: (_) => setState(() {}),
-                  decoration: InputDecoration(
-                    hintText: 'Search people...',
-                    hintStyle: const TextStyle(
-                      color: Color(0xFF94A3B8),
-                      fontSize: 14,
-                      fontWeight: FontWeight.w400,
+                // ============================================================
+                // 2. RECENT CHATS SECTION TITLE
+                // ============================================================
+                const Padding(
+                  padding: EdgeInsets.fromLTRB(18, 16, 18, 10),
+                  child: Text(
+                    'RECENT CHATS',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w800,
+                      color: Color(0xFF64748B),
+                      letterSpacing: 0.8,
                     ),
-                    prefixIcon: const Icon(
-                      Icons.search_rounded,
-                      color: Color(0xFF94A3B8),
-                      size: 20,
-                    ),
-                    suffixIcon: _searchController.text.isNotEmpty
-                        ? IconButton(
-                            icon: const Icon(
-                              Icons.clear_rounded,
-                              size: 18,
-                              color: Color(0xFF94A3B8),
+                  ),
+                ),
+
+                // ============================================================
+                // 3. CHATS LIST / EMPTY STATE
+                // ============================================================
+                Expanded(
+                  child: RefreshIndicator(
+                    color: AppColors.primary,
+                    onRefresh: () async {
+                      ref.invalidate(conversationsProvider);
+                      await ref.read(conversationsProvider.future);
+                    },
+                    child: conversationsAsync.when(
+                      data: (conversations) {
+                        final query = _searchController.text
+                            .trim()
+                            .toLowerCase();
+                        final filteredConvs = query.isEmpty
+                            ? conversations
+                            : conversations.where((conv) {
+                                final otherUserId = conv
+                                    .getOtherParticipant(currentUserId)
+                                    .toLowerCase();
+                                final lastMsg = conv.lastMessage.toLowerCase();
+                                final otherName =
+                                    ref
+                                        .read(
+                                          userLookupProvider(
+                                            conv.getOtherParticipant(
+                                              currentUserId,
+                                            ),
+                                          ),
+                                        )
+                                        .value
+                                        ?.name
+                                        .toLowerCase() ??
+                                    '';
+                                return otherName.contains(query) ||
+                                    otherUserId.contains(query) ||
+                                    lastMsg.contains(query);
+                              }).toList();
+
+                        if (filteredConvs.isEmpty) {
+                          return ListView(
+                            physics: const AlwaysScrollableScrollPhysics(),
+                            children: [
+                              SizedBox(
+                                height:
+                                    MediaQuery.of(context).size.height * 0.16,
+                              ),
+                              Center(
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 24,
+                                  ),
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Text(
+                                        query.isNotEmpty
+                                            ? 'No matching conversations'
+                                            : 'No conversations yet.',
+                                        style: const TextStyle(
+                                          fontSize: 14.5,
+                                          fontWeight: FontWeight.w600,
+                                          color: Color(0xFF64748B),
+                                        ),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        query.isNotEmpty
+                                            ? 'Try searching by a different name'
+                                            : 'Search above to start one.',
+                                        style: const TextStyle(
+                                          fontSize: 13,
+                                          color: Color(0xFF94A3B8),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ],
+                          );
+                        }
+
+                        return ListView.separated(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 8,
+                          ),
+                          itemCount: filteredConvs.length,
+                          separatorBuilder: (ctx, idx) => const Divider(
+                            height: 1,
+                            color: Color(0xFFF1F5F9),
+                          ),
+                          itemBuilder: (context, index) => FadeSlideIn(
+                            index: index,
+                            child: Builder(
+                              builder: (context) {
+                                final conv = filteredConvs[index];
+                                final otherUserId = conv.getOtherParticipant(
+                                  currentUserId,
+                                );
+                                final otherUser = ref
+                                    .watch(userLookupProvider(otherUserId))
+                                    .value;
+                                final displayName = displayNameFor(otherUser);
+                                final avatarUrl = otherUser?.profileImage ?? '';
+
+                                return InkWell(
+                                  onTap: () {
+                                    context.push(
+                                      '/chats/${conv.id}',
+                                      extra: {
+                                        'receiverId': otherUserId,
+                                        'title': displayName,
+                                      },
+                                    );
+                                  },
+                                  borderRadius: BorderRadius.circular(14),
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 8,
+                                      vertical: 12,
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        CircleAvatar(
+                                          backgroundColor:
+                                              AppColors.primaryLight,
+                                          radius: 24,
+                                          backgroundImage: avatarUrl.isNotEmpty
+                                              ? NetworkImage(avatarUrl)
+                                              : null,
+                                          child: avatarUrl.isNotEmpty
+                                              ? null
+                                              : Text(
+                                                  displayName.isNotEmpty
+                                                      ? displayName[0]
+                                                            .toUpperCase()
+                                                      : 'U',
+                                                  style: const TextStyle(
+                                                    color: AppColors.primary,
+                                                    fontWeight: FontWeight.w800,
+                                                    fontSize: 16,
+                                                  ),
+                                                ),
+                                        ),
+                                        const SizedBox(width: 14),
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment
+                                                        .spaceBetween,
+                                                children: [
+                                                  Expanded(
+                                                    child: Text(
+                                                      displayName,
+                                                      style: const TextStyle(
+                                                        fontSize: 15,
+                                                        fontWeight:
+                                                            FontWeight.w800,
+                                                        color: Color(
+                                                          0xFF0F172A,
+                                                        ),
+                                                      ),
+                                                      maxLines: 1,
+                                                      overflow:
+                                                          TextOverflow.ellipsis,
+                                                    ),
+                                                  ),
+                                                  Text(
+                                                    conv.formattedTime,
+                                                    style: const TextStyle(
+                                                      fontSize: 11,
+                                                      color: Color(0xFF94A3B8),
+                                                      fontWeight:
+                                                          FontWeight.w500,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                              const SizedBox(height: 4),
+                                              Text(
+                                                conv.lastMessage.isNotEmpty
+                                                    ? conv.lastMessage
+                                                    : 'Tap to start conversation',
+                                                style: const TextStyle(
+                                                  fontSize: 13,
+                                                  color: Color(0xFF64748B),
+                                                ),
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                );
+                              },
                             ),
-                            onPressed: () {
-                              _searchController.clear();
-                              setState(() {});
-                            },
-                          )
-                        : null,
-                    filled: true,
-                    fillColor: const Color(0xFFF8FAFC),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(14),
-                      borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(14),
-                      borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(14),
-                      borderSide: const BorderSide(
-                        color: AppColors.primary,
-                        width: 1.5,
+                          ),
+                        );
+                      },
+                      loading: () => ListView.builder(
+                        padding: const EdgeInsets.all(16),
+                        itemCount: 4,
+                        itemBuilder: (context, index) => Padding(
+                          padding: const EdgeInsets.only(bottom: 16),
+                          child: Row(
+                            children: [
+                              const ShimmerBox(
+                                width: 48,
+                                height: 48,
+                                borderRadius: 24,
+                              ),
+                              const SizedBox(width: 14),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: const [
+                                    ShimmerBox(
+                                      width: 140,
+                                      height: 16,
+                                      borderRadius: 4,
+                                    ),
+                                    SizedBox(height: 8),
+                                    ShimmerBox(
+                                      width: 200,
+                                      height: 12,
+                                      borderRadius: 4,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
-                    ),
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 12,
+                      error: (error, _) => NetworkStateView.fromError(
+                        error,
+                        onRetry: () => ref.invalidate(conversationsProvider),
+                      ),
                     ),
                   ),
                 ),
               ],
             ),
-          ),
-
-          const Divider(height: 1, color: Color(0xFFF1F5F9)),
-
-          // ============================================================
-          // 2. RECENT CHATS SECTION TITLE
-          // ============================================================
-          const Padding(
-            padding: EdgeInsets.fromLTRB(18, 16, 18, 10),
-            child: Text(
-              'RECENT CHATS',
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w800,
-                color: Color(0xFF64748B),
-                letterSpacing: 0.8,
-              ),
-            ),
-          ),
-
-          // ============================================================
-          // 3. CHATS LIST / EMPTY STATE
-          // ============================================================
-          Expanded(
-            child: RefreshIndicator(
-              color: AppColors.primary,
-              onRefresh: () async {
-                ref.invalidate(conversationsProvider);
-                await ref.read(conversationsProvider.future);
-              },
-              child: conversationsAsync.when(
-                data: (conversations) {
-                  final query = _searchController.text.trim().toLowerCase();
-                  final filteredConvs = query.isEmpty
-                      ? conversations
-                      : conversations.where((conv) {
-                          final otherUserId = conv
-                              .getOtherParticipant(currentUserId)
-                              .toLowerCase();
-                          final lastMsg = conv.lastMessage.toLowerCase();
-                          final otherName =
-                              ref
-                                  .read(
-                                    userLookupProvider(
-                                      conv.getOtherParticipant(currentUserId),
-                                    ),
-                                  )
-                                  .value
-                                  ?.name
-                                  .toLowerCase() ??
-                              '';
-                          return otherName.contains(query) ||
-                              otherUserId.contains(query) ||
-                              lastMsg.contains(query);
-                        }).toList();
-
-                  if (filteredConvs.isEmpty) {
-                    return ListView(
-                      physics: const AlwaysScrollableScrollPhysics(),
-                      children: [
-                        SizedBox(
-                          height: MediaQuery.of(context).size.height * 0.16,
-                        ),
-                        Center(
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 24),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text(
-                                  query.isNotEmpty
-                                      ? 'No matching conversations'
-                                      : 'No conversations yet.',
-                                  style: const TextStyle(
-                                    fontSize: 14.5,
-                                    fontWeight: FontWeight.w600,
-                                    color: Color(0xFF64748B),
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  query.isNotEmpty
-                                      ? 'Try searching by a different name'
-                                      : 'Search above to start one.',
-                                  style: const TextStyle(
-                                    fontSize: 13,
-                                    color: Color(0xFF94A3B8),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ],
-                    );
-                  }
-
-                  return ListView.separated(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 8,
-                    ),
-                    itemCount: filteredConvs.length,
-                    separatorBuilder: (ctx, idx) =>
-                        const Divider(height: 1, color: Color(0xFFF1F5F9)),
-                    itemBuilder: (context, index) => FadeSlideIn(
-                      index: index,
-                      child: Builder(
-                        builder: (context) {
-                          final conv = filteredConvs[index];
-                          final otherUserId = conv.getOtherParticipant(
-                            currentUserId,
-                          );
-                          final otherUser = ref
-                              .watch(userLookupProvider(otherUserId))
-                              .value;
-                          final displayName = displayNameFor(otherUser);
-                          final avatarUrl = otherUser?.profileImage ?? '';
-
-                          return InkWell(
-                            onTap: () {
-                              context.push(
-                                '/chats/${conv.id}',
-                                extra: {
-                                  'receiverId': otherUserId,
-                                  'title': displayName,
-                                },
-                              );
-                            },
-                            borderRadius: BorderRadius.circular(14),
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                                vertical: 12,
-                              ),
-                              child: Row(
-                                children: [
-                                  CircleAvatar(
-                                    backgroundColor: AppColors.primaryLight,
-                                    radius: 24,
-                                    backgroundImage: avatarUrl.isNotEmpty
-                                        ? NetworkImage(avatarUrl)
-                                        : null,
-                                    child: avatarUrl.isNotEmpty
-                                        ? null
-                                        : Text(
-                                            displayName.isNotEmpty
-                                                ? displayName[0].toUpperCase()
-                                                : 'U',
-                                            style: const TextStyle(
-                                              color: AppColors.primary,
-                                              fontWeight: FontWeight.w800,
-                                              fontSize: 16,
-                                            ),
-                                          ),
-                                  ),
-                                  const SizedBox(width: 14),
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceBetween,
-                                          children: [
-                                            Expanded(
-                                              child: Text(
-                                                displayName,
-                                                style: const TextStyle(
-                                                  fontSize: 15,
-                                                  fontWeight: FontWeight.w800,
-                                                  color: Color(0xFF0F172A),
-                                                ),
-                                                maxLines: 1,
-                                                overflow: TextOverflow.ellipsis,
-                                              ),
-                                            ),
-                                            Text(
-                                              conv.formattedTime,
-                                              style: const TextStyle(
-                                                fontSize: 11,
-                                                color: Color(0xFF94A3B8),
-                                                fontWeight: FontWeight.w500,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                        const SizedBox(height: 4),
-                                        Text(
-                                          conv.lastMessage.isNotEmpty
-                                              ? conv.lastMessage
-                                              : 'Tap to start conversation',
-                                          style: const TextStyle(
-                                            fontSize: 13,
-                                            color: Color(0xFF64748B),
-                                          ),
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-                  );
-                },
-                loading: () => ListView.builder(
-                  padding: const EdgeInsets.all(16),
-                  itemCount: 4,
-                  itemBuilder: (context, index) => Padding(
-                    padding: const EdgeInsets.only(bottom: 16),
-                    child: Row(
-                      children: [
-                        const ShimmerBox(
-                          width: 48,
-                          height: 48,
-                          borderRadius: 24,
-                        ),
-                        const SizedBox(width: 14),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: const [
-                              ShimmerBox(
-                                width: 140,
-                                height: 16,
-                                borderRadius: 4,
-                              ),
-                              SizedBox(height: 8),
-                              ShimmerBox(
-                                width: 200,
-                                height: 12,
-                                borderRadius: 4,
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                error: (error, stack) => Center(
-                  child: Padding(
-                    padding: const EdgeInsets.all(32),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Icon(
-                          Icons.error_outline_rounded,
-                          size: 48,
-                          color: AppColors.error,
-                        ),
-                        const SizedBox(height: 12),
-                        const Text(
-                          'Failed to load chats',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w800,
-                          ),
-                        ),
-                        const SizedBox(height: 6),
-                        Text(
-                          error.toString(),
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(
-                            fontSize: 12,
-                            color: AppColors.textSecondary,
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        ElevatedButton.icon(
-                          onPressed: () =>
-                              ref.invalidate(conversationsProvider),
-                          icon: const Icon(Icons.refresh_rounded, size: 18),
-                          label: const Text('Retry'),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
     );
   }
 }

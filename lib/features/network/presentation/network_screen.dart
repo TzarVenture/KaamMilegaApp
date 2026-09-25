@@ -7,6 +7,7 @@ import '../../../shared/widgets/shimmer_loading.dart';
 import '../providers/network_provider.dart';
 import '../repositories/network_repository.dart';
 import '../../../shared/widgets/fade_slide_in.dart';
+import '../../../shared/widgets/network_state_view.dart';
 
 /// Screen displaying Candidate Connections and Pending Invitations
 class NetworkScreen extends ConsumerStatefulWidget {
@@ -287,42 +288,9 @@ class _NetworkScreenState extends ConsumerState<NetworkScreen>
           );
         },
         loading: () => const MyApplicationsSkeleton(),
-        error: (err, _) => Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(32),
-            child: FadeSlideIn(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const CircleAvatar(
-                    radius: 40,
-                    backgroundColor: Color(0xFFFEF2F2),
-                    child: Icon(
-                      Icons.error_outline_rounded,
-                      color: AppColors.error,
-                      size: 36,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'Failed to load connections: $err',
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      fontSize: 13.5,
-                      color: AppColors.textSecondary,
-                      height: 1.45,
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  ElevatedButton.icon(
-                    onPressed: () => ref.invalidate(connectionsProvider),
-                    icon: const Icon(Icons.refresh_rounded, size: 18),
-                    label: const Text('Retry'),
-                  ),
-                ],
-              ),
-            ),
-          ),
+        error: (err, _) => NetworkStateView.fromError(
+          err,
+          onRetry: () => ref.invalidate(connectionsProvider),
         ),
       ),
     );
@@ -466,42 +434,9 @@ class _NetworkScreenState extends ConsumerState<NetworkScreen>
           );
         },
         loading: () => const MyApplicationsSkeleton(),
-        error: (err, _) => Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(32),
-            child: FadeSlideIn(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const CircleAvatar(
-                    radius: 40,
-                    backgroundColor: Color(0xFFFEF2F2),
-                    child: Icon(
-                      Icons.error_outline_rounded,
-                      color: AppColors.error,
-                      size: 36,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'Failed to load pending requests: $err',
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      fontSize: 13.5,
-                      color: AppColors.textSecondary,
-                      height: 1.45,
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  ElevatedButton.icon(
-                    onPressed: () => ref.invalidate(pendingInvitationsProvider),
-                    icon: const Icon(Icons.refresh_rounded, size: 18),
-                    label: const Text('Retry'),
-                  ),
-                ],
-              ),
-            ),
-          ),
+        error: (err, _) => NetworkStateView.fromError(
+          err,
+          onRetry: () => ref.invalidate(pendingInvitationsProvider),
         ),
       ),
     );

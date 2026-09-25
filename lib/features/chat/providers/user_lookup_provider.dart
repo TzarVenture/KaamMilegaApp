@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/constants/api_constants.dart';
 import '../../../core/network/api_client.dart';
+import '../../auth/providers/auth_provider.dart';
 import '../../auth/models/user_profile.dart';
 
 /// Looks up another user's public profile (GET /user/:id).
@@ -14,6 +15,9 @@ final userLookupProvider = FutureProvider.family<UserProfile?, String>((
   ref,
   userId,
 ) async {
+  // Cached per signed-in account: private / connections-only profiles
+  // depend on who is asking. No request without a session.
+  if (ref.watch(sessionUserIdProvider) == null) return null;
   if (userId.isEmpty) return null;
   try {
     final response = await ref

@@ -7,6 +7,7 @@ import '../../../shared/widgets/shimmer_loading.dart';
 import '../models/interview.dart';
 import '../repositories/interview_repository.dart';
 import '../../../shared/widgets/fade_slide_in.dart';
+import '../../../shared/widgets/network_state_view.dart';
 
 /// Candidate Interview Schedule & Tracking Screen
 class InterviewsScreen extends ConsumerWidget {
@@ -113,30 +114,9 @@ class InterviewsScreen extends ConsumerWidget {
             );
           },
           loading: () => const MyApplicationsSkeleton(),
-          error: (err, _) => Center(
-            child: Padding(
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(
-                    Icons.error_outline_rounded,
-                    color: AppColors.error,
-                    size: 48,
-                  ),
-                  const SizedBox(height: 12),
-                  Text(
-                    'Failed to load interviews: $err',
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 16),
-                  ElevatedButton(
-                    onPressed: () => ref.invalidate(myInterviewsProvider),
-                    child: const Text('Retry'),
-                  ),
-                ],
-              ),
-            ),
+          error: (err, _) => NetworkStateView.fromError(
+            err,
+            onRetry: () => ref.invalidate(myInterviewsProvider),
           ),
         ),
       ),
@@ -326,11 +306,11 @@ class _InterviewCard extends StatelessWidget {
                 const SizedBox(width: 4),
                 Flexible(
                   child: Text(
-                  'Interviewer: ${interview.recruiterName}',
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: AppColors.textSecondary,
-                  ),
+                    'Interviewer: ${interview.recruiterName}',
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: AppColors.textSecondary,
+                    ),
                   ),
                 ),
               ],

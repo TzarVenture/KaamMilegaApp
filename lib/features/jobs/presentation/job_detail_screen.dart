@@ -877,26 +877,26 @@ class _JobDetailScreenState extends ConsumerState<JobDetailScreen> {
                             const SizedBox(width: 10),
                             Flexible(
                               child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Text(
-                                  'CANDIDATES APPLIED',
-                                  style: TextStyle(
-                                    fontSize: 9,
-                                    fontWeight: FontWeight.w900,
-                                    color: Colors.white60,
-                                    letterSpacing: 0.5,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text(
+                                    'CANDIDATES APPLIED',
+                                    style: TextStyle(
+                                      fontSize: 9,
+                                      fontWeight: FontWeight.w900,
+                                      color: Colors.white60,
+                                      letterSpacing: 0.5,
+                                    ),
                                   ),
-                                ),
-                                Text(
-                                  '${job.applicantCount > 0 ? job.applicantCount : 90}+ People Interested',
-                                  style: const TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w800,
-                                    color: Colors.white,
+                                  Text(
+                                    '${job.applicantCount > 0 ? job.applicantCount : 90}+ People Interested',
+                                    style: const TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w800,
+                                      color: Colors.white,
+                                    ),
                                   ),
-                                ),
-                              ],
+                                ],
                               ),
                             ),
                           ],

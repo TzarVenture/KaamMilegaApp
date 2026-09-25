@@ -9,6 +9,7 @@ import '../features/auth/providers/auth_provider.dart';
 
 import '../features/applications/presentation/application_detail_screen.dart';
 import '../features/applications/presentation/my_applications_screen.dart';
+import '../features/auth/presentation/complete_profile_screen.dart';
 import '../features/auth/presentation/forgot_password_screen.dart';
 import '../features/auth/presentation/login_screen.dart';
 import '../features/auth/presentation/otp_screen.dart';
@@ -17,6 +18,7 @@ import '../features/chat/presentation/chat_detail_screen.dart';
 import '../features/company/presentation/company_screen.dart';
 import '../features/events/presentation/events_screen.dart';
 import '../features/experts/presentation/apply_expert_screen.dart';
+import '../features/experts/presentation/my_sessions_screen.dart';
 import '../features/interviews/presentation/interviews_screen.dart';
 import '../features/jobs/models/job.dart';
 import '../features/jobs/presentation/job_detail_screen.dart';
@@ -54,8 +56,8 @@ const Duration kMinSplashDuration = Duration(milliseconds: 1500);
 /// guest mode.
 final routerProvider = Provider<GoRouter>((ref) {
   // Only the fields that decide the screen trigger a router refresh.
-  (bool, bool, bool) routeKey(AuthState s) =>
-      (s.isChecking, s.isAuthenticated, s.isGuest);
+  (bool, bool, bool, bool) routeKey(AuthState s) =>
+      (s.isChecking, s.isAuthenticated, s.isGuest, s.needsProfileCompletion);
 
   final authChanges = ValueNotifier(routeKey(ref.read(authProvider)));
   ref.listen(
@@ -162,6 +164,11 @@ class AppRouter {
       builder: (context, state) => const RegisterScreen(),
     ),
     GoRoute(
+      path: AuthGuard.completeProfilePath,
+      name: 'complete_profile',
+      builder: (context, state) => const CompleteProfileScreen(),
+    ),
+    GoRoute(
       path: '/jobs/:id',
       name: 'job_detail',
       builder: (context, state) {
@@ -187,6 +194,11 @@ class AppRouter {
         final id = state.pathParameters['id'] ?? '';
         return ApplicationDetailScreen(applicationId: id);
       },
+    ),
+    GoRoute(
+      path: '/my-sessions',
+      name: 'my_sessions',
+      builder: (context, state) => const MySessionsScreen(),
     ),
     GoRoute(
       path: '/interviews',

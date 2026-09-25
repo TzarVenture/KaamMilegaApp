@@ -9,6 +9,7 @@ import '../../../core/storage/local_storage.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../models/wallet_summary.dart';
 import '../models/wallet_transaction.dart';
+import '../models/withdrawal.dart';
 import '../repositories/wallet_repository.dart';
 
 class WalletState {
@@ -288,12 +289,14 @@ class WalletNotifier extends Notifier<WalletState> {
     }
   }
 
-  /// Withdrawal (backend not built yet -> WalletApiException pending)
-  Future<Map<String, dynamic>?> withdraw({
-    required double amount,
-    required String destinationType,
-    required String destinationDetail,
-  }) async {
+  /// Payout of earnings to UPI or a bank account (POST /wallet/withdraw).
+  ///
+  /// Returns the server result only after the backend accepted the request
+  /// (it debits the earnings balance at that moment). Throws
+  /// [WalletApiException] with the backend's reason on validation errors,
+  /// or with `isOutcomeUnknown` when no answer came back; in both cases the
+  /// balances are reloaded from the server, never changed locally.
+  Future<WithdrawalResult> withdraw(WithdrawalRequest request) async {
     if (!ConnectivityService().isOnline) {
       throw const AppNetworkException(
         'Internet connection required to perform this transaction.',
@@ -304,18 +307,38 @@ class WalletNotifier extends Notifier<WalletState> {
         'A transaction is already being processed. Please wait.',
       );
     }
-    state = state.copyWith(isActionLoading: true, error: null);
+    state = state.copyWith(
+      isActionLoading: true,
+      cachedTimestamp: state.cachedTimestamp,
+    );
     try {
-      final res = await _repository.initiateWithdrawal(
-        amount: amount,
-        destinationType: destinationType,
-        destinationDetail: destinationDetail,
-      );
-      state = state.copyWith(isActionLoading: false);
-      await refreshWallet();
-      return res;
-    } catch (e) {
-      state = state.copyWith(isActionLoading: false, error: e.toString());
+      final result = await _repository.requestWithdrawal(request);
+      if (ref.mounted) {
+        state = state.copyWith(
+          isActionLoading: false,
+          summary: result.wallet,
+          cachedTimestamp: state.cachedTimestamp,
+        );
+        await refreshWallet();
+      }
+      return result;
+    } on WalletApiException catch (e) {
+      if (ref.mounted) {
+        state = state.copyWith(
+          isActionLoading: false,
+          cachedTimestamp: state.cachedTimestamp,
+        );
+        // The payout may have gone through: show the server's balances.
+        if (e.isOutcomeUnknown) await refreshWallet();
+      }
+      rethrow;
+    } catch (_) {
+      if (ref.mounted) {
+        state = state.copyWith(
+          isActionLoading: false,
+          cachedTimestamp: state.cachedTimestamp,
+        );
+      }
       rethrow;
     }
   }

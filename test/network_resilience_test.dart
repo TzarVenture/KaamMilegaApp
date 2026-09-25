@@ -8,6 +8,7 @@ import 'package:kaam_milega/core/network/connectivity_service.dart';
 import 'package:kaam_milega/core/network/network_status.dart';
 import 'package:kaam_milega/core/network/offline_banner.dart';
 import 'package:kaam_milega/core/storage/local_storage.dart';
+import 'package:kaam_milega/features/wallet/models/withdrawal.dart';
 import 'package:kaam_milega/features/wallet/providers/wallet_provider.dart';
 import 'package:kaam_milega/shared/widgets/network_state_view.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -216,9 +217,7 @@ void main() {
 
       await expectLater(
         notifier.withdraw(
-          amount: 500,
-          destinationType: 'UPI',
-          destinationDetail: 'user@upi',
+          const WithdrawalRequest.upi(amount: 500, upiId: 'user@upi'),
         ),
         throwsA(isA<AppNetworkException>()),
       );

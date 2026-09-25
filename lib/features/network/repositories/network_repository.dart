@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/constants/api_constants.dart';
 import '../../../core/network/api_client.dart';
 import '../models/connection_request.dart';
+import '../../../core/network/response_list.dart';
+import '../../../core/network/app_exception.dart';
 
 /// Repository handling Candidate Network & Connection APIs
 class NetworkRepository {
@@ -35,58 +37,36 @@ class NetworkRepository {
   }
 
   /// Fetch list of incoming pending connection invitations
+  /// Throws on failure so the screen can show an error, not "no requests".
   Future<List<ConnectionRequestItem>> getPendingInvitations() async {
-    try {
-      final response = await _client.get(ApiConstants.networkPending);
-      final dynamic body = response.data;
-      List<dynamic> list = [];
-
-      if (body is List) {
-        list = body;
-      } else if (body is Map<String, dynamic> && body['data'] is List) {
-        list = body['data'];
-      }
-
-      return list
-          .map((e) => ConnectionRequestItem.fromJson(e as Map<String, dynamic>))
-          .toList();
-    } catch (_) {
-      return [];
-    }
+    final response = await _client.get(ApiConstants.networkPending);
+    return readListResponse(response.data)
+        .map(ConnectionRequestItem.fromJson)
+        .toList();
   }
 
   /// Fetch list of connected user IDs
+  /// Throws on failure so the screen can show an error, not "no connections".
   Future<List<String>> getConnections() async {
-    try {
-      final response = await _client.get(ApiConstants.networkConnections);
-      final dynamic body = response.data;
-      List<dynamic> list = [];
-
-      if (body is List) {
-        list = body;
-      } else if (body is Map<String, dynamic> && body['connections'] is List) {
-        list = body['connections'];
-      }
-
-      return list.map((e) => e.toString()).toList();
-    } catch (_) {
-      return [];
-    }
+    final response = await _client.get(ApiConstants.networkConnections);
+    return readRawListResponse(
+      response.data,
+      keys: const ['connections', 'data'],
+    ).map((e) => e.toString()).toList();
   }
 
   /// Check connection status with a specific user
+  /// Throws on failure, so an unknown status is not shown as "not
+  /// connected".
   Future<String> getConnectionStatus(String otherUserId) async {
-    try {
-      final response = await _client.get(
-        '${ApiConstants.networkStatus}$otherUserId',
-      );
-      if (response.data is Map<String, dynamic>) {
-        return response.data['status']?.toString() ?? '';
-      }
-      return '';
-    } catch (_) {
-      return '';
-    }
+    final response = await _client.get(
+      '${ApiConstants.networkStatus}$otherUserId',
+    );
+    final data = response.data;
+    if (data is Map) return data['status']?.toString() ?? '';
+    throw const AppValidationException(
+      'Unexpected response from server. Please try again.',
+    );
   }
 
   /// Remove/Delete an existing connection

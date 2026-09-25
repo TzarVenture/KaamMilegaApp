@@ -108,8 +108,10 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
     }
 
     // OTP correct. The backend's is_registered decides the next screen:
-    // false means this number has no completed account yet.
-    if (result.isRegistered) {
+    // false means this number has no completed account yet, so the same
+    // account is completed on Complete Profile (POST /user/register). No
+    // second account is created. (The router also enforces this.)
+    if (!ref.read(authProvider).needsProfileCompletion) {
       final name = result.user?.name.trim() ?? '';
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -125,13 +127,13 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text(
-            'Phone verified. No account found for this number yet. Please complete your registration.',
+            'Phone verified. Please complete your profile to finish registration.',
           ),
           backgroundColor: Color(0xFF1E293B),
           behavior: SnackBarBehavior.floating,
         ),
       );
-      context.go('/register');
+      context.go(AuthGuard.completeProfilePath);
     }
   }
 
