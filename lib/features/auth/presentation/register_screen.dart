@@ -195,16 +195,16 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   // 1. HERO HEADLINE & TAGLINE
-                  RichText(
+                  Text.rich(
                     textAlign: TextAlign.center,
-                    text: const TextSpan(
+                    const TextSpan(
                       children: [
                         TextSpan(
                           text: 'Call Or ',
                           style: TextStyle(
                             fontSize: 22,
                             fontWeight: FontWeight.w900,
-                            color: Color(0xFF1A2B8C),
+                            color: AppColors.primary,
                             letterSpacing: -0.3,
                           ),
                         ),
@@ -213,7 +213,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                           style: TextStyle(
                             fontSize: 22,
                             fontWeight: FontWeight.w900,
-                            color: Color(0xFFEA580C),
+                            color: AppColors.accent,
                             letterSpacing: -0.3,
                           ),
                         ),
@@ -222,7 +222,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                           style: TextStyle(
                             fontSize: 22,
                             fontWeight: FontWeight.w900,
-                            color: Color(0xFF1A2B8C),
+                            color: AppColors.primary,
                             letterSpacing: -0.3,
                           ),
                         ),
@@ -231,7 +231,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   ),
                   const SizedBox(height: 6),
                   const Text(
-                    'Get Local Jobs In Your City! 👈',
+                    'Get Local Jobs In Your City!',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 14,
@@ -266,7 +266,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                           style: TextStyle(
                             fontSize: 22,
                             fontWeight: FontWeight.w900,
-                            color: Color(0xFF0F172A),
+                            color: AppColors.textPrimary,
                             letterSpacing: -0.5,
                           ),
                         ),
@@ -275,7 +275,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                           'Quick 10-second registration to start getting jobs',
                           style: TextStyle(
                             fontSize: 13,
-                            color: Color(0xFF64748B),
+                            color: AppColors.textSecondary,
                             fontWeight: FontWeight.w500,
                           ),
                         ),
@@ -289,7 +289,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                           style: TextStyle(
                             fontSize: 11,
                             fontWeight: FontWeight.w900,
-                            color: Color(0xFF64748B),
+                            color: AppColors.textSecondary,
                             letterSpacing: 0.5,
                           ),
                         ),
@@ -314,19 +314,19 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(16),
                               borderSide: const BorderSide(
-                                color: Color(0xFFE2E8F0),
+                                color: AppColors.border,
                               ),
                             ),
                             enabledBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(16),
                               borderSide: const BorderSide(
-                                color: Color(0xFFE2E8F0),
+                                color: AppColors.border,
                               ),
                             ),
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(16),
                               borderSide: const BorderSide(
-                                color: Color(0xFF9333EA),
+                                color: AppColors.blue,
                                 width: 1.5,
                               ),
                             ),
@@ -341,7 +341,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                           style: TextStyle(
                             fontSize: 11,
                             fontWeight: FontWeight.w900,
-                            color: Color(0xFF64748B),
+                            color: AppColors.textSecondary,
                             letterSpacing: 0.5,
                           ),
                         ),
@@ -366,19 +366,19 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(16),
                               borderSide: const BorderSide(
-                                color: Color(0xFFE2E8F0),
+                                color: AppColors.border,
                               ),
                             ),
                             enabledBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(16),
                               borderSide: const BorderSide(
-                                color: Color(0xFFE2E8F0),
+                                color: AppColors.border,
                               ),
                             ),
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(16),
                               borderSide: const BorderSide(
-                                color: Color(0xFF9333EA),
+                                color: AppColors.blue,
                                 width: 1.5,
                               ),
                             ),
@@ -393,7 +393,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                           style: TextStyle(
                             fontSize: 11,
                             fontWeight: FontWeight.w900,
-                            color: Color(0xFF64748B),
+                            color: AppColors.textSecondary,
                             letterSpacing: 0.5,
                           ),
                         ),
@@ -433,19 +433,19 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(16),
                               borderSide: const BorderSide(
-                                color: Color(0xFFE2E8F0),
+                                color: AppColors.border,
                               ),
                             ),
                             enabledBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(16),
                               borderSide: const BorderSide(
-                                color: Color(0xFFE2E8F0),
+                                color: AppColors.border,
                               ),
                             ),
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(16),
                               borderSide: const BorderSide(
-                                color: Color(0xFF9333EA),
+                                color: AppColors.blue,
                                 width: 1.5,
                               ),
                             ),
@@ -465,7 +465,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                                 0xFF1A2B8C,
                               ), // Official KaamMilega Deep Blue
                               // Stay blue while loading.
-                              disabledBackgroundColor: const Color(0xFF1A2B8C),
+                              disabledBackgroundColor: AppColors.primary,
                               elevation: 0,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(24),
@@ -506,7 +506,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                                 'Already have an account? ',
                                 style: TextStyle(
                                   fontSize: 13,
-                                  color: Color(0xFF64748B),
+                                  color: AppColors.textSecondary,
                                 ),
                               ),
                               GestureDetector(
@@ -522,7 +522,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                                   style: TextStyle(
                                     fontSize: 13,
                                     fontWeight: FontWeight.w800,
-                                    color: Color(0xFF1A2B8C),
+                                    color: AppColors.primary,
                                   ),
                                 ),
                               ),

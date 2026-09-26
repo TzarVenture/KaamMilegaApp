@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -84,6 +85,26 @@ class _FakeJobs extends JobRepository {
 
   @override
   Future<Set<String>> getBookmarkedJobIds() async => {'saved-by-A'};
+}
+
+class _Mock401Adapter implements HttpClientAdapter {
+  @override
+  Future<ResponseBody> fetch(
+    RequestOptions options,
+    Stream<dynamic>? requestStream,
+    Future<void>? cancelFuture,
+  ) async {
+    return ResponseBody.fromString(
+      '{"error": "Unauthorized"}',
+      401,
+      headers: {
+        Headers.contentTypeHeader: [Headers.jsonContentType],
+      },
+    );
+  }
+
+  @override
+  void close({bool force = false}) {}
 }
 
 void main() {
@@ -236,5 +257,45 @@ void main() {
     expect(find.byType(LoginRequiredView), findsOneWidget);
     expect(find.text('Sign in to view your chats'), findsOneWidget);
     expect(chats.calls, 0);
+  });
+
+  test('sessionExpired resets AuthState with expired message and clears sessionUserId', () {
+    final auth = _FakeAuth();
+    final container = ProviderContainer(
+      overrides: [authProvider.overrideWith(() => auth)],
+    );
+    addTearDown(container.dispose);
+
+    container.read(sessionUserIdProvider);
+    auth.signInAs('user123');
+    expect(container.read(sessionUserIdProvider), 'user123');
+    expect(container.read(authProvider).isAuthenticated, isTrue);
+
+    auth.sessionExpired();
+    expect(container.read(sessionUserIdProvider), isNull);
+    expect(container.read(authProvider).isAuthenticated, isFalse);
+    expect(
+      container.read(authProvider).error,
+      'Your session has expired. Please log in again.',
+    );
+  });
+
+  test('ApiClient triggers onUnauthenticated on 401 status code', () async {
+    var callbackInvoked = false;
+    final dio = Dio(BaseOptions(baseUrl: 'https://example.invalid/api'));
+    dio.httpClientAdapter = _Mock401Adapter();
+
+    final client = ApiClient(
+      dio: dio,
+      onUnauthenticated: () {
+        callbackInvoked = true;
+      },
+    );
+
+    try {
+      await client.get('/test');
+    } catch (_) {}
+
+    expect(callbackInvoked, isTrue);
   });
 }

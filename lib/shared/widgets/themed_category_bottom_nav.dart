@@ -116,12 +116,12 @@ class ThemedCategoryBottomNav extends ConsumerWidget {
                 leading: Container(
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFEFF6FF),
+                    color: AppColors.primaryLight,
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: const Icon(
                     Icons.event_available_rounded,
-                    color: Color(0xFF2563EB),
+                    color: AppColors.blue,
                   ),
                 ),
                 title: const Text(
@@ -256,7 +256,7 @@ class ThemedCategoryBottomNav extends ConsumerWidget {
   }) {
     final isSelected = activeIndex == index;
     final primaryColor = activeColor;
-    final inactiveColor = const Color(0xFF64748B);
+    final inactiveColor = AppColors.textSecondary;
 
     return InkWell(
       onTap: onTap,

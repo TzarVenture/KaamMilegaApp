@@ -23,7 +23,7 @@ class AppBranding {
   // Trust Positioning Badges
   static const List<String> trustSignals = [
     'Verified & Trusted',
-    'AI Powered Matching',
+    'Automated Skill Matching',
     'Secure Payments',
     '24x7 Support Helpline',
     'One Time Access (₹99)',

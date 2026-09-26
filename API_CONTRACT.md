@@ -3,6 +3,7 @@
 > **Last Audited:** 25 September 2026
 > **Verified against:** Flutter code (branch `feat/ui-ux-polish` @ `eaf5dc8` + uncommitted changes) and `km-backend` `main` @ `b5a2956` (`internal/features/<name>/{api,controller,domain,service}.go`), read-only.
 > **Updated:** 25 September 2026 after fix Batches 1–7 — new/changed calls re-verified on `KaamMilega` monorepo `main` @ `51c8e10` (`km-backend/`).
+> **Re-checked:** 26 September 2026 — backend `main` still @ `51c8e10`. Changes since `b5a2956` (aa366a7, c829a60): booking review endpoint (integrated), expert subscription (§9b, not integrated), wallet category `subscription`.
 > **Base URL:** `https://api.kaammilega.com/api` (`ApiConstants.baseUrl`). Paths below omit `/api`.
 > **Rule:** Only verified fields are listed. Anything else: **"Not verified — do not assume."** Re-check `domain.go` + `api.go` before adding or changing a call; the backend changes often.
 
@@ -222,8 +223,20 @@ Errors: 401, 500 with `error`. GET errors are rethrown (Batch 5). **Status:** Ac
 
 ### GET `/mentorships/bookings/my`
 - **Auth:** Required · **Response:** `[Booking]` (Go `null` = none): `{id, mentorship_id, expert_id, user_id, scheduled_at, status:"pending"|"confirmed"|"cancelled"|"completed", amount, payment_status:"pending"|"paid"|"refunded", payment_method?:"wallet"|"razorpay", meeting_link?, notes?, …, mentorship_title?, expert_name?, expert_headline?, expert_image?}` (`mentorship/domain.go` `Booking`, enriched in `service.go`).
-- **Flutter:** `ExpertRepository.getMyBookings` (newest first) → `BookingItem` (`experts/models/booking.dart`) ← `myBookingsProvider` (autoDispose) ← `my_sessions_screen.dart` (route `/my-sessions`). Join button only for `confirmed` with a `meeting_link`. · **Status:** Active (Batch 7c)
+- **Flutter:** `ExpertRepository.getMyBookings` (newest first) → `BookingItem` (`experts/models/booking.dart`) ← `myBookingsProvider` (autoDispose) ← `my_sessions_screen.dart` (route `/my-sessions`). Join button only for `confirmed` with a `meeting_link`. Also reads `rating` (0 = not rated) and `review`. · **Status:** Active (Batch 7c)
+
+### POST `/mentorships/bookings/:id/review`
+- **Auth:** Required · **Request:** `{rating: 1–5, review}` · **Response:** `{"message":"Review submitted successfully"}`; 400 `error` text: `"booking not found"`, `"unauthorized to review this booking"`, `"can only review completed sessions"`, `"rating must be between 1 and 5"`.
+- **Rules (backend `service.go`):** only the user who booked; only `status == "completed"`; a new review replaces the old one; the expert's overall rating is **not** recalculated.
+- **Flutter:** `ExpertRepository.submitBookingReview` (no request without an id or with a rating outside 1–5) ← `RateSessionSheet` in `my_sessions_screen.dart`: "Rate session" only for completed, unrated sessions; list reloaded after success (stars shown from the server). · **Status:** Active (26 Sep)
 - `GET /mentorships/expert/:expert_id/availability` — available, not integrated.
+
+## 9b. Expert Subscription (`subscription/api.go`) — available, not integrated
+
+Added in backend `c829a60` (F75 "Pro Expert"). Expert-side payment feature; **not in mobile scope until requested**.
+- `GET /subscriptions/expert/plans` (Public) → plans `{plan_type:"monthly"|"yearly", name, price (499 / 4499), duration_days, savings_percent, description, perks[]}`.
+- Required: `GET /subscriptions/expert/my` → `{is_active, subscription?, days_remaining, plan_type?, expires_at?}`; `POST /subscriptions/expert/create-order` `{plan_type}` → `{order_id, amount, amount_paise, currency, key_id, plan_type, plan_name}`; `POST /subscriptions/expert/verify-payment` `{plan_type, razorpay_order_id, razorpay_payment_id, razorpay_signature}`; `POST /subscriptions/expert/wallet-checkout` `{plan_type}`.
+- Response shapes of verify-payment / wallet-checkout **not verified — do not assume.**
 
 ## 10. Skills Marketplace (`skill/api.go`, Public)
 
@@ -238,6 +251,7 @@ Errors: 401, 500 with `error`. GET errors are rethrown (Batch 5). **Status:** Ac
 
 ### GET `/wallet/transactions?page&limit`
 - **Response:** `{transactions:[{id, wallet_id, type:"credit"|"debit", target_balance, category, amount, balance_after, status, reference_id?, description, metadata?, created_at}], total, page, limit, total_pages}`. Backend also filters by `type`, `category`, `target_balance`. App requests `limit=50` (backend default 20).
+- **Categories** (`wallet/domain.go`): `topup, pass_purchase, session_booking, session_payout, gig_payout, withdrawal, bonus_reward, refund, subscription`. App titles via `WalletTransaction.titleForCategory` (`subscription` → "Expert subscription"; unknown → "Transaction").
 - **Flutter:** `WalletRepository.getTransactions` ← `walletProvider` · **Status:** Active
 
 ### POST `/wallet/topup/create-order` → Razorpay → POST `/wallet/topup/verify`
@@ -264,7 +278,7 @@ Errors: 401, 500 with `error`. GET errors are rethrown (Batch 5). **Status:** Ac
 
 ## 14. Backend endpoints relevant to mobile, not integrated
 
-`GET /user/viewers` (**do not integrate** — returns private user fields, B-08), `PATCH /user/username`, `GET /user/username/check`, `GET /settings/me`, `PUT /settings/me`, `GET /events/:id`, `GET /mentorships/expert/:expert_id/availability`, `GET /companies/top`, `GET /companies`, `GET /questions`, `GET /platform/stats`, `GET /platform/live-activity`, `GET /files/download/:id`. Response shapes of these were **not verified** in this audit unless stated above.
+`GET /user/viewers` (**do not integrate** — returns private user fields, B-08), `PATCH /user/username`, `GET /user/username/check`, `GET /settings/me`, `PUT /settings/me`, `GET /events/:id`, `GET /mentorships/expert/:expert_id/availability`, `/subscriptions/expert/*` (§9b), `GET /companies/top`, `GET /companies`, `GET /questions`, `GET /platform/stats`, `GET /platform/live-activity`, `GET /files/download/:id`. Response shapes of these were **not verified** in this audit unless stated above.
 
 Out of mobile scope (do not integrate without an explicit request): `/admin/*`, `POST/PATCH/DELETE /jobs`, `/jobs/my`, `/applications/job/:jobId`, `/applications/recruiter/all`, `PATCH /applications/:id/status`, `POST /interviews`, mentorship expert management routes, `/cities` mutations, `/skills` mutations, `/sms/send`, `POST /settings/:key`.
 

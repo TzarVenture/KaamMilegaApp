@@ -88,12 +88,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
-                  '₹99 One-Time Access',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w900,
-                    color: AppColors.textPrimary,
+                const Flexible(
+                  child: Text(
+                    '₹99 One-Time Access',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w900,
+                      color: AppColors.textPrimary,
+                    ),
                   ),
                 ),
                 Container(
@@ -139,8 +141,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               'Directly connect and chat with verified providers',
             ),
             _buildBenefitRow(
-              Icons.auto_awesome_rounded,
-              'AI Profile Resume and Score Enhancement',
+              Icons.assignment_ind_rounded,
+              'Profile and resume strength review',
             ),
             _buildBenefitRow(
               Icons.bolt_rounded,
@@ -156,12 +158,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               height: 52,
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
-                  colors: [Color(0xFFFF7A00), Color(0xFFFF0066)],
+                  colors: [AppColors.accent, AppColors.accentBright],
                 ),
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFFFF0066).withValues(alpha: 0.35),
+                    color: AppColors.accent.withValues(alpha: 0.35),
                     blurRadius: 12,
                     offset: const Offset(0, 4),
                   ),
@@ -234,6 +236,20 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final jobsState = ref.watch(jobsProvider);
+    // Home lists use their own city-only request (homeJobsProvider). If it
+    // fails (e.g. offline), the Jobs tab's list is used only while that list
+    // is not narrowed by a search or filter.
+    final homeJobsAsync = ref.watch(homeJobsProvider);
+    final jobsTabUnfiltered =
+        jobsState.filter.searchQuery.isEmpty &&
+        jobsState.filter.activeFilterCount == 0 &&
+        jobsState.filter.page == 1;
+    final homeJobs =
+        homeJobsAsync.value ??
+        (homeJobsAsync.hasError && jobsTabUnfiltered
+            ? jobsState.jobs
+            : const <Job>[]);
+    final homeJobsLoading = homeJobsAsync.isLoading && homeJobs.isEmpty;
     final currentCity = jobsState.filter.city.isNotEmpty
         ? jobsState.filter.city
         : 'Delhi, India';
@@ -285,8 +301,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     FadeSlideIn(
                       index: 4,
                       child: _buildRecommendedSection(
-                        jobsState.jobs,
-                        jobsState.isLoading,
+                        homeJobs,
+                        homeJobsLoading,
                       ),
                     ),
 
@@ -300,7 +316,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     // 7. TOP PICKS SECTION (Vertical List Card)
                     FadeSlideIn(
                       index: 6,
-                      child: _buildTopPicksSection(jobsState.jobs),
+                      child: _buildTopPicksSection(homeJobs),
                     ),
                   ],
                 ),
@@ -464,14 +480,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 style: const TextStyle(
                   fontSize: 13.5,
                   fontWeight: FontWeight.w800,
-                  color: Color(0xFF0F172A),
+                  color: AppColors.textPrimary,
                 ),
               ),
             ),
             const SizedBox(width: 2),
             const Icon(
               Icons.keyboard_arrow_down_rounded,
-              color: Color(0xFF0F172A),
+              color: AppColors.textPrimary,
               size: 18,
             ),
           ],
@@ -538,8 +554,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  RichText(
-                    text: const TextSpan(
+                  Text.rich(
+                    const TextSpan(
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w900,
@@ -551,8 +567,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           style: TextStyle(color: Colors.white),
                         ),
                         TextSpan(
-                          text: 'Milega™',
-                          style: TextStyle(color: Color(0xFFF97316)),
+                          text: 'Milega',
+                          style: TextStyle(color: AppColors.brandOrange),
+                        ),
+                        TextSpan(
+                          text: '™',
+                          style: TextStyle(color: Colors.white),
                         ),
                       ],
                     ),
@@ -562,7 +582,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     'Work in Minutes.\nAnywhere, Anytime!',
                     style: TextStyle(
                       fontSize: 11,
-                      color: Color(0xFFE2E8F0),
+                      color: AppColors.border,
                       fontWeight: FontWeight.w500,
                       height: 1.2,
                     ),
@@ -592,7 +612,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       style: TextStyle(
                         fontSize: 8.5,
                         fontWeight: FontWeight.w900,
-                        color: Color(0xFF0F172A),
+                        color: AppColors.textPrimary,
                       ),
                     ),
                   ),
@@ -600,8 +620,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      RichText(
-                        text: const TextSpan(
+                      Text.rich(
+                        const TextSpan(
                           children: [
                             TextSpan(
                               text: '₹99 ',
@@ -626,7 +646,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         width: 22,
                         height: 22,
                         decoration: const BoxDecoration(
-                          color: Color(0xFFF97316),
+                          color: AppColors.accent,
                           shape: BoxShape.circle,
                         ),
                         child: const Icon(
@@ -675,15 +695,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       {
         'label': 'Experts',
         'icon': Icons.person_search_outlined,
-        'bg': const Color(0xFFF3E8FF),
+        'bg': AppColors.moduleExpertsLight,
         'color': AppColors.moduleExperts,
         'onTap': () => context.push('/experts'),
       },
       {
         'label': 'Services',
         'icon': Icons.home_repair_service_outlined,
-        'bg': const Color(0xFFFFE4E6),
-        'color': const Color(0xFFE11D48),
+        'bg': AppColors.moduleServicesLight,
+        'color': AppColors.moduleServices,
         'onTap': () => context.push('/services'),
       },
       {
@@ -723,7 +743,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   style: const TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w700,
-                    color: Color(0xFF0F172A),
+                    color: AppColors.textPrimary,
                   ),
                 ),
               ],
@@ -743,7 +763,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         'name': 'Delivery',
         'icon': Icons.electric_moped_rounded,
         'bg': const Color(0xFFFFF7ED),
-        'color': const Color(0xFFEA580C),
+        'color': AppColors.accent,
       },
       {
         'name': 'Electrician',
@@ -754,8 +774,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       {
         'name': 'AC Repair',
         'icon': Icons.ac_unit_rounded,
-        'bg': const Color(0xFFEFF6FF),
-        'color': const Color(0xFF2563EB),
+        'bg': AppColors.primaryLight,
+        'color': AppColors.blue,
       },
       {
         'name': 'House Help',
@@ -766,8 +786,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       {
         'name': 'Data Entry',
         'icon': Icons.assignment_rounded,
-        'bg': const Color(0xFFFAF5FF),
-        'color': const Color(0xFF9333EA),
+        'bg': AppColors.primaryLight,
+        'color': AppColors.blue,
       },
       {
         'name': 'Driver',
@@ -785,12 +805,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
-                'Popular Categories',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w900,
-                  color: Color(0xFF0F172A),
+              const Flexible(
+                child: Text(
+                  'Popular Categories',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w900,
+                    color: AppColors.textPrimary,
+                  ),
                 ),
               ),
               GestureDetector(
@@ -800,7 +822,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w700,
-                    color: Color(0xFF2563EB),
+                    color: AppColors.blue,
                   ),
                 ),
               ),
@@ -841,7 +863,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       style: const TextStyle(
                         fontSize: 10.5,
                         fontWeight: FontWeight.w600,
-                        color: Color(0xFF0F172A),
+                        color: AppColors.textPrimary,
                       ),
                     ),
                   ],
@@ -939,7 +961,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       return const Color(0xFFEF4444);
     }
     if (t.contains('design') || t.contains('graphic')) {
-      return const Color(0xFF2563EB);
+      return AppColors.blue;
     }
     if (t.contains('dev') || t.contains('tech') || t.contains('software')) {
       return const Color(0xFF7C3AED);
@@ -956,12 +978,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       return const Color(0xFF0D9488);
     }
     if (t.contains('sale') || t.contains('market') || t.contains('tele')) {
-      return const Color(0xFFEA580C);
+      return AppColors.accent;
     }
     if (t.contains('account') || t.contains('finance') || t.contains('data')) {
-      return const Color(0xFF9333EA);
+      return AppColors.blue;
     }
-    return const Color(0xFF2563EB);
+    return AppColors.blue;
   }
 
   // ==========================================
@@ -969,8 +991,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   // ==========================================
   /// Height of the horizontal "Recommended" row. Grows with the phone's
   /// font size so card text is never cut off (no cap on text scaling).
+  // 160: room for Poppins with the brand line height (145 overflowed by 3 px).
   double _recommendedRowHeight(BuildContext context) =>
-      MediaQuery.textScalerOf(context).scale(145).clamp(145.0, 260.0);
+      MediaQuery.textScalerOf(context).scale(160).clamp(160.0, 280.0);
 
   Widget _buildRecommendedSection(List<Job> jobs, bool isLoading) {
     if (isLoading && jobs.isEmpty) {
@@ -982,12 +1005,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: const [
-                Text(
-                  'Recommended for You',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w900,
-                    color: Color(0xFF0F172A),
+                Flexible(
+                  child: Text(
+                    'Recommended for You',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w900,
+                      color: AppColors.textPrimary,
+                    ),
                   ),
                 ),
                 Text(
@@ -995,7 +1020,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w700,
-                    color: Color(0xFF2563EB),
+                    color: AppColors.blue,
                   ),
                 ),
               ],
@@ -1031,12 +1056,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
-                'Recommended for You',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w900,
-                  color: Color(0xFF0F172A),
+              const Flexible(
+                child: Text(
+                  'Recommended for You',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w900,
+                    color: AppColors.textPrimary,
+                  ),
                 ),
               ),
               GestureDetector(
@@ -1046,7 +1073,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w700,
-                    color: Color(0xFF2563EB),
+                    color: AppColors.blue,
                   ),
                 ),
               ),
@@ -1084,7 +1111,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
+        border: Border.all(color: AppColors.border),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.02),
@@ -1193,7 +1220,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: const Color(0xFFE2E8F0)),
+            border: Border.all(color: AppColors.border),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withValues(alpha: 0.03),
@@ -1227,7 +1254,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           style: const TextStyle(
                             fontSize: 13.5,
                             fontWeight: FontWeight.w800,
-                            color: Color(0xFF0F172A),
+                            color: AppColors.textPrimary,
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -1236,7 +1263,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           job.company,
                           style: const TextStyle(
                             fontSize: 11,
-                            color: Color(0xFF64748B),
+                            color: AppColors.textSecondary,
                             fontWeight: FontWeight.w500,
                           ),
                           maxLines: 1,
@@ -1250,22 +1277,22 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  RichText(
-                    text: TextSpan(
+                  Text.rich(
+                    TextSpan(
                       children: [
                         TextSpan(
                           text: job.formattedSalary,
                           style: const TextStyle(
                             fontSize: 12.5,
                             fontWeight: FontWeight.w800,
-                            color: Color(0xFF0F172A),
+                            color: AppColors.textPrimary,
                           ),
                         ),
                         const TextSpan(
                           text: ' /month',
                           style: TextStyle(
                             fontSize: 10,
-                            color: Color(0xFF64748B),
+                            color: AppColors.textSecondary,
                           ),
                         ),
                       ],
@@ -1276,7 +1303,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     job.formattedLocation,
                     style: const TextStyle(
                       fontSize: 11,
-                      color: Color(0xFF64748B),
+                      color: AppColors.textSecondary,
                       fontWeight: FontWeight.w500,
                     ),
                     maxLines: 1,
@@ -1293,7 +1320,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     children: [
                       const Icon(
                         Icons.work_outline_rounded,
-                        color: Color(0xFF64748B),
+                        color: AppColors.textSecondary,
                         size: 15,
                       ),
                       const SizedBox(width: 3),
@@ -1302,7 +1329,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         style: const TextStyle(
                           fontSize: 11.5,
                           fontWeight: FontWeight.w800,
-                          color: Color(0xFF0F172A),
+                          color: AppColors.textPrimary,
                         ),
                       ),
                     ],
@@ -1374,7 +1401,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         'icon': Icons.people_outline_rounded,
         'label': 'Connect with\nProviders',
       },
-      {'icon': Icons.auto_awesome_rounded, 'label': 'AI Profile\nBoost'},
+      {'icon': Icons.trending_up_rounded, 'label': 'Profile\nBoost'},
       {'icon': Icons.security_outlined, 'label': 'InstantMilega™\nAccess'},
       {'icon': Icons.timer_outlined, 'label': 'Earn More\nRewards'},
     ];
@@ -1396,9 +1423,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       child: Column(
         children: [
           // Title
-          RichText(
+          Text.rich(
             textAlign: TextAlign.center,
-            text: const TextSpan(
+            const TextSpan(
               style: TextStyle(
                 fontSize: 15,
                 fontWeight: FontWeight.w800,
@@ -1461,12 +1488,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               height: 44,
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
-                  colors: [Color(0xFFFF7A00), Color(0xFFFF0066)],
+                  colors: [AppColors.accent, AppColors.accentBright],
                 ),
                 borderRadius: BorderRadius.circular(24),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFFFF0066).withValues(alpha: 0.35),
+                    color: AppColors.accentBright.withValues(alpha: 0.35),
                     blurRadius: 10,
                     offset: const Offset(0, 3),
                   ),
@@ -1511,12 +1538,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
-                'Top Picks',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w900,
-                  color: Color(0xFF0F172A),
+              const Flexible(
+                child: Text(
+                  'Top Picks',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w900,
+                    color: AppColors.textPrimary,
+                  ),
                 ),
               ),
               GestureDetector(
@@ -1526,7 +1555,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w700,
-                    color: Color(0xFF2563EB),
+                    color: AppColors.blue,
                   ),
                 ),
               ),
@@ -1554,7 +1583,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: const Color(0xFFE2E8F0)),
+                    border: Border.all(color: AppColors.border),
                     boxShadow: [
                       BoxShadow(
                         color: Colors.black.withValues(alpha: 0.03),
@@ -1590,7 +1619,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               style: const TextStyle(
                                 fontSize: 14.5,
                                 fontWeight: FontWeight.w900,
-                                color: Color(0xFF0F172A),
+                                color: AppColors.textPrimary,
                               ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
@@ -1600,7 +1629,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               job.company,
                               style: const TextStyle(
                                 fontSize: 11.5,
-                                color: Color(0xFF64748B),
+                                color: AppColors.textSecondary,
                                 fontWeight: FontWeight.w500,
                               ),
                               maxLines: 1,
@@ -1612,7 +1641,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               style: const TextStyle(
                                 fontSize: 12,
                                 fontWeight: FontWeight.w800,
-                                color: Color(0xFF0F172A),
+                                color: AppColors.textPrimary,
                               ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
@@ -1622,7 +1651,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               job.formattedLocation,
                               style: const TextStyle(
                                 fontSize: 11,
-                                color: Color(0xFF64748B),
+                                color: AppColors.textSecondary,
                               ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,

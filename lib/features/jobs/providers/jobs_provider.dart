@@ -357,6 +357,23 @@ final jobsProvider = NotifierProvider<JobsNotifier, JobsState>(
   JobsNotifier.new,
 );
 
+/// Latest jobs for the Home screen (Recommended for You, Top Picks).
+///
+/// Only the selected city is applied. The Jobs tab's search and filters
+/// (e.g. a Popular Categories tap) never change what Home shows, so going
+/// back to Home does not leave it empty. GET /jobs, first page.
+final homeJobsProvider = FutureProvider<List<Job>>((ref) async {
+  final city = ref.watch(jobsProvider.select((s) => s.filter.city));
+  // Reload when the connection comes back (like the Jobs tab does).
+  ref.listen<bool>(isOnlineProvider, (previous, next) {
+    if (previous == false && next) ref.invalidateSelf();
+  });
+  final response = await ref
+      .watch(jobRepositoryProvider)
+      .getJobs(JobFilter(city: city));
+  return response.jobs;
+});
+
 /// One saved (bookmarked) job for the Saved Jobs screen.
 class SavedJobEntry {
   final String id;

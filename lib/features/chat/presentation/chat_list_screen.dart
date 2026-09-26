@@ -66,7 +66,7 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w800,
-                  color: Color(0xFF0F172A),
+                  color: AppColors.textPrimary,
                 ),
               ),
               const SizedBox(height: 12),
@@ -91,7 +91,7 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
               ListTile(
                 leading: const Icon(
                   Icons.refresh_rounded,
-                  color: Color(0xFF64748B),
+                  color: AppColors.textSecondary,
                 ),
                 title: const Text(
                   'Refresh Conversations',
@@ -256,13 +256,15 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          const Text(
-                            'Messages',
-                            style: TextStyle(
-                              fontSize: 24,
-                              fontWeight: FontWeight.w900,
-                              color: Color(0xFF0F172A),
-                              letterSpacing: -0.5,
+                          const Flexible(
+                            child: Text(
+                              'Messages',
+                              style: TextStyle(
+                                fontSize: 24,
+                                fontWeight: FontWeight.w900,
+                                color: AppColors.textPrimary,
+                                letterSpacing: -0.5,
+                              ),
                             ),
                           ),
                           Row(
@@ -271,7 +273,7 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                               IconButton(
                                 icon: const Icon(
                                   Icons.more_horiz_rounded,
-                                  color: Color(0xFF64748B),
+                                  color: AppColors.textSecondary,
                                   size: 24,
                                 ),
                                 splashRadius: 20,
@@ -283,7 +285,7 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                               IconButton(
                                 icon: const Icon(
                                   Icons.edit_square,
-                                  color: Color(0xFF64748B),
+                                  color: AppColors.textSecondary,
                                   size: 20,
                                 ),
                                 splashRadius: 20,
@@ -329,17 +331,17 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                                 )
                               : null,
                           filled: true,
-                          fillColor: const Color(0xFFF8FAFC),
+                          fillColor: AppColors.background,
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(14),
                             borderSide: const BorderSide(
-                              color: Color(0xFFE2E8F0),
+                              color: AppColors.border,
                             ),
                           ),
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(14),
                             borderSide: const BorderSide(
-                              color: Color(0xFFE2E8F0),
+                              color: AppColors.border,
                             ),
                           ),
                           focusedBorder: OutlineInputBorder(
@@ -371,7 +373,7 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w800,
-                      color: Color(0xFF64748B),
+                      color: AppColors.textSecondary,
                       letterSpacing: 0.8,
                     ),
                   ),
@@ -440,7 +442,7 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                                         style: const TextStyle(
                                           fontSize: 14.5,
                                           fontWeight: FontWeight.w600,
-                                          color: Color(0xFF64748B),
+                                          color: AppColors.textSecondary,
                                         ),
                                       ),
                                       const SizedBox(height: 4),
@@ -569,7 +571,8 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                                                     : 'Tap to start conversation',
                                                 style: const TextStyle(
                                                   fontSize: 13,
-                                                  color: Color(0xFF64748B),
+                                                  color:
+                                                      AppColors.textSecondary,
                                                 ),
                                                 maxLines: 1,
                                                 overflow: TextOverflow.ellipsis,

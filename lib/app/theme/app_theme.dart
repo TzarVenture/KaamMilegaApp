@@ -21,8 +21,17 @@ class AppTheme {
     });
   }
 
+  static bool _outlineActive(Set<WidgetState> states) =>
+      states.contains(WidgetState.hovered) ||
+      states.contains(WidgetState.focused) ||
+      states.contains(WidgetState.pressed);
+
   static ThemeData lightTheme = ThemeData(
     useMaterial3: true,
+
+    // Brand typography: Poppins, with Noto Sans Devanagari for Hindi text.
+    fontFamily: AppFonts.primary,
+    fontFamilyFallback: AppFonts.fallback,
 
     scaffoldBackgroundColor: AppColors.background,
 
@@ -95,18 +104,22 @@ class AppTheme {
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
 
       // Hint / label / error text.
+      // Form fields use the secondary font (Inter).
       hintStyle: const TextStyle(
+        fontFamily: AppFonts.secondary,
         color: AppColors.textLight,
         fontSize: 14,
         fontWeight: FontWeight.w500,
       ),
       labelStyle: const TextStyle(
+        fontFamily: AppFonts.secondary,
         color: AppColors.textSecondary,
         fontSize: 14,
         fontWeight: FontWeight.w500,
       ),
       floatingLabelStyle: WidgetStateTextStyle.resolveWith(
         (states) => TextStyle(
+          fontFamily: AppFonts.secondary,
           color: states.contains(WidgetState.error)
               ? AppColors.error
               : states.contains(WidgetState.focused)
@@ -115,7 +128,13 @@ class AppTheme {
           fontWeight: FontWeight.w600,
         ),
       ),
+      helperStyle: const TextStyle(
+        fontFamily: AppFonts.secondary,
+        color: AppColors.textSecondary,
+        fontSize: 12,
+      ),
       errorStyle: const TextStyle(
+        fontFamily: AppFonts.secondary,
         color: AppColors.error,
         fontSize: 12,
         fontWeight: FontWeight.w500,
@@ -147,36 +166,86 @@ class AppTheme {
     ),
 
     elevatedButtonTheme: ElevatedButtonThemeData(
-      style: ElevatedButton.styleFrom(
-        backgroundColor: AppColors.primary,
-        foregroundColor: AppColors.white,
-        // Disabled: faded brand blue instead of flat grey.
-        disabledBackgroundColor: AppColors.primary.withValues(alpha: 0.35),
-        disabledForegroundColor: AppColors.white.withValues(alpha: 0.9),
-        minimumSize: const Size(64, 48),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        elevation: 0,
-        textStyle: const TextStyle(
-          fontWeight: FontWeight.w700,
-          fontSize: 15,
-          letterSpacing: 0.2,
-        ),
-      ).copyWith(overlayColor: _pressOverlay(AppColors.white)),
+      style:
+          ElevatedButton.styleFrom(
+            backgroundColor: AppColors.primary,
+            foregroundColor: AppColors.white,
+            // Disabled: faded brand blue instead of flat grey.
+            disabledBackgroundColor: AppColors.primary.withValues(alpha: 0.35),
+            disabledForegroundColor: AppColors.white.withValues(alpha: 0.9),
+            minimumSize: const Size(64, 48),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            elevation: 0,
+            textStyle: const TextStyle(
+              fontWeight: FontWeight.w600,
+              fontSize: 15,
+              letterSpacing: 0.2,
+            ),
+          ).copyWith(
+            overlayColor: _pressOverlay(AppColors.white),
+            // Primary CTA: navy, hover / pressed navy #0B1F52 with a soft shadow.
+            backgroundColor: WidgetStateProperty.resolveWith((states) {
+              if (states.contains(WidgetState.disabled)) {
+                return AppColors.primary.withValues(alpha: 0.35);
+              }
+              if (states.contains(WidgetState.hovered) ||
+                  states.contains(WidgetState.pressed)) {
+                return AppColors.primaryDark;
+              }
+              return AppColors.primary;
+            }),
+            elevation: WidgetStateProperty.resolveWith(
+              (states) => states.contains(WidgetState.hovered) ? 4 : 0,
+            ),
+            shadowColor: WidgetStatePropertyAll(
+              AppColors.brandNavy.withValues(alpha: 0.25),
+            ),
+          ),
     ),
 
     outlinedButtonTheme: OutlinedButtonThemeData(
-      style: OutlinedButton.styleFrom(
-        foregroundColor: AppColors.primary,
-        disabledForegroundColor: AppColors.textLight,
-        side: const BorderSide(color: AppColors.primary, width: 1.5),
-        minimumSize: const Size(64, 48),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        textStyle: const TextStyle(
-          fontWeight: FontWeight.w700,
-          fontSize: 15,
-          letterSpacing: 0.2,
-        ),
-      ).copyWith(overlayColor: _pressOverlay(AppColors.primary)),
+      style:
+          OutlinedButton.styleFrom(
+            foregroundColor: AppColors.primary,
+            disabledForegroundColor: AppColors.textLight,
+            side: const BorderSide(color: AppColors.primary, width: 1.5),
+            minimumSize: const Size(64, 48),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            textStyle: const TextStyle(
+              fontWeight: FontWeight.w600,
+              fontSize: 15,
+              letterSpacing: 0.2,
+            ),
+          ).copyWith(
+            overlayColor: _pressOverlay(AppColors.primary),
+            // Outline: hover / focus / press -> light canvas, blue border + text.
+            backgroundColor: WidgetStateProperty.resolveWith(
+              (states) => _outlineActive(states) ? AppColors.background : null,
+            ),
+            foregroundColor: WidgetStateProperty.resolveWith((states) {
+              if (states.contains(WidgetState.disabled)) {
+                return AppColors.textLight;
+              }
+              return _outlineActive(states)
+                  ? AppColors.blue
+                  : AppColors.primary;
+            }),
+            side: WidgetStateProperty.resolveWith((states) {
+              if (states.contains(WidgetState.disabled)) {
+                return const BorderSide(color: AppColors.border, width: 1.5);
+              }
+              return BorderSide(
+                color: _outlineActive(states)
+                    ? AppColors.blue
+                    : AppColors.primary,
+                width: 1.5,
+              );
+            }),
+          ),
     ),
 
     textButtonTheme: TextButtonThemeData(
@@ -184,7 +253,7 @@ class AppTheme {
         foregroundColor: AppColors.primary,
         disabledForegroundColor: AppColors.textLight,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-        textStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
+        textStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
       ).copyWith(overlayColor: _pressOverlay(AppColors.primary)),
     ),
 
@@ -225,11 +294,11 @@ class AppTheme {
       dragHandleSize: const Size(40, 4),
     ),
 
-    // Snackbars: floating, rounded, dark slate (screens that pass their own
+    // Snackbars: floating, rounded, brand navy (screens that pass their own
     // colour, e.g. green success / red error, keep it).
     snackBarTheme: SnackBarThemeData(
       behavior: SnackBarBehavior.floating,
-      backgroundColor: const Color(0xFF1E293B),
+      backgroundColor: AppColors.brandNavy,
       contentTextStyle: const TextStyle(
         color: AppColors.white,
         fontSize: 13.5,
@@ -242,9 +311,12 @@ class AppTheme {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
     ),
 
+    // Cards: white, 1px border grey, radius 16, very soft navy shadow.
     cardTheme: CardThemeData(
       color: AppColors.white,
-      elevation: 0,
+      surfaceTintColor: Colors.transparent,
+      elevation: 1,
+      shadowColor: AppColors.brandNavy.withValues(alpha: 0.04),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
         side: const BorderSide(color: AppColors.border),

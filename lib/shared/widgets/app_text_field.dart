@@ -44,7 +44,7 @@ class AppTextField extends StatelessWidget {
       maxLength: maxLength,
       maxLines: maxLines,
       enabled: enabled,
-      style: AppTextStyles.body.copyWith(color: AppColors.textPrimary),
+      style: AppTextStyles.input,
       // Borders, padding, focus / error / disabled states, hint and label
       // styles and icon colours all come from the app theme
       // (AppTheme.inputDecorationTheme), so every field looks the same.

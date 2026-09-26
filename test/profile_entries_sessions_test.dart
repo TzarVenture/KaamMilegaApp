@@ -45,6 +45,23 @@ Map<String, dynamic> _user({List<String> skills = const []}) => {
   'skills': skills,
 };
 
+/// Records session reviews (no network); optionally fails like the server.
+class _ReviewRepo extends ExpertRepository {
+  _ReviewRepo({this.error}) : super(ApiClient());
+  final AppException? error;
+  final List<({String id, int rating, String review})> sent = [];
+
+  @override
+  Future<void> submitBookingReview({
+    required String bookingId,
+    required int rating,
+    String review = '',
+  }) async {
+    sent.add((id: bookingId, rating: rating, review: review));
+    if (error != null) throw error!;
+  }
+}
+
 /// Skill delete answered with a chosen profile (no network).
 class _SkillRepo extends AuthRepository {
   _SkillRepo(this.skillsAfter) : super(ApiClient());
@@ -266,6 +283,225 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('Unable to Load Data'), findsOneWidget);
       expect(find.text('Retry'), findsOneWidget);
+    });
+  });
+
+  group('Personal Info Card and updateProfile', () {
+    test(
+      'updateProfile sends gender, education_level, work_experience, and city',
+      () async {
+        final f = _fake((o) => _ok(o, _user()));
+        await AuthRepository(f.client).updateProfile({
+          'gender': 'Female',
+          'education_level': 'Graduate',
+          'work_experience': '2 Years',
+          'city': 'Pune',
+        });
+        final req = f.sent.single;
+        expect(req.method, 'PATCH');
+        expect(req.path, '/user/profile');
+        expect(req.data, {
+          'gender': 'Female',
+          'education_level': 'Graduate',
+          'work_experience': '2 Years',
+          'city': 'Pune',
+        });
+      },
+    );
+
+    test('UserProfile derives display experience from experience list when workExperience is empty', () {
+      final userWithExp = UserProfile(
+        id: 'u1',
+        mobile: '9876543210',
+        workExperience: '',
+        experience: const [
+          ExperienceItem(
+            id: 'exp1',
+            title: 'Senior Developer',
+            companyName: 'Tech Corp',
+          ),
+        ],
+      );
+
+      final userWithWorkExp = UserProfile(
+        id: 'u2',
+        mobile: '9876543210',
+        workExperience: '3-5 Years',
+        experience: const [
+          ExperienceItem(
+            id: 'exp1',
+            title: 'Senior Developer',
+            companyName: 'Tech Corp',
+          ),
+        ],
+      );
+
+      final fresherUser = UserProfile(
+        id: 'u3',
+        mobile: '9876543210',
+        workExperience: '',
+        experience: const [],
+      );
+
+      // Verify workExperience field takes precedence if non-empty, otherwise experience list is used
+      expect(userWithWorkExp.workExperience, '3-5 Years');
+      expect(userWithExp.experience.first.title, 'Senior Developer');
+      expect(userWithExp.experience.first.companyName, 'Tech Corp');
+      expect(fresherUser.experience, isEmpty);
+      expect(fresherUser.workExperience, isEmpty);
+    });
+  });
+
+  group('Rate a completed session', () {
+    BookingItem booking(String status, {num? rating, String review = ''}) =>
+        BookingItem.fromJson({
+          'id': 'b-$status',
+          'status': status,
+          'mentorship_title': 'Resume Review',
+          'rating': ?rating,
+          'review': review,
+        });
+
+    test('rating / review are read; only completed, unrated can be rated', () {
+      final rated = booking('completed', rating: 4, review: 'Helpful');
+      expect(rated.rating, 4);
+      expect(rated.review, 'Helpful');
+      expect(rated.isReviewed, isTrue);
+      expect(rated.canReview, isFalse);
+      expect(booking('completed').canReview, isTrue);
+      expect(booking('confirmed').canReview, isFalse);
+      expect(booking('cancelled').canReview, isFalse);
+    });
+
+    test(
+      'POST /mentorships/bookings/:id/review with {rating, review}',
+      () async {
+        final f = _fake(
+          (o) => _ok(o, {'message': 'Review submitted successfully'}),
+        );
+        await ExpertRepository(f.client).submitBookingReview(
+          bookingId: 'b1',
+          rating: 5,
+          review: '  Very useful  ',
+        );
+        final req = f.sent.single;
+        expect(req.method, 'POST');
+        expect(req.path, '/mentorships/bookings/b1/review');
+        expect(req.data, {'rating': 5, 'review': 'Very useful'});
+      },
+    );
+
+    test('no stars or no booking id: nothing is sent', () async {
+      final f = _fake((o) => _ok(o, {}));
+      final repo = ExpertRepository(f.client);
+      await expectLater(
+        repo.submitBookingReview(bookingId: 'b1', rating: 0),
+        throwsA(isA<AppValidationException>()),
+      );
+      await expectLater(
+        repo.submitBookingReview(bookingId: ' ', rating: 3),
+        throwsA(isA<AppValidationException>()),
+      );
+      expect(f.sent, isEmpty);
+    });
+
+    Widget screen(
+      _ReviewRepo repo,
+      List<BookingItem> items, {
+      void Function()? onLoad,
+    }) => ProviderScope(
+      overrides: [
+        expertRepositoryProvider.overrideWithValue(repo),
+        myBookingsProvider.overrideWith((ref) async {
+          onLoad?.call();
+          return items;
+        }),
+      ],
+      child: MaterialApp(
+        theme: AppTheme.lightTheme,
+        home: const MySessionsScreen(),
+      ),
+    );
+
+    testWidgets('Rate button only on completed, unrated sessions', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        screen(_ReviewRepo(), [booking('completed'), booking('confirmed')]),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('Rate session'), findsOneWidget);
+    });
+
+    testWidgets('a saved rating is shown instead of the button', (
+      tester,
+    ) async {
+      final semantics = tester.ensureSemantics();
+      await tester.pumpWidget(
+        screen(_ReviewRepo(), [
+          booking('completed', rating: 4, review: 'Clear advice'),
+        ]),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('Rate session'), findsNothing);
+      expect(find.bySemanticsLabel('Your rating: 4 out of 5'), findsOneWidget);
+      expect(find.text('Clear advice'), findsOneWidget);
+      semantics.dispose();
+    });
+
+    testWidgets('submit: needs stars; on success list reloads from server', (
+      tester,
+    ) async {
+      final repo = _ReviewRepo();
+      var loads = 0;
+      await tester.pumpWidget(
+        screen(repo, [booking('completed')], onLoad: () => loads++),
+      );
+      await tester.pumpAndSettle();
+      expect(loads, 1);
+
+      await tester.tap(find.text('Rate session'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Submit review'));
+      await tester.pumpAndSettle();
+      expect(find.text('Please choose 1 to 5 stars.'), findsOneWidget);
+      expect(repo.sent, isEmpty);
+
+      await tester.tap(find.byTooltip('4 stars'));
+      await tester.enterText(find.byType(TextField), 'Great session');
+      FocusManager.instance.primaryFocus?.unfocus();
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Submit review'));
+      await tester.pumpAndSettle();
+
+      expect(repo.sent.single, (
+        id: 'b-completed',
+        rating: 4,
+        review: 'Great session',
+      ));
+      expect(find.text('Submit review'), findsNothing); // sheet closed
+      expect(find.text('Thanks! Your review was submitted.'), findsOneWidget);
+      expect(loads, 2); // stars come from the server's list, not local state
+    });
+
+    testWidgets('server refusal: its message is shown, sheet stays open', (
+      tester,
+    ) async {
+      final repo = _ReviewRepo(
+        error: const AppValidationException(
+          'can only review completed sessions',
+        ),
+      );
+      await tester.pumpWidget(screen(repo, [booking('completed')]));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Rate session'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byTooltip('5 stars'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Submit review'));
+      await tester.pumpAndSettle();
+      expect(find.text('can only review completed sessions'), findsOneWidget);
+      expect(find.text('Submit review'), findsOneWidget);
     });
   });
 }

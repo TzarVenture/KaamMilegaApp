@@ -152,6 +152,18 @@ class _JobsScreenState extends ConsumerState<JobsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // A search started elsewhere (Home > Popular Categories) shows in the
+    // search box, so the user can see and clear it.
+    ref.listen<String>(jobsProvider.select((s) => s.filter.searchQuery), (
+      previous,
+      next,
+    ) {
+      if (next == _searchController.text.trim()) return;
+      _searchController.text = next;
+      if (next.isNotEmpty && !_isSearchVisible) {
+        setState(() => _isSearchVisible = true);
+      }
+    });
     final jobsState = ref.watch(jobsProvider);
     final filter = jobsState.filter;
     final activeFilters = filter.activeFilterCount;
@@ -177,7 +189,7 @@ class _JobsScreenState extends ConsumerState<JobsScreen> {
 
     return Scaffold(
       key: _scaffoldKey,
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: AppColors.background,
       endDrawer: ProfileDrawer(onNavigateTab: widget.onNavigateTab),
       appBar: AppBar(
         backgroundColor: Colors.white,
@@ -366,7 +378,7 @@ class _JobsScreenState extends ConsumerState<JobsScreen> {
                     end: Alignment.bottomRight,
                     colors: [
                       Color(0xFF030712),
-                      Color(0xFF0F172A),
+                      AppColors.textPrimary,
                       Color(0xFF0B193D),
                     ],
                   ),
@@ -382,7 +394,7 @@ class _JobsScreenState extends ConsumerState<JobsScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Top Pill: ✨ Verified Indian Employment Portal
+                    // Top pill: Verified Indian Employment Portal
                     Container(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 12,
@@ -399,7 +411,7 @@ class _JobsScreenState extends ConsumerState<JobsScreen> {
                         mainAxisSize: MainAxisSize.min,
                         children: const [
                           Icon(
-                            Icons.auto_awesome,
+                            Icons.verified_user_rounded,
                             color: Color(0xFFFBBF24),
                             size: 14,
                           ),
@@ -407,7 +419,7 @@ class _JobsScreenState extends ConsumerState<JobsScreen> {
                           Text(
                             'Verified Indian Employment Portal',
                             style: TextStyle(
-                              color: Color(0xFFE2E8F0),
+                              color: AppColors.border,
                               fontSize: 11.5,
                               fontWeight: FontWeight.w700,
                             ),
@@ -529,7 +541,7 @@ class _JobsScreenState extends ConsumerState<JobsScreen> {
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: const Color(0xFFE2E8F0)),
+                  border: Border.all(color: AppColors.border),
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black.withValues(alpha: 0.02),
@@ -542,11 +554,11 @@ class _JobsScreenState extends ConsumerState<JobsScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // "Showing [N] Available Positions"
-                    RichText(
-                      text: TextSpan(
+                    Text.rich(
+                      TextSpan(
                         style: const TextStyle(
                           fontSize: 16.5,
-                          color: Color(0xFF0F172A),
+                          color: AppColors.textPrimary,
                           fontWeight: FontWeight.w900,
                           letterSpacing: -0.3,
                         ),
@@ -557,7 +569,7 @@ class _JobsScreenState extends ConsumerState<JobsScreen> {
                                 ? '...'
                                 : '${displayedJobs.length} Available Positions',
                             style: const TextStyle(
-                              color: Color(0xFF1E3A8A),
+                              color: AppColors.navy,
                               fontWeight: FontWeight.w900,
                             ),
                           ),
@@ -629,11 +641,9 @@ class _JobsScreenState extends ConsumerState<JobsScreen> {
                               vertical: 8,
                             ),
                             decoration: BoxDecoration(
-                              color: const Color(0xFFF8FAFC),
+                              color: AppColors.background,
                               borderRadius: BorderRadius.circular(12),
-                              border: Border.all(
-                                color: const Color(0xFFE2E8F0),
-                              ),
+                              border: Border.all(color: AppColors.border),
                             ),
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
@@ -656,7 +666,7 @@ class _JobsScreenState extends ConsumerState<JobsScreen> {
                                 const Icon(
                                   Icons.keyboard_arrow_down_rounded,
                                   size: 16,
-                                  color: Color(0xFF64748B),
+                                  color: AppColors.textSecondary,
                                 ),
                               ],
                             ),
@@ -673,7 +683,7 @@ class _JobsScreenState extends ConsumerState<JobsScreen> {
                               vertical: 8,
                             ),
                             decoration: BoxDecoration(
-                              color: const Color(0xFFEFF6FF),
+                              color: AppColors.primaryLight,
                               borderRadius: BorderRadius.circular(12),
                               border: Border.all(
                                 color: const Color(0xFFBFDBFE),
@@ -685,7 +695,7 @@ class _JobsScreenState extends ConsumerState<JobsScreen> {
                                 const Icon(
                                   Icons.tune_rounded,
                                   size: 15,
-                                  color: Color(0xFF2563EB),
+                                  color: AppColors.blue,
                                 ),
                                 const SizedBox(width: 5),
                                 Text(
@@ -695,7 +705,7 @@ class _JobsScreenState extends ConsumerState<JobsScreen> {
                                   style: const TextStyle(
                                     fontSize: 12,
                                     fontWeight: FontWeight.w800,
-                                    color: Color(0xFF2563EB),
+                                    color: AppColors.blue,
                                   ),
                                 ),
                               ],

@@ -5,6 +5,8 @@ import 'package:go_router/go_router.dart';
 import '../models/wallet_transaction.dart';
 import '../providers/wallet_provider.dart';
 import '../../../shared/widgets/fade_slide_in.dart';
+import '../../../app/theme/app_colors.dart';
+import '../../../app/theme/app_text_styles.dart';
 
 class WalletTransactionsScreen extends ConsumerStatefulWidget {
   const WalletTransactionsScreen({super.key});
@@ -36,7 +38,7 @@ class _WalletTransactionsScreenState
     final walletState = ref.watch(walletProvider);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: AppColors.background,
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
@@ -57,16 +59,16 @@ class _WalletTransactionsScreenState
         title: const Text(
           'Transactions Ledger',
           style: TextStyle(
-            color: Color(0xFF0F172A),
+            color: AppColors.textPrimary,
             fontSize: 18,
             fontWeight: FontWeight.w700,
           ),
         ),
         bottom: TabBar(
           controller: _tabController,
-          labelColor: const Color(0xFF1A2B8C),
-          unselectedLabelColor: const Color(0xFF64748B),
-          indicatorColor: const Color(0xFF1A2B8C),
+          labelColor: AppColors.primary,
+          unselectedLabelColor: AppColors.textSecondary,
+          indicatorColor: AppColors.primary,
           indicatorWeight: 3,
           labelStyle: const TextStyle(
             fontWeight: FontWeight.w700,
@@ -80,7 +82,7 @@ class _WalletTransactionsScreenState
         ),
       ),
       body: RefreshIndicator(
-        color: const Color(0xFF1A2B8C),
+        color: AppColors.primary,
         onRefresh: () => ref.read(walletProvider.notifier).loadTransactions(),
         child: TabBarView(
           controller: _tabController,
@@ -104,7 +106,18 @@ class _WalletTransactionsScreenState
     );
   }
 
+  /// Transaction ledger in the secondary font (Inter), per brand spec.
   Widget _buildTransactionsList(
+    List<WalletTransaction> transactions,
+    String filter,
+  ) {
+    return DefaultTextStyle.merge(
+      style: const TextStyle(fontFamily: AppFonts.secondary),
+      child: _buildTransactionsListContent(transactions, filter),
+    );
+  }
+
+  Widget _buildTransactionsListContent(
     List<WalletTransaction> transactions,
     String filter,
   ) {
@@ -121,7 +134,7 @@ class _WalletTransactionsScreenState
               Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFE2E8F0).withValues(alpha: 0.5),
+                  color: AppColors.border.withValues(alpha: 0.5),
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(
@@ -151,7 +164,7 @@ class _WalletTransactionsScreenState
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 13,
-                  color: Color(0xFF64748B),
+                  color: AppColors.textSecondary,
                   height: 1.4,
                 ),
               ),
@@ -219,7 +232,7 @@ class _WalletTransactionsScreenState
                             style: const TextStyle(
                               fontWeight: FontWeight.w600,
                               fontSize: 14,
-                              color: Color(0xFF0F172A),
+                              color: AppColors.textPrimary,
                             ),
                           ),
                           const SizedBox(height: 2),
@@ -227,7 +240,7 @@ class _WalletTransactionsScreenState
                             '${txn.createdAt.day}/${txn.createdAt.month}/${txn.createdAt.year} • ${txn.status.label}',
                             style: const TextStyle(
                               fontSize: 11,
-                              color: Color(0xFF64748B),
+                              color: AppColors.textSecondary,
                             ),
                           ),
                         ],
@@ -240,7 +253,7 @@ class _WalletTransactionsScreenState
                         fontWeight: FontWeight.w800,
                         color: isCredit
                             ? const Color(0xFF10B981)
-                            : const Color(0xFF0F172A),
+                            : AppColors.textPrimary,
                       ),
                     ),
                   ],
@@ -289,7 +302,7 @@ class _WalletTransactionsScreenState
                   fontWeight: FontWeight.w900,
                   color: isCredit
                       ? const Color(0xFF10B981)
-                      : const Color(0xFF0F172A),
+                      : AppColors.textPrimary,
                 ),
               ),
             ),
@@ -332,7 +345,7 @@ class _WalletTransactionsScreenState
               child: ElevatedButton(
                 onPressed: () => Navigator.of(ctx).pop(),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF1A2B8C),
+                  backgroundColor: AppColors.primary,
                   foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
@@ -357,16 +370,21 @@ class _WalletTransactionsScreenState
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            label,
-            style: const TextStyle(fontSize: 13, color: Color(0xFF64748B)),
+          Flexible(
+            child: Text(
+              label,
+              style: const TextStyle(
+                fontSize: 13,
+                color: AppColors.textSecondary,
+              ),
+            ),
           ),
           Text(
             value,
             style: const TextStyle(
               fontSize: 13,
               fontWeight: FontWeight.w600,
-              color: Color(0xFF0F172A),
+              color: AppColors.textPrimary,
             ),
           ),
         ],

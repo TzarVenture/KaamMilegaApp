@@ -274,6 +274,7 @@ Full contracts: [API_CONTRACT.md](API_CONTRACT.md). Status: **Live** = used by a
 | Mentorship | GET | `/mentorships` | `expert_repository.dart` | experts | Live (`/mentorships/:id` method exists, no caller) |
 | Mentorship | POST | `/mentorships/book`, `/book-wallet`, `/create-order`, `/verify-payment` | `expert_repository.dart` | booking & payment | Live |
 | Mentorship | GET | `/mentorships/bookings/my` | `expert_repository.dart` | My Sessions (7c) | Live |
+| Mentorship | POST | `/mentorships/bookings/:id/review` | `expert_repository.dart` | rate a completed session | Live (26 Sep) |
 | Skills | GET | `/skills`, `/skills/categories` | `skills_repository.dart` | marketplace | Live |
 | Wallet | GET | `/wallet/balance`, `/wallet/transactions` | `wallet_repository.dart` | wallet | Live |
 | Wallet | POST | `/wallet/topup/create-order`, `/wallet/topup/verify` | `wallet_repository.dart` | add money | Live |
@@ -380,7 +381,7 @@ All in SharedPreferences via `LocalStorage` (`core/storage/local_storage.dart`).
 
 ## 18. UI Architecture
 
-- **Theme:** `app/theme/app_theme.dart` (`AppTheme.lightTheme`: buttons, inputs, dialogs radius 20, bottom sheets radius 24, floating snackbars, page transitions), `app_colors.dart` (`brandBlue #1A2B8C`, `brandOrange #F97316`, `deepNavy`, module colours, text/border/status colours), `app_text_styles.dart`. Light theme only. Many screens still use inline `Color(0x…)` / `TextStyle`.
+- **Theme:** `app/theme/app_theme.dart` (`AppTheme.lightTheme`: Poppins + Noto Sans Devanagari fallback, buttons, inputs, dialogs radius 20, bottom sheets radius 24, navy floating snackbars, page transitions), `app_colors.dart` (brand spec 25 Sep 2026: `brandNavy #071A4D` = `primary`, `navy #0B1F52`, `blue #0B5ED7`, `brandOrange #FF6B00` = `accent`, `orangeLight #FF8A00`, seven service colours `module*` + light tints, background `#F4F7FB`, text `#111827` / `#5B6472`, border `#D9E0EA`), `app_text_styles.dart` (`AppFonts`, type scale). Fonts bundled in `assets/fonts/` (OFL). Light theme only. Brand/purple/neutral inline colours were replaced by tokens; other inline shades (slate greys, amber/red status colours, events screens' `#D97706`) remain.
 - **Reusable widgets (`lib/shared/widgets`):** `AppButton`, `AppTextField`, `AppLogo`/`AppBrandBarLogo`, `showAppDialog` (`app_dialog.dart`), `showAuthPromptDialog`, `SheetDragHandle`, `FadeSlideIn`, `PressableScale`, `NetworkStateView` (+ `.fromError`), `CachedDataBadge`, `LoginRequiredView`, shimmer set, `CategoryTopHeader` + `ThemedCategoryBottomNav` (module screens), `ProfileDrawer` (`features/profile/presentation/widgets/profile_drawer.dart`, used as `endDrawer`).
 - **Jobs widgets:** `JobCard`, `FilterModal`, `PaginationBar`, `PromoBanner`, `TopMatchBanner`.
 - **Patterns:** mobile bottom sheets for actions (`_showActionSheet`, `_sheetTile` in profile), `IndexedStack` tabs, text scaling not capped (layouts must wrap/flex).
@@ -388,7 +389,7 @@ All in SharedPreferences via `LocalStorage` (`core/storage/local_storage.dart`).
 
 ## 19. Testing
 
-`test/` — 21 files, 172 `test`/`testWidgets` cases (counted by pattern, 25 Sep 2026).
+`test/` — 21 files, 184 `test`/`testWidgets` cases (counted by pattern, 26 Sep 2026).
 
 | File | Covers |
 |---|---|
@@ -396,12 +397,12 @@ All in SharedPreferences via `LocalStorage` (`core/storage/local_storage.dart`).
 | `complete_profile_test.dart` (6) | new OTP user registration (Batch 1) |
 | `wallet_withdrawal_test.dart` (15) | `WithdrawalRequest` bodies, min ₹50, 400/404/401, outcome unknown (Batch 2) |
 | `no_invented_data_test.dart` (3) | no fake rating / company content (Batch 3) |
-| `session_cleanup_test.dart` (6) | logout / account switch resets, socket closed (Batch 4) |
+| `session_cleanup_test.dart` (8) | logout / account switch resets, socket closed (Batch 4); 401 → `onUnauthenticated` |
 | `error_states_test.dart` (15) | `readListResponse`, repositories rethrow, error views, retry policy (Batch 5 + fix) |
 | `saved_jobs_test.dart` (5) | saved jobs by ID, unavailable rows (Batch 6) |
-| `profile_entries_sessions_test.dart` (13) | education/experience/skill requests, `removeSkill` check, `BookingItem`, My Sessions screen (Batch 7a–7c) |
+| `profile_entries_sessions_test.dart` (22) | education/experience/skill requests, `removeSkill` check, `BookingItem`, My Sessions screen (Batch 7a–7c), personal info, rate a completed session |
 | `open_to_preferences_test.dart` (14) | Open To PATCH bodies, sheets, turn off, old text, small screen (Batch 7d) |
-| `auth_error_messages_test.dart` (9), `auth_screens_ui_test.dart` (3), `network_resilience_test.dart` (14), `wallet_test.dart` (6), `explore_modules_test.dart` (8), `widget_test.dart` (7), `profile_share_link_test.dart` (3), `splash_screen_test.dart` (3), `app_button_text_field_test.dart` (5), `dialogs_sheets_test.dart` (6), `cards_lists_states_test.dart` (7), `home_jobs_ui_test.dart` (2) | audit-time suites |
+| `auth_error_messages_test.dart` (9), `auth_screens_ui_test.dart` (3), `network_resilience_test.dart` (14), `wallet_test.dart` (7), `explore_modules_test.dart` (8), `widget_test.dart` (7), `profile_share_link_test.dart` (3), `splash_screen_test.dart` (3), `app_button_text_field_test.dart` (5), `dialogs_sheets_test.dart` (6), `cards_lists_states_test.dart` (7), `home_jobs_ui_test.dart` (2) | audit-time suites |
 
 - Repository tests use a Dio interceptor that answers locally (no network, no real payments). No WebSocket or integration tests.
 - **Verification:** run by the owner (Windows). Latest (25 Sep, 16:04): `dart format` 0 changed, `flutter analyze` no issues, `flutter test` 172 passed. **Phone testing pending** (log in [KNOWN_ISSUES.md](KNOWN_ISSUES.md#verification-log)).

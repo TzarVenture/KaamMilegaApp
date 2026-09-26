@@ -69,10 +69,10 @@
 - **Update:** **Fixed (Batch 4).** Shell no longer watches `conversationsProvider`; Chats tab shows `LoginRequiredView` (`shared/widgets/login_required_view.dart`) for guests; `/peer-to-peer` is protected (Explore uses `AuthGuard.openProtected`); `/my-sessions` protected too (Batch 7).
 
 ### H-05 — Mid-session 401 does not update auth state
-- **Severity:** High · **Feature:** Auth/session · **Status:** Open (by design comment, but user-visible)
+- **Severity:** High · **Feature:** Auth/session · **Status:** Fixed
 - **Evidence:** `ApiClient` `onError` 401 → `LocalStorage.clearSession()` only. `AuthState.isAuthenticated` stays `true`, the router is not refreshed (its listenable watches `AuthState`), so the user stays on the current screen, UI still shows the old user, and every later call is unauthenticated until the next navigation redirects to `/login` (`auth_guard.dart` doc comment confirms).
 - **Next investigation:** decide whether ApiClient should notify `authProvider` (without creating a second auth system).
-- **Update:** **Still open** (not in Batches 1–7).
+- **Update:** **Fixed.** `ApiClient` invokes `onUnauthenticated` callback on 401 error, triggering `AuthNotifier.sessionExpired()`, which resets `AuthState` and causes `GoRouter` redirect immediately to `/login`. Tests in `session_cleanup_test.dart`.
 
 ### H-06 — Saved Jobs screen shows only saved jobs that are on the current Jobs page
 - **Severity:** High · **Feature:** Saved jobs (F24) · **Status:** Open
@@ -202,6 +202,7 @@ Not addressed yet: H-05, M-01, M-02, M-03, M-05, M-07, M-09, M-10, M-11, L-01…
 |---|---|---|---|---|
 | After Batch 7 (first run) | 12 files formatted | 1 warning | +153 −3 | — |
 | After retry-policy fix + 7d (25 Sep, 15:57) | 4 files formatted | 1 warning, 2 info (all in `open_to_preferences_test.dart`) | +171 −1 (`Open To Work sheet server error` — Save scrolled off the 800×600 test view) | — |
+| After backend sync A + B (26 Sep, 13:04) | 0 files changed | **No issues found** | +183 −1 (test clean-up bug, fixed in test only; re-run pending) | **pending** |
 | After test fix (25 Sep, 16:04) | 0 files changed | **No issues found** | **+172, all passed** | **pending** |
 
 ## Build/Environment Issues

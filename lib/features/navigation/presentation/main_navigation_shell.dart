@@ -133,12 +133,12 @@ class _MainNavigationShellState extends ConsumerState<MainNavigationShell> {
                 leading: Container(
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFEFF6FF),
+                    color: AppColors.primaryLight,
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: const Icon(
                     Icons.event_available_rounded,
-                    color: Color(0xFF2563EB),
+                    color: AppColors.blue,
                   ),
                 ),
                 title: const Text(

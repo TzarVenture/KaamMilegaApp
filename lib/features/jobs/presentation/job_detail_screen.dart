@@ -394,7 +394,7 @@ class _JobDetailScreenState extends ConsumerState<JobDetailScreen> {
                 offsetY: 8,
                 child: Container(
                   decoration: const BoxDecoration(
-                    color: Color(0xFF0C1738), // Brand Deep Navy
+                    color: AppColors.deepNavy, // Brand Deep Navy
                     borderRadius: BorderRadius.vertical(
                       bottom: Radius.circular(32),
                     ),
@@ -464,7 +464,7 @@ class _JobDetailScreenState extends ConsumerState<JobDetailScreen> {
                                   ? Icons.bookmark_rounded
                                   : Icons.bookmark_outline_rounded,
                               color: isSaved
-                                  ? const Color(0xFFF97316)
+                                  ? AppColors.accent
                                   : Colors.white70,
                               size: 24,
                             ),
@@ -520,7 +520,7 @@ class _JobDetailScreenState extends ConsumerState<JobDetailScreen> {
                             style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w900,
-                              color: Color(0xFFF97316),
+                              color: AppColors.accent,
                               letterSpacing: 0.5,
                             ),
                           ),
@@ -554,7 +554,7 @@ class _JobDetailScreenState extends ConsumerState<JobDetailScreen> {
                                       width: 32,
                                       height: 32,
                                       decoration: BoxDecoration(
-                                        color: const Color(0xFF0F172A),
+                                        color: AppColors.textPrimary,
                                         borderRadius: BorderRadius.circular(8),
                                       ),
                                       child: const Center(
@@ -620,7 +620,7 @@ class _JobDetailScreenState extends ConsumerState<JobDetailScreen> {
                                       width: 32,
                                       height: 32,
                                       decoration: BoxDecoration(
-                                        color: const Color(0xFF0F172A),
+                                        color: AppColors.textPrimary,
                                         borderRadius: BorderRadius.circular(8),
                                       ),
                                       child: const Center(
@@ -690,7 +690,7 @@ class _JobDetailScreenState extends ConsumerState<JobDetailScreen> {
                                       width: 32,
                                       height: 32,
                                       decoration: BoxDecoration(
-                                        color: const Color(0xFF0F172A),
+                                        color: AppColors.textPrimary,
                                         borderRadius: BorderRadius.circular(8),
                                       ),
                                       child: const Center(
@@ -756,7 +756,11 @@ class _JobDetailScreenState extends ConsumerState<JobDetailScreen> {
                               child: const Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  Text('🔥', style: TextStyle(fontSize: 11)),
+                                  Icon(
+                                    Icons.local_fire_department_rounded,
+                                    size: 13,
+                                    color: Colors.white,
+                                  ),
                                   SizedBox(width: 4),
                                   Text(
                                     'HOT LISTING',
@@ -823,7 +827,7 @@ class _JobDetailScreenState extends ConsumerState<JobDetailScreen> {
                                 vertical: 6,
                               ),
                               decoration: BoxDecoration(
-                                color: const Color(0xFF2563EB),
+                                color: AppColors.blue,
                                 borderRadius: BorderRadius.circular(20),
                               ),
                               child: Row(

@@ -104,8 +104,8 @@ class _EventsScreenState extends ConsumerState<EventsScreen> {
       backgroundColor: const Color(0xFFF4F2EE),
       endDrawer: const ProfileDrawer(),
       bottomNavigationBar: const ThemedCategoryBottomNav(
-        activeColor: Color(0xFFD97706),
-        secondaryColor: Color(0xFFB45309),
+        activeColor: AppColors.moduleEvents,
+        secondaryColor: AppColors.brandNavy,
         categoryLabel: 'Events',
         categoryIcon: Icons.event_available_rounded,
       ),
@@ -114,7 +114,7 @@ class _EventsScreenState extends ConsumerState<EventsScreen> {
           children: [
             CategoryTopHeader(
               scaffoldKey: _scaffoldKey,
-              themeColor: const Color(0xFFD97706),
+              themeColor: AppColors.moduleEvents,
               searchHint: 'Search events, webinars & summits...',
               searchController: _searchController,
               onSearchChanged: (val) =>
@@ -428,7 +428,7 @@ class _EventsScreenState extends ConsumerState<EventsScreen> {
                             )
                           : Text(
                               event.isRegistered
-                                  ? '✓ Registered'
+                                  ? 'Registered'
                                   : 'Register for Event',
                               style: const TextStyle(
                                 fontWeight: FontWeight.w800,

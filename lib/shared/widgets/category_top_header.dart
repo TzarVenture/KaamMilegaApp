@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../features/cities/presentation/city_selector_sheet.dart';
 import '../../features/jobs/providers/jobs_provider.dart';
 import '../../features/notifications/providers/notification_provider.dart';
+import '../../app/theme/app_colors.dart';
 
 /// Reusable top header for category screens matching KaamMilega design:
 /// - Logo (or category logo) on left with tap to navigate Home
@@ -71,8 +72,8 @@ class CategoryTopHeader extends ConsumerWidget {
                                 fit: BoxFit.contain,
                               ),
                               const SizedBox(width: 8),
-                              RichText(
-                                text: const TextSpan(
+                              Text.rich(
+                                const TextSpan(
                                   style: TextStyle(
                                     fontSize: 18,
                                     fontWeight: FontWeight.w900,
@@ -82,13 +83,19 @@ class CategoryTopHeader extends ConsumerWidget {
                                     TextSpan(
                                       text: 'Instant',
                                       style: TextStyle(
-                                        color: Color(0xFF0F172A),
+                                        color: AppColors.brandNavy,
                                       ),
                                     ),
                                     TextSpan(
-                                      text: 'milega™',
+                                      text: 'milega',
                                       style: TextStyle(
-                                        color: Color(0xFFEA580C),
+                                        color: AppColors.brandOrange,
+                                      ),
+                                    ),
+                                    TextSpan(
+                                      text: '™',
+                                      style: TextStyle(
+                                        color: AppColors.brandNavy,
                                       ),
                                     ),
                                   ],
@@ -212,14 +219,14 @@ class CategoryTopHeader extends ConsumerWidget {
                     style: const TextStyle(
                       fontSize: 13.5,
                       fontWeight: FontWeight.w800,
-                      color: Color(0xFF0F172A),
+                      color: AppColors.textPrimary,
                     ),
                   ),
                 ),
                 const SizedBox(width: 2),
                 const Icon(
                   Icons.keyboard_arrow_down_rounded,
-                  color: Color(0xFF0F172A),
+                  color: AppColors.textPrimary,
                   size: 18,
                 ),
               ],
@@ -233,7 +240,7 @@ class CategoryTopHeader extends ConsumerWidget {
             decoration: BoxDecoration(
               color: const Color(0xFFF1F5F9),
               borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: const Color(0xFFE2E8F0)),
+              border: Border.all(color: AppColors.border),
             ),
             child: TextField(
               controller: searchController,

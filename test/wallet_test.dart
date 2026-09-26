@@ -57,6 +57,22 @@ void main() {
       expect(json['status'], 'completed');
       expect(json['reference_id'], 'REF123');
     });
+
+    test('backend categories get readable titles (incl. subscription)', () {
+      WalletTransaction fromCategory(String category) =>
+          WalletTransaction.fromJson({
+            'id': 'txn_$category',
+            'amount': 499,
+            'type': 'debit',
+            'status': 'completed',
+            'category': category,
+            'created_at': '2026-09-26T10:00:00Z',
+          });
+
+      expect(fromCategory('subscription').title, 'Expert subscription');
+      expect(fromCategory('withdrawal').title, 'Withdrawal');
+      expect(fromCategory('something_new').title, 'Transaction');
+    });
   });
 
   group('WalletScreen Widget Tests', () {

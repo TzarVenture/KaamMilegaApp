@@ -84,6 +84,8 @@ class WalletTransaction {
         return 'Bonus reward';
       case 'refund':
         return 'Refund';
+      case 'subscription':
+        return 'Expert subscription';
       default:
         return 'Transaction';
     }

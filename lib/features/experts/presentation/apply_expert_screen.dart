@@ -6,6 +6,7 @@ import '../../auth/providers/auth_provider.dart';
 import '../../notifications/providers/notification_provider.dart';
 import '../../profile/presentation/widgets/profile_drawer.dart';
 import '../../../shared/widgets/app_dialog.dart';
+import '../../../app/theme/app_colors.dart';
 
 /// Screen allowing candidates/professionals to apply to be an Expert on KaamMilega
 /// Matches the web portal design & responsive mobile layout.
@@ -162,7 +163,7 @@ class _ApplyExpertScreenState extends ConsumerState<ApplyExpertScreen> {
               'Done',
               style: TextStyle(
                 fontWeight: FontWeight.w700,
-                color: Color(0xFF2563EB),
+                color: AppColors.blue,
               ),
             ),
           ),
@@ -301,7 +302,7 @@ class _ApplyExpertScreenState extends ConsumerState<ApplyExpertScreen> {
                           onSubmitted: (_) => _handleSearchSubmit(),
                           style: const TextStyle(
                             fontSize: 14,
-                            color: Color(0xFF111827),
+                            color: AppColors.textPrimary,
                             fontWeight: FontWeight.w400,
                           ),
                           decoration: const InputDecoration(
@@ -373,7 +374,7 @@ class _ApplyExpertScreenState extends ConsumerState<ApplyExpertScreen> {
                       style: TextStyle(
                         fontSize: 26,
                         fontWeight: FontWeight.w800,
-                        color: Color(0xFF111827),
+                        color: AppColors.textPrimary,
                         letterSpacing: -0.5,
                       ),
                     ),
@@ -419,7 +420,7 @@ class _ApplyExpertScreenState extends ConsumerState<ApplyExpertScreen> {
                           'Select a category',
                           style: TextStyle(
                             fontSize: 14,
-                            color: Color(0xFF111827),
+                            color: AppColors.textPrimary,
                             fontWeight: FontWeight.w400,
                           ),
                         ),
@@ -450,7 +451,7 @@ class _ApplyExpertScreenState extends ConsumerState<ApplyExpertScreen> {
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(6),
                             borderSide: const BorderSide(
-                              color: Color(0xFF2563EB),
+                              color: AppColors.blue,
                               width: 1.5,
                             ),
                           ),
@@ -462,7 +463,7 @@ class _ApplyExpertScreenState extends ConsumerState<ApplyExpertScreen> {
                               cat,
                               style: const TextStyle(
                                 fontSize: 14,
-                                color: Color(0xFF111827),
+                                color: AppColors.textPrimary,
                                 fontWeight: FontWeight.w400,
                               ),
                             ),
@@ -491,7 +492,7 @@ class _ApplyExpertScreenState extends ConsumerState<ApplyExpertScreen> {
                         minLines: 4,
                         style: const TextStyle(
                           fontSize: 14,
-                          color: Color(0xFF111827),
+                          color: AppColors.textPrimary,
                         ),
                         decoration: InputDecoration(
                           hintText: 'Tell us about your expertise...',
@@ -518,7 +519,7 @@ class _ApplyExpertScreenState extends ConsumerState<ApplyExpertScreen> {
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(6),
                             borderSide: const BorderSide(
-                              color: Color(0xFF2563EB),
+                              color: AppColors.blue,
                               width: 1.5,
                             ),
                           ),
@@ -542,7 +543,7 @@ class _ApplyExpertScreenState extends ConsumerState<ApplyExpertScreen> {
                         keyboardType: TextInputType.number,
                         style: const TextStyle(
                           fontSize: 14,
-                          color: Color(0xFF111827),
+                          color: AppColors.textPrimary,
                         ),
                         decoration: InputDecoration(
                           filled: true,
@@ -567,7 +568,7 @@ class _ApplyExpertScreenState extends ConsumerState<ApplyExpertScreen> {
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(6),
                             borderSide: const BorderSide(
-                              color: Color(0xFF2563EB),
+                              color: AppColors.blue,
                               width: 1.5,
                             ),
                           ),
@@ -602,7 +603,7 @@ class _ApplyExpertScreenState extends ConsumerState<ApplyExpertScreen> {
                         keyboardType: TextInputType.url,
                         style: const TextStyle(
                           fontSize: 14,
-                          color: Color(0xFF111827),
+                          color: AppColors.textPrimary,
                         ),
                         decoration: InputDecoration(
                           hintText: 'Link to your Resume',
@@ -633,7 +634,7 @@ class _ApplyExpertScreenState extends ConsumerState<ApplyExpertScreen> {
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(6),
                             borderSide: const BorderSide(
-                              color: Color(0xFF2563EB),
+                              color: AppColors.blue,
                               width: 1.5,
                             ),
                           ),
@@ -657,7 +658,7 @@ class _ApplyExpertScreenState extends ConsumerState<ApplyExpertScreen> {
                         keyboardType: TextInputType.url,
                         style: const TextStyle(
                           fontSize: 14,
-                          color: Color(0xFF111827),
+                          color: AppColors.textPrimary,
                         ),
                         decoration: InputDecoration(
                           hintText: 'Link to your Identity Proof',
@@ -688,7 +689,7 @@ class _ApplyExpertScreenState extends ConsumerState<ApplyExpertScreen> {
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(6),
                             borderSide: const BorderSide(
-                              color: Color(0xFF2563EB),
+                              color: AppColors.blue,
                               width: 1.5,
                             ),
                           ),
@@ -704,7 +705,7 @@ class _ApplyExpertScreenState extends ConsumerState<ApplyExpertScreen> {
                         child: ElevatedButton(
                           onPressed: _isSubmitting ? null : _submitApplication,
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF2563EB),
+                            backgroundColor: AppColors.blue,
                             foregroundColor: Colors.white,
                             elevation: 0,
                             shape: RoundedRectangleBorder(

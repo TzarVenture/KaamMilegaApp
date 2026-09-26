@@ -64,8 +64,8 @@ class AppLogo extends StatelessWidget {
             'assets/images/logo_text.png',
             height: size * 0.3,
             fit: BoxFit.contain,
-            errorBuilder: (context, error, stackTrace) => RichText(
-              text: const TextSpan(
+            errorBuilder: (context, error, stackTrace) => Text.rich(
+              const TextSpan(
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w900,
@@ -74,11 +74,15 @@ class AppLogo extends StatelessWidget {
                 children: [
                   TextSpan(
                     text: 'Kaammi',
-                    style: TextStyle(color: AppColors.brandBlue),
+                    style: TextStyle(color: AppColors.brandNavy),
                   ),
                   TextSpan(
-                    text: 'lega™',
+                    text: 'lega',
                     style: TextStyle(color: AppColors.brandOrange),
+                  ),
+                  TextSpan(
+                    text: '™',
+                    style: TextStyle(color: AppColors.brandNavy),
                   ),
                 ],
               ),
@@ -121,8 +125,8 @@ class AppBrandBarLogo extends StatelessWidget {
           'assets/images/logo_text.png',
           height: textHeight,
           fit: BoxFit.contain,
-          errorBuilder: (context, error, stackTrace) => RichText(
-            text: const TextSpan(
+          errorBuilder: (context, error, stackTrace) => Text.rich(
+            const TextSpan(
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w900,
@@ -131,11 +135,15 @@ class AppBrandBarLogo extends StatelessWidget {
               children: [
                 TextSpan(
                   text: 'Kaammi',
-                  style: TextStyle(color: AppColors.brandBlue),
+                  style: TextStyle(color: AppColors.brandNavy),
                 ),
                 TextSpan(
-                  text: 'lega™',
+                  text: 'lega',
                   style: TextStyle(color: AppColors.brandOrange),
+                ),
+                TextSpan(
+                  text: '™',
+                  style: TextStyle(color: AppColors.brandNavy),
                 ),
               ],
             ),

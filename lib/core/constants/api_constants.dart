@@ -153,6 +153,8 @@ class ApiConstants {
       '/mentorships/verify-payment'; // POST
   static const String mentorshipMyBookings =
       '/mentorships/bookings/my'; // GET sessions booked by the user
+  static const String mentorshipBookings =
+      '/mentorships/bookings'; // POST /:id/review (completed sessions)
 
   // --- Company Hub Endpoints ---
   static const String adminCompanies = '/admin/companies';

@@ -172,6 +172,29 @@ class ExpertRepository {
     });
     return bookings;
   }
+
+  /// Rate a completed session (POST /mentorships/bookings/:id/review,
+  /// body `{rating, review}`). The backend accepts it only from the user
+  /// who booked and only once the session is `completed`; its reason is
+  /// shown otherwise (AppValidationException).
+  Future<void> submitBookingReview({
+    required String bookingId,
+    required int rating,
+    String review = '',
+  }) async {
+    if (bookingId.trim().isEmpty) {
+      throw const AppValidationException(
+        'This session cannot be rated. Please refresh and try again.',
+      );
+    }
+    if (rating < 1 || rating > 5) {
+      throw const AppValidationException('Please choose 1 to 5 stars.');
+    }
+    await _apiClient.post(
+      '${ApiConstants.mentorshipBookings}/$bookingId/review',
+      data: {'rating': rating, 'review': review.trim()},
+    );
+  }
 }
 
 /// The signed-in user's booked mentorship sessions. Loaded fresh each time

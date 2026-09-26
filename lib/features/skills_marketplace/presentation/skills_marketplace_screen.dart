@@ -9,6 +9,7 @@ import '../../../shared/widgets/category_top_header.dart';
 import '../../../shared/widgets/shimmer_loading.dart';
 import '../../../shared/widgets/themed_category_bottom_nav.dart';
 import '../providers/skills_provider.dart';
+import '../../../app/theme/app_colors.dart';
 
 class SkillsMarketplaceScreen extends ConsumerStatefulWidget {
   const SkillsMarketplaceScreen({super.key});
@@ -37,11 +38,11 @@ class _SkillsMarketplaceScreenState
 
     return Scaffold(
       key: _scaffoldKey,
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: AppColors.background,
       endDrawer: const ProfileDrawer(),
       bottomNavigationBar: const ThemedCategoryBottomNav(
-        activeColor: Color(0xFF10B981),
-        secondaryColor: Color(0xFF047857),
+        activeColor: AppColors.moduleSkills,
+        secondaryColor: AppColors.brandNavy,
         categoryLabel: 'Skills',
         categoryIcon: Icons.school_rounded,
       ),
@@ -50,7 +51,7 @@ class _SkillsMarketplaceScreenState
           children: [
             CategoryTopHeader(
               scaffoldKey: _scaffoldKey,
-              themeColor: const Color(0xFF10B981),
+              themeColor: AppColors.moduleSkills,
               searchHint:
                   'Search skills & courses (e.g. Flutter, Electrician)...',
               searchController: _searchController,
@@ -65,7 +66,7 @@ class _SkillsMarketplaceScreenState
             ),
             Expanded(
               child: RefreshIndicator(
-                color: const Color(0xFF10B981),
+                color: AppColors.moduleSkills,
                 onRefresh: () => ref.read(skillsProvider.notifier).init(),
                 child: ListView(
                   padding: const EdgeInsets.symmetric(
@@ -102,12 +103,12 @@ class _SkillsMarketplaceScreenState
                                 ),
                                 decoration: BoxDecoration(
                                   color: isSelected
-                                      ? const Color(0xFF10B981)
+                                      ? AppColors.moduleSkills
                                       : Colors.white,
                                   borderRadius: BorderRadius.circular(10),
                                   border: Border.all(
                                     color: isSelected
-                                        ? const Color(0xFF10B981)
+                                        ? AppColors.moduleSkills
                                         : const Color(0xFFCBD5E1),
                                   ),
                                 ),
@@ -136,7 +137,7 @@ class _SkillsMarketplaceScreenState
                         decoration: BoxDecoration(
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: const Color(0xFFE2E8F0)),
+                          border: Border.all(color: AppColors.border),
                         ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -148,7 +149,7 @@ class _SkillsMarketplaceScreenState
                                   children: [
                                     Icon(
                                       Icons.verified_user_rounded,
-                                      color: Color(0xFF10B981),
+                                      color: AppColors.moduleSkills,
                                       size: 18,
                                     ),
                                     SizedBox(width: 8),
@@ -157,7 +158,7 @@ class _SkillsMarketplaceScreenState
                                       style: TextStyle(
                                         fontSize: 14,
                                         fontWeight: FontWeight.w800,
-                                        color: Color(0xFF0F172A),
+                                        color: AppColors.textPrimary,
                                       ),
                                     ),
                                   ],
@@ -209,12 +210,14 @@ class _SkillsMarketplaceScreenState
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text(
-                          'Browse Skills Catalog',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w800,
-                            color: Color(0xFF0F172A),
+                        const Flexible(
+                          child: Text(
+                            'Browse Skills Catalog',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w800,
+                              color: AppColors.textPrimary,
+                            ),
                           ),
                         ),
                         Text(
@@ -222,7 +225,7 @@ class _SkillsMarketplaceScreenState
                           style: const TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w600,
-                            color: Color(0xFF64748B),
+                            color: AppColors.textSecondary,
                           ),
                         ),
                       ],
@@ -332,7 +335,7 @@ class _SkillsMarketplaceScreenState
                                     style: const TextStyle(
                                       fontSize: 13,
                                       fontWeight: FontWeight.w700,
-                                      color: Color(0xFF0F172A),
+                                      color: AppColors.textPrimary,
                                     ),
                                   ),
                                   const SizedBox(height: 2),
@@ -394,14 +397,18 @@ class _SkillsMarketplaceScreenState
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [Color(0xFF065F46), Color(0xFF059669), Color(0xFF10B981)],
+          colors: [
+            Color(0xFF065F46),
+            Color(0xFF059669),
+            AppColors.moduleSkills,
+          ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(18),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF10B981).withValues(alpha: 0.3),
+            color: AppColors.moduleSkills.withValues(alpha: 0.3),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -456,7 +463,7 @@ class _SkillsMarketplaceScreenState
       ),
       child: const Column(
         children: [
-          Icon(Icons.school_outlined, size: 36, color: Color(0xFF10B981)),
+          Icon(Icons.school_outlined, size: 36, color: AppColors.moduleSkills),
           SizedBox(height: 12),
           Text(
             'No matching skills found',
@@ -470,7 +477,7 @@ class _SkillsMarketplaceScreenState
           Text(
             'Try clearing your search query or selecting another category.',
             textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 12, color: Color(0xFF64748B)),
+            style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
           ),
         ],
       ),
@@ -496,7 +503,7 @@ class _SkillsMarketplaceScreenState
             child: const Icon(
               Icons.construction_rounded,
               size: 32,
-              color: Color(0xFF10B981),
+              color: AppColors.moduleSkills,
             ),
           ),
           const SizedBox(height: 14),
@@ -512,13 +519,16 @@ class _SkillsMarketplaceScreenState
           Text(
             error,
             textAlign: TextAlign.center,
-            style: const TextStyle(fontSize: 12, color: Color(0xFF64748B)),
+            style: const TextStyle(
+              fontSize: 12,
+              color: AppColors.textSecondary,
+            ),
           ),
           const SizedBox(height: 16),
           ElevatedButton.icon(
             onPressed: () => ref.read(skillsProvider.notifier).init(),
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF10B981),
+              backgroundColor: AppColors.moduleSkills,
               foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
               shape: RoundedRectangleBorder(

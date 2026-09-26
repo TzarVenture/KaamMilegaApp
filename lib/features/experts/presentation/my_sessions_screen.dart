@@ -5,8 +5,10 @@ import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../app/theme/app_colors.dart';
+import '../../../core/network/app_exception.dart';
 import '../../../shared/widgets/fade_slide_in.dart';
 import '../../../shared/widgets/network_state_view.dart';
+import '../../../shared/widgets/sheet_drag_handle.dart';
 import '../../../shared/widgets/shimmer_loading.dart';
 import '../models/booking.dart';
 import '../repositories/expert_repository.dart';
@@ -15,6 +17,29 @@ import '../repositories/expert_repository.dart';
 /// (GET /mentorships/bookings/my).
 class MySessionsScreen extends ConsumerWidget {
   const MySessionsScreen({super.key});
+
+  /// Opens the rating sheet; on success reloads the list so the stars shown
+  /// are the ones saved by the server.
+  Future<void> _rateSession(
+    BuildContext context,
+    WidgetRef ref,
+    BookingItem booking,
+  ) async {
+    final submitted = await showModalBottomSheet<bool>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => RateSessionSheet(booking: booking),
+    );
+    if (submitted != true || !context.mounted) return;
+    ref.invalidate(myBookingsProvider);
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Thanks! Your review was submitted.'),
+        backgroundColor: AppColors.success,
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -55,7 +80,10 @@ class MySessionsScreen extends ConsumerWidget {
               separatorBuilder: (_, _) => const SizedBox(height: 12),
               itemBuilder: (context, index) => FadeSlideIn(
                 index: index,
-                child: _SessionCard(booking: bookings[index]),
+                child: _SessionCard(
+                  booking: bookings[index],
+                  onRate: () => _rateSession(context, ref, bookings[index]),
+                ),
               ),
             );
           },
@@ -72,8 +100,9 @@ class MySessionsScreen extends ConsumerWidget {
 
 class _SessionCard extends StatelessWidget {
   final BookingItem booking;
+  final VoidCallback? onRate;
 
-  const _SessionCard({required this.booking});
+  const _SessionCard({required this.booking, this.onRate});
 
   static String _statusLabel(String status) {
     switch (status) {
@@ -260,6 +289,20 @@ class _SessionCard extends StatelessWidget {
               style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
             ),
           ],
+          if (booking.isReviewed) ...[
+            const SizedBox(height: 12),
+            _YourReview(rating: booking.rating, review: booking.review),
+          ] else if (booking.canReview && onRate != null) ...[
+            const SizedBox(height: 14),
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                onPressed: onRate,
+                icon: const Icon(Icons.star_outline_rounded),
+                label: const Text('Rate session'),
+              ),
+            ),
+          ],
         ],
       ),
     );
@@ -285,6 +328,223 @@ class _InfoLine extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+/// The user's saved rating (from the server) shown on a session card.
+class _YourReview extends StatelessWidget {
+  const _YourReview({required this.rating, required this.review});
+
+  final double rating;
+  final String review;
+
+  @override
+  Widget build(BuildContext context) {
+    final stars = rating.round().clamp(1, 5);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Semantics(
+          // Own node, so the label is not merged into the card's text.
+          container: true,
+          label: 'Your rating: $stars out of 5',
+          child: ExcludeSemantics(
+            child: Row(
+              children: [
+                const Flexible(
+                  child: Text(
+                    'Your rating ',
+                    style: TextStyle(
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                ),
+                for (var i = 1; i <= 5; i++)
+                  Icon(
+                    i <= stars ? Icons.star_rounded : Icons.star_border_rounded,
+                    size: 18,
+                    color: AppColors.moduleEvents,
+                  ),
+              ],
+            ),
+          ),
+        ),
+        if (review.isNotEmpty) ...[
+          const SizedBox(height: 4),
+          Text(
+            review,
+            style: const TextStyle(
+              fontSize: 12.5,
+              color: AppColors.textPrimary,
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+/// Bottom sheet to rate a completed session: 1–5 stars and an optional
+/// review. Pops `true` only after the server accepted it.
+class RateSessionSheet extends ConsumerStatefulWidget {
+  const RateSessionSheet({super.key, required this.booking});
+
+  final BookingItem booking;
+
+  @override
+  ConsumerState<RateSessionSheet> createState() => _RateSessionSheetState();
+}
+
+class _RateSessionSheetState extends ConsumerState<RateSessionSheet> {
+  final _reviewCtrl = TextEditingController();
+  int _rating = 0;
+  bool _sending = false;
+  String? _error;
+
+  @override
+  void dispose() {
+    _reviewCtrl.dispose();
+    super.dispose();
+  }
+
+  Future<void> _submit() async {
+    if (_rating == 0) {
+      setState(() => _error = 'Please choose 1 to 5 stars.');
+      return;
+    }
+    setState(() {
+      _sending = true;
+      _error = null;
+    });
+    try {
+      await ref
+          .read(expertRepositoryProvider)
+          .submitBookingReview(
+            bookingId: widget.booking.id,
+            rating: _rating,
+            review: _reviewCtrl.text,
+          );
+      if (mounted) Navigator.of(context).pop(true);
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _sending = false;
+        _error = e is AppException
+            ? e.message
+            : 'Could not submit your review. Please try again.';
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final media = MediaQuery.of(context);
+    final title = widget.booking.mentorshipTitle.isNotEmpty
+        ? widget.booking.mentorshipTitle
+        : 'Mentorship session';
+    return PopScope(
+      canPop: !_sending,
+      child: Container(
+        padding: EdgeInsets.only(bottom: media.viewInsets.bottom),
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        child: SafeArea(
+          top: false,
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(20, 24, 20, 20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SheetDragHandle(),
+                const Text(
+                  'Rate your session',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 13,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Center(
+                  child: Wrap(
+                    children: [
+                      for (var i = 1; i <= 5; i++)
+                        IconButton(
+                          tooltip: '$i star${i == 1 ? '' : 's'}',
+                          onPressed: _sending
+                              ? null
+                              : () => setState(() {
+                                  _rating = i;
+                                  _error = null;
+                                }),
+                          icon: Icon(
+                            i <= _rating
+                                ? Icons.star_rounded
+                                : Icons.star_border_rounded,
+                            size: 36,
+                            color: AppColors.moduleEvents,
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: _reviewCtrl,
+                  enabled: !_sending,
+                  minLines: 3,
+                  maxLines: 5,
+                  textCapitalization: TextCapitalization.sentences,
+                  decoration: InputDecoration(
+                    hintText: 'What went well? (optional)',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                  ),
+                ),
+                if (_error != null) ...[
+                  const SizedBox(height: 12),
+                  Text(
+                    _error!,
+                    style: const TextStyle(
+                      fontSize: 13,
+                      color: AppColors.error,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+                const SizedBox(height: 20),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: _sending ? null : _submit,
+                    child: _sending
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
+                          )
+                        : const Text('Submit review'),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

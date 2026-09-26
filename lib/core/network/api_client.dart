@@ -4,19 +4,27 @@ import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../features/auth/providers/auth_provider.dart';
 import '../constants/api_constants.dart';
 import '../storage/local_storage.dart';
 import 'app_exception.dart';
 import 'connectivity_service.dart';
 import 'network_status.dart';
 
-final apiClientProvider = Provider<ApiClient>((ref) => ApiClient());
+final apiClientProvider = Provider<ApiClient>((ref) {
+  return ApiClient(
+    onUnauthenticated: () {
+      ref.read(authProvider.notifier).sessionExpired();
+    },
+  );
+});
 
 /// Network client powered by Dio with safe error translation and connectivity resilience
 class ApiClient {
   late final Dio _dio;
+  final VoidCallback? onUnauthenticated;
 
-  ApiClient({String? baseUrl, Dio? dio}) {
+  ApiClient({String? baseUrl, Dio? dio, this.onUnauthenticated}) {
     _dio =
         dio ??
         Dio(
@@ -50,6 +58,7 @@ class ApiClient {
           // Handle 401 Unauthorized / Token Expiration
           if (error.response?.statusCode == 401) {
             await LocalStorage.clearSession();
+            onUnauthenticated?.call();
           }
 
           // If network connection failure or timeout, update connectivity service

@@ -877,6 +877,14 @@ class AuthNotifier extends Notifier<AuthState> {
     }
   }
 
+  /// Immediately clears the session state on token expiry (HTTP 401)
+  /// so the router immediately redirects the user to the login screen.
+  void sessionExpired() {
+    state = const AuthState(
+      error: 'Your session has expired. Please log in again.',
+    );
+  }
+
   /// Logout candidate session
   Future<void> logout() async {
     await _repository.logout();

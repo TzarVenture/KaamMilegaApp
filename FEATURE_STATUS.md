@@ -87,7 +87,8 @@ Issue references (C-/H-/M-/L-/B-) → [KNOWN_ISSUES.md](KNOWN_ISSUES.md). Endpoi
 | F43 | Expert directory | Guest, User | IMPLEMENTED | Active `GET /mentorships` | REAL + FALLBACK labels/rating | `experts/presentation/experts_screen.dart`, `experts/models/expert_profile.dart` | Fallback values (M-02) |
 | F44 | Book free session | User | IMPLEMENTED | Active `POST /mentorships/book` | REAL | `expert_detail_screen.dart` | — |
 | F76 | Paid session (wallet or Razorpay) | User | IMPLEMENTED (not tested in Razorpay TEST mode) | Active book-wallet / create-order / verify-payment | REAL | `expert_detail_screen.dart`, `core/payments/razorpay_checkout.dart` | Test-mode verification |
-| MF-15 | My booked sessions | User | IMPLEMENTED (7c) | Active `GET /mentorships/bookings/my` | REAL | `experts/presentation/my_sessions_screen.dart`, route `/my-sessions` (protected, drawer "My Sessions") | — |
+| MF-15 | My booked sessions + rate a completed session | User | IMPLEMENTED (7c; rating 26 Sep) | Active `GET /mentorships/bookings/my`, `POST /mentorships/bookings/:id/review` | REAL | `experts/presentation/my_sessions_screen.dart` (`RateSessionSheet`), route `/my-sessions` (protected, drawer "My Sessions") | Phone check (needs a session marked completed); backend does not update the expert's overall rating |
+| F75 | Pro Expert subscription (monthly / yearly) | Expert | PENDING — not in mobile scope | Available `/subscriptions/expert/*` (backend `c829a60`), not integrated | — | — | **Decision needed** (expert-side payment flow) |
 | F45/F46 | Expert reviews, earnings dashboard | Expert | PENDING | partial backend (not verified) | — | — | Not verified |
 | F47 | Services directory | Guest, User | UI ONLY ("coming soon" + static categories) | none | HC | `services/presentation/services_marketplace_screen.dart` | **Backend** (`/services` not built) |
 | F48–F50 | Book services, quotes, tracking | — | PENDING | none | — | — | **Backend** first |
@@ -111,7 +112,7 @@ Issue references (C-/H-/M-/L-/B-) → [KNOWN_ISSUES.md](KNOWN_ISSUES.md). Endpoi
 | ID | Feature | User | Flutter Status | API Status | Data | Main Files | Pending Work |
 |---|---|---|---|---|---|---|---|
 | F68 | Balances (main/earnings/locked/bonus) | User | IMPLEMENTED | Active `GET /wallet/balance` | REAL + CACHED | `wallet/presentation/wallet_screen.dart`, `wallet/providers/wallet_provider.dart` | — |
-| F72 | Transaction history | User | IMPLEMENTED | Active `GET /wallet/transactions` | REAL + CACHED | `wallet_transactions_screen.dart` | — |
+| F72 | Transaction history | User | IMPLEMENTED | Active `GET /wallet/transactions` | REAL + CACHED | `wallet_transactions_screen.dart` | "Expert subscription" title for `subscription` entries (26 Sep) |
 | F70 | Add money (Razorpay) | User | IMPLEMENTED (not tested in TEST mode) | Active create-order / verify | REAL | `wallet_add_money_screen.dart`, `razorpay_checkout.dart` | Test-mode run; **Backend:** B-02 |
 | F71 | Withdraw earnings | User, Expert | IMPLEMENTED (Batch 2) — no real payout tested | Active `POST /wallet/withdraw` | REAL | `wallet_withdraw_screen.dart`, `wallet/models/withdrawal.dart`, `wallet_repository.dart` | **Backend:** no idempotency key (B-06) |
 | MF-18 | Wallet transfer (P2P) | User | BACKEND DEPENDENCY | 404 → coming soon | — | `wallet_transfer_screen.dart` | **Backend** |

@@ -251,16 +251,16 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   // 1. HERO HEADLINE & TAGLINE
-                  RichText(
+                  Text.rich(
                     textAlign: TextAlign.center,
-                    text: const TextSpan(
+                    const TextSpan(
                       children: [
                         TextSpan(
                           text: 'Call Or ',
                           style: TextStyle(
                             fontSize: 22,
                             fontWeight: FontWeight.w900,
-                            color: Color(0xFF1A2B8C),
+                            color: AppColors.primary,
                             letterSpacing: -0.3,
                           ),
                         ),
@@ -269,7 +269,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                           style: TextStyle(
                             fontSize: 22,
                             fontWeight: FontWeight.w900,
-                            color: Color(0xFFEA580C),
+                            color: AppColors.accent,
                             letterSpacing: -0.3,
                           ),
                         ),
@@ -278,7 +278,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                           style: TextStyle(
                             fontSize: 22,
                             fontWeight: FontWeight.w900,
-                            color: Color(0xFF1A2B8C),
+                            color: AppColors.primary,
                             letterSpacing: -0.3,
                           ),
                         ),
@@ -287,7 +287,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                   ),
                   const SizedBox(height: 6),
                   const Text(
-                    'Get Local Jobs In Your City! 👈',
+                    'Get Local Jobs In Your City!',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 14,
@@ -351,7 +351,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
           style: TextStyle(
             fontSize: 22,
             fontWeight: FontWeight.w900,
-            color: Color(0xFF0F172A),
+            color: AppColors.textPrimary,
             letterSpacing: -0.5,
           ),
         ),
@@ -360,7 +360,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
           'Enter your registered email to receive a 4-digit reset code',
           style: TextStyle(
             fontSize: 13,
-            color: Color(0xFF64748B),
+            color: AppColors.textSecondary,
             fontWeight: FontWeight.w500,
           ),
         ),
@@ -372,7 +372,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
           style: TextStyle(
             fontSize: 11,
             fontWeight: FontWeight.w900,
-            color: Color(0xFF64748B),
+            color: AppColors.textSecondary,
             letterSpacing: 0.5,
           ),
         ),
@@ -390,18 +390,15 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
             ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(16),
-              borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+              borderSide: const BorderSide(color: AppColors.border),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(16),
-              borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+              borderSide: const BorderSide(color: AppColors.border),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(16),
-              borderSide: const BorderSide(
-                color: Color(0xFF9333EA),
-                width: 1.5,
-              ),
+              borderSide: const BorderSide(color: AppColors.blue, width: 1.5),
             ),
           ),
         ),
@@ -460,7 +457,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
               style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w700,
-                color: Color(0xFF64748B),
+                color: AppColors.textSecondary,
               ),
             ),
           ),
@@ -481,21 +478,24 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
           style: TextStyle(
             fontSize: 22,
             fontWeight: FontWeight.w900,
-            color: Color(0xFF0F172A),
+            color: AppColors.textPrimary,
             letterSpacing: -0.5,
           ),
         ),
         const SizedBox(height: 6),
-        RichText(
-          text: TextSpan(
-            style: const TextStyle(fontSize: 13, color: Color(0xFF64748B)),
+        Text.rich(
+          TextSpan(
+            style: const TextStyle(
+              fontSize: 13,
+              color: AppColors.textSecondary,
+            ),
             children: [
               const TextSpan(text: 'We sent a 4-digit reset code to '),
               TextSpan(
                 text: _emailController.text.trim(),
                 style: const TextStyle(
                   fontWeight: FontWeight.w700,
-                  color: Color(0xFF0F172A),
+                  color: AppColors.textPrimary,
                 ),
               ),
             ],
@@ -509,7 +509,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
           style: TextStyle(
             fontSize: 11,
             fontWeight: FontWeight.w900,
-            color: Color(0xFF64748B),
+            color: AppColors.textSecondary,
             letterSpacing: 0.5,
           ),
         ),
@@ -522,7 +522,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
             fontSize: 20,
             fontWeight: FontWeight.w800,
             letterSpacing: 8,
-            color: Color(0xFF1A2B8C),
+            color: AppColors.primary,
           ),
           textAlign: TextAlign.center,
           decoration: InputDecoration(
@@ -539,18 +539,15 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
             ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(16),
-              borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+              borderSide: const BorderSide(color: AppColors.border),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(16),
-              borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+              borderSide: const BorderSide(color: AppColors.border),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(16),
-              borderSide: const BorderSide(
-                color: Color(0xFF9333EA),
-                width: 1.5,
-              ),
+              borderSide: const BorderSide(color: AppColors.blue, width: 1.5),
             ),
           ),
         ),
@@ -563,7 +560,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
           style: TextStyle(
             fontSize: 11,
             fontWeight: FontWeight.w900,
-            color: Color(0xFF64748B),
+            color: AppColors.textSecondary,
             letterSpacing: 0.5,
           ),
         ),
@@ -591,18 +588,15 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
             ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(16),
-              borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+              borderSide: const BorderSide(color: AppColors.border),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(16),
-              borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+              borderSide: const BorderSide(color: AppColors.border),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(16),
-              borderSide: const BorderSide(
-                color: Color(0xFF9333EA),
-                width: 1.5,
-              ),
+              borderSide: const BorderSide(color: AppColors.blue, width: 1.5),
             ),
           ),
         ),
@@ -615,7 +609,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
           style: TextStyle(
             fontSize: 11,
             fontWeight: FontWeight.w900,
-            color: Color(0xFF64748B),
+            color: AppColors.textSecondary,
             letterSpacing: 0.5,
           ),
         ),
@@ -647,18 +641,15 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
             ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(16),
-              borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+              borderSide: const BorderSide(color: AppColors.border),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(16),
-              borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+              borderSide: const BorderSide(color: AppColors.border),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(16),
-              borderSide: const BorderSide(
-                color: Color(0xFF9333EA),
-                width: 1.5,
-              ),
+              borderSide: const BorderSide(color: AppColors.blue, width: 1.5),
             ),
           ),
         ),
@@ -713,7 +704,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                 style: TextStyle(
                   fontSize: 12.5,
                   fontWeight: FontWeight.w700,
-                  color: Color(0xFF64748B),
+                  color: AppColors.textSecondary,
                 ),
               ),
             ),
@@ -724,7 +715,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                 style: TextStyle(
                   fontSize: 12.5,
                   fontWeight: FontWeight.w800,
-                  color: Color(0xFF1A2B8C),
+                  color: AppColors.primary,
                 ),
               ),
             ),
@@ -765,7 +756,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                     Icon(
                       Icons.phone_outlined,
                       size: 18,
-                      color: Color(0xFF64748B),
+                      color: AppColors.textSecondary,
                     ),
                     SizedBox(width: 6),
                     Flexible(
@@ -775,7 +766,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                         style: TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w600,
-                          color: Color(0xFF64748B),
+                          color: AppColors.textSecondary,
                         ),
                       ),
                     ),
@@ -810,7 +801,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                     Icon(
                       Icons.lock_outline_rounded,
                       size: 18,
-                      color: Color(0xFF1A2B8C),
+                      color: AppColors.primary,
                     ),
                     SizedBox(width: 6),
                     Flexible(
@@ -820,7 +811,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                         style: TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w800,
-                          color: Color(0xFF1A2B8C),
+                          color: AppColors.primary,
                         ),
                       ),
                     ),

@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/network/connectivity_provider.dart';
 import '../providers/wallet_provider.dart';
 import '../../../shared/widgets/app_dialog.dart';
+import '../../../app/theme/app_colors.dart';
 
 class WalletAddMoneyScreen extends ConsumerStatefulWidget {
   const WalletAddMoneyScreen({super.key});
@@ -202,14 +203,14 @@ class _WalletAddMoneyScreenState extends ConsumerState<WalletAddMoneyScreen> {
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w800,
-                          color: Color(0xFF0F172A),
+                          color: AppColors.textPrimary,
                         ),
                       ),
                       Text(
                         'Adding money to your wallet',
                         style: TextStyle(
                           fontSize: 12,
-                          color: Color(0xFF64748B),
+                          color: AppColors.textSecondary,
                         ),
                       ),
                     ],
@@ -221,9 +222,9 @@ class _WalletAddMoneyScreenState extends ConsumerState<WalletAddMoneyScreen> {
             Container(
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
-                color: const Color(0xFFF8FAFC),
+                color: AppColors.background,
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: const Color(0xFFE2E8F0)),
+                border: Border.all(color: AppColors.border),
               ),
               child: Column(
                 children: [
@@ -256,7 +257,7 @@ class _WalletAddMoneyScreenState extends ConsumerState<WalletAddMoneyScreen> {
                   context.pop();
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF1A2B8C),
+                  backgroundColor: AppColors.primary,
                   foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
@@ -279,16 +280,21 @@ class _WalletAddMoneyScreenState extends ConsumerState<WalletAddMoneyScreen> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(
-          label,
-          style: const TextStyle(fontSize: 12, color: Color(0xFF64748B)),
+        Flexible(
+          child: Text(
+            label,
+            style: const TextStyle(
+              fontSize: 12,
+              color: AppColors.textSecondary,
+            ),
+          ),
         ),
         Text(
           value,
           style: const TextStyle(
             fontSize: 12,
             fontWeight: FontWeight.w700,
-            color: Color(0xFF0F172A),
+            color: AppColors.textPrimary,
           ),
         ),
       ],
@@ -302,7 +308,7 @@ class _WalletAddMoneyScreenState extends ConsumerState<WalletAddMoneyScreen> {
     final currentBalance = walletState.summary?.mainBalance ?? 0;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: AppColors.background,
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
@@ -323,7 +329,7 @@ class _WalletAddMoneyScreenState extends ConsumerState<WalletAddMoneyScreen> {
         title: const Text(
           'Add Money to Wallet',
           style: TextStyle(
-            color: Color(0xFF0F172A),
+            color: AppColors.textPrimary,
             fontSize: 18,
             fontWeight: FontWeight.w700,
           ),
@@ -338,7 +344,7 @@ class _WalletAddMoneyScreenState extends ConsumerState<WalletAddMoneyScreen> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
               decoration: BoxDecoration(
-                color: const Color(0xFFEEF2FF),
+                color: AppColors.primaryLight,
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(color: const Color(0xFFC7D2FE)),
               ),
@@ -346,7 +352,7 @@ class _WalletAddMoneyScreenState extends ConsumerState<WalletAddMoneyScreen> {
                 children: [
                   const Icon(
                     Icons.account_balance_wallet_outlined,
-                    color: Color(0xFF1A2B8C),
+                    color: AppColors.primary,
                     size: 18,
                   ),
                   const SizedBox(width: 10),
@@ -354,7 +360,7 @@ class _WalletAddMoneyScreenState extends ConsumerState<WalletAddMoneyScreen> {
                     'Current Wallet Balance:',
                     style: TextStyle(
                       fontSize: 13,
-                      color: Color(0xFF4338CA),
+                      color: AppColors.blue,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
@@ -364,7 +370,7 @@ class _WalletAddMoneyScreenState extends ConsumerState<WalletAddMoneyScreen> {
                     style: const TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.w800,
-                      color: Color(0xFF1A2B8C),
+                      color: AppColors.primary,
                     ),
                   ),
                 ],
@@ -379,7 +385,7 @@ class _WalletAddMoneyScreenState extends ConsumerState<WalletAddMoneyScreen> {
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w700,
-                color: Color(0xFF0F172A),
+                color: AppColors.textPrimary,
               ),
             ),
             const SizedBox(height: 10),
@@ -397,7 +403,7 @@ class _WalletAddMoneyScreenState extends ConsumerState<WalletAddMoneyScreen> {
                     style: TextStyle(
                       fontSize: 28,
                       fontWeight: FontWeight.w800,
-                      color: Color(0xFF1A2B8C),
+                      color: AppColors.primary,
                     ),
                   ),
                   const SizedBox(width: 8),
@@ -409,7 +415,7 @@ class _WalletAddMoneyScreenState extends ConsumerState<WalletAddMoneyScreen> {
                       style: const TextStyle(
                         fontSize: 28,
                         fontWeight: FontWeight.w800,
-                        color: Color(0xFF0F172A),
+                        color: AppColors.textPrimary,
                       ),
                       decoration: const InputDecoration(
                         border: InputBorder.none,
@@ -437,13 +443,11 @@ class _WalletAddMoneyScreenState extends ConsumerState<WalletAddMoneyScreen> {
                       child: Container(
                         padding: const EdgeInsets.symmetric(vertical: 10),
                         decoration: BoxDecoration(
-                          color: isSelected
-                              ? const Color(0xFF1A2B8C)
-                              : Colors.white,
+                          color: isSelected ? AppColors.primary : Colors.white,
                           borderRadius: BorderRadius.circular(10),
                           border: Border.all(
                             color: isSelected
-                                ? const Color(0xFF1A2B8C)
+                                ? AppColors.primary
                                 : const Color(0xFFCBD5E1),
                           ),
                         ),
@@ -473,7 +477,7 @@ class _WalletAddMoneyScreenState extends ConsumerState<WalletAddMoneyScreen> {
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w700,
-                color: Color(0xFF0F172A),
+                color: AppColors.textPrimary,
               ),
             ),
             const SizedBox(height: 12),
@@ -512,13 +516,16 @@ class _WalletAddMoneyScreenState extends ConsumerState<WalletAddMoneyScreen> {
                   Icon(
                     Icons.lock_outline_rounded,
                     size: 16,
-                    color: Color(0xFF64748B),
+                    color: AppColors.textSecondary,
                   ),
                   SizedBox(width: 8),
                   Expanded(
                     child: Text(
                       'Your payments are secured by 256-bit SSL encryption & RBI-compliant gateway partners.',
-                      style: TextStyle(fontSize: 11, color: Color(0xFF64748B)),
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: AppColors.textSecondary,
+                      ),
                     ),
                   ),
                 ],
@@ -533,7 +540,7 @@ class _WalletAddMoneyScreenState extends ConsumerState<WalletAddMoneyScreen> {
               child: ElevatedButton(
                 onPressed: walletState.isActionLoading ? null : _handleProceed,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF1A2B8C),
+                  backgroundColor: AppColors.primary,
                   foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(14),
@@ -585,9 +592,7 @@ class _WalletAddMoneyScreenState extends ConsumerState<WalletAddMoneyScreen> {
           color: Colors.white,
           borderRadius: BorderRadius.circular(14),
           border: Border.all(
-            color: isSelected
-                ? const Color(0xFF1A2B8C)
-                : const Color(0xFFE2E8F0),
+            color: isSelected ? AppColors.primary : AppColors.border,
             width: isSelected ? 1.8 : 1.0,
           ),
         ),
@@ -597,15 +602,13 @@ class _WalletAddMoneyScreenState extends ConsumerState<WalletAddMoneyScreen> {
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
                 color: isSelected
-                    ? const Color(0xFFEEF2FF)
-                    : const Color(0xFFF8FAFC),
+                    ? AppColors.primaryLight
+                    : AppColors.background,
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Icon(
                 icon,
-                color: isSelected
-                    ? const Color(0xFF1A2B8C)
-                    : const Color(0xFF64748B),
+                color: isSelected ? AppColors.primary : AppColors.textSecondary,
                 size: 22,
               ),
             ),
@@ -620,7 +623,7 @@ class _WalletAddMoneyScreenState extends ConsumerState<WalletAddMoneyScreen> {
                       fontSize: 13,
                       fontWeight: FontWeight.w700,
                       color: isSelected
-                          ? const Color(0xFF0F172A)
+                          ? AppColors.textPrimary
                           : const Color(0xFF334155),
                     ),
                   ),
@@ -629,7 +632,7 @@ class _WalletAddMoneyScreenState extends ConsumerState<WalletAddMoneyScreen> {
                     subtitle,
                     style: const TextStyle(
                       fontSize: 11,
-                      color: Color(0xFF64748B),
+                      color: AppColors.textSecondary,
                     ),
                   ),
                 ],
@@ -642,7 +645,7 @@ class _WalletAddMoneyScreenState extends ConsumerState<WalletAddMoneyScreen> {
                 shape: BoxShape.circle,
                 border: Border.all(
                   color: isSelected
-                      ? const Color(0xFF1A2B8C)
+                      ? AppColors.primary
                       : const Color(0xFFCBD5E1),
                   width: isSelected ? 6 : 1.5,
                 ),

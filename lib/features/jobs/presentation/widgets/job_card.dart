@@ -117,7 +117,7 @@ class JobCard extends StatelessWidget {
                         width: 44,
                         height: 44,
                         decoration: BoxDecoration(
-                          color: const Color(0xFF0F172A),
+                          color: AppColors.textPrimary,
                           borderRadius: BorderRadius.circular(12),
                           boxShadow: [
                             BoxShadow(
@@ -153,7 +153,7 @@ class JobCard extends StatelessWidget {
                               style: const TextStyle(
                                 fontSize: 16.5,
                                 fontWeight: FontWeight.w900,
-                                color: Color(0xFF0F172A),
+                                color: AppColors.textPrimary,
                                 height: 1.2,
                                 letterSpacing: -0.2,
                               ),

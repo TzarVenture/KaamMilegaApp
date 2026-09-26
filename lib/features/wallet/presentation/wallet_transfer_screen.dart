@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/network/connectivity_provider.dart';
 import '../providers/wallet_provider.dart';
 import '../repositories/wallet_repository.dart';
+import '../../../app/theme/app_colors.dart';
 
 class WalletTransferScreen extends ConsumerStatefulWidget {
   const WalletTransferScreen({super.key});
@@ -180,14 +181,14 @@ class _WalletTransferScreenState extends ConsumerState<WalletTransferScreen> {
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w800,
-                          color: Color(0xFF0F172A),
+                          color: AppColors.textPrimary,
                         ),
                       ),
                       Text(
                         'Send money to KaamMilega users',
                         style: TextStyle(
                           fontSize: 12,
-                          color: Color(0xFF64748B),
+                          color: AppColors.textSecondary,
                         ),
                       ),
                     ],
@@ -199,9 +200,9 @@ class _WalletTransferScreenState extends ConsumerState<WalletTransferScreen> {
             Container(
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
-                color: const Color(0xFFF8FAFC),
+                color: AppColors.background,
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: const Color(0xFFE2E8F0)),
+                border: Border.all(color: AppColors.border),
               ),
               child: Column(
                 children: [
@@ -234,7 +235,7 @@ class _WalletTransferScreenState extends ConsumerState<WalletTransferScreen> {
                   context.pop();
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF1A2B8C),
+                  backgroundColor: AppColors.primary,
                   foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
@@ -257,16 +258,21 @@ class _WalletTransferScreenState extends ConsumerState<WalletTransferScreen> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(
-          label,
-          style: const TextStyle(fontSize: 12, color: Color(0xFF64748B)),
+        Flexible(
+          child: Text(
+            label,
+            style: const TextStyle(
+              fontSize: 12,
+              color: AppColors.textSecondary,
+            ),
+          ),
         ),
         Text(
           value,
           style: const TextStyle(
             fontSize: 12,
             fontWeight: FontWeight.w700,
-            color: Color(0xFF0F172A),
+            color: AppColors.textPrimary,
           ),
         ),
       ],
@@ -280,7 +286,7 @@ class _WalletTransferScreenState extends ConsumerState<WalletTransferScreen> {
     final currentBalance = (walletState.summary?.mainBalance ?? 0).floor();
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: AppColors.background,
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
@@ -301,7 +307,7 @@ class _WalletTransferScreenState extends ConsumerState<WalletTransferScreen> {
         title: const Text(
           'Transfer Balance',
           style: TextStyle(
-            color: Color(0xFF0F172A),
+            color: AppColors.textPrimary,
             fontSize: 18,
             fontWeight: FontWeight.w700,
           ),
@@ -316,7 +322,7 @@ class _WalletTransferScreenState extends ConsumerState<WalletTransferScreen> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
               decoration: BoxDecoration(
-                color: const Color(0xFFEEF2FF),
+                color: AppColors.primaryLight,
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(color: const Color(0xFFC7D2FE)),
               ),
@@ -324,7 +330,7 @@ class _WalletTransferScreenState extends ConsumerState<WalletTransferScreen> {
                 children: [
                   const Icon(
                     Icons.account_balance_wallet_outlined,
-                    color: Color(0xFF1A2B8C),
+                    color: AppColors.primary,
                     size: 18,
                   ),
                   const SizedBox(width: 10),
@@ -332,7 +338,7 @@ class _WalletTransferScreenState extends ConsumerState<WalletTransferScreen> {
                     'Available Balance:',
                     style: TextStyle(
                       fontSize: 13,
-                      color: Color(0xFF4338CA),
+                      color: AppColors.blue,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
@@ -342,7 +348,7 @@ class _WalletTransferScreenState extends ConsumerState<WalletTransferScreen> {
                     style: const TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.w800,
-                      color: Color(0xFF1A2B8C),
+                      color: AppColors.primary,
                     ),
                   ),
                 ],
@@ -357,7 +363,7 @@ class _WalletTransferScreenState extends ConsumerState<WalletTransferScreen> {
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w700,
-                color: Color(0xFF0F172A),
+                color: AppColors.textPrimary,
               ),
             ),
             const SizedBox(height: 10),
@@ -367,7 +373,7 @@ class _WalletTransferScreenState extends ConsumerState<WalletTransferScreen> {
                 hintText: 'Enter 10-digit mobile or KaamMilega ID',
                 prefixIcon: const Icon(
                   Icons.person_search_rounded,
-                  color: Color(0xFF64748B),
+                  color: AppColors.textSecondary,
                 ),
                 filled: true,
                 fillColor: Colors.white,
@@ -390,7 +396,7 @@ class _WalletTransferScreenState extends ConsumerState<WalletTransferScreen> {
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w700,
-                color: Color(0xFF0F172A),
+                color: AppColors.textPrimary,
               ),
             ),
             const SizedBox(height: 10),
@@ -420,7 +426,7 @@ class _WalletTransferScreenState extends ConsumerState<WalletTransferScreen> {
                       style: const TextStyle(
                         fontSize: 26,
                         fontWeight: FontWeight.w800,
-                        color: Color(0xFF0F172A),
+                        color: AppColors.textPrimary,
                       ),
                       decoration: const InputDecoration(
                         border: InputBorder.none,
@@ -441,7 +447,7 @@ class _WalletTransferScreenState extends ConsumerState<WalletTransferScreen> {
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w700,
-                color: Color(0xFF0F172A),
+                color: AppColors.textPrimary,
               ),
             ),
             const SizedBox(height: 10),
@@ -495,7 +501,7 @@ class _WalletTransferScreenState extends ConsumerState<WalletTransferScreen> {
                     ? null
                     : () => _handleTransfer(currentBalance),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF1A2B8C),
+                  backgroundColor: AppColors.primary,
                   foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(14),

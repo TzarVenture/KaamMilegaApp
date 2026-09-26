@@ -200,7 +200,7 @@ class _StateMessage extends StatelessWidget {
                       style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w800,
-                        color: Color(0xFF0F172A),
+                        color: AppColors.textPrimary,
                         height: 1.3,
                       ),
                     ),
@@ -213,7 +213,7 @@ class _StateMessage extends StatelessWidget {
                           textAlign: TextAlign.center,
                           style: const TextStyle(
                             fontSize: 13.5,
-                            color: Color(0xFF64748B),
+                            color: AppColors.textSecondary,
                             height: 1.45,
                           ),
                         ),

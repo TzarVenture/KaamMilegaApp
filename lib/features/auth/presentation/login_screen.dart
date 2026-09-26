@@ -129,7 +129,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
-        backgroundColor: isError ? AppColors.error : const Color(0xFF9333EA),
+        backgroundColor: isError ? AppColors.error : AppColors.primary,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       ),
@@ -316,8 +316,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       Icons.phone_outlined,
                       size: 18,
                       color: _activeTab == LoginTab.otp
-                          ? const Color(0xFF9333EA)
-                          : const Color(0xFF64748B),
+                          ? AppColors.blue
+                          : AppColors.textSecondary,
                     ),
                     const SizedBox(width: 6),
                     Flexible(
@@ -330,8 +330,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               ? FontWeight.w800
                               : FontWeight.w600,
                           color: _activeTab == LoginTab.otp
-                              ? const Color(0xFF9333EA)
-                              : const Color(0xFF64748B),
+                              ? AppColors.blue
+                              : AppColors.textSecondary,
                         ),
                       ),
                     ),
@@ -372,8 +372,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       Icons.lock_outline_rounded,
                       size: 18,
                       color: _activeTab == LoginTab.password
-                          ? const Color(0xFF9333EA)
-                          : const Color(0xFF64748B),
+                          ? AppColors.blue
+                          : AppColors.textSecondary,
                     ),
                     const SizedBox(width: 6),
                     Flexible(
@@ -386,8 +386,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               ? FontWeight.w800
                               : FontWeight.w600,
                           color: _activeTab == LoginTab.password
-                              ? const Color(0xFF9333EA)
-                              : const Color(0xFF64748B),
+                              ? AppColors.blue
+                              : AppColors.textSecondary,
                         ),
                       ),
                     ),
@@ -414,7 +414,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           style: TextStyle(
             fontSize: 11,
             fontWeight: FontWeight.w900,
-            color: Color(0xFF64748B),
+            color: AppColors.textSecondary,
             letterSpacing: 0.5,
           ),
         ),
@@ -432,18 +432,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(16),
-              borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+              borderSide: const BorderSide(color: AppColors.border),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(16),
-              borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+              borderSide: const BorderSide(color: AppColors.border),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(16),
-              borderSide: const BorderSide(
-                color: Color(0xFF9333EA),
-                width: 1.5,
-              ),
+              borderSide: const BorderSide(color: AppColors.blue, width: 1.5),
             ),
           ),
         ),
@@ -461,7 +458,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 style: TextStyle(
                   fontSize: 11,
                   fontWeight: FontWeight.w900,
-                  color: Color(0xFF64748B),
+                  color: AppColors.textSecondary,
                   letterSpacing: 0.5,
                 ),
               ),
@@ -474,7 +471,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w700,
-                  color: Color(0xFF9333EA),
+                  color: AppColors.blue,
                 ),
               ),
             ),
@@ -504,18 +501,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(16),
-              borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+              borderSide: const BorderSide(color: AppColors.border),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(16),
-              borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+              borderSide: const BorderSide(color: AppColors.border),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(16),
-              borderSide: const BorderSide(
-                color: Color(0xFF9333EA),
-                width: 1.5,
-              ),
+              borderSide: const BorderSide(color: AppColors.blue, width: 1.5),
             ),
           ),
         ),
@@ -533,7 +527,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 0xFF1A2B8C,
               ), // Primary KaamMilega Blue
               // Stay blue while signing in (disabled only while loading).
-              disabledBackgroundColor: const Color(0xFF1A2B8C),
+              disabledBackgroundColor: AppColors.primary,
               elevation: 0,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(24),
@@ -578,7 +572,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           style: TextStyle(
             fontSize: 11,
             fontWeight: FontWeight.w900,
-            color: Color(0xFF64748B),
+            color: AppColors.textSecondary,
             letterSpacing: 0.5,
           ),
         ),
@@ -609,18 +603,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(16),
-              borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+              borderSide: const BorderSide(color: AppColors.border),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(16),
-              borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+              borderSide: const BorderSide(color: AppColors.border),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(16),
-              borderSide: const BorderSide(
-                color: Color(0xFF9333EA),
-                width: 1.5,
-              ),
+              borderSide: const BorderSide(color: AppColors.blue, width: 1.5),
             ),
           ),
         ),
@@ -638,7 +629,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 0xFF1A2B8C,
               ), // Primary KaamMilega Blue
               // Stay blue while signing in (disabled only while loading).
-              disabledBackgroundColor: const Color(0xFF1A2B8C),
+              disabledBackgroundColor: AppColors.primary,
               elevation: 0,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(24),
@@ -684,7 +675,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             children: [
               const Text(
                 "Don't have an account yet? ",
-                style: TextStyle(fontSize: 12.5, color: Color(0xFF64748B)),
+                style: TextStyle(
+                  fontSize: 12.5,
+                  color: AppColors.textSecondary,
+                ),
               ),
               GestureDetector(
                 onTap: () => context.push('/register'),
@@ -693,7 +687,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   style: TextStyle(
                     fontSize: 12.5,
                     fontWeight: FontWeight.w800,
-                    color: Color(0xFF9333EA),
+                    color: AppColors.blue,
                   ),
                 ),
               ),
@@ -711,7 +705,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             children: [
               const Text(
                 'Or ',
-                style: TextStyle(fontSize: 12.5, color: Color(0xFF64748B)),
+                style: TextStyle(
+                  fontSize: 12.5,
+                  color: AppColors.textSecondary,
+                ),
               ),
               GestureDetector(
                 onTap: () {
@@ -728,7 +725,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   style: const TextStyle(
                     fontSize: 12.5,
                     fontWeight: FontWeight.w800,
-                    color: Color(0xFF9333EA),
+                    color: AppColors.blue,
                   ),
                 ),
               ),
@@ -750,7 +747,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               'Explore Jobs as Guest ↗',
               style: TextStyle(
                 fontSize: 12,
-                color: Color(0xFF64748B),
+                color: AppColors.textSecondary,
                 fontWeight: FontWeight.w700,
               ),
             ),

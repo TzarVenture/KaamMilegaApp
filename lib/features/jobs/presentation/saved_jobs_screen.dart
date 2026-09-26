@@ -39,7 +39,7 @@ class _SavedJobsScreenState extends ConsumerState<SavedJobsScreen> {
         : ref.watch(savedJobsProvider);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC), // Smooth page background
+      backgroundColor: AppColors.background, // Smooth page background
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
@@ -321,7 +321,7 @@ class _SavedJobsScreenState extends ConsumerState<SavedJobsScreen> {
             width: 72,
             height: 72,
             decoration: const BoxDecoration(
-              color: Color(0xFFEFF6FF), // Blue 50
+              color: AppColors.primaryLight, // Blue 50
               shape: BoxShape.circle,
             ),
             child: const Center(

@@ -12,6 +12,7 @@ import '../providers/wallet_provider.dart';
 import '../../../shared/widgets/app_dialog.dart';
 import '../../../shared/widgets/fade_slide_in.dart';
 import '../../../shared/widgets/pressable_scale.dart';
+import '../../../app/theme/app_colors.dart';
 
 class WalletScreen extends ConsumerWidget {
   const WalletScreen({super.key});
@@ -26,7 +27,7 @@ class WalletScreen extends ConsumerWidget {
     final summary = walletState.summary;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: AppColors.background,
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
@@ -50,7 +51,7 @@ class WalletScreen extends ConsumerWidget {
             Text(
               'Digital Wallet & Ledger',
               style: TextStyle(
-                color: Color(0xFF0F172A),
+                color: AppColors.textPrimary,
                 fontSize: 18,
                 fontWeight: FontWeight.w700,
                 letterSpacing: -0.3,
@@ -59,7 +60,7 @@ class WalletScreen extends ConsumerWidget {
             Text(
               'KaamMilega Escrow & Payouts',
               style: TextStyle(
-                color: Color(0xFF64748B),
+                color: AppColors.textSecondary,
                 fontSize: 12,
                 fontWeight: FontWeight.w500,
               ),
@@ -94,7 +95,7 @@ class WalletScreen extends ConsumerWidget {
         ],
       ),
       body: RefreshIndicator(
-        color: const Color(0xFF1A2B8C),
+        color: AppColors.primary,
         onRefresh: () async {
           await ref.read(walletProvider.notifier).refreshWallet();
         },
@@ -200,14 +201,14 @@ class WalletScreen extends ConsumerWidget {
         padding: const EdgeInsets.all(22),
         decoration: BoxDecoration(
           gradient: const LinearGradient(
-            colors: [Color(0xFF0C1738), Color(0xFF172B5E)],
+            colors: [AppColors.deepNavy, AppColors.navy],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFF0C1738).withValues(alpha: 0.25),
+              color: AppColors.deepNavy.withValues(alpha: 0.25),
               blurRadius: 16,
               offset: const Offset(0, 8),
             ),
@@ -391,21 +392,21 @@ class WalletScreen extends ConsumerWidget {
               context: context,
               icon: Icons.add_circle_outline_rounded,
               label: 'Add Money',
-              color: const Color(0xFF1A2B8C),
+              color: AppColors.primary,
               onTap: () => context.push('/wallet/add-money'),
             ),
             _buildActionButton(
               context: context,
               icon: Icons.payments_outlined,
               label: 'Pay',
-              color: const Color(0xFF6366F1),
+              color: AppColors.blue,
               onTap: () => _showPayModal(context),
             ),
             _buildActionButton(
               context: context,
               icon: Icons.arrow_circle_up_rounded,
               label: 'Withdraw',
-              color: const Color(0xFFF97316),
+              color: AppColors.accent,
               onTap: () => context.push('/wallet/withdraw'),
             ),
             _buildActionButton(
@@ -485,7 +486,7 @@ class WalletScreen extends ConsumerWidget {
             const Text(
               'Wallet Accounts',
               style: TextStyle(
-                color: Color(0xFF0F172A),
+                color: AppColors.textPrimary,
                 fontSize: 15,
                 fontWeight: FontWeight.w700,
               ),
@@ -496,7 +497,7 @@ class WalletScreen extends ConsumerWidget {
               subtitle: 'Use for session bookings and services',
               amount: _inr(summary?.mainBalance ?? 0),
               icon: Icons.wallet_rounded,
-              color: const Color(0xFF1A2B8C),
+              color: AppColors.primary,
             ),
             const Divider(height: 18, color: Color(0xFFF1F5F9)),
             _buildWalletTypeRow(
@@ -520,7 +521,7 @@ class WalletScreen extends ConsumerWidget {
               subtitle: 'Promotional rewards (not withdrawable)',
               amount: _inr(summary?.bonusBalance ?? 0),
               icon: Icons.card_giftcard_rounded,
-              color: const Color(0xFF9333EA),
+              color: AppColors.blue,
             ),
           ],
         ),
@@ -561,7 +562,10 @@ class WalletScreen extends ConsumerWidget {
               const SizedBox(height: 2),
               Text(
                 subtitle,
-                style: const TextStyle(color: Color(0xFF64748B), fontSize: 11),
+                style: const TextStyle(
+                  color: AppColors.textSecondary,
+                  fontSize: 11,
+                ),
               ),
             ],
           ),
@@ -569,7 +573,7 @@ class WalletScreen extends ConsumerWidget {
         Text(
           amount,
           style: const TextStyle(
-            color: Color(0xFF0F172A),
+            color: AppColors.textPrimary,
             fontSize: 14,
             fontWeight: FontWeight.w700,
           ),
@@ -587,7 +591,7 @@ class WalletScreen extends ConsumerWidget {
         decoration: BoxDecoration(
           color: const Color(0xFFF1F5F9),
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: const Color(0xFFE2E8F0)),
+          border: Border.all(color: AppColors.border),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -600,13 +604,13 @@ class WalletScreen extends ConsumerWidget {
                     Icon(
                       Icons.security_rounded,
                       size: 18,
-                      color: Color(0xFF1A2B8C),
+                      color: AppColors.primary,
                     ),
                     SizedBox(width: 8),
                     Text(
                       'Limits & Compliance',
                       style: TextStyle(
-                        color: Color(0xFF0F172A),
+                        color: AppColors.textPrimary,
                         fontSize: 14,
                         fontWeight: FontWeight.w700,
                       ),
@@ -617,7 +621,7 @@ class WalletScreen extends ConsumerWidget {
                   // Email verification is not KYC; real KYC is not built yet
                   isVerified ? 'Email verified' : 'Email not verified',
                   style: const TextStyle(
-                    color: Color(0xFF64748B),
+                    color: AppColors.textSecondary,
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
                   ),
@@ -628,9 +632,14 @@ class WalletScreen extends ConsumerWidget {
             const Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  'Daily Transfer Limit',
-                  style: TextStyle(color: Color(0xFF64748B), fontSize: 12),
+                Flexible(
+                  child: Text(
+                    'Daily Transfer Limit',
+                    style: TextStyle(
+                      color: AppColors.textSecondary,
+                      fontSize: 12,
+                    ),
+                  ),
                 ),
                 Text(
                   '₹50,000 / day',
@@ -646,9 +655,14 @@ class WalletScreen extends ConsumerWidget {
             const Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  'Monthly Withdrawal Limit',
-                  style: TextStyle(color: Color(0xFF64748B), fontSize: 12),
+                Flexible(
+                  child: Text(
+                    'Monthly Withdrawal Limit',
+                    style: TextStyle(
+                      color: AppColors.textSecondary,
+                      fontSize: 12,
+                    ),
+                  ),
                 ),
                 Text(
                   '₹2,00,000 / month',
@@ -680,12 +694,14 @@ class WalletScreen extends ConsumerWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        const Text(
-          'Recent Transactions',
-          style: TextStyle(
-            color: Color(0xFF0F172A),
-            fontSize: 17,
-            fontWeight: FontWeight.w700,
+        const Flexible(
+          child: Text(
+            'Recent Transactions',
+            style: TextStyle(
+              color: AppColors.textPrimary,
+              fontSize: 17,
+              fontWeight: FontWeight.w700,
+            ),
           ),
         ),
         TextButton(
@@ -698,7 +714,7 @@ class WalletScreen extends ConsumerWidget {
           child: const Text(
             'View All',
             style: TextStyle(
-              color: Color(0xFF1A2B8C),
+              color: AppColors.primary,
               fontWeight: FontWeight.w700,
               fontSize: 13,
             ),
@@ -804,7 +820,7 @@ class WalletScreen extends ConsumerWidget {
               'Your deposits, gig payments, and withdrawals will appear here once active.',
               textAlign: TextAlign.center,
               style: TextStyle(
-                color: Color(0xFF64748B),
+                color: AppColors.textSecondary,
                 fontSize: 12,
                 height: 1.4,
               ),
@@ -862,7 +878,7 @@ class WalletScreen extends ConsumerWidget {
                     style: const TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
-                      color: Color(0xFF0F172A),
+                      color: AppColors.textPrimary,
                     ),
                   ),
                   subtitle: Text(
@@ -879,7 +895,7 @@ class WalletScreen extends ConsumerWidget {
                       fontWeight: FontWeight.w700,
                       color: isCredit
                           ? const Color(0xFF10B981)
-                          : const Color(0xFF0F172A),
+                          : AppColors.textPrimary,
                     ),
                   ),
                 );
@@ -898,7 +914,7 @@ class WalletScreen extends ConsumerWidget {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: const Row(
           children: [
-            Icon(Icons.info_outline_rounded, color: Color(0xFF1A2B8C)),
+            Icon(Icons.info_outline_rounded, color: AppColors.primary),
             SizedBox(width: 8),
             Text(
               'About KaamMilega Wallet',
@@ -923,7 +939,7 @@ class WalletScreen extends ConsumerWidget {
               '• Secure 256-bit encrypted ledger\n• Zero processing fees on direct transfers\n• Instant bank settlement on approved earnings',
               style: TextStyle(
                 fontSize: 12,
-                color: Color(0xFF64748B),
+                color: AppColors.textSecondary,
                 height: 1.5,
               ),
             ),
@@ -973,25 +989,25 @@ class WalletScreen extends ConsumerWidget {
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w800,
-                  color: Color(0xFF0F172A),
+                  color: AppColors.textPrimary,
                 ),
               ),
               const SizedBox(height: 6),
               const Text(
                 'Pay candidate for gig milestones or service fees directly from your wallet balance.',
-                style: TextStyle(fontSize: 13, color: Color(0xFF64748B)),
+                style: TextStyle(fontSize: 13, color: AppColors.textSecondary),
               ),
               const SizedBox(height: 20),
               ListTile(
                 leading: Container(
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF1A2B8C).withValues(alpha: 0.1),
+                    color: AppColors.primary.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: const Icon(
                     Icons.qr_code_scanner_rounded,
-                    color: Color(0xFF1A2B8C),
+                    color: AppColors.primary,
                   ),
                 ),
                 title: const Text(
@@ -1089,7 +1105,7 @@ class WalletScreen extends ConsumerWidget {
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w800,
-                      color: Color(0xFF0F172A),
+                      color: AppColors.textPrimary,
                     ),
                   ),
                 ),
@@ -1110,7 +1126,7 @@ class WalletScreen extends ConsumerWidget {
               child: ElevatedButton(
                 onPressed: () => Navigator.of(ctx).pop(),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF1A2B8C),
+                  backgroundColor: AppColors.primary,
                   foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),

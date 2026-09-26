@@ -10,6 +10,7 @@ import '../models/expert_profile.dart';
 import '../providers/expert_provider.dart';
 import 'expert_detail_screen.dart';
 import '../../../shared/widgets/fade_slide_in.dart';
+import '../../../app/theme/app_colors.dart';
 
 class ExpertsScreen extends ConsumerStatefulWidget {
   const ExpertsScreen({super.key});
@@ -44,11 +45,11 @@ class _ExpertsScreenState extends ConsumerState<ExpertsScreen> {
 
     return Scaffold(
       key: _scaffoldKey,
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: AppColors.background,
       endDrawer: const ProfileDrawer(),
       bottomNavigationBar: const ThemedCategoryBottomNav(
-        activeColor: Color(0xFF4F46E5),
-        secondaryColor: Color(0xFF3730A3),
+        activeColor: AppColors.moduleExperts,
+        secondaryColor: AppColors.brandNavy,
         categoryLabel: 'Experts',
         categoryIcon: Icons.person_search_rounded,
       ),
@@ -57,7 +58,7 @@ class _ExpertsScreenState extends ConsumerState<ExpertsScreen> {
           children: [
             CategoryTopHeader(
               scaffoldKey: _scaffoldKey,
-              themeColor: const Color(0xFF4F46E5),
+              themeColor: AppColors.moduleExperts,
               searchHint: 'Search mentors by name, role or skill...',
               searchController: _searchController,
               onSearchChanged: (val) {
@@ -71,7 +72,7 @@ class _ExpertsScreenState extends ConsumerState<ExpertsScreen> {
             ),
             Expanded(
               child: RefreshIndicator(
-                color: const Color(0xFF4F46E5),
+                color: AppColors.moduleExperts,
                 onRefresh: () =>
                     ref.read(expertProvider.notifier).loadExperts(),
                 child: ListView(
@@ -108,12 +109,12 @@ class _ExpertsScreenState extends ConsumerState<ExpertsScreen> {
                               ),
                               decoration: BoxDecoration(
                                 color: isSelected
-                                    ? const Color(0xFF4F46E5)
+                                    ? AppColors.moduleExperts
                                     : Colors.white,
                                 borderRadius: BorderRadius.circular(10),
                                 border: Border.all(
                                   color: isSelected
-                                      ? const Color(0xFF4F46E5)
+                                      ? AppColors.moduleExperts
                                       : const Color(0xFFCBD5E1),
                                 ),
                               ),
@@ -139,12 +140,14 @@ class _ExpertsScreenState extends ConsumerState<ExpertsScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text(
-                          'Verified Mentors & Coaches',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w800,
-                            color: Color(0xFF0F172A),
+                        const Flexible(
+                          child: Text(
+                            'Verified Mentors & Coaches',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w800,
+                              color: AppColors.textPrimary,
+                            ),
                           ),
                         ),
                         Text(
@@ -152,7 +155,7 @@ class _ExpertsScreenState extends ConsumerState<ExpertsScreen> {
                           style: const TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w600,
-                            color: Color(0xFF64748B),
+                            color: AppColors.textSecondary,
                           ),
                         ),
                       ],
@@ -243,14 +246,14 @@ class _ExpertsScreenState extends ConsumerState<ExpertsScreen> {
         padding: const EdgeInsets.all(18),
         decoration: BoxDecoration(
           gradient: const LinearGradient(
-            colors: [Color(0xFF3730A3), Color(0xFF4F46E5), Color(0xFF6366F1)],
+            colors: [AppColors.brandNavy, AppColors.moduleExperts],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
           borderRadius: BorderRadius.circular(18),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFF4F46E5).withValues(alpha: 0.3),
+              color: AppColors.moduleExperts.withValues(alpha: 0.3),
               blurRadius: 12,
               offset: const Offset(0, 4),
             ),
@@ -310,13 +313,13 @@ class _ExpertsScreenState extends ConsumerState<ExpertsScreen> {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: const BoxDecoration(
-                color: Color(0xFFEEF2FF),
+                color: AppColors.moduleExpertsLight,
                 shape: BoxShape.circle,
               ),
               child: const Icon(
                 Icons.school_outlined,
                 size: 36,
-                color: Color(0xFF4F46E5),
+                color: AppColors.moduleExperts,
               ),
             ),
             const SizedBox(height: 14),
@@ -333,14 +336,14 @@ class _ExpertsScreenState extends ConsumerState<ExpertsScreen> {
             const Text(
               'Are you an expert in your field? Apply to mentor peers on KaamMilega.',
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 12, color: Color(0xFF64748B)),
+              style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
             ),
             const SizedBox(height: 16),
             ElevatedButton(
               onPressed: () =>
                   AuthGuard.openProtected(context, '/apply-expert'),
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF4F46E5),
+                backgroundColor: AppColors.moduleExperts,
                 foregroundColor: Colors.white,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10),
@@ -375,13 +378,13 @@ class _ExpertsScreenState extends ConsumerState<ExpertsScreen> {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: const BoxDecoration(
-                color: Color(0xFFEEF2FF),
+                color: AppColors.moduleExpertsLight,
                 shape: BoxShape.circle,
               ),
               child: const Icon(
                 Icons.school_outlined,
                 size: 32,
-                color: Color(0xFF4F46E5),
+                color: AppColors.moduleExperts,
               ),
             ),
             const SizedBox(height: 14),
@@ -397,13 +400,16 @@ class _ExpertsScreenState extends ConsumerState<ExpertsScreen> {
             Text(
               error,
               textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 12, color: Color(0xFF64748B)),
+              style: const TextStyle(
+                fontSize: 12,
+                color: AppColors.textSecondary,
+              ),
             ),
             const SizedBox(height: 16),
             ElevatedButton.icon(
               onPressed: () => ref.read(expertProvider.notifier).loadExperts(),
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF4F46E5),
+                backgroundColor: AppColors.moduleExperts,
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(
                   horizontal: 20,
@@ -449,7 +455,7 @@ class _ExpertsScreenState extends ConsumerState<ExpertsScreen> {
             children: [
               CircleAvatar(
                 radius: 26,
-                backgroundColor: const Color(0xFFEEF2FF),
+                backgroundColor: AppColors.moduleExpertsLight,
                 backgroundImage: expert.expertImage.isNotEmpty
                     ? NetworkImage(expert.expertImage)
                     : null,
@@ -461,7 +467,7 @@ class _ExpertsScreenState extends ConsumerState<ExpertsScreen> {
                         style: const TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.w800,
-                          color: Color(0xFF4F46E5),
+                          color: AppColors.moduleExperts,
                         ),
                       )
                     : null,
@@ -479,7 +485,7 @@ class _ExpertsScreenState extends ConsumerState<ExpertsScreen> {
                             style: const TextStyle(
                               fontSize: 15,
                               fontWeight: FontWeight.w800,
-                              color: Color(0xFF0F172A),
+                              color: AppColors.textPrimary,
                             ),
                           ),
                         ),
@@ -494,7 +500,7 @@ class _ExpertsScreenState extends ConsumerState<ExpertsScreen> {
                           style: const TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w700,
-                            color: Color(0xFF0F172A),
+                            color: AppColors.textPrimary,
                           ),
                         ),
                       ],
@@ -504,7 +510,7 @@ class _ExpertsScreenState extends ConsumerState<ExpertsScreen> {
                       expert.expertHeadline,
                       style: const TextStyle(
                         fontSize: 12,
-                        color: Color(0xFF64748B),
+                        color: AppColors.textSecondary,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -515,7 +521,7 @@ class _ExpertsScreenState extends ConsumerState<ExpertsScreen> {
                         vertical: 2,
                       ),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFEEF2FF),
+                        color: AppColors.moduleExpertsLight,
                         borderRadius: BorderRadius.circular(4),
                       ),
                       child: Text(
@@ -523,7 +529,7 @@ class _ExpertsScreenState extends ConsumerState<ExpertsScreen> {
                         style: const TextStyle(
                           fontSize: 10,
                           fontWeight: FontWeight.w600,
-                          color: Color(0xFF4F46E5),
+                          color: AppColors.moduleExperts,
                         ),
                       ),
                     ),
@@ -549,7 +555,7 @@ class _ExpertsScreenState extends ConsumerState<ExpertsScreen> {
               overflow: TextOverflow.ellipsis,
               style: const TextStyle(
                 fontSize: 12,
-                color: Color(0xFF64748B),
+                color: AppColors.textSecondary,
                 height: 1.3,
               ),
             ),
@@ -572,7 +578,7 @@ class _ExpertsScreenState extends ConsumerState<ExpertsScreen> {
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w900,
-                      color: Color(0xFF0F172A),
+                      color: AppColors.textPrimary,
                     ),
                   ),
                 ],
@@ -587,7 +593,7 @@ class _ExpertsScreenState extends ConsumerState<ExpertsScreen> {
                   );
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF4F46E5),
+                  backgroundColor: AppColors.moduleExperts,
                   foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10),

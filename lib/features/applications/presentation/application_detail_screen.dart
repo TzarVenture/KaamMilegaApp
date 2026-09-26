@@ -232,14 +232,14 @@ class ApplicationDetailScreen extends ConsumerWidget {
                           style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w800,
-                            color: Color(0xFF8E24AA),
+                            color: AppColors.blue,
                           ),
                         ),
                         SizedBox(width: 4),
                         Icon(
                           Icons.open_in_new_rounded,
                           size: 15,
-                          color: Color(0xFF8E24AA),
+                          color: AppColors.blue,
                         ),
                       ],
                     ),
@@ -440,7 +440,7 @@ class ApplicationDetailScreen extends ConsumerWidget {
                           ),
                           child: const Icon(
                             Icons.phone_in_talk_rounded,
-                            color: Color(0xFF8E24AA),
+                            color: AppColors.blue,
                             size: 20,
                           ),
                         ),
@@ -576,7 +576,7 @@ class _ApplicationStepper extends StatelessWidget {
                         color: isPassed ? Colors.white : Colors.transparent,
                         border: Border.all(
                           color: isPassed
-                              ? const Color(0xFF8E24AA)
+                              ? AppColors.blue
                               : const Color(0xFFD0D0D0),
                           width: isCurrent ? 5 : 2,
                         ),
@@ -586,7 +586,7 @@ class _ApplicationStepper extends StatelessWidget {
                               child: Icon(
                                 Icons.check_rounded,
                                 size: 12,
-                                color: Color(0xFF8E24AA),
+                                color: AppColors.blue,
                               ),
                             )
                           : null,
@@ -598,7 +598,7 @@ class _ApplicationStepper extends StatelessWidget {
                         width: 70,
                         height: 2,
                         color: index < currentStep
-                            ? const Color(0xFF8E24AA)
+                            ? AppColors.blue
                             : const Color(0xFFE5E5E5),
                       ),
                   ],
@@ -626,7 +626,7 @@ class _ApplicationStepper extends StatelessWidget {
                       height: 1.2,
                       letterSpacing: 0.3,
                       color: isPassed
-                          ? const Color(0xFF8E24AA)
+                          ? AppColors.blue
                           : const Color(0xFF90949C),
                     ),
                   ),

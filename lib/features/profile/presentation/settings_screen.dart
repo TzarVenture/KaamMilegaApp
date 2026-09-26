@@ -205,7 +205,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final user = ref.watch(authProvider).user;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: AppColors.background,
       appBar: AppBar(
         automaticallyImplyLeading: true,
         backgroundColor: Colors.white,
@@ -336,18 +336,16 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 11),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF5B4DFF) : Colors.white,
+          color: isSelected ? AppColors.blue : Colors.white,
           borderRadius: BorderRadius.circular(24),
           border: Border.all(
-            color: isSelected
-                ? const Color(0xFF5B4DFF)
-                : const Color(0xFFE2E8F0),
+            color: isSelected ? AppColors.blue : AppColors.border,
             width: 1.5,
           ),
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                    color: const Color(0xFF5B4DFF).withValues(alpha: 0.3),
+                    color: AppColors.blue.withValues(alpha: 0.3),
                     blurRadius: 8,
                     offset: const Offset(0, 3),
                   ),
@@ -402,7 +400,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
+        border: Border.all(color: AppColors.border),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.03),
@@ -486,7 +484,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
+        border: Border.all(color: AppColors.border),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.03),
@@ -549,10 +547,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
           const SizedBox(height: 28),
 
-          // AI Job Matching Toggle Row
+          // Automated job matching toggle row
           _buildToggleRowWithIcon(
-            icon: Icons.auto_awesome_rounded,
-            title: 'AI Job Matching & Recommendations',
+            icon: Icons.tune_rounded,
+            title: 'Automated Job Matching & Recommendations',
             subtitle: 'Allow automated algorithms to match your resume skills with recruiter searches.',
             value: _aiJobMatching,
             onChanged: (val) => _updateSetting(() => _aiJobMatching = val),
@@ -587,12 +585,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         duration: const Duration(milliseconds: 180),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFFFAF5FF) : Colors.white,
+          color: isSelected ? AppColors.primaryLight : Colors.white,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: isSelected
-                ? const Color(0xFF5B4DFF)
-                : const Color(0xFFE2E8F0),
+            color: isSelected ? AppColors.blue : AppColors.border,
             width: isSelected ? 1.8 : 1.0,
           ),
         ),
@@ -609,7 +605,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       fontSize: 14,
                       fontWeight: FontWeight.w800,
                       color: isSelected
-                          ? const Color(0xFF5B4DFF)
+                          ? AppColors.blue
                           : AppColors.textPrimary,
                     ),
                   ),
@@ -631,13 +627,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               height: 22,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: isSelected
-                    ? const Color(0xFF5B4DFF)
-                    : Colors.transparent,
+                color: isSelected ? AppColors.blue : Colors.transparent,
                 border: Border.all(
-                  color: isSelected
-                      ? const Color(0xFF5B4DFF)
-                      : const Color(0xFFCBD5E1),
+                  color: isSelected ? AppColors.blue : const Color(0xFFCBD5E1),
                   width: 2,
                 ),
               ),
@@ -676,7 +668,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(24),
-            border: Border.all(color: const Color(0xFFE2E8F0)),
+            border: Border.all(color: AppColors.border),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withValues(alpha: 0.03),
@@ -736,7 +728,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(24),
-            border: Border.all(color: const Color(0xFFE2E8F0)),
+            border: Border.all(color: AppColors.border),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withValues(alpha: 0.03),
@@ -754,12 +746,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     width: 38,
                     height: 38,
                     decoration: const BoxDecoration(
-                      color: Color(0xFFEEF2FF),
+                      color: AppColors.primaryLight,
                       shape: BoxShape.circle,
                     ),
                     child: const Icon(
                       Icons.key_rounded,
-                      color: Color(0xFF5B4DFF),
+                      color: AppColors.blue,
                       size: 20,
                     ),
                   ),
@@ -817,11 +809,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   ),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(16),
-                    borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                    borderSide: const BorderSide(color: AppColors.border),
                   ),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(16),
-                    borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                    borderSide: const BorderSide(color: AppColors.border),
                   ),
                 ),
               ),
@@ -862,13 +854,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(16),
                               borderSide: const BorderSide(
-                                color: Color(0xFFE2E8F0),
+                                color: AppColors.border,
                               ),
                             ),
                             enabledBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(16),
                               borderSide: const BorderSide(
-                                color: Color(0xFFE2E8F0),
+                                color: AppColors.border,
                               ),
                             ),
                           ),
@@ -908,13 +900,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(16),
                               borderSide: const BorderSide(
-                                color: Color(0xFFE2E8F0),
+                                color: AppColors.border,
                               ),
                             ),
                             enabledBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(16),
                               borderSide: const BorderSide(
-                                color: Color(0xFFE2E8F0),
+                                color: AppColors.border,
                               ),
                             ),
                           ),
@@ -934,7 +926,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 child: ElevatedButton(
                   onPressed: _isUpdatingPassword ? null : _handlePasswordUpdate,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF5B4DFF),
+                    backgroundColor: AppColors.primary,
                     foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16),
@@ -976,7 +968,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFFF8FAFC),
+        color: AppColors.background,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: const Color(0xFFF1F5F9)),
       ),
@@ -986,10 +978,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             width: 40,
             height: 40,
             decoration: const BoxDecoration(
-              color: Color(0xFFEEF2FF),
+              color: AppColors.primaryLight,
               shape: BoxShape.circle,
             ),
-            child: Icon(icon, color: const Color(0xFF5B4DFF), size: 20),
+            child: Icon(icon, color: AppColors.blue, size: 20),
           ),
           const SizedBox(width: 14),
           Expanded(
@@ -1077,7 +1069,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
+        border: Border.all(color: AppColors.border),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.03),
@@ -1124,7 +1116,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: const Color(0xFFE2E8F0)),
+              border: Border.all(color: AppColors.border),
             ),
             child: DropdownButtonHideUnderline(
               child: DropdownButton<String>(
@@ -1167,7 +1159,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: const Color(0xFFF8FAFC),
+              color: AppColors.background,
               borderRadius: BorderRadius.circular(16),
               border: Border.all(color: const Color(0xFFF1F5F9)),
             ),
@@ -1203,7 +1195,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     vertical: 8,
                   ),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFEEF2FF),
+                    color: AppColors.primaryLight,
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: const Text(
@@ -1211,7 +1203,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w900,
-                      color: Color(0xFF5B4DFF),
+                      color: AppColors.blue,
                     ),
                   ),
                 ),
@@ -1259,7 +1251,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         const SizedBox(width: 16),
         Switch.adaptive(
           value: value,
-          activeTrackColor: const Color(0xFF5B4DFF),
+          activeTrackColor: AppColors.blue,
           onChanged: onChanged,
         ),
       ],
@@ -1282,7 +1274,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             children: [
               Row(
                 children: [
-                  Icon(icon, size: 18, color: const Color(0xFF5B4DFF)),
+                  Icon(icon, size: 18, color: AppColors.blue),
                   const SizedBox(width: 6),
                   Text(
                     title,
@@ -1309,7 +1301,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         const SizedBox(width: 16),
         Switch.adaptive(
           value: value,
-          activeTrackColor: const Color(0xFF5B4DFF),
+          activeTrackColor: AppColors.blue,
           onChanged: onChanged,
         ),
       ],

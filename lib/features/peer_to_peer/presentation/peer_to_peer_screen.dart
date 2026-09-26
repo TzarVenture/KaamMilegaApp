@@ -16,6 +16,7 @@ import '../../network/providers/network_provider.dart';
 import '../../network/repositories/network_repository.dart';
 import '../../../shared/widgets/fade_slide_in.dart';
 import '../../../shared/widgets/network_state_view.dart';
+import '../../../app/theme/app_colors.dart';
 
 class PeerToPeerScreen extends ConsumerStatefulWidget {
   const PeerToPeerScreen({super.key});
@@ -103,7 +104,7 @@ class _PeerToPeerScreenState extends ConsumerState<PeerToPeerScreen>
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Connection invitation sent!'),
-          backgroundColor: Color(0xFF9333EA),
+          backgroundColor: AppColors.moduleP2P,
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -141,11 +142,11 @@ class _PeerToPeerScreenState extends ConsumerState<PeerToPeerScreen>
 
     return Scaffold(
       key: _scaffoldKey,
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: AppColors.background,
       endDrawer: const ProfileDrawer(),
       bottomNavigationBar: const ThemedCategoryBottomNav(
-        activeColor: Color(0xFF9333EA),
-        secondaryColor: Color(0xFF7E22CE),
+        activeColor: AppColors.moduleP2P,
+        secondaryColor: AppColors.brandNavy,
         categoryLabel: 'Network',
         categoryIcon: Icons.people_rounded,
       ),
@@ -154,7 +155,7 @@ class _PeerToPeerScreenState extends ConsumerState<PeerToPeerScreen>
           children: [
             CategoryTopHeader(
               scaffoldKey: _scaffoldKey,
-              themeColor: const Color(0xFF9333EA),
+              themeColor: AppColors.moduleP2P,
               searchHint: 'Search network peers & workers...',
               searchController: _searchController,
               onSearchChanged: _searchUsers,
@@ -164,9 +165,9 @@ class _PeerToPeerScreenState extends ConsumerState<PeerToPeerScreen>
               color: Colors.white,
               child: TabBar(
                 controller: _tabController,
-                labelColor: const Color(0xFF9333EA),
-                unselectedLabelColor: const Color(0xFF64748B),
-                indicatorColor: const Color(0xFF9333EA),
+                labelColor: AppColors.moduleP2P,
+                unselectedLabelColor: AppColors.textSecondary,
+                indicatorColor: AppColors.moduleP2P,
                 indicatorWeight: 3,
                 labelStyle: const TextStyle(
                   fontWeight: FontWeight.w700,
@@ -214,7 +215,7 @@ class _PeerToPeerScreenState extends ConsumerState<PeerToPeerScreen>
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: const Color(0xFFE2E8F0)),
+            border: Border.all(color: AppColors.border),
           ),
           child: TextField(
             controller: _searchController,
@@ -227,7 +228,7 @@ class _PeerToPeerScreenState extends ConsumerState<PeerToPeerScreen>
               ),
               prefixIcon: const Icon(
                 Icons.search_rounded,
-                color: Color(0xFF9333EA),
+                color: AppColors.moduleP2P,
               ),
               suffixIcon: _searchController.text.isNotEmpty
                   ? IconButton(
@@ -251,7 +252,7 @@ class _PeerToPeerScreenState extends ConsumerState<PeerToPeerScreen>
           style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w800,
-            color: Color(0xFF0F172A),
+            color: AppColors.textPrimary,
           ),
         ),
 
@@ -275,13 +276,13 @@ class _PeerToPeerScreenState extends ConsumerState<PeerToPeerScreen>
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: const BoxDecoration(
-                    color: Color(0xFFF3E8FF),
+                    color: AppColors.moduleP2PLight,
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(
                     Icons.people_outline_rounded,
                     size: 32,
-                    color: Color(0xFF9333EA),
+                    color: AppColors.moduleP2P,
                   ),
                 ),
                 const SizedBox(height: 14),
@@ -299,14 +300,14 @@ class _PeerToPeerScreenState extends ConsumerState<PeerToPeerScreen>
                   textAlign: TextAlign.center,
                   style: const TextStyle(
                     fontSize: 12,
-                    color: Color(0xFF64748B),
+                    color: AppColors.textSecondary,
                   ),
                 ),
                 const SizedBox(height: 16),
                 ElevatedButton.icon(
                   onPressed: () => _searchUsers(_searchController.text),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF9333EA),
+                    backgroundColor: AppColors.moduleP2P,
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(
                       horizontal: 20,
@@ -338,7 +339,7 @@ class _PeerToPeerScreenState extends ConsumerState<PeerToPeerScreen>
                 Icon(
                   Icons.people_outline_rounded,
                   size: 36,
-                  color: Color(0xFF9333EA),
+                  color: AppColors.moduleP2P,
                 ),
                 SizedBox(height: 12),
                 Text(
@@ -353,7 +354,10 @@ class _PeerToPeerScreenState extends ConsumerState<PeerToPeerScreen>
                 Text(
                   'Try searching for other professions, cities or skills.',
                   textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 12, color: Color(0xFF64748B)),
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: AppColors.textSecondary,
+                  ),
                 ),
               ],
             ),
@@ -372,14 +376,14 @@ class _PeerToPeerScreenState extends ConsumerState<PeerToPeerScreen>
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [Color(0xFF6B21A8), Color(0xFF7E22CE), Color(0xFF9333EA)],
+          colors: [AppColors.brandNavy, AppColors.moduleP2P],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(18),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF9333EA).withValues(alpha: 0.3),
+            color: AppColors.moduleP2P.withValues(alpha: 0.3),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -444,7 +448,7 @@ class _PeerToPeerScreenState extends ConsumerState<PeerToPeerScreen>
         children: [
           CircleAvatar(
             radius: 24,
-            backgroundColor: const Color(0xFFF3E8FF),
+            backgroundColor: AppColors.moduleP2PLight,
             backgroundImage: user.profileImage.isNotEmpty
                 ? NetworkImage(user.profileImage)
                 : null,
@@ -454,7 +458,7 @@ class _PeerToPeerScreenState extends ConsumerState<PeerToPeerScreen>
                     style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w800,
-                      color: Color(0xFF9333EA),
+                      color: AppColors.moduleP2P,
                     ),
                   )
                 : null,
@@ -469,7 +473,7 @@ class _PeerToPeerScreenState extends ConsumerState<PeerToPeerScreen>
                   style: const TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w800,
-                    color: Color(0xFF0F172A),
+                    color: AppColors.textPrimary,
                   ),
                 ),
                 if (user.headline.isNotEmpty)
@@ -479,7 +483,7 @@ class _PeerToPeerScreenState extends ConsumerState<PeerToPeerScreen>
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
                       fontSize: 11,
-                      color: Color(0xFF64748B),
+                      color: AppColors.textSecondary,
                     ),
                   ),
                 if (user.city.isNotEmpty)
@@ -508,7 +512,7 @@ class _PeerToPeerScreenState extends ConsumerState<PeerToPeerScreen>
           ElevatedButton(
             onPressed: () => _handleConnect(user.id),
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF9333EA),
+              backgroundColor: AppColors.moduleP2P,
               foregroundColor: Colors.white,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(10),
@@ -539,7 +543,7 @@ class _PeerToPeerScreenState extends ConsumerState<PeerToPeerScreen>
                   const Icon(
                     Icons.group_outlined,
                     size: 40,
-                    color: Color(0xFF9333EA),
+                    color: AppColors.moduleP2P,
                   ),
                   const SizedBox(height: 12),
                   const Text(
@@ -554,7 +558,10 @@ class _PeerToPeerScreenState extends ConsumerState<PeerToPeerScreen>
                   const Text(
                     'Switch to the Discover tab to connect with peers in your industry.',
                     textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 12, color: Color(0xFF64748B)),
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: AppColors.textSecondary,
+                    ),
                   ),
                 ],
               ),
@@ -581,10 +588,10 @@ class _PeerToPeerScreenState extends ConsumerState<PeerToPeerScreen>
                   child: Row(
                     children: [
                       const CircleAvatar(
-                        backgroundColor: Color(0xFFF3E8FF),
+                        backgroundColor: AppColors.moduleP2PLight,
                         child: Icon(
                           Icons.person_rounded,
-                          color: Color(0xFF9333EA),
+                          color: AppColors.moduleP2P,
                           size: 20,
                         ),
                       ),
@@ -613,7 +620,7 @@ class _PeerToPeerScreenState extends ConsumerState<PeerToPeerScreen>
                       IconButton(
                         icon: const Icon(
                           Icons.chat_bubble_outline_rounded,
-                          color: Color(0xFF9333EA),
+                          color: AppColors.moduleP2P,
                         ),
                         onPressed: () => openChatWithUser(
                           context,
@@ -671,7 +678,10 @@ class _PeerToPeerScreenState extends ConsumerState<PeerToPeerScreen>
                   Text(
                     'Incoming connection requests from other candidates will appear here.',
                     textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 12, color: Color(0xFF64748B)),
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: AppColors.textSecondary,
+                    ),
                   ),
                 ],
               ),
@@ -698,10 +708,10 @@ class _PeerToPeerScreenState extends ConsumerState<PeerToPeerScreen>
                   child: Row(
                     children: [
                       CircleAvatar(
-                        backgroundColor: const Color(0xFFF3E8FF),
+                        backgroundColor: AppColors.moduleP2PLight,
                         child: const Icon(
                           Icons.person_add_rounded,
-                          color: Color(0xFF9333EA),
+                          color: AppColors.moduleP2P,
                           size: 20,
                         ),
                       ),
@@ -721,7 +731,7 @@ class _PeerToPeerScreenState extends ConsumerState<PeerToPeerScreen>
                               'Wants to connect with you',
                               style: TextStyle(
                                 fontSize: 11,
-                                color: Color(0xFF64748B),
+                                color: AppColors.textSecondary,
                               ),
                             ),
                           ],

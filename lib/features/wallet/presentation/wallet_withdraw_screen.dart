@@ -9,6 +9,7 @@ import '../../auth/providers/auth_provider.dart';
 import '../models/withdrawal.dart';
 import '../providers/wallet_provider.dart';
 import '../repositories/wallet_repository.dart';
+import '../../../app/theme/app_colors.dart';
 
 class WalletWithdrawScreen extends ConsumerStatefulWidget {
   const WalletWithdrawScreen({super.key});
@@ -219,7 +220,7 @@ class _WalletWithdrawScreenState extends ConsumerState<WalletWithdrawScreen> {
                 style: TextStyle(
                   fontSize: 17,
                   fontWeight: FontWeight.w800,
-                  color: Color(0xFF0F172A),
+                  color: AppColors.textPrimary,
                 ),
               ),
               const SizedBox(height: 14),
@@ -238,13 +239,16 @@ class _WalletWithdrawScreenState extends ConsumerState<WalletWithdrawScreen> {
               const Text(
                 'The amount is deducted from your earnings as soon as the '
                 'request is submitted. Please check the details carefully.',
-                style: TextStyle(fontSize: 12.5, color: Color(0xFF64748B)),
+                style: TextStyle(
+                  fontSize: 12.5,
+                  color: AppColors.textSecondary,
+                ),
               ),
               const SizedBox(height: 20),
               ElevatedButton(
                 onPressed: () => Navigator.of(ctx).pop(true),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF1A2B8C),
+                  backgroundColor: AppColors.primary,
                   foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
@@ -328,12 +332,12 @@ class _WalletWithdrawScreenState extends ConsumerState<WalletWithdrawScreen> {
                 Container(
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFF97316).withValues(alpha: 0.12),
+                    color: AppColors.accent.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: const Icon(
                     Icons.account_balance_outlined,
-                    color: Color(0xFFEA580C),
+                    color: AppColors.accent,
                     size: 24,
                   ),
                 ),
@@ -347,14 +351,14 @@ class _WalletWithdrawScreenState extends ConsumerState<WalletWithdrawScreen> {
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w800,
-                          color: Color(0xFF0F172A),
+                          color: AppColors.textPrimary,
                         ),
                       ),
                       Text(
                         'Withdrawals to bank / UPI',
                         style: TextStyle(
                           fontSize: 12,
-                          color: Color(0xFF64748B),
+                          color: AppColors.textSecondary,
                         ),
                       ),
                     ],
@@ -366,9 +370,9 @@ class _WalletWithdrawScreenState extends ConsumerState<WalletWithdrawScreen> {
             Container(
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
-                color: const Color(0xFFF8FAFC),
+                color: AppColors.background,
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: const Color(0xFFE2E8F0)),
+                border: Border.all(color: AppColors.border),
               ),
               child: Column(
                 children: [
@@ -406,7 +410,7 @@ class _WalletWithdrawScreenState extends ConsumerState<WalletWithdrawScreen> {
                   context.pop();
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF1A2B8C),
+                  backgroundColor: AppColors.primary,
                   foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
@@ -477,9 +481,14 @@ class _WalletWithdrawScreenState extends ConsumerState<WalletWithdrawScreen> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(
-          label,
-          style: const TextStyle(fontSize: 12, color: Color(0xFF64748B)),
+        Flexible(
+          child: Text(
+            label,
+            style: const TextStyle(
+              fontSize: 12,
+              color: AppColors.textSecondary,
+            ),
+          ),
         ),
         const SizedBox(width: 12),
         // Long UPI IDs / bank names wrap instead of overflowing.
@@ -490,7 +499,7 @@ class _WalletWithdrawScreenState extends ConsumerState<WalletWithdrawScreen> {
             style: const TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.w700,
-              color: Color(0xFF0F172A),
+              color: AppColors.textPrimary,
             ),
           ),
         ),
@@ -506,7 +515,7 @@ class _WalletWithdrawScreenState extends ConsumerState<WalletWithdrawScreen> {
         .floor();
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: AppColors.background,
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
@@ -527,7 +536,7 @@ class _WalletWithdrawScreenState extends ConsumerState<WalletWithdrawScreen> {
         title: const Text(
           'Withdraw Funds',
           style: TextStyle(
-            color: Color(0xFF0F172A),
+            color: AppColors.textPrimary,
             fontSize: 18,
             fontWeight: FontWeight.w700,
           ),
@@ -542,7 +551,7 @@ class _WalletWithdrawScreenState extends ConsumerState<WalletWithdrawScreen> {
             Container(
               padding: const EdgeInsets.all(18),
               decoration: BoxDecoration(
-                color: const Color(0xFF0C1738),
+                color: AppColors.deepNavy,
                 borderRadius: BorderRadius.circular(16),
               ),
               child: Row(
@@ -602,7 +611,7 @@ class _WalletWithdrawScreenState extends ConsumerState<WalletWithdrawScreen> {
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w700,
-                color: Color(0xFF0F172A),
+                color: AppColors.textPrimary,
               ),
             ),
             const SizedBox(height: 10),
@@ -620,7 +629,7 @@ class _WalletWithdrawScreenState extends ConsumerState<WalletWithdrawScreen> {
                     style: TextStyle(
                       fontSize: 26,
                       fontWeight: FontWeight.w800,
-                      color: Color(0xFFF97316),
+                      color: AppColors.accent,
                     ),
                   ),
                   const SizedBox(width: 8),
@@ -632,7 +641,7 @@ class _WalletWithdrawScreenState extends ConsumerState<WalletWithdrawScreen> {
                       style: const TextStyle(
                         fontSize: 26,
                         fontWeight: FontWeight.w800,
-                        color: Color(0xFF0F172A),
+                        color: AppColors.textPrimary,
                       ),
                       decoration: const InputDecoration(
                         border: InputBorder.none,
@@ -653,7 +662,7 @@ class _WalletWithdrawScreenState extends ConsumerState<WalletWithdrawScreen> {
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w700,
-                color: Color(0xFF0F172A),
+                color: AppColors.textPrimary,
               ),
             ),
             const SizedBox(height: 12),
@@ -667,12 +676,12 @@ class _WalletWithdrawScreenState extends ConsumerState<WalletWithdrawScreen> {
                       padding: const EdgeInsets.symmetric(vertical: 12),
                       decoration: BoxDecoration(
                         color: _destinationType == 'UPI'
-                            ? const Color(0xFF1A2B8C)
+                            ? AppColors.primary
                             : Colors.white,
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
                           color: _destinationType == 'UPI'
-                              ? const Color(0xFF1A2B8C)
+                              ? AppColors.primary
                               : const Color(0xFFCBD5E1),
                         ),
                       ),
@@ -699,12 +708,12 @@ class _WalletWithdrawScreenState extends ConsumerState<WalletWithdrawScreen> {
                       padding: const EdgeInsets.symmetric(vertical: 12),
                       decoration: BoxDecoration(
                         color: _destinationType == 'BANK'
-                            ? const Color(0xFF1A2B8C)
+                            ? AppColors.primary
                             : Colors.white,
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
                           color: _destinationType == 'BANK'
-                              ? const Color(0xFF1A2B8C)
+                              ? AppColors.primary
                               : const Color(0xFFCBD5E1),
                         ),
                       ),
@@ -865,7 +874,7 @@ class _WalletWithdrawScreenState extends ConsumerState<WalletWithdrawScreen> {
                   Icon(
                     Icons.info_outline_rounded,
                     size: 16,
-                    color: Color(0xFF64748B),
+                    color: AppColors.textSecondary,
                   ),
                   SizedBox(width: 8),
                   Expanded(
@@ -873,7 +882,10 @@ class _WalletWithdrawScreenState extends ConsumerState<WalletWithdrawScreen> {
                       'The amount is deducted from your earnings when you '
                       'submit. Your payout request is then processed by '
                       'KaamMilega and you can track it in your transactions.',
-                      style: TextStyle(fontSize: 11, color: Color(0xFF64748B)),
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: AppColors.textSecondary,
+                      ),
                     ),
                   ),
                 ],
@@ -890,7 +902,7 @@ class _WalletWithdrawScreenState extends ConsumerState<WalletWithdrawScreen> {
                     ? null
                     : () => _handleWithdraw(currentBalance),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF1A2B8C),
+                  backgroundColor: AppColors.primary,
                   foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(14),

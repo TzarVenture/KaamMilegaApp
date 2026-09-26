@@ -1,5 +1,6 @@
 # KaamMilega AI Quick Start
 
+> Backend re-checked 26 Sep 2026: `main` @ `51c8e10`; new expert subscription API not integrated (API_CONTRACT §9b).
 > Last Audited: 25 September 2026 · branch `feat/ui-ux-polish` @ `eaf5dc8` · backend `km-backend` @ `b5a2956` (Batch 7 contracts re-checked @ `51c8e10`).
 > **Updated 25 Sep 2026 after fix Batches 1–7** (uncommitted). Format/analyze/test pass (172 tests, 25 Sep 16:04); phone testing is **pending** — see [KNOWN_ISSUES.md § Verification log](KNOWN_ISSUES.md#verification-log). Source code wins over docs.
 
@@ -29,7 +30,7 @@ Go backend km-backend
 - `lib/core/` — `constants/api_constants.dart`, `network/`, `storage/`, `payments/`
 - `lib/features/<feature>/` — models · repositories · providers · presentation
 - `lib/shared/widgets/` — reusable UI
-- `test/` — 21 test files, 172 tests
+- `test/` — 21 test files, 184 tests
 
 ## Important files
 | File | Why |
@@ -50,7 +51,7 @@ Go backend km-backend
 | `lib/features/wallet/providers/wallet_provider.dart` + `lib/core/payments/razorpay_checkout.dart` | wallet & payments |
 
 ## Authentication
-Phone OTP (`/auth/otp/send` → `/auth/otp/verify`) or email+password. JWT saved in SharedPreferences (`km_auth_token`) and sent as `Bearer` by `ApiClient`. On 401 the session is cleared; the next navigation goes to `/login`. Startup: Splash → `checkAuthStatus` (`GET /user/profile`) → Home or Login. New OTP users complete their profile on `/complete-profile` (`POST /user/register`); Back / "Use a different account" log out safely. Logout resets all user-scoped data (`sessionUserIdProvider`). Still open: a 401 mid-session does not redirect until the next navigation (H-05).
+Phone OTP (`/auth/otp/send` → `/auth/otp/verify`) or email+password. JWT saved in SharedPreferences (`km_auth_token`) and sent as `Bearer` by `ApiClient`. On 401 the session is cleared and auth state resets immediately, redirecting to `/login`. Startup: Splash → `checkAuthStatus` (`GET /user/profile`) → Home or Login. New OTP users complete their profile on `/complete-profile` (`POST /user/register`); Back / "Use a different account" log out safely. Logout resets all user-scoped data (`sessionUserIdProvider`).
 
 ## Guest mode
 `AuthNotifier.enterGuestMode()` sets `isGuest` in memory (lost on restart). Guests can browse jobs, job detail, events, experts, skills, explore; protected routes (`/my-applications`, `/applications`, `/interviews`, `/my-sessions`, `/network`, `/apply-expert`, `/settings`, `/wallet`, `/peer-to-peer`, `/chats/:id`) redirect to Login and return afterwards. Actions (apply, save to server, register for events, edit profile) show a login prompt. The Chats tab shows a login prompt; guests make no authenticated API calls.
@@ -72,7 +73,7 @@ All paths in `api_constants.dart`, called through `ApiClient` from repositories.
 | Profile (intro, photos, projects, analytics) | Implemented |
 | Education / experience edit & delete (7a) | Implemented |
 | Remove skill (7b) | Implemented; names with spaces or "/" fail on backend (B-07) |
-| My Sessions `/my-sessions` (7c) | Implemented |
+| My Sessions `/my-sessions` (7c) + rate a completed session | Implemented |
 | Open To Work / Providing Services sheets (7d) | Implemented, **awaiting verification** |
 | Profile viewers (7e) | **Blocked** — backend returns private fields (B-08) |
 | Network, chat (WebSocket) | Implemented |
@@ -92,7 +93,7 @@ Full matrix: [FEATURE_STATUS.md](FEATURE_STATUS.md).
 - **Fallback:** hard-coded 10 cities on `/cities` failure; default expert rating 5.0 / labels; event/interview/application placeholder labels.
 
 ## Known important issues
-See [KNOWN_ISSUES.md](KNOWN_ISSUES.md) — open: H-05, H-02 remainder, M-01…M-03, M-05, M-07, M-09…M-11, L-01…L-07; backend: B-01…B-10 (incl. B-07 skill-name decoding, B-08 viewers privacy).
+See [KNOWN_ISSUES.md](KNOWN_ISSUES.md) — open: H-02 remainder, M-01…M-03, M-05, M-07, M-09…M-11, L-01…L-07; backend: B-01…B-10 (incl. B-07 skill-name decoding, B-08 viewers privacy).
 
 ## Pending work
 See [FEATURE_STATUS.md](FEATURE_STATUS.md) ("Pending Work" column separates Flutter / Backend / Nowhere).

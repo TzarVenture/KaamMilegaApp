@@ -5,6 +5,7 @@ import '../../profile/presentation/widgets/profile_drawer.dart';
 import '../../../shared/widgets/category_top_header.dart';
 import '../../../shared/widgets/themed_category_bottom_nav.dart';
 import '../../../shared/widgets/fade_slide_in.dart';
+import '../../../app/theme/app_colors.dart';
 
 class ServicesMarketplaceScreen extends StatefulWidget {
   const ServicesMarketplaceScreen({super.key});
@@ -40,11 +41,11 @@ class _ServicesMarketplaceScreenState extends State<ServicesMarketplaceScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       key: _scaffoldKey,
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: AppColors.background,
       endDrawer: const ProfileDrawer(),
       bottomNavigationBar: const ThemedCategoryBottomNav(
-        activeColor: Color(0xFFE11D48),
-        secondaryColor: Color(0xFF9F1239),
+        activeColor: AppColors.moduleServices,
+        secondaryColor: AppColors.brandNavy,
         categoryLabel: 'Services',
         categoryIcon: Icons.home_repair_service_rounded,
       ),
@@ -53,7 +54,7 @@ class _ServicesMarketplaceScreenState extends State<ServicesMarketplaceScreen> {
           children: [
             CategoryTopHeader(
               scaffoldKey: _scaffoldKey,
-              themeColor: const Color(0xFFE11D48),
+              themeColor: AppColors.moduleServices,
               searchHint: 'Search services (e.g. AC service, electrician)...',
               searchController: _searchController,
               onSearchChanged: (val) {
@@ -93,12 +94,12 @@ class _ServicesMarketplaceScreenState extends State<ServicesMarketplaceScreen> {
                             ),
                             decoration: BoxDecoration(
                               color: isSelected
-                                  ? const Color(0xFFE11D48)
+                                  ? AppColors.moduleServices
                                   : Colors.white,
                               borderRadius: BorderRadius.circular(10),
                               border: Border.all(
                                 color: isSelected
-                                    ? const Color(0xFFE11D48)
+                                    ? AppColors.moduleServices
                                     : const Color(0xFFCBD5E1),
                               ),
                             ),
@@ -124,7 +125,7 @@ class _ServicesMarketplaceScreenState extends State<ServicesMarketplaceScreen> {
                   Container(
                     padding: const EdgeInsets.all(18),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFFFF1F2),
+                      color: AppColors.moduleServicesLight,
                       borderRadius: BorderRadius.circular(16),
                       border: Border.all(color: const Color(0xFFFECDD3)),
                     ),
@@ -136,13 +137,14 @@ class _ServicesMarketplaceScreenState extends State<ServicesMarketplaceScreen> {
                             Container(
                               padding: const EdgeInsets.all(8),
                               decoration: BoxDecoration(
-                                color: const Color(0xFFE11D48)
-                                    .withValues(alpha: 0.15),
+                                color: AppColors.moduleServices.withValues(
+                                  alpha: 0.15,
+                                ),
                                 borderRadius: BorderRadius.circular(10),
                               ),
                               child: const Icon(
                                 Icons.handyman_rounded,
-                                color: Color(0xFFE11D48),
+                                color: AppColors.moduleServices,
                                 size: 22,
                               ),
                             ),
@@ -156,7 +158,7 @@ class _ServicesMarketplaceScreenState extends State<ServicesMarketplaceScreen> {
                                     style: TextStyle(
                                       fontSize: 14,
                                       fontWeight: FontWeight.w800,
-                                      color: Color(0xFF9F1239),
+                                      color: AppColors.brandNavy,
                                     ),
                                   ),
                                   Text(
@@ -164,7 +166,7 @@ class _ServicesMarketplaceScreenState extends State<ServicesMarketplaceScreen> {
                                     style: TextStyle(
                                       fontSize: 11,
                                       fontWeight: FontWeight.w600,
-                                      color: Color(0xFFE11D48),
+                                      color: AppColors.moduleServices,
                                     ),
                                   ),
                                 ],
@@ -193,7 +195,7 @@ class _ServicesMarketplaceScreenState extends State<ServicesMarketplaceScreen> {
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w800,
-                      color: Color(0xFF0F172A),
+                      color: AppColors.textPrimary,
                     ),
                   ),
                   const SizedBox(height: 12),
@@ -216,7 +218,7 @@ class _ServicesMarketplaceScreenState extends State<ServicesMarketplaceScreen> {
                         'Electrician Work',
                         'Wiring, switches, fuse & power setups',
                         Icons.electric_bolt_rounded,
-                        const Color(0xFFEA580C),
+                        AppColors.accent,
                       ),
                       _buildCategoryTile(
                         'Plumbing Services',
@@ -253,7 +255,7 @@ class _ServicesMarketplaceScreenState extends State<ServicesMarketplaceScreen> {
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: const Color(0xFFE2E8F0)),
+                      border: Border.all(color: AppColors.border),
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -263,7 +265,7 @@ class _ServicesMarketplaceScreenState extends State<ServicesMarketplaceScreen> {
                           style: TextStyle(
                             fontSize: 15,
                             fontWeight: FontWeight.w800,
-                            color: Color(0xFF0F172A),
+                            color: AppColors.textPrimary,
                           ),
                         ),
                         const SizedBox(height: 4),
@@ -271,7 +273,7 @@ class _ServicesMarketplaceScreenState extends State<ServicesMarketplaceScreen> {
                           'Are you a technician, mechanic or service professional? Register your profile to receive local service bookings.',
                           style: TextStyle(
                             fontSize: 12,
-                            color: Color(0xFF64748B),
+                            color: AppColors.textSecondary,
                             height: 1.4,
                           ),
                         ),
@@ -284,7 +286,7 @@ class _ServicesMarketplaceScreenState extends State<ServicesMarketplaceScreen> {
                               '/apply-expert',
                             ),
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFFE11D48),
+                              backgroundColor: AppColors.moduleServices,
                               foregroundColor: Colors.white,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(12),
@@ -319,14 +321,18 @@ class _ServicesMarketplaceScreenState extends State<ServicesMarketplaceScreen> {
         padding: const EdgeInsets.all(18),
         decoration: BoxDecoration(
           gradient: const LinearGradient(
-            colors: [Color(0xFF9F1239), Color(0xFFBE123C), Color(0xFFE11D48)],
+            colors: [
+              AppColors.brandNavy,
+              Color(0xFFBE123C),
+              AppColors.moduleServices,
+            ],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
           borderRadius: BorderRadius.circular(18),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFFE11D48).withValues(alpha: 0.3),
+              color: AppColors.moduleServices.withValues(alpha: 0.3),
               blurRadius: 12,
               offset: const Offset(0, 4),
             ),
@@ -413,7 +419,7 @@ class _ServicesMarketplaceScreenState extends State<ServicesMarketplaceScreen> {
               style: const TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w700,
-                color: Color(0xFF0F172A),
+                color: AppColors.textPrimary,
               ),
             ),
             const SizedBox(height: 2),
@@ -421,7 +427,10 @@ class _ServicesMarketplaceScreenState extends State<ServicesMarketplaceScreen> {
               subtitle,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: const TextStyle(fontSize: 10, color: Color(0xFF64748B)),
+              style: const TextStyle(
+                fontSize: 10,
+                color: AppColors.textSecondary,
+              ),
             ),
           ],
         ),

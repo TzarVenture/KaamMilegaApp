@@ -18,6 +18,9 @@ class AppButton extends StatefulWidget {
   /// Optional icon shown before the text.
   final IconData? icon;
 
+  /// Accent CTA (brand orange) instead of the primary navy button.
+  final bool accent;
+
   const AppButton({
     super.key,
     required this.text,
@@ -26,6 +29,7 @@ class AppButton extends StatefulWidget {
     this.width = double.infinity,
     this.height = 52,
     this.icon,
+    this.accent = false,
   });
 
   @override
@@ -44,6 +48,10 @@ class _AppButtonState extends State<AppButton> {
 
   @override
   Widget build(BuildContext context) {
+    final base = widget.accent ? AppColors.accent : AppColors.primary;
+    final hover = widget.accent
+        ? AppColors.accentBright
+        : AppColors.primaryDark;
     final label = widget.icon == null
         ? Text(
             widget.text,
@@ -83,7 +91,7 @@ class _AppButtonState extends State<AppButton> {
       onPointerUp: (_) => _setPressed(false),
       onPointerCancel: (_) => _setPressed(false),
       child: AnimatedScale(
-        scale: _pressed ? 0.97 : 1.0,
+        scale: _pressed ? 0.98 : 1.0,
         duration: const Duration(milliseconds: 110),
         curve: Curves.easeOut,
         child: SizedBox(
@@ -91,20 +99,35 @@ class _AppButtonState extends State<AppButton> {
           height: widget.height,
           child: ElevatedButton(
             onPressed: widget.isLoading ? null : widget.onPressed,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primary,
-              foregroundColor: AppColors.white,
-              // While loading keep the brand colour (not the faded disabled
-              // look); a truly disabled button is faded.
-              disabledBackgroundColor: widget.isLoading
-                  ? AppColors.primary
-                  : AppColors.primary.withValues(alpha: 0.35),
-              disabledForegroundColor: AppColors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              elevation: 0,
-            ),
+            style:
+                ElevatedButton.styleFrom(
+                  backgroundColor: base,
+                  foregroundColor: AppColors.white,
+                  // While loading keep the brand colour (not the faded disabled
+                  // look); a truly disabled button is faded.
+                  disabledBackgroundColor: widget.isLoading
+                      ? base
+                      : base.withValues(alpha: 0.35),
+                  disabledForegroundColor: AppColors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  elevation: 0,
+                ).copyWith(
+                  // Hover / pressed: navy #0B1F52 (primary) or #FF8A00 (accent).
+                  backgroundColor: WidgetStateProperty.resolveWith((states) {
+                    if (states.contains(WidgetState.disabled)) {
+                      return widget.isLoading
+                          ? base
+                          : base.withValues(alpha: 0.35);
+                    }
+                    if (states.contains(WidgetState.hovered) ||
+                        states.contains(WidgetState.pressed)) {
+                      return hover;
+                    }
+                    return base;
+                  }),
+                ),
             child: AnimatedSwitcher(
               duration: const Duration(milliseconds: 180),
               transitionBuilder: (child, animation) =>

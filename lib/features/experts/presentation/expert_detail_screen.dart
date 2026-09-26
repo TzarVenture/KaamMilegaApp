@@ -9,6 +9,7 @@ import '../models/expert_profile.dart';
 import '../repositories/expert_repository.dart';
 import '../../../shared/widgets/app_dialog.dart';
 import '../../../shared/widgets/sheet_drag_handle.dart';
+import '../../../app/theme/app_colors.dart';
 
 class ExpertDetailScreen extends ConsumerStatefulWidget {
   final ExpertItem expert;
@@ -137,13 +138,13 @@ class _ExpertDetailScreenState extends ConsumerState<ExpertDetailScreen> {
                 style: const TextStyle(
                   fontSize: 17,
                   fontWeight: FontWeight.w800,
-                  color: Color(0xFF0F172A),
+                  color: AppColors.textPrimary,
                 ),
               ),
               const SizedBox(height: 4),
               const Text(
                 'The fee is held safely in escrow until the session is completed.',
-                style: TextStyle(fontSize: 12, color: Color(0xFF64748B)),
+                style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
               ),
               const SizedBox(height: 16),
               ListTile(
@@ -151,7 +152,7 @@ class _ExpertDetailScreenState extends ConsumerState<ExpertDetailScreen> {
                 enabled: canUseWallet,
                 leading: const Icon(
                   Icons.account_balance_wallet_rounded,
-                  color: Color(0xFF1A2B8C),
+                  color: AppColors.primary,
                 ),
                 title: const Text(
                   'Pay from KaamMilega Wallet',
@@ -171,7 +172,7 @@ class _ExpertDetailScreenState extends ConsumerState<ExpertDetailScreen> {
                 contentPadding: EdgeInsets.zero,
                 leading: const Icon(
                   Icons.payments_rounded,
-                  color: Color(0xFF4F46E5),
+                  color: AppColors.moduleExperts,
                 ),
                 title: const Text(
                   'Pay online',
@@ -322,7 +323,7 @@ class _ExpertDetailScreenState extends ConsumerState<ExpertDetailScreen> {
     final expert = widget.expert;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: AppColors.background,
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
@@ -337,7 +338,7 @@ class _ExpertDetailScreenState extends ConsumerState<ExpertDetailScreen> {
         title: const Text(
           'Mentor Profile',
           style: TextStyle(
-            color: Color(0xFF0F172A),
+            color: AppColors.textPrimary,
             fontSize: 18,
             fontWeight: FontWeight.w800,
           ),
@@ -364,7 +365,7 @@ class _ExpertDetailScreenState extends ConsumerState<ExpertDetailScreen> {
               children: [
                 CircleAvatar(
                   radius: 38,
-                  backgroundColor: const Color(0xFFEEF2FF),
+                  backgroundColor: AppColors.moduleExpertsLight,
                   backgroundImage: expert.expertImage.isNotEmpty
                       ? NetworkImage(expert.expertImage)
                       : null,
@@ -376,7 +377,7 @@ class _ExpertDetailScreenState extends ConsumerState<ExpertDetailScreen> {
                           style: const TextStyle(
                             fontSize: 28,
                             fontWeight: FontWeight.w900,
-                            color: Color(0xFF4F46E5),
+                            color: AppColors.moduleExperts,
                           ),
                         )
                       : null,
@@ -391,7 +392,7 @@ class _ExpertDetailScreenState extends ConsumerState<ExpertDetailScreen> {
                         style: const TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.w800,
-                          color: Color(0xFF0F172A),
+                          color: AppColors.textPrimary,
                         ),
                       ),
                     ),
@@ -409,7 +410,7 @@ class _ExpertDetailScreenState extends ConsumerState<ExpertDetailScreen> {
                   textAlign: TextAlign.center,
                   style: const TextStyle(
                     fontSize: 13,
-                    color: Color(0xFF64748B),
+                    color: AppColors.textSecondary,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -452,7 +453,7 @@ class _ExpertDetailScreenState extends ConsumerState<ExpertDetailScreen> {
                         vertical: 4,
                       ),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFEEF2FF),
+                        color: AppColors.moduleExpertsLight,
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Text(
@@ -460,7 +461,7 @@ class _ExpertDetailScreenState extends ConsumerState<ExpertDetailScreen> {
                         style: const TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w700,
-                          color: Color(0xFF4F46E5),
+                          color: AppColors.moduleExperts,
                         ),
                       ),
                     ),
@@ -478,7 +479,7 @@ class _ExpertDetailScreenState extends ConsumerState<ExpertDetailScreen> {
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: const Color(0xFFE2E8F0)),
+              border: Border.all(color: AppColors.border),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -488,7 +489,7 @@ class _ExpertDetailScreenState extends ConsumerState<ExpertDetailScreen> {
                   style: TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w800,
-                    color: Color(0xFF0F172A),
+                    color: AppColors.textPrimary,
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -546,7 +547,7 @@ class _ExpertDetailScreenState extends ConsumerState<ExpertDetailScreen> {
               padding: const EdgeInsets.all(18),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: const Color(0xFFE2E8F0)),
+                border: Border.all(color: AppColors.border),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -556,7 +557,7 @@ class _ExpertDetailScreenState extends ConsumerState<ExpertDetailScreen> {
                     style: TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.w800,
-                      color: Color(0xFF0F172A),
+                      color: AppColors.textPrimary,
                     ),
                   ),
                   const SizedBox(height: 10),
@@ -564,7 +565,7 @@ class _ExpertDetailScreenState extends ConsumerState<ExpertDetailScreen> {
                     contentPadding: EdgeInsets.zero,
                     leading: const Icon(
                       Icons.calendar_today_rounded,
-                      color: Color(0xFF4F46E5),
+                      color: AppColors.moduleExperts,
                     ),
                     title: Text(
                       '${_selectedDate.day}/${_selectedDate.month}/${_selectedDate.year}',
@@ -588,7 +589,7 @@ class _ExpertDetailScreenState extends ConsumerState<ExpertDetailScreen> {
                     contentPadding: EdgeInsets.zero,
                     leading: const Icon(
                       Icons.schedule_rounded,
-                      color: Color(0xFF4F46E5),
+                      color: AppColors.moduleExperts,
                     ),
                     title: Text(
                       _selectedTime.format(context),
@@ -617,10 +618,10 @@ class _ExpertDetailScreenState extends ConsumerState<ExpertDetailScreen> {
                         color: Color(0xFF94A3B8),
                       ),
                       filled: true,
-                      fillColor: const Color(0xFFF8FAFC),
+                      fillColor: AppColors.background,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                        borderSide: const BorderSide(color: AppColors.border),
                       ),
                     ),
                   ),
@@ -637,7 +638,7 @@ class _ExpertDetailScreenState extends ConsumerState<ExpertDetailScreen> {
             child: ElevatedButton(
               onPressed: _isBooking ? null : _handleBookSession,
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF4F46E5),
+                backgroundColor: AppColors.moduleExperts,
                 foregroundColor: Colors.white,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(14),
@@ -675,7 +676,7 @@ class _ExpertDetailScreenState extends ConsumerState<ExpertDetailScreen> {
   Widget _buildMetaItem(IconData icon, String label, String value) {
     return Column(
       children: [
-        Icon(icon, size: 20, color: const Color(0xFF64748B)),
+        Icon(icon, size: 20, color: AppColors.textSecondary),
         const SizedBox(height: 4),
         Text(
           label,
@@ -687,7 +688,7 @@ class _ExpertDetailScreenState extends ConsumerState<ExpertDetailScreen> {
           style: const TextStyle(
             fontSize: 13,
             fontWeight: FontWeight.w700,
-            color: Color(0xFF0F172A),
+            color: AppColors.textPrimary,
           ),
         ),
       ],

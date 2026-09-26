@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../models/event.dart';
 import '../providers/event_provider.dart';
+import '../../../app/theme/app_colors.dart';
 
 class EventDetailScreen extends ConsumerStatefulWidget {
   final EventItem event;
@@ -72,7 +73,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
     final event = widget.event;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: AppColors.background,
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
@@ -87,7 +88,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
         title: const Text(
           'Event Details',
           style: TextStyle(
-            color: Color(0xFF0F172A),
+            color: AppColors.textPrimary,
             fontSize: 18,
             fontWeight: FontWeight.w800,
           ),
@@ -144,7 +145,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: const Color(0xFFE2E8F0)),
+              border: Border.all(color: AppColors.border),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -209,7 +210,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
                   style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w800,
-                    color: Color(0xFF0F172A),
+                    color: AppColors.textPrimary,
                   ),
                 ),
                 if (event.organizer.isNotEmpty) ...[
@@ -218,7 +219,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
                     'Organized by ${event.organizer}',
                     style: const TextStyle(
                       fontSize: 12,
-                      color: Color(0xFF64748B),
+                      color: AppColors.textSecondary,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
@@ -280,7 +281,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: const Color(0xFFE2E8F0)),
+              border: Border.all(color: AppColors.border),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -290,7 +291,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
                   style: TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w800,
-                    color: Color(0xFF0F172A),
+                    color: AppColors.textPrimary,
                   ),
                 ),
                 const SizedBox(height: 8),

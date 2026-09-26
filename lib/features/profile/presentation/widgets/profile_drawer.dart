@@ -181,7 +181,7 @@ class ProfileDrawer extends ConsumerWidget {
                             width: 46,
                             height: 46,
                             decoration: BoxDecoration(
-                              color: const Color(0xFF1E3A8A),
+                              color: AppColors.navy,
                               shape: BoxShape.circle,
                               image: hasAvatar
                                   ? DecorationImage(
@@ -211,7 +211,7 @@ class ProfileDrawer extends ConsumerWidget {
                                   style: const TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.w800,
-                                    color: Color(0xFF0F172A),
+                                    color: AppColors.textPrimary,
                                   ),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
@@ -222,7 +222,7 @@ class ProfileDrawer extends ConsumerWidget {
                                   style: const TextStyle(
                                     fontSize: 12.5,
                                     fontStyle: FontStyle.italic,
-                                    color: Color(0xFF64748B),
+                                    color: AppColors.textSecondary,
                                   ),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
