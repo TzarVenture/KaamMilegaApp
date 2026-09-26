@@ -53,6 +53,7 @@ class _ServicesMarketplaceScreenState extends State<ServicesMarketplaceScreen> {
         child: Column(
           children: [
             CategoryTopHeader(
+              showSearchIcon: false, // search bar below is enough
               scaffoldKey: _scaffoldKey,
               themeColor: AppColors.moduleServices,
               searchHint: 'Search services (e.g. AC service, electrician)...',

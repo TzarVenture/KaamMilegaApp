@@ -154,6 +154,7 @@ class _PeerToPeerScreenState extends ConsumerState<PeerToPeerScreen>
         child: Column(
           children: [
             CategoryTopHeader(
+              showSearchIcon: false, // search bar below is enough
               scaffoldKey: _scaffoldKey,
               themeColor: AppColors.moduleP2P,
               searchHint: 'Search network peers & workers...',

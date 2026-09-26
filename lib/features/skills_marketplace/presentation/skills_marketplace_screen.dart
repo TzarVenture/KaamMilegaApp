@@ -50,6 +50,7 @@ class _SkillsMarketplaceScreenState
         child: Column(
           children: [
             CategoryTopHeader(
+              showSearchIcon: false, // search bar below is enough
               scaffoldKey: _scaffoldKey,
               themeColor: AppColors.moduleSkills,
               searchHint:

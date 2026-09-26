@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../app/theme/app_colors.dart';
 import '../../../shared/widgets/auth_prompt_dialog.dart';
 import '../../../shared/widgets/shimmer_loading.dart';
+import '../../../shared/widgets/voice_search_button.dart';
 import '../../applications/presentation/apply_modal.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../cities/presentation/city_selector_sheet.dart';
@@ -280,6 +281,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       child: _buildLocationSelector(currentCity),
                     ),
 
+                    // Search box with voice search
+                    FadeSlideIn(index: 0, child: _buildSearchBox()),
+
                     const SizedBox(height: 10),
 
                     // 2. INSTANTMILEGA™ PROMO BANNER (Purple Card)
@@ -386,24 +390,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           ),
           const SizedBox(width: 8),
 
-          // Right Action Icons Row: Search + Notification Bell + Three-line Hamburger
+          // Right Action Icons Row: Notification Bell + Three-line Hamburger
+          // (search is the search box below the city selector)
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Search Icon Button (Left of Notification Bell)
-              IconButton(
-                onPressed: () => _goToJobsTabWithQuery(''),
-                icon: const Icon(
-                  Icons.search_rounded,
-                  color: Color(0xFF1E293B),
-                  size: 24,
-                ),
-                splashRadius: 22,
-                padding: const EdgeInsets.all(6),
-                constraints: const BoxConstraints(),
-              ),
-              const SizedBox(width: 8),
-
               // Notification Bell with dynamic unread indicator dot
               GestureDetector(
                 onTap: () => context.push('/notifications'),
@@ -491,6 +482,63 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               size: 18,
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  // ==========================================
+  // 1c. SEARCH BOX (typed or voice) -> Jobs tab search
+  // ==========================================
+  /// Searches jobs by title, description, company or location (backend
+  /// GET /jobs `search`). Opens the Jobs tab with the results; Home's own
+  /// lists are not filtered.
+  void _submitHomeSearch([String? text]) {
+    final query = (text ?? _searchController.text).trim();
+    FocusScope.of(context).unfocus();
+    _searchController.clear();
+    _goToJobsTabWithQuery(query);
+  }
+
+  Widget _buildSearchBox() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+      child: TextField(
+        controller: _searchController,
+        textInputAction: TextInputAction.search,
+        onSubmitted: _submitHomeSearch,
+        decoration: InputDecoration(
+          hintText: 'Search jobs, companies or locations...',
+          filled: true,
+          fillColor: Colors.white,
+          isDense: true,
+          contentPadding: const EdgeInsets.symmetric(vertical: 12),
+          prefixIcon: const Icon(
+            Icons.search_rounded,
+            color: AppColors.textSecondary,
+          ),
+          suffixIcon: VoiceSearchButton(
+            color: AppColors.textSecondary,
+            onText: (words) {
+              _searchController.value = TextEditingValue(
+                text: words,
+                selection: TextSelection.collapsed(offset: words.length),
+              );
+            },
+            onDone: _submitHomeSearch,
+          ),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(14),
+            borderSide: const BorderSide(color: AppColors.border),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(14),
+            borderSide: const BorderSide(color: AppColors.border),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(14),
+            borderSide: const BorderSide(color: AppColors.blue, width: 1.5),
+          ),
         ),
       ),
     );

@@ -24,6 +24,8 @@ dependencies:
   connectivity_plus: ^7.3.1
   # Official Razorpay checkout SDK (wallet top-up & paid mentorship sessions)
   razorpay_flutter: ^1.4.7
+  # Voice search (Home search box microphone)
+  speech_to_text: ^7.0.0
 
 dev_dependencies:
   flutter_test:

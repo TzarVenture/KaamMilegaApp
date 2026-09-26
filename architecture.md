@@ -145,7 +145,7 @@ Files: `lib/main.dart`, `lib/app/app.dart`, `lib/app/router.dart`, `lib/features
 
 ## 7. Guest Mode
 
-- Entered from Login → "Explore Jobs as Guest": `authProvider.notifier.enterGuestMode()` then `context.go('/jobs')` (`login_screen.dart`).
+- Entered from Login → "Explore Jobs as Guest": `authProvider.notifier.enterGuestMode()` then `context.go('/home')` (`login_screen.dart`).
 - `AuthState.isGuest = true` **in memory only**. Restart → Splash → `/login`. No token is created; `isAuthenticated` stays false.
 - **Guest can open:** every route not in `AuthGuard._protectedRoots` and not `/chats/:id` — `/home`, `/jobs`, `/jobs/:id`, `/saved-jobs`, `/events`, `/experts`, `/explore`, `/instant-work`, `/skills-marketplace`, `/services`, `/feed`, `/notifications`, `/company/:id`, and the Chats (login prompt, `LoginRequiredView`) / Profile tabs of the shell.
 - **Guest is redirected to Login for:** `/my-applications`, `/applications/*`, `/interviews`, `/my-sessions`, `/network`, `/apply-expert`, `/settings`, `/wallet/*`, `/peer-to-peer`, `/chats/:id`. The requested path is remembered (`_pendingPath`) and restored after login (except chat).

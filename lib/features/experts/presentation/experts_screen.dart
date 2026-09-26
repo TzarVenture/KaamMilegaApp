@@ -57,6 +57,7 @@ class _ExpertsScreenState extends ConsumerState<ExpertsScreen> {
         child: Column(
           children: [
             CategoryTopHeader(
+              showSearchIcon: false, // search bar below is enough
               scaffoldKey: _scaffoldKey,
               themeColor: AppColors.moduleExperts,
               searchHint: 'Search mentors by name, role or skill...',

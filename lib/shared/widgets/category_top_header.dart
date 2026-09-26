@@ -22,6 +22,10 @@ class CategoryTopHeader extends ConsumerWidget {
   final VoidCallback? onSearchSubmitted;
   final VoidCallback? onSearchIconTap;
 
+  /// Small search icon in the top-right row. Service screens hide it
+  /// (they already have the search bar below).
+  final bool showSearchIcon;
+
   const CategoryTopHeader({
     super.key,
     required this.scaffoldKey,
@@ -32,6 +36,7 @@ class CategoryTopHeader extends ConsumerWidget {
     this.onSearchChanged,
     this.onSearchSubmitted,
     this.onSearchIconTap,
+    this.showSearchIcon = true,
   });
 
   @override
@@ -130,19 +135,21 @@ class CategoryTopHeader extends ConsumerWidget {
               Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  // Search Icon Button
-                  IconButton(
-                    onPressed: onSearchIconTap,
-                    icon: const Icon(
-                      Icons.search_rounded,
-                      color: Color(0xFF1E293B),
-                      size: 24,
+                  // Search Icon Button (hidden on service screens)
+                  if (showSearchIcon) ...[
+                    IconButton(
+                      onPressed: onSearchIconTap,
+                      icon: const Icon(
+                        Icons.search_rounded,
+                        color: Color(0xFF1E293B),
+                        size: 24,
+                      ),
+                      splashRadius: 22,
+                      padding: const EdgeInsets.all(6),
+                      constraints: const BoxConstraints(),
                     ),
-                    splashRadius: 22,
-                    padding: const EdgeInsets.all(6),
-                    constraints: const BoxConstraints(),
-                  ),
-                  const SizedBox(width: 8),
+                    const SizedBox(width: 8),
+                  ],
 
                   // Notification Bell with dynamic unread indicator dot
                   GestureDetector(

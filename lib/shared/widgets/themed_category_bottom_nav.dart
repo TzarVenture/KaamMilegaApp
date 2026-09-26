@@ -188,7 +188,7 @@ class ThemedCategoryBottomNav extends ConsumerWidget {
                 onTap: onCategoryTap ?? () {},
               ),
 
-              // 3. CENTER (+) BUTTON (Styled with theme color gradient and shadow)
+              // 3. CENTER (+) BUTTON: solid service colour (no gradient) + shadow
               GestureDetector(
                 onTap:
                     onCenterTap ?? () => _showDefaultQuickActionSheet(context),
@@ -196,11 +196,7 @@ class ThemedCategoryBottomNav extends ConsumerWidget {
                   width: 54,
                   height: 54,
                   decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [activeColor, secondaryColor],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
+                    color: activeColor,
                     shape: BoxShape.circle,
                     boxShadow: [
                       BoxShadow(

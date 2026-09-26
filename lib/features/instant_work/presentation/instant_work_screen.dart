@@ -59,6 +59,7 @@ class _InstantWorkScreenState extends ConsumerState<InstantWorkScreen> {
           children: [
             // Top Header (Logo + Search/Notification/Drawer + Location + Search Bar)
             CategoryTopHeader(
+              showSearchIcon: false, // search bar below is enough
               scaffoldKey: _scaffoldKey,
               themeColor: AppColors.moduleInstantWork,
               customLogoTitle: 'Instantmilega™',
