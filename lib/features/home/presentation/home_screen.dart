@@ -10,9 +10,14 @@ import '../../applications/presentation/apply_modal.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../cities/presentation/city_selector_sheet.dart';
 import '../../jobs/models/job.dart';
+import '../../jobs/models/job_filter.dart';
 import '../../jobs/providers/jobs_provider.dart';
 import '../../notifications/providers/notification_provider.dart';
 import '../../profile/presentation/widgets/profile_drawer.dart';
+import 'widgets/connect_like_you_section.dart';
+import 'widgets/featured_companies_section.dart';
+import 'widgets/job_categories_section.dart';
+import 'widgets/job_shortcuts_sections.dart';
 import '../../../shared/widgets/fade_slide_in.dart';
 import '../../../shared/widgets/pressable_scale.dart';
 
@@ -58,6 +63,24 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     } else {
       context.go('/jobs');
     }
+  }
+
+  /// Qualification / job type shortcut: opens the Jobs tab with only that
+  /// filter on (the selected city is kept). Home's own lists are unchanged.
+  void _openJobsWithShortcut(JobShortcut shortcut) {
+    final city = ref.read(jobsProvider).filter.city;
+    ref.read(jobsProvider.notifier).applyFilter(shortcut.filterFor(city));
+    _goToJobsTabWithQuery();
+  }
+
+  /// Photo category: opens the Jobs tab searching for that trade (only
+  /// that search; the selected city is kept).
+  void _openJobsWithCategory(JobCategory category) {
+    final city = ref.read(jobsProvider).filter.city;
+    ref
+        .read(jobsProvider.notifier)
+        .applyFilter(JobFilter(city: city, searchQuery: category.query));
+    _goToJobsTabWithQuery();
   }
 
   void _show99AccessModal() {
@@ -312,16 +335,73 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
                     const SizedBox(height: 22),
 
-                    // 6. UNLOCK ALL BENEFITS WITH ₹99 ACCESS BANNER
-                    FadeSlideIn(index: 5, child: _build99AccessBanner()),
+                    // 6. SEARCH JOBS BY QUALIFICATION (opens Jobs filtered)
+                    FadeSlideIn(
+                      index: 5,
+                      child: QualificationShortcutsSection(
+                        onSelected: _openJobsWithShortcut,
+                      ),
+                    ),
 
                     const SizedBox(height: 22),
 
-                    // 7. TOP PICKS SECTION (Vertical List Card)
+                    // 7. UNLOCK ALL BENEFITS WITH ₹99 ACCESS BANNER
+                    FadeSlideIn(index: 6, child: _build99AccessBanner()),
+
+                    const SizedBox(height: 22),
+
+                    // 8. TOP PICKS SECTION (Vertical List Card)
                     FadeSlideIn(
-                      index: 6,
+                      index: 7,
                       child: _buildTopPicksSection(homeJobs),
                     ),
+
+                    const SizedBox(height: 22),
+
+                    // 9. WHAT TYPE OF JOB DO YOU WANT? (opens Jobs filtered)
+                    FadeSlideIn(
+                      index: 8,
+                      child: JobTypeShortcutsSection(
+                        onSelected: _openJobsWithShortcut,
+                      ),
+                    ),
+
+                    const SizedBox(height: 22),
+
+                    // 10a. EXPLORE POPULAR JOB CATEGORIES (photo tiles)
+                    FadeSlideIn(
+                      index: 9,
+                      child: JobCategoriesSection(
+                        onSelected: _openJobsWithCategory,
+                        onViewAll: _goToJobsTabWithQuery,
+                      ),
+                    ),
+
+                    const SizedBox(height: 22),
+
+                    // 10. FEATURED COMPANIES ACTIVELY HIRING (real employers)
+                    const FadeSlideIn(
+                      index: 9,
+                      child: FeaturedCompaniesSection(),
+                    ),
+
+                    const SizedBox(height: 22),
+
+                    // 11. CONNECT JUST LIKE YOU (same as the website home)
+                    const FadeSlideIn(
+                      index: 10,
+                      child: ConnectLikeYouSection(),
+                    ),
+
+                    const SizedBox(height: 22),
+
+                    // 12. CONNECT WITH OUR EXPERTS (GET /experts)
+                    const FadeSlideIn(
+                      index: 11,
+                      child: ConnectExpertsSection(),
+                    ),
+
+                    const SizedBox(height: 16),
                   ],
                 ),
               ),

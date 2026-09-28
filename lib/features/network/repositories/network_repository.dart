@@ -5,12 +5,43 @@ import '../../../core/network/api_client.dart';
 import '../models/connection_request.dart';
 import '../../../core/network/response_list.dart';
 import '../../../core/network/app_exception.dart';
+import '../../auth/models/user_profile.dart';
 
 /// Repository handling Candidate Network & Connection APIs
 class NetworkRepository {
   final ApiClient _client;
 
   NetworkRepository(this._client);
+
+  /// People for "Connect Just Like You" (GET /community/users, public):
+  /// the newest members with public profiles, same list as the website
+  /// home page.
+  Future<List<UserProfile>> getCommunityUsers() async {
+    final response = await _client.get(ApiConstants.communityUsers);
+    return readListResponse(response.data).map(UserProfile.fromJson).toList();
+  }
+
+  /// Another member's profile (GET /user/:id, id or username). Errors are
+  /// thrown, never hidden: HTTP 403 means the profile is private, 404 that
+  /// it does not exist.
+  Future<UserProfile> getMemberProfile(String userId) async {
+    final response = await _client.get('${ApiConstants.userById}$userId');
+    final data = response.data;
+    if (data is Map<String, dynamic>) {
+      final user = UserProfile.fromJson(data);
+      if (user.id.isNotEmpty) return user;
+    }
+    throw const AppValidationException(
+      'Unexpected response from server. Please try again.',
+    );
+  }
+
+  /// Experts for "Connect With Our Experts" (GET /experts, public): the
+  /// same list as the website home page.
+  Future<List<UserProfile>> getExperts() async {
+    final response = await _client.get(ApiConstants.experts);
+    return readListResponse(response.data).map(UserProfile.fromJson).toList();
+  }
 
   /// Send a connection invitation to another user
   Future<void> sendInvitation(String receiverId) async {

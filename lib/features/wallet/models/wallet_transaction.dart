@@ -86,10 +86,17 @@ class WalletTransaction {
         return 'Refund';
       case 'subscription':
         return 'Expert subscription';
+      case 'event_ticket':
+        return 'Event ticket';
       default:
         return 'Transaction';
     }
   }
+
+  /// Same rule as the backend (F73): a refund can be requested on a debit
+  /// payment, but not on a refund.
+  bool get canRequestRefund =>
+      id.isNotEmpty && type == TransactionType.debit && category != 'refund';
 
   factory WalletTransaction.fromJson(Map<String, dynamic> json) {
     final category = json['category']?.toString();

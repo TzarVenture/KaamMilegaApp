@@ -11,6 +11,7 @@ import '../../../shared/widgets/themed_category_bottom_nav.dart';
 import '../models/event.dart';
 import '../providers/event_provider.dart';
 import 'event_detail_screen.dart';
+import 'widgets/event_pricing_filter.dart';
 import '../../../shared/widgets/fade_slide_in.dart';
 import '../../../shared/widgets/pressable_scale.dart';
 
@@ -25,6 +26,7 @@ class _EventsScreenState extends ConsumerState<EventsScreen> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
+  EventPricingFilter _pricing = EventPricingFilter.all;
   final Set<String> _registeringEventIds = {};
 
   @override
@@ -123,21 +125,40 @@ class _EventsScreenState extends ConsumerState<EventsScreen> {
               onSearchSubmitted: () =>
                   setState(() => _searchQuery = _searchController.text.trim()),
             ),
+            EventPricingChips(
+              selected: _pricing,
+              onChanged: (value) => setState(() => _pricing = value),
+            ),
             Expanded(
               child: RefreshIndicator(
                 color: const Color(0xFFD97706),
                 onRefresh: () => ref.read(eventsProvider.notifier).refresh(),
                 child: eventsAsync.when(
                   data: (events) {
-                    final filteredEvents = _searchQuery.isEmpty
-                        ? events
-                        : events.where((e) {
-                            final q = _searchQuery.toLowerCase();
-                            return e.title.toLowerCase().contains(q) ||
-                                e.description.toLowerCase().contains(q) ||
-                                e.organizer.toLowerCase().contains(q) ||
-                                e.location.toLowerCase().contains(q);
-                          }).toList();
+                    final q = _searchQuery.toLowerCase();
+                    final filteredEvents = events.where((e) {
+                      if (!_pricing.matches(e)) return false;
+                      if (q.isEmpty) return true;
+                      return e.title.toLowerCase().contains(q) ||
+                          e.description.toLowerCase().contains(q) ||
+                          e.organizer.toLowerCase().contains(q) ||
+                          e.location.toLowerCase().contains(q);
+                    }).toList();
+                    // Why the list is empty: search, pricing, or no events
+                    final emptyTitle = _searchQuery.isNotEmpty
+                        ? 'No matching events found'
+                        : switch (_pricing) {
+                            EventPricingFilter.all => 'No Upcoming Events',
+                            EventPricingFilter.free =>
+                              'No free events right now',
+                            EventPricingFilter.paid =>
+                              'No paid masterclasses right now',
+                          };
+                    final emptyMessage = _searchQuery.isNotEmpty
+                        ? 'Try searching for different keywords or clear the search filter.'
+                        : _pricing == EventPricingFilter.all
+                        ? 'New career webinars and hiring expos will appear here once scheduled.'
+                        : 'Tap "All Events" to see every upcoming event.';
 
                     if (filteredEvents.isEmpty) {
                       return ListView(
@@ -148,6 +169,7 @@ class _EventsScreenState extends ConsumerState<EventsScreen> {
                         ),
                         children: [
                           _buildHeroBanner(),
+                          _buildMyTicketsLink(),
                           const SizedBox(height: 48),
                           FadeSlideIn(
                             child: Center(
@@ -164,9 +186,8 @@ class _EventsScreenState extends ConsumerState<EventsScreen> {
                                     ),
                                     const SizedBox(height: 16),
                                     Text(
-                                      _searchQuery.isEmpty
-                                          ? 'No Upcoming Events'
-                                          : 'No matching events found',
+                                      emptyTitle,
+                                      textAlign: TextAlign.center,
                                       style: const TextStyle(
                                         fontSize: 18,
                                         fontWeight: FontWeight.w800,
@@ -175,9 +196,7 @@ class _EventsScreenState extends ConsumerState<EventsScreen> {
                                     ),
                                     const SizedBox(height: 8),
                                     Text(
-                                      _searchQuery.isEmpty
-                                          ? 'New career webinars and hiring expos will appear here once scheduled.'
-                                          : 'Try searching for different keywords or clear the search filter.',
+                                      emptyMessage,
                                       textAlign: TextAlign.center,
                                       style: const TextStyle(
                                         fontSize: 13,
@@ -200,6 +219,7 @@ class _EventsScreenState extends ConsumerState<EventsScreen> {
                       ),
                       children: [
                         _buildHeroBanner(),
+                        _buildMyTicketsLink(),
                         const SizedBox(height: 16),
                         ...filteredEvents.map((event) {
                           final isRegistering = _registeringEventIds.contains(
@@ -285,15 +305,48 @@ class _EventsScreenState extends ConsumerState<EventsScreen> {
     );
   }
 
+  void _openDetails(EventItem event) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => EventDetailScreen(event: event)),
+    );
+  }
+
+  /// Free events register from the card; paid tickets and registered
+  /// events (to view the ticket) open the details screen.
+  VoidCallback? _cardAction(EventItem event) {
+    if (event.isRegistered) return () => _openDetails(event);
+    if (event.isSoldOut) return null;
+    if (event.requiresPayment) return () => _openDetails(event);
+    return () => _handleRegistration(event);
+  }
+
+  String _cardLabel(EventItem event) {
+    if (event.isRegistered) return 'Registered';
+    if (event.isSoldOut) return 'Sold out';
+    if (event.requiresPayment) return 'Buy ticket · ${event.priceLabel}';
+    return 'Register for Event';
+  }
+
+  /// Signed-in users only (tickets are account data).
+  Widget _buildMyTicketsLink() {
+    final signedIn = ref.watch(authProvider.select((s) => s.isAuthenticated));
+    if (!signedIn) return const SizedBox.shrink();
+    return Align(
+      alignment: Alignment.centerRight,
+      child: TextButton.icon(
+        onPressed: () => context.push('/my-tickets'),
+        icon: const Icon(Icons.confirmation_number_outlined, size: 18),
+        label: const Text('My tickets'),
+        style: TextButton.styleFrom(foregroundColor: AppColors.primary),
+      ),
+    );
+  }
+
   Widget _buildEventCard(EventItem event, bool isRegistering) {
     return PressableScale(
       child: InkWell(
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (_) => EventDetailScreen(event: event)),
-          );
-        },
+        onTap: () => _openDetails(event),
         borderRadius: BorderRadius.circular(20),
         child: Container(
           margin: const EdgeInsets.only(bottom: 16),
@@ -328,13 +381,21 @@ class _EventsScreenState extends ConsumerState<EventsScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      event.dateString,
-                      style: const TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w800,
-                        color: AppColors.primary,
-                      ),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            event.dateString,
+                            style: const TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w800,
+                              color: AppColors.primary,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        _PriceBadge(event: event),
+                      ],
                     ),
                     const SizedBox(height: 6),
                     Text(
@@ -400,13 +461,12 @@ class _EventsScreenState extends ConsumerState<EventsScreen> {
                     ),
                     const SizedBox(height: 16),
                     ElevatedButton(
-                      onPressed: isRegistering
-                          ? null
-                          : () => _handleRegistration(event),
+                      onPressed: isRegistering ? null : _cardAction(event),
                       style: ElevatedButton.styleFrom(
+                        // Same colour as the Events + button
                         backgroundColor: event.isRegistered
                             ? Colors.grey.shade200
-                            : AppColors.primary,
+                            : AppColors.moduleEvents,
                         foregroundColor: event.isRegistered
                             ? AppColors.textPrimary
                             : Colors.white,
@@ -428,9 +488,7 @@ class _EventsScreenState extends ConsumerState<EventsScreen> {
                               ),
                             )
                           : Text(
-                              event.isRegistered
-                                  ? 'Registered'
-                                  : 'Register for Event',
+                              _cardLabel(event),
                               style: const TextStyle(
                                 fontWeight: FontWeight.w800,
                               ),
@@ -512,6 +570,33 @@ class _EventsScreenState extends ConsumerState<EventsScreen> {
       color: AppColors.heroBg,
       child: const Center(
         child: Icon(Icons.event_rounded, size: 48, color: Colors.white),
+      ),
+    );
+  }
+}
+
+/// "Free" or the ticket price, shown on each event card.
+class _PriceBadge extends StatelessWidget {
+  const _PriceBadge({required this.event});
+
+  final EventItem event;
+
+  @override
+  Widget build(BuildContext context) {
+    final paid = event.requiresPayment;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        color: paid ? AppColors.moduleEventsLight : AppColors.successLight,
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Text(
+        event.priceLabel,
+        style: TextStyle(
+          fontSize: 11,
+          fontWeight: FontWeight.w800,
+          color: paid ? AppColors.textPrimary : AppColors.success,
+        ),
       ),
     );
   }

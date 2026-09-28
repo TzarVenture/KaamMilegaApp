@@ -389,6 +389,36 @@ class AuthRepository {
     return _userFromResponse(response.data);
   }
 
+  /// Is [username] free for the custom profile URL?
+  /// (GET /user/username/check). The server applies the format rules and
+  /// the reserved names; "your current URL" also counts as available.
+  Future<UsernameAvailability> checkUsername(String username) async {
+    final response = await _client.get(
+      ApiConstants.userUsernameCheck,
+      queryParameters: {'username': username.trim().toLowerCase()},
+    );
+    final data = response.data;
+    if (data is Map<String, dynamic> && data['available'] is bool) {
+      return UsernameAvailability(
+        available: data['available'] as bool,
+        message: data['message']?.toString() ?? '',
+      );
+    }
+    throw const AppValidationException(
+      'Could not check availability. Please try again.',
+    );
+  }
+
+  /// Save the custom profile URL (PATCH /user/username). The server checks
+  /// the rules and availability again and answers with the updated profile.
+  Future<UserProfile> updateUsername(String username) async {
+    final response = await _client.patch(
+      ApiConstants.userUsername,
+      data: {'username': username.trim().toLowerCase()},
+    );
+    return _userFromResponse(response.data);
+  }
+
   /// Save Open To Work (PATCH /user/open-to-work). The backend replaces the
   /// whole object and answers with the updated profile under `user`.
   Future<UserProfile> updateOpenToWork(OpenToWorkPreferences prefs) async {
@@ -649,3 +679,13 @@ class AuthRepository {
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
   return AuthRepository(ref.watch(apiClientProvider));
 });
+
+/// Result of a custom URL availability check.
+class UsernameAvailability {
+  final bool available;
+
+  /// The server's explanation, e.g. "This URL is already taken...".
+  final String message;
+
+  const UsernameAvailability({required this.available, this.message = ''});
+}

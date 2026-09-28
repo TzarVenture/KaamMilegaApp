@@ -26,6 +26,12 @@ dependencies:
   razorpay_flutter: ^1.4.7
   # Voice search (Home search box microphone)
   speech_to_text: ^7.0.0
+  # Instant Milega: device location + OpenStreetMap map (no API key)
+  geolocator: ^13.0.0
+  flutter_map: ^8.0.0
+  latlong2: ^0.9.1
+  # Entry QR code on event tickets
+  qr_flutter: ^4.1.0
 
 dev_dependencies:
   flutter_test:
@@ -36,6 +42,7 @@ flutter:
   uses-material-design: true
   assets:
     - assets/images/
+    - assets/images/categories/
 
   # Brand fonts (SIL Open Font License 1.1, see assets/fonts/*-OFL.txt).
   fonts:
@@ -70,4 +77,4 @@ flutter:
         - asset: assets/fonts/NotoSansDevanagari-SemiBold.ttf
           weight: 600
         - asset: assets/fonts/NotoSansDevanagari-Bold.ttf
-          weight: 700
+          weight: 700

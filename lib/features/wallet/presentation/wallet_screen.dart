@@ -171,6 +171,11 @@ class WalletScreen extends ConsumerWidget {
               const SizedBox(height: 12),
               _buildRecentTransactionsBody(context, walletState),
 
+              const SizedBox(height: 16),
+
+              // 6. REFUND REQUESTS (backend F73)
+              _buildRefundRequestsLink(context),
+
               const SizedBox(height: 40),
             ],
           ),
@@ -721,6 +726,55 @@ class WalletScreen extends ConsumerWidget {
           ),
         ),
       ],
+    );
+  }
+
+  /// Opens the refund requests raised on wallet payments
+  Widget _buildRefundRequestsLink(BuildContext context) {
+    return Material(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(14),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(14),
+        onTap: () => context.push('/wallet/disputes'),
+        child: Container(
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: AppColors.border),
+          ),
+          child: const Row(
+            children: [
+              Icon(Icons.assignment_return_outlined, color: AppColors.primary),
+              SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Refund requests',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
+                    SizedBox(height: 2),
+                    Text(
+                      'Track refunds requested on your wallet payments',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Icon(Icons.chevron_right_rounded, color: AppColors.textLight),
+            ],
+          ),
+        ),
+      ),
     );
   }
 

@@ -2,7 +2,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/constants/api_constants.dart';
 import '../../../core/network/api_client.dart';
+import '../../../core/network/app_exception.dart';
+import '../../../core/network/response_list.dart';
+import '../../wallet/models/wallet_summary.dart';
 import '../models/event.dart';
+import '../models/event_ticket.dart';
 
 /// Repository for handling Career Events and Webinars with km-backend
 class EventRepository {
@@ -68,6 +72,91 @@ class EventRepository {
       return true;
     }
     return false;
+  }
+
+  /// Paid ticket, step 1 (POST /events/:id/create-order): the server creates
+  /// a Razorpay order for the event's real price.
+  Future<PaymentOrder> createTicketOrder(
+    String eventId,
+    EventAttendee attendee,
+  ) async {
+    final response = await _client.post(
+      '${ApiConstants.events}/$eventId/create-order',
+      data: attendee.toJson(),
+    );
+    final data = response.data;
+    if (data is Map<String, dynamic>) {
+      final order = PaymentOrder.fromJson(data);
+      if (order.isValid) return order;
+    }
+    throw const AppValidationException(
+      'Could not start the payment. Please try again.',
+    );
+  }
+
+  /// Paid ticket, step 3 (POST /events/:id/verify-payment): the server checks
+  /// the Razorpay signature and issues the ticket. Safe to call again with
+  /// the same payment: the server returns the ticket it already issued.
+  Future<EventTicket> verifyTicketPayment({
+    required String eventId,
+    required String orderId,
+    required String paymentId,
+    required String signature,
+    required EventAttendee attendee,
+  }) async {
+    final response = await _client.post(
+      '${ApiConstants.events}/$eventId/verify-payment',
+      data: {
+        'razorpay_order_id': orderId,
+        'razorpay_payment_id': paymentId,
+        'razorpay_signature': signature,
+        ...attendee.toJson(),
+      },
+    );
+    return _ticketFrom(response.data);
+  }
+
+  /// Paid ticket from the wallet main balance
+  /// (POST /events/:id/wallet-checkout). Returns the ticket and, when sent,
+  /// the fresh wallet balances.
+  Future<({EventTicket ticket, WalletSummary? wallet})> buyTicketWithWallet(
+    String eventId,
+    EventAttendee attendee,
+  ) async {
+    final response = await _client.post(
+      '${ApiConstants.events}/$eventId/wallet-checkout',
+      data: attendee.toJson(),
+    );
+    final data = response.data;
+    final wallet =
+        data is Map<String, dynamic> && data['wallet'] is Map<String, dynamic>
+        ? WalletSummary.fromJson(data['wallet'] as Map<String, dynamic>)
+        : null;
+    return (ticket: _ticketFrom(data), wallet: wallet);
+  }
+
+  /// Tickets of the signed-in user, free and paid (GET /events/my/tickets).
+  Future<List<EventTicket>> getMyTickets() async {
+    final response = await _client.get(ApiConstants.eventsMyTickets);
+    return readListResponse(
+      response.data,
+      keys: const ['tickets', 'data'],
+    ).map(EventTicket.fromJson).toList();
+  }
+
+  /// Reads `{message, ticket}`; a success without a ticket is an error, not
+  /// a silent success.
+  static EventTicket _ticketFrom(dynamic data) {
+    if (data is Map<String, dynamic> &&
+        data['ticket'] is Map<String, dynamic>) {
+      final ticket = EventTicket.fromJson(
+        data['ticket'] as Map<String, dynamic>,
+      );
+      if (ticket.ticketNumber.isNotEmpty) return ticket;
+    }
+    throw const AppValidationException(
+      'The ticket could not be read from the server response.',
+    );
   }
 }
 

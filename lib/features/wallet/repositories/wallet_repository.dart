@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/constants/api_constants.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/network/app_exception.dart';
+import '../../../core/network/response_list.dart';
+import '../models/wallet_dispute.dart';
 import '../models/wallet_summary.dart';
 import '../models/wallet_transaction.dart';
 import '../models/withdrawal.dart';
@@ -181,6 +183,72 @@ class WalletRepository {
         isOutcomeUnknown: true,
       );
     }
+  }
+
+  /// Shown when a refund request got no answer (see [createDispute]).
+  static const String disputeOutcomeUnknownMessage =
+      'We could not confirm your refund request. Please check Refund '
+      'requests before trying again.';
+
+  /// Raise a refund request on a wallet payment (POST /wallet/disputes).
+  /// The server accepts only debit payments (not refunds), once per payment.
+  /// Errors: HTTP 400 -> [WalletApiException] with the server's reason;
+  /// timeout / 5xx -> `isOutcomeUnknown` (it may have been saved).
+  Future<WalletDispute> createDispute({
+    required String transactionId,
+    required DisputeReason reason,
+    required String description,
+  }) async {
+    try {
+      final response = await _apiClient.post(
+        ApiConstants.walletDisputes,
+        data: {
+          'transaction_id': transactionId,
+          'reason': reason.value,
+          'description': description.trim(),
+        },
+      );
+      final data = response.data;
+      if (data is Map<String, dynamic>) {
+        final dispute = WalletDispute.fromJson(data);
+        if (dispute.id.isNotEmpty) return dispute;
+      }
+      // Accepted (2xx) but unreadable: it was saved; the list will show it.
+      throw const WalletApiException(
+        disputeOutcomeUnknownMessage,
+        isOutcomeUnknown: true,
+      );
+    } on AppNotFoundException {
+      throw const WalletApiException(
+        'Refund requests are not available right now.',
+        isBackendPending: true,
+      );
+    } on AppValidationException catch (e) {
+      throw WalletApiException(e.message);
+    } on AppAuthException {
+      rethrow;
+    } on AppException {
+      throw const WalletApiException(
+        disputeOutcomeUnknownMessage,
+        isOutcomeUnknown: true,
+      );
+    }
+  }
+
+  /// Refund requests raised by the signed-in user, newest first
+  /// (GET /wallet/my/disputes -> {disputes, total, page, limit}).
+  Future<List<WalletDispute>> getMyDisputes({
+    int page = 1,
+    int limit = 50,
+  }) async {
+    final response = await _apiClient.get(
+      ApiConstants.walletMyDisputes,
+      queryParameters: {'page': page, 'limit': limit},
+    );
+    return readListResponse(
+      response.data,
+      keys: const ['disputes', 'data'],
+    ).map(WalletDispute.fromJson).toList();
   }
 
   /// Request P2P transfer to another KaamMilega user (not built yet).

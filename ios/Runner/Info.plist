@@ -2,6 +2,8 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>KaamMilega uses your location to show the map and services near you on Instant Milega.</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>KaamMilega uses the microphone for voice search.</string>
 	<key>NSSpeechRecognitionUsageDescription</key>

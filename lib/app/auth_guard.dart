@@ -31,6 +31,8 @@ class AuthGuard {
     '/applications',
     '/interviews',
     '/my-sessions', // booked mentorship sessions
+    '/my-tickets', // event tickets
+    '/members', // other members' profiles (GET /user/:id needs a login)
     '/network',
     '/apply-expert',
     '/settings',

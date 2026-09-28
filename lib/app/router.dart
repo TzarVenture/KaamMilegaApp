@@ -15,8 +15,10 @@ import '../features/auth/presentation/login_screen.dart';
 import '../features/auth/presentation/otp_screen.dart';
 import '../features/auth/presentation/register_screen.dart';
 import '../features/chat/presentation/chat_detail_screen.dart';
+import '../features/company/models/top_company.dart';
 import '../features/company/presentation/company_screen.dart';
 import '../features/events/presentation/events_screen.dart';
+import '../features/events/presentation/my_tickets_screen.dart';
 import '../features/experts/presentation/apply_expert_screen.dart';
 import '../features/experts/presentation/my_sessions_screen.dart';
 import '../features/interviews/presentation/interviews_screen.dart';
@@ -24,6 +26,7 @@ import '../features/jobs/models/job.dart';
 import '../features/jobs/presentation/job_detail_screen.dart';
 import '../features/jobs/presentation/saved_jobs_screen.dart';
 import '../features/navigation/presentation/main_navigation_shell.dart';
+import '../features/network/presentation/member_profile_screen.dart';
 import '../features/profile/presentation/settings_screen.dart';
 import '../features/splash/presentation/splash_screen.dart';
 
@@ -31,6 +34,7 @@ import '../features/feed/presentation/feed_screen.dart';
 import '../features/network/presentation/network_screen.dart';
 import '../features/notifications/presentation/notifications_screen.dart';
 import '../features/wallet/presentation/wallet_add_money_screen.dart';
+import '../features/wallet/presentation/wallet_disputes_screen.dart';
 import '../features/wallet/presentation/wallet_screen.dart';
 import '../features/wallet/presentation/wallet_transactions_screen.dart';
 import '../features/wallet/presentation/wallet_transfer_screen.dart';
@@ -130,11 +134,20 @@ class AppRouter {
       builder: (context, state) => const EventsScreen(),
     ),
     GoRoute(
+      path: '/my-tickets',
+      name: 'my_tickets',
+      builder: (context, state) => const MyTicketsScreen(),
+    ),
+    GoRoute(
       path: '/company/:id',
       name: 'company_detail',
       builder: (context, state) {
         final id = state.pathParameters['id'] ?? '';
-        return CompanyScreen(companyId: id);
+        // Header details passed from Home (Featured Companies), if any
+        final company = state.extra is TopCompany
+            ? state.extra as TopCompany
+            : null;
+        return CompanyScreen(companyId: id, company: company);
       },
     ),
     GoRoute(
@@ -231,6 +244,12 @@ class AppRouter {
       },
     ),
     GoRoute(
+      path: '/members/:id',
+      name: 'member_profile',
+      builder: (context, state) =>
+          MemberProfileScreen(userId: state.pathParameters['id'] ?? ''),
+    ),
+    GoRoute(
       path: '/apply-expert',
       name: 'apply_expert',
       builder: (context, state) => const ApplyExpertScreen(),
@@ -254,6 +273,11 @@ class AppRouter {
       path: '/wallet/transactions',
       name: 'wallet_transactions',
       builder: (context, state) => const WalletTransactionsScreen(),
+    ),
+    GoRoute(
+      path: '/wallet/disputes',
+      name: 'wallet_disputes',
+      builder: (context, state) => const WalletDisputesScreen(),
     ),
     GoRoute(
       path: '/wallet/add-money',

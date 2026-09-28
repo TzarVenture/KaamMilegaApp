@@ -2,9 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/network/app_exception.dart';
+import '../../../shared/widgets/app_dialog.dart';
+import '../../../shared/widgets/network_state_view.dart';
 import '../../auth/providers/auth_provider.dart';
+import '../../wallet/providers/wallet_provider.dart';
 import '../models/event.dart';
+import '../models/event_ticket.dart';
 import '../providers/event_provider.dart';
+import '../providers/event_ticket_provider.dart';
+import '../repositories/event_repository.dart';
+import 'widgets/event_ticket_view.dart';
+import 'widgets/ticket_checkout_sheets.dart';
 import '../../../app/theme/app_colors.dart';
 
 class EventDetailScreen extends ConsumerStatefulWidget {
@@ -26,46 +35,231 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
     _isRegistered = widget.event.isRegistered;
   }
 
-  Future<void> _handleRegister() async {
-    final authState = ref.read(authProvider);
-    if (!authState.isAuthenticated) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('Please log in to register for this event.'),
-          action: SnackBarAction(
-            label: 'Login',
-            textColor: Colors.white,
-            onPressed: () => context.push('/login'),
-          ),
+  bool _requireLogin(String message) {
+    if (ref.read(authProvider).isAuthenticated) return false;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        action: SnackBarAction(
+          label: 'Login',
+          textColor: Colors.white,
+          onPressed: () => context.push('/login'),
         ),
-      );
-      return;
-    }
+      ),
+    );
+    return true;
+  }
+
+  void _showMessage(String message, {bool isError = false}) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: isError ? AppColors.error : AppColors.success,
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
+  /// Free events: POST /events/:id/register.
+  Future<void> _handleRegister() async {
+    if (_requireLogin('Please log in to register for this event.')) return;
 
     setState(() => _isRegistering = true);
-    final success = await ref
-        .read(eventsProvider.notifier)
-        .registerForEvent(widget.event.id);
+    var success = false;
+    String? error;
+    try {
+      success = await ref
+          .read(eventsProvider.notifier)
+          .registerForEvent(widget.event.id);
+    } on AppException catch (e) {
+      error = e.message;
+    }
+    if (!mounted) return;
     setState(() {
       _isRegistering = false;
       if (success) _isRegistered = true;
     });
+    if (success) ref.invalidate(myEventTicketsProvider);
+    _showMessage(
+      success
+          ? 'Successfully registered for ${widget.event.title}!'
+          : error ?? 'Could not complete registration. Please try again.',
+      isError: !success,
+    );
+  }
 
-    if (!mounted) return;
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          success
-              ? 'Successfully registered for ${widget.event.title}!'
-              : 'Could not complete registration. Please try again.',
-        ),
-        backgroundColor: success
-            ? const Color(0xFF10B981)
-            : const Color(0xFFEF4444),
-        behavior: SnackBarBehavior.floating,
+  /// Paid events: attendee details, then wallet or Razorpay. The ticket is
+  /// shown only after the server has issued it.
+  Future<void> _handleBuyTicket() async {
+    if (_requireLogin('Please log in to buy a ticket for this event.')) {
+      return;
+    }
+    final event = widget.event;
+    final user = ref.read(authProvider).user;
+    final attendee = await showModalBottomSheet<EventAttendee>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => AttendeeDetailsSheet(
+        event: event,
+        initialName: user?.name ?? '',
+        initialEmail: user?.email ?? '',
+        initialPhone: user?.mobile ?? '',
       ),
     );
+    if (attendee == null || !mounted) return;
+
+    setState(() => _isRegistering = true);
+    // Fresh balances from the server before offering the wallet
+    await ref.read(walletProvider.notifier).loadWallet();
+    if (!mounted) return;
+    setState(() => _isRegistering = false);
+    final walletState = ref.read(walletProvider);
+    final method = await showModalBottomSheet<TicketPaymentMethod>(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (_) => TicketPaymentMethodSheet(
+        event: event,
+        walletAvailable:
+            walletState.summary != null && !walletState.isComingSoon,
+        mainBalance: walletState.summary?.mainBalance ?? 0,
+      ),
+    );
+    if (method == null || !mounted) return;
+
+    setState(() => _isRegistering = true);
+    try {
+      final checkout = ref.read(eventTicketCheckoutProvider);
+      final result = method == TicketPaymentMethod.wallet
+          ? await checkout.payWithWallet(event, attendee)
+          : await checkout.payOnline(event, attendee);
+      if (!mounted) return;
+      await _handlePurchaseResult(result, attendee);
+    } finally {
+      if (mounted) setState(() => _isRegistering = false);
+    }
+  }
+
+  Future<void> _handlePurchaseResult(
+    TicketPurchaseResult result,
+    EventAttendee attendee,
+  ) async {
+    switch (result.outcome) {
+      case TicketPurchaseOutcome.success:
+        setState(() => _isRegistered = true);
+        _showMessage(result.message);
+        final ticket = result.ticket;
+        if (ticket != null) await showEventTicketSheet(context, ticket);
+        break;
+      case TicketPurchaseOutcome.cancelled:
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(result.message)));
+        break;
+      case TicketPurchaseOutcome.failed:
+        _showMessage(result.message, isError: true);
+        break;
+      case TicketPurchaseOutcome.outcomeUnknown:
+        await _showNotice('Could not confirm purchase', result.message);
+        break;
+      case TicketPurchaseOutcome.paidButUnconfirmed:
+        final retry = await _showNotice(
+          'Payment received, confirming',
+          result.message,
+          retryLabel: 'Try again',
+        );
+        final payment = result.payment;
+        if (retry == true && payment != null && mounted) {
+          final next = await ref
+              .read(eventTicketCheckoutProvider)
+              .confirmOnlinePayment(widget.event, attendee, payment);
+          if (mounted) await _handlePurchaseResult(next, attendee);
+        }
+        break;
+    }
+  }
+
+  /// Returns true when the retry action was chosen.
+  Future<bool?> _showNotice(
+    String title,
+    String message, {
+    String? retryLabel,
+  }) {
+    return showAppDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(title),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: Text(retryLabel == null ? 'OK' : 'Close'),
+          ),
+          if (retryLabel != null)
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(true),
+              child: Text(retryLabel),
+            ),
+        ],
+      ),
+    );
+  }
+
+  /// Shows the ticket the server issued for this event.
+  Future<void> _handleViewTicket() async {
+    setState(() => _isRegistering = true);
+    try {
+      final tickets = await ref.read(eventRepositoryProvider).getMyTickets();
+      if (!mounted) return;
+      EventTicket? ticket;
+      for (final t in tickets) {
+        if (t.eventId == widget.event.id) {
+          ticket = t;
+          break;
+        }
+      }
+      if (ticket == null) {
+        _showMessage(
+          'You are registered for this event. No ticket was issued for '
+          'this registration.',
+        );
+        return;
+      }
+      await showEventTicketSheet(context, ticket);
+    } on AppException catch (e) {
+      _showMessage(NetworkStateView.errorMessageFor(e), isError: true);
+    } finally {
+      if (mounted) setState(() => _isRegistering = false);
+    }
+  }
+
+  VoidCallback? get _primaryAction {
+    if (_isRegistering) return null;
+    if (_isRegistered) return _handleViewTicket;
+    if (widget.event.isSoldOut) return null;
+    return widget.event.requiresPayment ? _handleBuyTicket : _handleRegister;
+  }
+
+  String get _primaryLabel {
+    if (_isRegistered) return 'View ticket';
+    if (widget.event.isSoldOut) return 'Sold out';
+    if (widget.event.requiresPayment) {
+      return 'Buy ticket · ${widget.event.priceLabel}';
+    }
+    return 'Register for Event';
+  }
+
+  String get _priceAndSeatsLine {
+    final event = widget.event;
+    final price = event.requiresPayment
+        ? '${event.priceLabel} per ticket'
+        : 'Free entry';
+    final seats = event.seatsLeft;
+    if (seats == null) return price;
+    if (event.isSoldOut) return '$price · Sold out';
+    return '$price · $seats ${seats == 1 ? 'seat' : 'seats'} left';
   }
 
   @override
@@ -269,6 +463,27 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
                     ),
                   ],
                 ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    const Icon(
+                      Icons.confirmation_number_outlined,
+                      size: 16,
+                      color: Color(0xFFD97706),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        _priceAndSeatsLine,
+                        style: const TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.textPrimary,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ],
             ),
           ),
@@ -313,11 +528,10 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
-              onPressed: (_isRegistering || _isRegistered)
-                  ? null
-                  : _handleRegister,
+              onPressed: _primaryAction,
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFD97706),
+                // Same colour as the Events + button
+                backgroundColor: AppColors.moduleEvents,
                 foregroundColor: Colors.white,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(14),
@@ -335,9 +549,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
                       ),
                     )
                   : Text(
-                      _isRegistered
-                          ? 'Already Registered'
-                          : 'Register for Event',
+                      _primaryLabel,
                       style: const TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.w800,

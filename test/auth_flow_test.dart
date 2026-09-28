@@ -119,6 +119,10 @@ void main() {
       expect(go(loggedOut, '/peer-to-peer'), '/login');
       // Booked mentorship sessions are account-only
       expect(go(guest, '/my-sessions'), '/login');
+      // Event tickets are account-only
+      expect(go(guest, '/my-tickets'), '/login');
+      // Other members' profiles need a login (GET /user/:id)
+      expect(go(guest, '/members/u2'), '/login');
     });
 
     test('is not treated as signed in', () {

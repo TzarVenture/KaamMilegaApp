@@ -7,6 +7,8 @@ import 'package:kaam_milega/features/applications/presentation/application_detai
 import 'package:kaam_milega/features/applications/presentation/my_applications_screen.dart';
 import 'package:kaam_milega/features/applications/repositories/application_repository.dart';
 import 'package:kaam_milega/features/company/presentation/company_screen.dart';
+import 'package:kaam_milega/features/company/providers/company_provider.dart';
+import 'package:kaam_milega/features/jobs/models/job.dart';
 
 /// Batch 3: no invented ratings, activity or companies are shown.
 void main() {
@@ -72,20 +74,26 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('Company page shows Coming Soon, not invented company data', (
+  testWidgets('Company page shows only real jobs, no invented company data', (
     tester,
   ) async {
     await tester.pumpWidget(
-      MaterialApp(
-        theme: AppTheme.lightTheme,
-        home: const CompanyScreen(companyId: 'any-id'),
+      ProviderScope(
+        overrides: [
+          // The employer has no open jobs on the server
+          companyJobsProvider.overrideWith((ref, id) async => const <Job>[]),
+        ],
+        child: MaterialApp(
+          theme: AppTheme.lightTheme,
+          home: const CompanyScreen(companyId: 'any-id'),
+        ),
       ),
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('Coming Soon'), findsOneWidget);
-    expect(find.text('Company profiles are coming soon.'), findsOneWidget);
+    expect(find.text('No open jobs right now'), findsOneWidget);
     expect(find.textContaining('Reliance'), findsNothing);
     expect(find.text('Follow'), findsNothing);
+    expect(find.text('Verified Employer'), findsNothing);
   });
 }

@@ -5,6 +5,10 @@ import '../../../core/storage/local_storage.dart';
 class UserProfile {
   final String id;
   final String mobile;
+
+  /// Custom URL name for the public profile (`/profile/{username}`), set by
+  /// the backend (a default is generated) and editable by the user.
+  final String username;
   final List<String> roles;
   final bool isRegistered;
   final String name;
@@ -51,6 +55,7 @@ class UserProfile {
   const UserProfile({
     required this.id,
     required this.mobile,
+    this.username = '',
     this.roles = const ['user'],
     this.isRegistered = false,
     this.name = '',
@@ -85,14 +90,19 @@ class UserProfile {
     this.portfolioText = '',
   });
 
-  /// Public Profile URL alloted to user from MongoDB backend
-  String get publicProfileUrl =>
-      id.isNotEmpty ? 'www.kaammilega.com/in/$id' : 'www.kaammilega.com/in/...';
+  /// What goes after `/profile/` on the website: the custom URL name, or
+  /// the user id while no username is set (the website accepts both).
+  String get publicProfileSlug => username.isNotEmpty ? username : id;
 
-  /// Full Web URL to candidate public profile
-  String get fullPublicProfileUrl => id.isNotEmpty
-      ? 'https://www.kaammilega.com/in/$id'
-      : 'https://www.kaammilega.com';
+  /// Full website link to the public profile, e.g.
+  /// https://kaammilega.com/profile/your-name
+  String get fullPublicProfileUrl => publicProfileSlug.isNotEmpty
+      ? ApiConstants.publicProfileUrl(publicProfileSlug)
+      : ApiConstants.websiteUrl;
+
+  /// The same link without the scheme, for display.
+  String get publicProfileUrl =>
+      fullPublicProfileUrl.replaceFirst(RegExp(r'^https?://'), '');
 
   /// Whether the user is open to work. The backend value is used when the
   /// backend has one; otherwise the text saved on this device decides.
@@ -185,6 +195,7 @@ class UserProfile {
     return UserProfile(
       id: json['id']?.toString() ?? json['_id']?.toString() ?? '',
       mobile: json['mobile']?.toString() ?? '',
+      username: json['username']?.toString() ?? '',
       roles: parseStringList(json['roles']).isEmpty
           ? const ['user']
           : parseStringList(json['roles']),
@@ -255,6 +266,7 @@ class UserProfile {
   Map<String, dynamic> toJson() => {
     'id': id,
     'mobile': mobile,
+    if (username.isNotEmpty) 'username': username,
     'roles': roles,
     'is_registered': isRegistered,
     'name': name,
@@ -323,10 +335,12 @@ class UserProfile {
     int? searchAppearancesCount,
     String? portfolioUrl,
     String? portfolioText,
+    String? username,
   }) {
     return UserProfile(
       id: id,
       mobile: mobile,
+      username: username ?? this.username,
       roles: roles,
       isRegistered: isRegistered ?? this.isRegistered,
       name: name ?? this.name,

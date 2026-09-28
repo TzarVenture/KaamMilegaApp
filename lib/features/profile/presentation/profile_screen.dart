@@ -19,6 +19,7 @@ import '../../wallet/providers/wallet_provider.dart';
 import '../../network/providers/network_provider.dart';
 import '../providers/profile_jobs_provider.dart';
 import 'widgets/open_to_sheets.dart';
+import 'widgets/edit_public_url_dialog.dart';
 import '../../../shared/widgets/app_dialog.dart';
 import '../../../shared/widgets/sheet_drag_handle.dart';
 import '../../../shared/widgets/pressable_scale.dart';
@@ -3647,14 +3648,14 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     );
   }
 
-  /// Copies the website profile link (`/profile/{userId}`) to the clipboard.
+  /// Copies the website profile link (`/profile/{username or id}`).
   Future<void> _copyProfileLink(UserProfile? user) async {
-    final userId = user?.id ?? '';
-    if (userId.isEmpty) {
+    final slug = user?.publicProfileSlug ?? '';
+    if (slug.isEmpty) {
       _showProfileLinkUnavailable();
       return;
     }
-    final profileUrl = ApiConstants.publicProfileUrl(userId);
+    final profileUrl = ApiConstants.publicProfileUrl(slug);
     await Clipboard.setData(ClipboardData(text: profileUrl));
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
@@ -3668,12 +3669,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
   /// Opens the user's public profile page on the website in the browser.
   Future<void> _viewPublicProfile(UserProfile? user) async {
-    final userId = user?.id ?? '';
-    if (userId.isEmpty) {
+    final slug = user?.publicProfileSlug ?? '';
+    if (slug.isEmpty) {
       _showProfileLinkUnavailable();
       return;
     }
-    final uri = Uri.parse(ApiConstants.publicProfileUrl(userId));
+    final uri = Uri.parse(ApiConstants.publicProfileUrl(slug));
     var opened = false;
     try {
       opened = await launchUrl(uri, mode: LaunchMode.externalApplication);
@@ -4506,12 +4507,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   // PUBLIC PROFILE & LANGUAGE SETTINGS CARD (media_1789974076369.png)
   // -------------------------------------------------------------------
   Widget _buildPublicProfileAndLanguageCard(UserProfile? user) {
-    final publicUrl = user != null && user.id.isNotEmpty
-        ? 'www.kaammilega.com/in/${user.id}'
-        : 'www.kaammilega.com/in/...';
-    final fullUrl = user != null && user.id.isNotEmpty
-        ? 'https://www.kaammilega.com/in/${user.id}'
-        : 'https://www.kaammilega.com';
+    // Website route /profile/{username or id}; same link as the website.
+    final hasLink = (user?.publicProfileSlug ?? '').isNotEmpty;
+    final publicUrl = hasLink
+        ? user!.publicProfileUrl
+        : 'kaammilega.com/profile/...';
+    final fullUrl = hasLink ? user!.fullPublicProfileUrl : '';
 
     return Container(
       padding: const EdgeInsets.all(18),
@@ -4570,7 +4571,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           // Public Profile & URL
           InkWell(
             onTap: () {
-              if (user != null && user.id.isNotEmpty) {
+              if (hasLink) {
                 Clipboard.setData(ClipboardData(text: fullUrl));
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
@@ -4621,6 +4622,16 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   ),
                 ),
                 const SizedBox(width: 8),
+                if (user != null && user.id.isNotEmpty)
+                  IconButton(
+                    tooltip: 'Edit custom URL',
+                    icon: const Icon(
+                      Icons.edit_outlined,
+                      size: 18,
+                      color: Color(0xFF94A3B8),
+                    ),
+                    onPressed: () => _editPublicUrl(user),
+                  ),
                 const Icon(
                   Icons.copy_rounded,
                   size: 16,
@@ -4630,6 +4641,23 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  /// Custom profile URL (GET /user/username/check, PATCH /user/username).
+  Future<void> _editPublicUrl(UserProfile user) async {
+    final saved = await showEditPublicUrlDialog(
+      context,
+      currentUsername: user.username,
+    );
+    if (saved != true || !mounted) return;
+    final updated = ref.read(authProvider).user;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Custom URL updated: ${updated?.publicProfileUrl ?? ''}'),
+        backgroundColor: AppColors.success,
+        behavior: SnackBarBehavior.floating,
       ),
     );
   }

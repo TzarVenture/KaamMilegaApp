@@ -15,6 +15,18 @@ class EventItem {
   final bool isRegistered;
   final DateTime? createdAt;
 
+  /// Paid ticketing (backend F63). [price] is in rupees; 0 for free events.
+  final bool isPaid;
+  final double price;
+  final String currency;
+  final String category;
+
+  /// Maximum seats; 0 means unlimited.
+  final int capacity;
+
+  /// Seats left when [capacity] is set (the backend omits 0).
+  final int availableSeats;
+
   const EventItem({
     required this.id,
     required this.title,
@@ -29,7 +41,34 @@ class EventItem {
     this.attendeesCount = 0,
     this.isRegistered = false,
     this.createdAt,
+    this.isPaid = false,
+    this.price = 0,
+    this.currency = 'INR',
+    this.category = '',
+    this.capacity = 0,
+    this.availableSeats = 0,
   });
+
+  /// True when a ticket must be bought (Razorpay or wallet) instead of the
+  /// free registration; the backend uses the same rule.
+  bool get requiresPayment => isPaid && price > 0;
+
+  /// Same rule as the backend: no seats left, or every seat taken.
+  bool get isSoldOut =>
+      capacity > 0 && (availableSeats <= 0 || participants.length >= capacity);
+
+  /// Seats still open, or null for events without a seat limit.
+  int? get seatsLeft {
+    if (capacity <= 0) return null;
+    return availableSeats < 0 ? 0 : availableSeats;
+  }
+
+  /// "Free" or the ticket price, e.g. "₹499" / "₹99.50".
+  String get priceLabel {
+    if (!requiresPayment) return 'Free';
+    final whole = price == price.roundToDouble();
+    return '₹${price.toStringAsFixed(whole ? 0 : 2)}';
+  }
 
   EventItem copyWith({
     String? id,
@@ -45,6 +84,7 @@ class EventItem {
     int? attendeesCount,
     bool? isRegistered,
     DateTime? createdAt,
+    int? availableSeats,
   }) {
     return EventItem(
       id: id ?? this.id,
@@ -60,6 +100,12 @@ class EventItem {
       attendeesCount: attendeesCount ?? this.attendeesCount,
       isRegistered: isRegistered ?? this.isRegistered,
       createdAt: createdAt ?? this.createdAt,
+      isPaid: isPaid,
+      price: price,
+      currency: currency,
+      category: category,
+      capacity: capacity,
+      availableSeats: availableSeats ?? this.availableSeats,
     );
   }
 
@@ -121,6 +167,14 @@ class EventItem {
       attendeesCount: count,
       isRegistered: registered,
       createdAt: parsedCreatedAt,
+      isPaid: json['is_paid'] == true,
+      price: (json['price'] as num?)?.toDouble() ?? 0,
+      currency: json['currency']?.toString().isNotEmpty == true
+          ? json['currency'].toString()
+          : 'INR',
+      category: json['category']?.toString() ?? '',
+      capacity: (json['capacity'] as num?)?.toInt() ?? 0,
+      availableSeats: (json['available_seats'] as num?)?.toInt() ?? 0,
     );
   }
 }

@@ -564,6 +564,13 @@ class AuthNotifier extends Notifier<AuthState> {
     'Failed to save Open To Work',
   );
 
+  /// Save the custom profile URL (PATCH /user/username). On failure the
+  /// server's reason is in [AuthState.error].
+  Future<bool> saveUsername(String username) => _applyProfileEdit(
+    () => _repository.updateUsername(username),
+    'Failed to update your profile URL',
+  );
+
   /// Save Providing Services (PATCH /user/providing-services).
   Future<bool> saveProvidingServices(ProvidingServicesPreferences prefs) =>
       _applyProfileEdit(

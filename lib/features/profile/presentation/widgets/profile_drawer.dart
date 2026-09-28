@@ -404,6 +404,13 @@ class ProfileDrawer extends ConsumerWidget {
                       },
                     ),
                     _DrawerTextTile(
+                      title: 'My Tickets',
+                      onTap: () {
+                        Navigator.pop(context);
+                        AuthGuard.openProtected(context, '/my-tickets');
+                      },
+                    ),
+                    _DrawerTextTile(
                       title: 'Apply to be an Expert',
                       onTap: () {
                         Navigator.pop(context);

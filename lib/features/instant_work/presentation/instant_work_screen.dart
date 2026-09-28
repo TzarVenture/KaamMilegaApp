@@ -9,7 +9,10 @@ import '../../../shared/widgets/shimmer_loading.dart';
 import '../../../shared/widgets/themed_category_bottom_nav.dart';
 import '../../jobs/models/job.dart';
 import '../../jobs/presentation/job_detail_screen.dart';
+import '../providers/instant_milega_provider.dart';
 import '../providers/instant_work_provider.dart';
+import 'widgets/instant_milega_map.dart';
+import 'widgets/nearby_professionals_section.dart';
 import '../../../shared/widgets/fade_slide_in.dart';
 import '../../../app/theme/app_colors.dart';
 
@@ -33,6 +36,27 @@ class _InstantWorkScreenState extends ConsumerState<InstantWorkScreen> {
     'Delivery',
     'Helper',
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    // Instant Milega is location-first: read the device location (and ask
+    // for permission) when this screen opens, never at app start.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) ref.read(instantMilegaProvider.notifier).locate();
+    });
+  }
+
+  /// Map area: about 28% of the screen (max 300). Hidden while the keyboard
+  /// is open or when the screen is too short, so nothing overflows.
+  Widget _buildMapSection(BuildContext context) {
+    final media = MediaQuery.of(context);
+    if (media.viewInsets.bottom > 0) return const SizedBox.shrink();
+    final available = media.size.height - media.padding.vertical;
+    final height = (available * 0.28).clamp(0.0, 300.0);
+    if (height < 140) return const SizedBox.shrink();
+    return InstantMilegaMapSection(height: height);
+  }
 
   @override
   void dispose() {
@@ -77,17 +101,28 @@ class _InstantWorkScreenState extends ConsumerState<InstantWorkScreen> {
               },
             ),
 
+            // Current location + map (Instant Milega)
+            _buildMapSection(context),
+
             Expanded(
               child: RefreshIndicator(
                 color: AppColors.moduleInstantWork,
-                onRefresh: () =>
-                    ref.read(instantWorkProvider.notifier).loadGigs(),
+                onRefresh: () => Future.wait([
+                  ref.read(instantWorkProvider.notifier).loadGigs(),
+                  ref.read(instantMilegaProvider.notifier).loadProfessionals(),
+                ]),
                 child: ListView(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 16,
                     vertical: 14,
                   ),
                   children: [
+                    // 0. Nearby professionals (backend-pending until the
+                    // nearby-professionals API exists)
+                    const NearbyProfessionalsSection(),
+
+                    const SizedBox(height: 18),
+
                     // 1. Orange InstantMilega Hero Banner (IMAGE 2)
                     _buildHeroBanner(context),
 

@@ -3,6 +3,9 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
     <!-- Voice search (speech_to_text): microphone -->
     <uses-permission android:name="android.permission.RECORD_AUDIO"/>
+    <!-- Instant Milega: current location (asked only on that screen) -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
     <application
         android:label="Kaam Milega"
         android:name="${applicationName}"

@@ -2,8 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../models/wallet_dispute.dart';
 import '../models/wallet_transaction.dart';
+import '../providers/wallet_dispute_provider.dart';
 import '../providers/wallet_provider.dart';
+import 'widgets/refund_request_sheet.dart';
 import '../../../shared/widgets/fade_slide_in.dart';
 import '../../../app/theme/app_colors.dart';
 import '../../../app/theme/app_text_styles.dart';
@@ -64,6 +67,16 @@ class _WalletTransactionsScreenState
             fontWeight: FontWeight.w700,
           ),
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(
+              Icons.assignment_return_outlined,
+              color: Color(0xFF475569),
+            ),
+            tooltip: 'Refund requests',
+            onPressed: () => context.push('/wallet/disputes'),
+          ),
+        ],
         bottom: TabBar(
           controller: _tabController,
           labelColor: AppColors.primary,
@@ -277,7 +290,7 @@ class _WalletTransactionsScreenState
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       backgroundColor: Colors.white,
-      builder: (ctx) => Padding(
+      builder: (ctx) => SingleChildScrollView(
         padding: const EdgeInsets.all(24),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -339,6 +352,20 @@ class _WalletTransactionsScreenState
               _buildDetailRow('Ref ID', txn.referenceId!),
             if (txn.paymentMethod != null)
               _buildDetailRow('Method', txn.paymentMethod!),
+            if (txn.canRequestRefund) ...[
+              const SizedBox(height: 12),
+              _RefundStatusSection(
+                transaction: txn,
+                onRequest: () {
+                  Navigator.of(ctx).pop();
+                  _openRefundRequest(txn);
+                },
+                onViewRequests: () {
+                  Navigator.of(ctx).pop();
+                  context.push('/wallet/disputes');
+                },
+              ),
+            ],
             const SizedBox(height: 20),
             SizedBox(
               width: double.infinity,
@@ -359,6 +386,30 @@ class _WalletTransactionsScreenState
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  /// Refund request on a debit payment (backend F73).
+  Future<void> _openRefundRequest(WalletTransaction txn) async {
+    final submitted = await showModalBottomSheet<bool>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => RefundRequestSheet(transaction: txn),
+    );
+    if (submitted != true || !mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: const Text(
+          'Refund request submitted. You can follow it in Refund requests.',
+        ),
+        backgroundColor: AppColors.success,
+        action: SnackBarAction(
+          label: 'View',
+          textColor: Colors.white,
+          onPressed: () => context.push('/wallet/disputes'),
         ),
       ),
     );
@@ -389,6 +440,66 @@ class _WalletTransactionsScreenState
           ),
         ],
       ),
+    );
+  }
+}
+
+/// Shows an existing refund request for [transaction], or the action to
+/// raise one. The server allows one request per payment.
+class _RefundStatusSection extends ConsumerWidget {
+  const _RefundStatusSection({
+    required this.transaction,
+    required this.onRequest,
+    required this.onViewRequests,
+  });
+
+  final WalletTransaction transaction;
+  final VoidCallback onRequest;
+  final VoidCallback onViewRequests;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final disputes = ref.watch(myWalletDisputesProvider);
+    final requestButton = SizedBox(
+      width: double.infinity,
+      child: OutlinedButton.icon(
+        onPressed: onRequest,
+        icon: const Icon(Icons.assignment_return_outlined, size: 18),
+        label: const Text('Request a refund'),
+      ),
+    );
+    return disputes.when(
+      loading: () => const Text(
+        'Checking refund requests...',
+        style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
+      ),
+      // The server still refuses a second request for the same payment.
+      error: (_, _) => requestButton,
+      data: (list) {
+        WalletDispute? existing;
+        for (final d in list) {
+          if (d.transactionId == transaction.id) {
+            existing = d;
+            break;
+          }
+        }
+        if (existing == null) return requestButton;
+        return Row(
+          children: [
+            Expanded(
+              child: Text(
+                'Refund request: ${existing.status.label}',
+                style: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.textPrimary,
+                ),
+              ),
+            ),
+            TextButton(onPressed: onViewRequests, child: const Text('View')),
+          ],
+        );
+      },
     );
   }
 }

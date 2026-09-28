@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../models/connection_request.dart';
 import '../repositories/network_repository.dart';
+import '../../auth/models/user_profile.dart';
 import '../../auth/providers/auth_provider.dart';
 
 /// Provider for list of pending incoming connection invitations
@@ -13,6 +14,30 @@ final pendingInvitationsProvider = FutureProvider<List<ConnectionRequestItem>>((
     return const <ConnectionRequestItem>[];
   }
   return ref.watch(networkRepositoryProvider).getPendingInvitations();
+});
+
+/// Home "Connect Just Like You": up to 8 people, never the signed-in user
+/// (same as the website). Works for guests too; rebuilt on login / logout.
+final communityUsersProvider = FutureProvider<List<UserProfile>>((ref) async {
+  final me = ref.watch(sessionUserIdProvider);
+  final users = await ref.watch(networkRepositoryProvider).getCommunityUsers();
+  return users.where((u) => u.id.isNotEmpty && u.id != me).take(8).toList();
+});
+
+/// Another member's profile for the member profile screen. Loaded fresh
+/// each time the screen opens; rebuilt on login / logout.
+final memberProfileProvider = FutureProvider.autoDispose
+    .family<UserProfile, String>((ref, userId) {
+      ref.watch(sessionUserIdProvider);
+      return ref.watch(networkRepositoryProvider).getMemberProfile(userId);
+    });
+
+/// Home "Connect With Our Experts": up to 10 experts, never the signed-in
+/// user. Works for guests too; rebuilt on login / logout.
+final featuredExpertsProvider = FutureProvider<List<UserProfile>>((ref) async {
+  final me = ref.watch(sessionUserIdProvider);
+  final experts = await ref.watch(networkRepositoryProvider).getExperts();
+  return experts.where((u) => u.id.isNotEmpty && u.id != me).take(10).toList();
 });
 
 /// Provider for list of candidate's active connection user IDs

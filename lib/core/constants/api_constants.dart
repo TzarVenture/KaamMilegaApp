@@ -10,10 +10,11 @@ class ApiConstants {
   /// KaamMilega website (km-frontend). Same domain the website itself uses.
   static const String websiteUrl = 'https://kaammilega.com';
 
-  /// Public profile page on the website: `/profile/{userId}`, the same link
-  /// the website builds for a user's profile (it loads GET /user/:id).
-  static String publicProfileUrl(String userId) =>
-      '$websiteUrl/profile/$userId';
+  /// Public profile page on the website: `/profile/{username or userId}`,
+  /// the same link the website builds (it loads GET /user/:id, which accepts
+  /// either).
+  static String publicProfileUrl(String usernameOrId) =>
+      '$websiteUrl/profile/$usernameOrId';
 
   /// Resolves any relative, partial, or malformed image/file URL into a full absolute HTTP/HTTPS URL.
   static String resolveImageUrl(String? url) {
@@ -87,6 +88,9 @@ class ApiConstants {
       '/user/project'; // POST add, PUT/DELETE /:id
   static const String userPassword = '/user/password'; // PUT
   static const String userOpenToWork = '/user/open-to-work'; // PATCH
+  static const String userUsername = '/user/username'; // PATCH custom URL
+  static const String userUsernameCheck =
+      '/user/username/check'; // GET ?username=
   static const String userProvidingServices =
       '/user/providing-services'; // PATCH
   static const String userApplyExpert = '/user/apply-expert'; // POST
@@ -107,6 +111,11 @@ class ApiConstants {
 
   // --- Network / Connections Endpoints ---
   static const String networkConnect = '/network/connect';
+  // Public people list shown on the website home ("Connect Just Like You")
+  static const String communityUsers = '/community/users'; // GET
+  static const String experts = '/experts'; // GET public list of experts
+  static const String companiesTop =
+      '/companies/top'; // GET ?limit= public employers
   static const String networkAccept = '/network/accept';
   static const String networkIgnore = '/network/ignore';
   static const String networkPending = '/network/pending';
@@ -129,6 +138,7 @@ class ApiConstants {
 
   // --- Events & Mentorship Endpoints ---
   static const String events = '/events';
+  static const String eventsMyTickets = '/events/my/tickets'; // GET
   static const String mentorship = '/mentorships';
   static const String mentorships = '/mentorships';
 
@@ -144,6 +154,11 @@ class ApiConstants {
       '/wallet/withdraw'; // POST WithdrawalRequest (payout of earnings)
   // Not built on backend yet (screen shows "coming soon"):
   static const String walletTransfer = '/wallet/transfer';
+
+  // --- Refund requests on wallet payments (backend F73) ---
+  static const String walletDisputes = '/wallet/disputes'; // POST raise
+  static const String walletMyDisputes =
+      '/wallet/my/disputes'; // GET ?page&limit&status
 
   // --- Paid mentorship booking (backend F76) ---
   static const String mentorshipBookWallet = '/mentorships/book-wallet'; // POST

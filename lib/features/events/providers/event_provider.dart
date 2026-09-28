@@ -34,6 +34,9 @@ class EventsNotifier extends AsyncNotifier<List<EventItem>> {
           return e.copyWith(
             isRegistered: true,
             attendeesCount: e.attendeesCount + 1,
+            availableSeats: e.capacity > 0 && e.availableSeats > 0
+                ? e.availableSeats - 1
+                : e.availableSeats,
           );
         }
         return e;
@@ -52,6 +55,25 @@ class EventsNotifier extends AsyncNotifier<List<EventItem>> {
       state = previousState;
       rethrow;
     }
+  }
+
+  /// Shows [eventId] as registered after the server issued a ticket (paid
+  /// purchase), without reloading the whole list.
+  void markRegistered(String eventId) {
+    final current = state.value;
+    if (current == null) return;
+    state = AsyncValue.data(
+      current.map((e) {
+        if (e.id != eventId || e.isRegistered) return e;
+        return e.copyWith(
+          isRegistered: true,
+          attendeesCount: e.attendeesCount + 1,
+          availableSeats: e.capacity > 0 && e.availableSeats > 0
+              ? e.availableSeats - 1
+              : e.availableSeats,
+        );
+      }).toList(),
+    );
   }
 }
 
