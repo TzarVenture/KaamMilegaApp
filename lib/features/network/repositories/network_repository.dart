@@ -21,6 +21,26 @@ class NetworkRepository {
     return readListResponse(response.data).map(UserProfile.fromJson).toList();
   }
 
+  /// Members who recently opened the signed-in user's profile, newest
+  /// first (GET /user/viewers; the server keeps up to 20).
+  Future<List<UserProfile>> getProfileViewers() async {
+    final response = await _client.get(ApiConstants.userViewers);
+    return readListResponse(response.data)
+        .map(UserProfile.fromJson)
+        .where((u) => u.id.isNotEmpty)
+        .toList();
+  }
+
+  /// Counts one impression for each author whose card was seen
+  /// (POST /user/impressions, up to 100 ids per call).
+  Future<void> recordImpressions(List<String> authorIds) async {
+    if (authorIds.isEmpty) return;
+    await _client.post(
+      ApiConstants.userImpressions,
+      data: {'author_ids': authorIds.take(100).toList()},
+    );
+  }
+
   /// Another member's profile (GET /user/:id, id or username). Errors are
   /// thrown, never hidden: HTTP 403 means the profile is private, 404 that
   /// it does not exist.

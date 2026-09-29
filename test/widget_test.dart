@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kaam_milega/features/experts/presentation/apply_expert_screen.dart';
+import 'package:kaam_milega/features/experts/models/expert_plan.dart';
+import 'package:kaam_milega/features/experts/providers/expert_plan_provider.dart';
 import 'package:kaam_milega/features/profile/presentation/widgets/profile_drawer.dart';
 import 'package:kaam_milega/features/jobs/models/job.dart';
 import 'package:kaam_milega/features/jobs/models/job_filter.dart';
@@ -107,25 +109,27 @@ void main() {
   });
 
   group('ApplyExpertScreen Widget Tests', () {
-    testWidgets('ApplyExpertScreen renders all form fields and headers', (
+    testWidgets('ApplyExpertScreen shows the Pro Expert program', (
       tester,
     ) async {
       await tester.pumpWidget(
-        const ProviderScope(child: MaterialApp(home: ApplyExpertScreen())),
+        ProviderScope(
+          overrides: [
+            expertPlansProvider.overrideWith((ref) async => const []),
+            myExpertSubscriptionProvider.overrideWith(
+              (ref) async => ExpertSubscriptionStatus.none,
+            ),
+          ],
+          child: const MaterialApp(home: ApplyExpertScreen()),
+        ),
       );
+      await tester.pumpAndSettle();
 
       expect(find.text('Apply to be an Expert'), findsOneWidget);
-      expect(
-        find.text('Share your knowledge, mentor others, and sell courses.'),
-        findsOneWidget,
-      );
-      expect(find.text('Category'), findsOneWidget);
-      expect(find.text('Bio'), findsOneWidget);
-      expect(find.text('Hourly Mentorship Rate (₹)'), findsOneWidget);
-      expect(find.text('Documents (Provide URLs for now)'), findsOneWidget);
-      expect(find.text('Resume'), findsOneWidget);
-      expect(find.text('Identity Proof'), findsOneWidget);
-      expect(find.text('Apply'), findsOneWidget);
+      expect(find.text('KAAMMILEGA PRO EXPERT PROGRAM'), findsOneWidget);
+      // The old application form is gone
+      expect(find.text('Bio'), findsNothing);
+      expect(find.text('Documents (Provide URLs for now)'), findsNothing);
     });
   });
 

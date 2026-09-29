@@ -8,10 +8,11 @@ import '../../../../shared/widgets/shimmer_loading.dart';
 import '../../../auth/models/user_profile.dart';
 import '../../../network/presentation/widgets/connect_button.dart';
 import '../../../network/providers/network_provider.dart';
+import '../../../network/services/impression_tracker.dart';
 
-/// Home: "Connect Just Like You", the same people row as the website home
-/// page (GET /community/users). Connect sends POST /network/connect; the
-/// button state comes from GET /network/status/:id for signed-in users.
+/// Home: "Connect Just Like You", the same people as the website home page
+/// (GET /community/users). Connect sends POST /network/connect; the button
+/// state comes from GET /network/status/:id for signed-in users.
 class ConnectLikeYouSection extends StatelessWidget {
   const ConnectLikeYouSection({super.key});
 
@@ -32,7 +33,7 @@ class ConnectLikeYouSection extends StatelessWidget {
 }
 
 /// Home: "Connect With Our Experts" (GET /experts, same list as the website
-/// home page). Same cards, Connect / Chat and profile page as above.
+/// home page). Same rows, Connect / Chat and profile page as above.
 class ConnectExpertsSection extends StatelessWidget {
   const ConnectExpertsSection({super.key});
 
@@ -43,13 +44,14 @@ class ConnectExpertsSection extends StatelessWidget {
       before: 'Connect With Our ',
       highlight: 'Experts',
       errorText: 'Could not load experts right now.',
+      isExperts: true,
       onSeeAll: () => context.push('/experts'),
     );
   }
 }
 
-/// A titled, sideways row of people cards with loading, error (Retry) and
-/// empty (hidden) states.
+/// A titled, sideways row of compact people cards, with loading, error
+/// (Retry) and empty (hidden) states.
 class PeopleRowSection extends ConsumerWidget {
   const PeopleRowSection({
     super.key,
@@ -59,6 +61,7 @@ class PeopleRowSection extends ConsumerWidget {
     required this.onSeeAll,
     this.before = '',
     this.after = '',
+    this.isExperts = false,
   });
 
   final FutureProvider<List<UserProfile>> provider;
@@ -67,13 +70,21 @@ class PeopleRowSection extends ConsumerWidget {
   final String after;
   final String errorText;
   final VoidCallback onSeeAll;
+  final bool isExperts;
 
-  static const double cardWidth = 200;
-  static const double rowHeight = 236;
+  static const double cardWidth = 150;
+
+  /// Card height grows with the phone's text size so nothing is cut off.
+  static double rowHeight(BuildContext context) {
+    final t = MediaQuery.textScalerOf(context).scale(1).clamp(1.0, 1.6);
+    // A few pixels of spare room for fonts with taller line heights
+    return 124 + 56 * t.toDouble();
+  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final usersAsync = ref.watch(provider);
+    final height = rowHeight(context);
 
     Widget section(Widget child) => _Section(
       before: before,
@@ -83,38 +94,34 @@ class PeopleRowSection extends ConsumerWidget {
       child: child,
     );
 
+    Widget row({required int count, required IndexedWidgetBuilder builder}) =>
+        SizedBox(
+          height: height,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            itemCount: count,
+            separatorBuilder: (_, _) => const SizedBox(width: 10),
+            itemBuilder: builder,
+          ),
+        );
+
     return usersAsync.when(
       // No people to show: the section is hidden, as on the website.
       data: (users) => users.isEmpty
           ? const SizedBox.shrink()
           : section(
-              SizedBox(
-                height: rowHeight,
-                child: ListView.separated(
-                  scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  itemCount: users.length,
-                  separatorBuilder: (_, _) => const SizedBox(width: 12),
-                  itemBuilder: (context, index) =>
-                      PersonConnectCard(user: users[index]),
-                ),
+              row(
+                count: users.length,
+                builder: (context, index) =>
+                    PersonConnectCard(user: users[index], isExpert: isExperts),
               ),
             ),
       loading: () => section(
-        SizedBox(
-          height: rowHeight,
-          child: ListView.separated(
-            scrollDirection: Axis.horizontal,
-            physics: const NeverScrollableScrollPhysics(),
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            itemCount: 3,
-            separatorBuilder: (_, _) => const SizedBox(width: 12),
-            itemBuilder: (_, _) => const ShimmerBox(
-              width: cardWidth,
-              height: rowHeight,
-              borderRadius: 16,
-            ),
-          ),
+        row(
+          count: 3,
+          builder: (_, _) =>
+              ShimmerBox(width: cardWidth, height: height, borderRadius: 16),
         ),
       ),
       // A failure is shown as a failure (with Retry), never as "no people".
@@ -201,153 +208,200 @@ class _Section extends StatelessWidget {
             ],
           ),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 10),
         child,
       ],
     );
   }
 }
 
-/// One person with Connect and Chat; tapping the card opens the person's
-/// profile. Contact details (mobile, email) are never shown.
+/// One person as a compact card: photo or coloured initial, name,
+/// headline and city, Connect and Chat. Tapping the card opens the
+/// person's profile. Contact details (mobile, email) are never shown.
 class PersonConnectCard extends ConsumerWidget {
-  const PersonConnectCard({super.key, required this.user});
+  const PersonConnectCard({
+    super.key,
+    required this.user,
+    this.isExpert = false,
+  });
 
   final UserProfile user;
+  final bool isExpert;
 
   String get _name => user.name.trim().isNotEmpty ? user.name.trim() : 'Member';
 
+  /// Headline and city when given; no filler text otherwise.
+  String get _subtitle => [
+    user.headline.trim(),
+    user.city.trim(),
+  ].where((v) => v.isNotEmpty).join(' · ');
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final headline = user.headline.trim();
-    final city = user.city.trim();
-
-    return Material(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(16),
-      child: InkWell(
+    final subtitle = _subtitle;
+    final card = SizedBox(
+      width: PeopleRowSection.cardWidth,
+      child: Material(
+        color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        onTap: () => AuthGuard.openProtected(
-          context,
-          '/members/${user.id}',
-          message: 'Please log in to view member profiles.',
-        ),
-        child: Container(
-          width: PeopleRowSection.cardWidth,
-          padding: const EdgeInsets.all(14),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: AppColors.border),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(16),
+          onTap: () => AuthGuard.openProtected(
+            context,
+            '/members/${user.id}',
+            message: 'Please log in to view member profiles.',
           ),
-          child: Column(
-            children: [
-              CircleAvatar(
-                radius: 30,
-                backgroundColor: AppColors.primaryLight,
-                backgroundImage: user.profileImage.isNotEmpty
-                    ? NetworkImage(user.profileImage)
-                    : null,
-                onBackgroundImageError: user.profileImage.isNotEmpty
-                    ? (_, _) {}
-                    : null,
-                child: user.profileImage.isEmpty
-                    ? Text(
-                        _name[0].toUpperCase(),
-                        style: const TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.w800,
-                          color: AppColors.primary,
-                        ),
-                      )
-                    : null,
-              ),
-              const SizedBox(height: 10),
-              Text(
-                _name,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w800,
-                  color: AppColors.textPrimary,
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                headline.isNotEmpty ? headline : 'KaamMilega member',
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  fontSize: 12,
-                  color: AppColors.textSecondary,
-                  height: 1.3,
-                ),
-              ),
-              if (city.isNotEmpty) ...[
-                const SizedBox(height: 4),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(
-                      Icons.location_on_outlined,
-                      size: 13,
-                      color: AppColors.textLight,
-                    ),
-                    const SizedBox(width: 2),
-                    Flexible(
-                      child: Text(
-                        city,
+          child: Ink(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: AppColors.border),
+            ),
+            child: Stack(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(10, 14, 10, 10),
+                  child: Column(
+                    children: [
+                      PersonAvatar(user: user, size: 52),
+                      const SizedBox(height: 8),
+                      Text(
+                        _name,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
+                        textAlign: TextAlign.center,
                         style: const TextStyle(
-                          fontSize: 11,
-                          color: AppColors.textLight,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.textPrimary,
                         ),
                       ),
-                    ),
-                  ],
+                      const SizedBox(height: 2),
+                      Text(
+                        subtitle,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                      const Spacer(),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: ConnectButton(
+                              userId: user.id,
+                              name: _name,
+                              height: 34,
+                              fontSize: 12.5,
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          SizedBox(
+                            width: 34,
+                            height: 34,
+                            child: OutlinedButton(
+                              onPressed: () => chatWithMember(
+                                context,
+                                ref,
+                                userId: user.id,
+                                name: _name,
+                              ),
+                              style: OutlinedButton.styleFrom(
+                                padding: EdgeInsets.zero,
+                                foregroundColor: AppColors.primary,
+                                side: const BorderSide(color: AppColors.border),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                              ),
+                              child: Tooltip(
+                                message: 'Chat with $_name',
+                                child: const Icon(
+                                  Icons.chat_bubble_outline_rounded,
+                                  size: 17,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
+                if (isExpert)
+                  const Positioned(top: 8, right: 8, child: _ExpertTag()),
               ],
-              const Spacer(),
-              Row(
-                children: [
-                  Expanded(
-                    child: ConnectButton(userId: user.id, name: _name),
-                  ),
-                  const SizedBox(width: 8),
-                  SizedBox(
-                    width: 44,
-                    height: 40,
-                    child: OutlinedButton(
-                      onPressed: () => chatWithMember(
-                        context,
-                        ref,
-                        userId: user.id,
-                        name: _name,
-                      ),
-                      style: OutlinedButton.styleFrom(
-                        padding: EdgeInsets.zero,
-                        foregroundColor: AppColors.primary,
-                        side: const BorderSide(color: AppColors.border),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                      ),
-                      child: Semantics(
-                        label: 'Chat with $_name',
-                        child: const Icon(
-                          Icons.chat_bubble_outline_rounded,
-                          size: 18,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ],
+            ),
           ),
+        ),
+      ),
+    );
+    // Seen cards count as "Post impressions" for that member
+    return ImpressionBeacon(authorId: user.id, child: card);
+  }
+}
+
+/// Profile photo, or the first letter on a soft brand colour that stays the
+/// same for each person.
+class PersonAvatar extends StatelessWidget {
+  const PersonAvatar({super.key, required this.user, this.size = 44});
+
+  final UserProfile user;
+  final double size;
+
+  static const _palette = [
+    AppColors.blue,
+    AppColors.moduleSkills,
+    AppColors.moduleExperts,
+    AppColors.moduleServices,
+    AppColors.moduleP2P,
+    AppColors.moduleEvents,
+    AppColors.accent,
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    final name = user.name.trim();
+    final key = user.id.isNotEmpty ? user.id : name;
+    final color =
+        _palette[key.codeUnits.fold<int>(0, (a, b) => a + b) % _palette.length];
+    final hasPhoto = user.profileImage.isNotEmpty;
+    return CircleAvatar(
+      radius: size / 2,
+      backgroundColor: color.withValues(alpha: 0.14),
+      foregroundImage: hasPhoto ? NetworkImage(user.profileImage) : null,
+      onForegroundImageError: hasPhoto ? (_, _) {} : null,
+      child: Text(
+        name.isNotEmpty ? name[0].toUpperCase() : '?',
+        style: TextStyle(
+          fontSize: size * 0.4,
+          fontWeight: FontWeight.w800,
+          color: color,
+        ),
+      ),
+    );
+  }
+}
+
+class _ExpertTag extends StatelessWidget {
+  const _ExpertTag();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      decoration: BoxDecoration(
+        color: AppColors.moduleExpertsLight,
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: const Text(
+        'Expert',
+        style: TextStyle(
+          fontSize: 10.5,
+          fontWeight: FontWeight.w700,
+          color: AppColors.moduleExperts,
         ),
       ),
     );

@@ -310,6 +310,8 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
                   ? DecorationImage(
                       image: NetworkImage(event.imageUrl),
                       fit: BoxFit.cover,
+                      // Missing picture: the gradient stays visible.
+                      onError: (_, _) {},
                     )
                   : null,
             ),

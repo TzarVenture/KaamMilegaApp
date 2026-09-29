@@ -346,6 +346,16 @@ class JobsNotifier extends Notifier<JobsState> {
     fetchJobs();
   }
 
+  /// Back to all jobs: search and filters cleared, the chosen city kept.
+  /// No request when nothing was set.
+  void resetFilters() {
+    final f = state.filter;
+    if (f.activeFilterCount == 0 && f.searchQuery.isEmpty && f.page == 1) {
+      return;
+    }
+    clearAllFilters();
+  }
+
   /// Clear all active filters
   void clearAllFilters() {
     state = state.copyWith(filter: JobFilter(city: state.filter.city));

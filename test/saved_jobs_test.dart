@@ -124,7 +124,7 @@ void main() {
 
     expect(find.text('2 jobs saved for later'), findsOneWidget);
     // JobCard shows the title in capitals.
-    expect(find.text('WAREHOUSE HELPER'), findsOneWidget);
+    expect(find.text('Warehouse Helper'), findsOneWidget);
     expect(find.text('This saved job is no longer available.'), findsOneWidget);
 
     await tester.tap(find.text('Remove'));

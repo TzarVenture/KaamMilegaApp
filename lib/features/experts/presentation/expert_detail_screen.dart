@@ -366,21 +366,22 @@ class _ExpertDetailScreenState extends ConsumerState<ExpertDetailScreen> {
                 CircleAvatar(
                   radius: 38,
                   backgroundColor: AppColors.moduleExpertsLight,
-                  backgroundImage: expert.expertImage.isNotEmpty
+                  foregroundImage: expert.expertImage.isNotEmpty
                       ? NetworkImage(expert.expertImage)
                       : null,
-                  child: expert.expertImage.isEmpty
-                      ? Text(
-                          expert.expertName.isNotEmpty
-                              ? expert.expertName[0].toUpperCase()
-                              : 'E',
-                          style: const TextStyle(
-                            fontSize: 28,
-                            fontWeight: FontWeight.w900,
-                            color: AppColors.moduleExperts,
-                          ),
-                        )
+                  onForegroundImageError: expert.expertImage.isNotEmpty
+                      ? (_, _) {}
                       : null,
+                  child: Text(
+                    expert.expertName.isNotEmpty
+                        ? expert.expertName[0].toUpperCase()
+                        : 'E',
+                    style: const TextStyle(
+                      fontSize: 28,
+                      fontWeight: FontWeight.w900,
+                      color: AppColors.moduleExperts,
+                    ),
+                  ),
                 ),
                 const SizedBox(height: 12),
                 Row(

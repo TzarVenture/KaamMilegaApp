@@ -7,8 +7,8 @@ import '../../../core/network/connectivity_provider.dart';
 import '../../../shared/widgets/shimmer_loading.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../models/wallet_summary.dart';
-import '../models/wallet_transaction.dart';
 import '../providers/wallet_provider.dart';
+import 'widgets/wallet_transaction_tile.dart';
 import '../../../shared/widgets/app_dialog.dart';
 import '../../../shared/widgets/fade_slide_in.dart';
 import '../../../shared/widgets/pressable_scale.dart';
@@ -884,80 +884,19 @@ class WalletScreen extends ConsumerWidget {
       );
     }
 
-    // If transactions exist from backend:
-    return Container(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Material(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        clipBehavior: Clip.antiAlias,
-        child: ListView.separated(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          itemCount: walletState.transactions.take(5).length,
-          separatorBuilder: (context, index) =>
-              const Divider(height: 1, color: Color(0xFFF1F5F9)),
-          itemBuilder: (context, index) => FadeSlideIn(
-            index: index,
-            child: Builder(
-              builder: (context) {
-                final txn = walletState.transactions[index];
-                final isCredit = txn.type == TransactionType.credit;
-                return ListTile(
-                  leading: CircleAvatar(
-                    backgroundColor: isCredit
-                        ? const Color(0xFF10B981).withValues(alpha: 0.12)
-                        : const Color(0xFFEF4444).withValues(alpha: 0.12),
-                    child: Icon(
-                      isCredit
-                          ? Icons.arrow_downward_rounded
-                          : Icons.arrow_upward_rounded,
-                      color: isCredit
-                          ? const Color(0xFF10B981)
-                          : const Color(0xFFEF4444),
-                      size: 18,
-                    ),
-                  ),
-                  title: Text(
-                    txn.title,
-                    style: const TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.textPrimary,
-                    ),
-                  ),
-                  subtitle: Text(
-                    txn.createdAt.toLocal().toString().split('.').first,
-                    style: const TextStyle(
-                      fontSize: 11,
-                      color: Color(0xFF94A3B8),
-                    ),
-                  ),
-                  trailing: Text(
-                    '${isCredit ? "+" : "-"}₹${txn.amount.toStringAsFixed(0)}',
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
-                      color: isCredit
-                          ? const Color(0xFF10B981)
-                          : AppColors.textPrimary,
-                    ),
-                  ),
-                );
-              },
+    // Latest entries from the server, same rows as the full ledger
+    final recent = walletState.transactions.take(5).toList();
+    return Column(
+      children: [
+        for (var i = 0; i < recent.length; i++)
+          Padding(
+            padding: EdgeInsets.only(bottom: i == recent.length - 1 ? 0 : 10),
+            child: FadeSlideIn(
+              index: i,
+              child: WalletTransactionTile(transaction: recent[i]),
             ),
           ),
-        ),
-      ),
+      ],
     );
   }
 

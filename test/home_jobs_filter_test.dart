@@ -88,4 +88,41 @@ void main() {
           .having((f) => f.searchQuery, 'searchQuery', ''),
     );
   });
+
+  test(
+    'opening Jobs from the bottom bar clears filters, keeps the city',
+    () async {
+      final repo = _SearchJobs();
+      final container = ProviderContainer(
+        retry: appProviderRetry,
+        overrides: [jobRepositoryProvider.overrideWithValue(repo)],
+      );
+      addTearDown(container.dispose);
+      final notifier = container.read(jobsProvider.notifier);
+      await Future<void>.delayed(Duration.zero);
+
+      notifier.setCity('Pune');
+      notifier.applyFilter(
+        const JobFilter(
+          city: 'Pune',
+          searchQuery: 'Driver',
+          qualification: ['12th Pass'],
+        ),
+      );
+      await Future<void>.delayed(Duration.zero);
+
+      notifier.resetFilters();
+      final filter = container.read(jobsProvider).filter;
+      expect(filter.city, 'Pune');
+      expect(filter.searchQuery, isEmpty);
+      expect(filter.activeFilterCount, 0);
+
+      // Nothing set: no extra request.
+      await Future<void>.delayed(Duration.zero);
+      final count = repo.requests.length;
+      notifier.resetFilters();
+      await Future<void>.delayed(Duration.zero);
+      expect(repo.requests.length, count);
+    },
+  );
 }

@@ -109,14 +109,29 @@ class _ConnectButtonState extends ConsumerState<ConnectButton> {
 
     return ElevatedButton(
       onPressed: onPressed,
-      style: ElevatedButton.styleFrom(
-        backgroundColor: AppColors.primary,
-        foregroundColor: Colors.white,
-        elevation: 0,
-        padding: const EdgeInsets.symmetric(horizontal: 12),
-        minimumSize: Size(0, widget.height),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-      ),
+      style:
+          ElevatedButton.styleFrom(
+            backgroundColor: AppColors.primary,
+            foregroundColor: Colors.white,
+            // Pending / Connected: a soft outlined label, not a grey block
+            disabledBackgroundColor: AppColors.background,
+            disabledForegroundColor: AppColors.textSecondary,
+            elevation: 0,
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            minimumSize: Size(0, widget.height),
+            // Take exactly [height]; the default adds space up to 48 px,
+            // which overflowed the compact Home cards.
+            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+          ).copyWith(
+            side: WidgetStateProperty.resolveWith(
+              (states) => states.contains(WidgetState.disabled)
+                  ? const BorderSide(color: AppColors.border)
+                  : BorderSide.none,
+            ),
+          ),
       child: FittedBox(
         fit: BoxFit.scaleDown,
         child: Text(

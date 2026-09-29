@@ -192,10 +192,42 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Anwar'), findsOneWidget);
-      expect(find.text('Delivery Specialist'), findsOneWidget);
-      expect(find.text('Mumbai'), findsOneWidget);
+      expect(find.text('Delivery Specialist · Mumbai'), findsOneWidget);
+      expect(find.text('Expert'), findsOneWidget);
       expect(find.widgetWithText(ElevatedButton, 'Connect'), findsOneWidget);
       expect(find.textContaining('9111111111'), findsNothing);
+    });
+
+    testWidgets('experts show as a sideways row of compact cards', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            authProvider.overrideWith(_Guest.new),
+            featuredExpertsProvider.overrideWith(
+              (ref) async => [
+                for (var i = 1; i <= 5; i++)
+                  UserProfile(id: 'e$i', mobile: '', name: 'Expert Person $i'),
+              ],
+            ),
+          ],
+          child: const MaterialApp(
+            home: Scaffold(body: ConnectExpertsSection()),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('Expert Person 1'), findsOneWidget);
+      expect(find.text('See All'), findsOneWidget);
+      final list = tester.widget<ListView>(find.byType(ListView));
+      expect(list.scrollDirection, Axis.horizontal);
+      // Compact cards: several fit across the screen
+      expect(
+        tester.getSize(find.byType(PersonConnectCard).first).width,
+        PeopleRowSection.cardWidth,
+      );
     });
   });
 }

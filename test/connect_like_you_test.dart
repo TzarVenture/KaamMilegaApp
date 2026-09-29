@@ -179,8 +179,9 @@ void main() {
 
     expect(find.text('Asha Verma'), findsOneWidget);
     expect(find.text('Ravi Kumar'), findsOneWidget);
-    // No headline: a neutral label instead
-    expect(find.text('KaamMilega member'), findsWidgets);
+    // Headline and city share one line; no filler text when both are empty
+    expect(find.text('Delivery Partner · Pune'), findsOneWidget);
+    expect(find.text('KaamMilega member'), findsNothing);
     // Contact details from the response are never shown
     expect(find.textContaining('9111111111'), findsNothing);
     expect(find.textContaining('asha@example.com'), findsNothing);

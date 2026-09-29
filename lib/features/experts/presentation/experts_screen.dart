@@ -457,21 +457,22 @@ class _ExpertsScreenState extends ConsumerState<ExpertsScreen> {
               CircleAvatar(
                 radius: 26,
                 backgroundColor: AppColors.moduleExpertsLight,
-                backgroundImage: expert.expertImage.isNotEmpty
+                foregroundImage: expert.expertImage.isNotEmpty
                     ? NetworkImage(expert.expertImage)
                     : null,
-                child: expert.expertImage.isEmpty
-                    ? Text(
-                        expert.expertName.isNotEmpty
-                            ? expert.expertName[0].toUpperCase()
-                            : 'E',
-                        style: const TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.w800,
-                          color: AppColors.moduleExperts,
-                        ),
-                      )
+                onForegroundImageError: expert.expertImage.isNotEmpty
+                    ? (_, _) {}
                     : null,
+                child: Text(
+                  expert.expertName.isNotEmpty
+                      ? expert.expertName[0].toUpperCase()
+                      : 'E',
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.moduleExperts,
+                  ),
+                ),
               ),
               const SizedBox(width: 14),
               Expanded(

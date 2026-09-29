@@ -2,10 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../app/auth_guard.dart';
 import '../../../app/theme/app_colors.dart';
+import '../../auth/providers/auth_provider.dart';
 import '../../chat/presentation/chat_list_screen.dart';
 import '../../home/presentation/home_screen.dart';
 import '../../jobs/presentation/jobs_screen.dart';
+import '../../jobs/providers/jobs_provider.dart';
 import '../../profile/presentation/profile_screen.dart';
 
 /// Full KaamMilega™ 5-Tab Navigation Shell matching official design
@@ -21,6 +24,10 @@ class MainNavigationShell extends ConsumerStatefulWidget {
 
 class _MainNavigationShellState extends ConsumerState<MainNavigationShell> {
   late int _currentIndex;
+
+  /// Changes each time Jobs is opened from the bottom bar, so the Jobs tab
+  /// starts fresh (its search box, saved-only view and sort too).
+  int _jobsVisit = 0;
 
   @override
   void initState() {
@@ -173,6 +180,7 @@ class _MainNavigationShellState extends ConsumerState<MainNavigationShell> {
         },
       ),
       JobsScreen(
+        key: ValueKey('jobs-$_jobsVisit'),
         onNavigateTab: (index) {
           setState(() => _currentIndex = index);
         },
@@ -289,7 +297,20 @@ class _MainNavigationShellState extends ConsumerState<MainNavigationShell> {
     final inactiveColor = AppColors.textSecondary;
 
     return InkWell(
-      onTap: () => setState(() => _currentIndex = index),
+      onTap: () {
+        // Jobs from the bottom bar: a clean list (filters from an earlier
+        // visit are cleared; the chosen city stays). Home shortcuts open
+        // Jobs with their filter through onNavigateTab, not through here.
+        if (index == 1 && _currentIndex != 1) {
+          ref.read(jobsProvider.notifier).resetFilters();
+          _jobsVisit++;
+        }
+        setState(() => _currentIndex = index);
+        // Profile tab: fresh analytics counters and profile from the server
+        if (index == 4 && AuthGuard.isSignedIn(ref.read(authProvider))) {
+          ref.read(authProvider.notifier).refreshProfile();
+        }
+      },
       borderRadius: BorderRadius.circular(16),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),

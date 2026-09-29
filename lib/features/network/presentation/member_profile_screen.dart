@@ -329,22 +329,20 @@ class _Header extends StatelessWidget {
                   child: CircleAvatar(
                     radius: 40,
                     backgroundColor: AppColors.primaryLight,
-                    backgroundImage: user.profileImage.isNotEmpty
+                    foregroundImage: user.profileImage.isNotEmpty
                         ? NetworkImage(user.profileImage)
                         : null,
-                    onBackgroundImageError: user.profileImage.isNotEmpty
+                    onForegroundImageError: user.profileImage.isNotEmpty
                         ? (_, _) {}
                         : null,
-                    child: user.profileImage.isEmpty
-                        ? Text(
-                            name[0].toUpperCase(),
-                            style: const TextStyle(
-                              fontSize: 30,
-                              fontWeight: FontWeight.w800,
-                              color: AppColors.primary,
-                            ),
-                          )
-                        : null,
+                    child: Text(
+                      name[0].toUpperCase(),
+                      style: const TextStyle(
+                        fontSize: 30,
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.primary,
+                      ),
+                    ),
                   ),
                 ),
               ),

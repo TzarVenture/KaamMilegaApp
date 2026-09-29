@@ -207,15 +207,13 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                 CircleAvatar(
                   radius: 24,
                   backgroundColor: AppColors.heroBg,
-                  backgroundImage: hasAvatar ? NetworkImage(avatarUrl) : null,
-                  onBackgroundImageError: hasAvatar ? (_, _) {} : null,
-                  child: !hasAvatar
-                      ? Icon(
-                          _getIconForType(item.type),
-                          color: Colors.white,
-                          size: 24,
-                        )
-                      : null,
+                  foregroundImage: hasAvatar ? NetworkImage(avatarUrl) : null,
+                  onForegroundImageError: hasAvatar ? (_, _) {} : null,
+                  child: Icon(
+                    _getIconForType(item.type),
+                    color: Colors.white,
+                    size: 24,
+                  ),
                 ),
                 Positioned(
                   bottom: 0,

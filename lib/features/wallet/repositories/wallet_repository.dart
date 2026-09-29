@@ -64,14 +64,20 @@ class WalletRepository {
 
   /// Ledger entries, newest first (GET /wallet/transactions).
   /// Backend response: {transactions: [...], total, page, limit, total_pages}
+  /// [category] limits the list to one kind (for example `gig_payout`).
   Future<List<WalletTransaction>> getTransactions({
     int page = 1,
     int limit = 50,
+    String? category,
   }) async {
     try {
       final response = await _apiClient.get(
         ApiConstants.walletTransactions,
-        queryParameters: {'page': page, 'limit': limit},
+        queryParameters: {
+          'page': page,
+          'limit': limit,
+          if (category != null && category.isNotEmpty) 'category': category,
+        },
       );
       final data = response.data;
       List list = [];

@@ -1,9 +1,13 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../core/constants/api_constants.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/network/app_exception.dart';
+import '../../../core/network/response_list.dart';
 import '../../profile/presentation/widgets/profile_drawer.dart';
 import '../../../shared/widgets/category_top_header.dart';
 import '../../../shared/widgets/shimmer_loading.dart';
@@ -12,6 +16,8 @@ import '../../auth/models/user_profile.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../chat/presentation/open_chat.dart';
 import '../../network/models/connection_request.dart';
+import '../../network/presentation/widgets/connect_button.dart';
+import '../../network/services/impression_tracker.dart';
 import '../../network/providers/network_provider.dart';
 import '../../network/repositories/network_repository.dart';
 import '../../../shared/widgets/fade_slide_in.dart';
@@ -34,6 +40,8 @@ class _PeerToPeerScreenState extends ConsumerState<PeerToPeerScreen>
   List<UserProfile> _discoveredUsers = [];
   bool _isSearching = false;
   String? _searchError;
+  Timer? _searchDebounce;
+  int _searchSeq = 0;
 
   @override
   void initState() {
@@ -44,46 +52,62 @@ class _PeerToPeerScreenState extends ConsumerState<PeerToPeerScreen>
 
   @override
   void dispose() {
+    _searchDebounce?.cancel();
     _tabController.dispose();
     _searchController.dispose();
     super.dispose();
   }
 
+  /// Typing waits briefly before searching (fewer requests; every search
+  /// counts as a "search appearance" for the people it returns).
+  void _onSearchTyped(String query) {
+    _searchDebounce?.cancel();
+    _searchDebounce = Timer(
+      const Duration(milliseconds: 400),
+      () => _searchUsers(query),
+    );
+  }
+
   Future<void> _searchUsers(String query) async {
+    _searchDebounce?.cancel();
+    final q = query.trim();
+    final seq = ++_searchSeq;
     setState(() {
       _isSearching = true;
       _searchError = null;
     });
     try {
-      final client = ref.read(apiClientProvider);
-      final response = await client.get(
-        ApiConstants.userSearch,
-        queryParameters: {if (query.isNotEmpty) 'q': query, 'limit': 20},
-      );
-
-      if (response.data is List) {
-        final list = (response.data as List)
-            .whereType<Map<String, dynamic>>()
+      final List<UserProfile> list;
+      if (q.isEmpty) {
+        // Suggestions: the public member list (GET /community/users), so
+        // just opening this page is not counted as a search appearance
+        // for everyone listed.
+        list = await ref.read(networkRepositoryProvider).getCommunityUsers();
+      } else {
+        final response = await ref
+            .read(apiClientProvider)
+            .get(
+              ApiConstants.userSearch,
+              queryParameters: {'q': q, 'limit': 20},
+            );
+        list = readListResponse(response.data)
             .map(UserProfile.fromJson)
             .toList();
-
-        // Filter out current logged in user
-        final currentUserId = ref.read(authProvider).user?.id;
-        final filtered = list.where((u) => u.id != currentUserId).toList();
-
-        setState(() {
-          _discoveredUsers = filtered;
-          _isSearching = false;
-          _searchError = null;
-        });
-        return;
       }
+      // A newer search was started meanwhile: its answer wins.
+      if (!mounted || seq != _searchSeq) return;
+
+      // Filter out current logged in user
+      final currentUserId = ref.read(authProvider).user?.id;
       setState(() {
-        _discoveredUsers = [];
+        _discoveredUsers = list
+            .where((u) => u.id.isNotEmpty && u.id != currentUserId)
+            .toList();
         _isSearching = false;
         _searchError = null;
       });
     } catch (e) {
+      if (!mounted || seq != _searchSeq) return;
       final errorMsg = e is AppNotFoundException
           ? 'User discovery is currently under development.'
           : (e is AppNetworkException
@@ -94,28 +118,6 @@ class _PeerToPeerScreenState extends ConsumerState<PeerToPeerScreen>
         _isSearching = false;
         _searchError = errorMsg;
       });
-    }
-  }
-
-  Future<void> _handleConnect(String userId) async {
-    try {
-      await ref.read(networkRepositoryProvider).sendInvitation(userId);
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Connection invitation sent!'),
-          backgroundColor: AppColors.moduleP2P,
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
-    } catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Could not send invitation: $e'),
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
     }
   }
 
@@ -159,7 +161,7 @@ class _PeerToPeerScreenState extends ConsumerState<PeerToPeerScreen>
               themeColor: AppColors.moduleP2P,
               searchHint: 'Search network peers & workers...',
               searchController: _searchController,
-              onSearchChanged: _searchUsers,
+              onSearchChanged: _onSearchTyped,
               onSearchSubmitted: () => _searchUsers(_searchController.text),
             ),
             Container(
@@ -429,106 +431,142 @@ class _PeerToPeerScreenState extends ConsumerState<PeerToPeerScreen>
     );
   }
 
+  /// Tapping the card opens the person's profile (which also has Connect
+  /// and Message). Connect shows the server's state (Connect, Pending or
+  /// Connected); the chat button opens a conversation with them.
   Widget _buildUserCard(UserProfile user) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
+    final name = user.name.trim().isNotEmpty ? user.name.trim() : 'Member';
+    final card = Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Material(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.02),
-            blurRadius: 6,
-            offset: const Offset(0, 2),
-          ),
-        ],
-        border: Border.all(color: const Color(0xFFF1F5F9)),
-      ),
-      child: Row(
-        children: [
-          CircleAvatar(
-            radius: 24,
-            backgroundColor: AppColors.moduleP2PLight,
-            backgroundImage: user.profileImage.isNotEmpty
-                ? NetworkImage(user.profileImage)
-                : null,
-            child: user.profileImage.isEmpty
-                ? Text(
-                    user.name.isNotEmpty ? user.name[0].toUpperCase() : 'U',
+        child: InkWell(
+          borderRadius: BorderRadius.circular(16),
+          onTap: () => context.push('/members/${user.id}'),
+          child: Ink(
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: AppColors.borderLight),
+            ),
+            child: Row(
+              children: [
+                CircleAvatar(
+                  radius: 24,
+                  backgroundColor: AppColors.moduleP2PLight,
+                  foregroundImage: user.profileImage.isNotEmpty
+                      ? NetworkImage(user.profileImage)
+                      : null,
+                  onForegroundImageError: user.profileImage.isNotEmpty
+                      ? (_, _) {}
+                      : null,
+                  child: Text(
+                    name[0].toUpperCase(),
                     style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w800,
                       color: AppColors.moduleP2P,
                     ),
-                  )
-                : null,
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  user.name.isNotEmpty ? user.name : 'KaamMilega User',
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w800,
-                    color: AppColors.textPrimary,
                   ),
                 ),
-                if (user.headline.isNotEmpty)
-                  Text(
-                    user.headline,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      fontSize: 11,
-                      color: AppColors.textSecondary,
-                    ),
-                  ),
-                if (user.city.isNotEmpty)
-                  Row(
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Icon(
-                        Icons.location_on_outlined,
-                        size: 11,
-                        color: Color(0xFF94A3B8),
-                      ),
-                      const SizedBox(width: 2),
-                      Flexible(
-                        child: Text(
-                          user.city,
-                          style: const TextStyle(
-                            fontSize: 10,
-                            color: Color(0xFF94A3B8),
-                          ),
+                      Text(
+                        name,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w800,
+                          color: AppColors.textPrimary,
                         ),
                       ),
+                      if (user.headline.trim().isNotEmpty)
+                        Text(
+                          user.headline.trim(),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            fontSize: 11.5,
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
+                      if (user.city.trim().isNotEmpty)
+                        Row(
+                          children: [
+                            const Icon(
+                              Icons.location_on_outlined,
+                              size: 12,
+                              color: AppColors.textLight,
+                            ),
+                            const SizedBox(width: 2),
+                            Flexible(
+                              child: Text(
+                                user.city.trim(),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  fontSize: 11,
+                                  color: AppColors.textLight,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                     ],
                   ),
+                ),
+                const SizedBox(width: 8),
+                SizedBox(
+                  width: 92,
+                  child: ConnectButton(
+                    userId: user.id,
+                    name: name,
+                    height: 36,
+                    fontSize: 12,
+                  ),
+                ),
+                const SizedBox(width: 6),
+                SizedBox(
+                  width: 36,
+                  height: 36,
+                  child: OutlinedButton(
+                    onPressed: () => chatWithMember(
+                      context,
+                      ref,
+                      userId: user.id,
+                      name: name,
+                    ),
+                    style: OutlinedButton.styleFrom(
+                      padding: EdgeInsets.zero,
+                      foregroundColor: AppColors.moduleP2P,
+                      side: const BorderSide(color: AppColors.border),
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                    child: Tooltip(
+                      message: 'Message $name',
+                      child: const Icon(
+                        Icons.chat_bubble_outline_rounded,
+                        size: 17,
+                      ),
+                    ),
+                  ),
+                ),
               ],
             ),
           ),
-          ElevatedButton(
-            onPressed: () => _handleConnect(user.id),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.moduleP2P,
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-              elevation: 0,
-            ),
-            child: const Text(
-              'Connect',
-              style: TextStyle(fontWeight: FontWeight.w700, fontSize: 12),
-            ),
-          ),
-        ],
+        ),
       ),
     );
+    // Seen cards count as "Post impressions" for that member
+    return ImpressionBeacon(authorId: user.id, child: card);
   }
 
   Widget _buildConnectionsTab(AsyncValue<List<String>> connectionsAsync) {

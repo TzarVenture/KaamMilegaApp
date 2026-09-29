@@ -259,18 +259,19 @@ class ProfessionalCard extends StatelessWidget {
                   CircleAvatar(
                     radius: 22,
                     backgroundColor: AppColors.moduleInstantWorkLight,
-                    backgroundImage: p.photoUrl.isNotEmpty
+                    foregroundImage: p.photoUrl.isNotEmpty
                         ? NetworkImage(p.photoUrl)
                         : null,
-                    child: p.photoUrl.isEmpty
-                        ? Text(
-                            initial.toUpperCase(),
-                            style: const TextStyle(
-                              fontWeight: FontWeight.w700,
-                              color: AppColors.moduleInstantWork,
-                            ),
-                          )
+                    onForegroundImageError: p.photoUrl.isNotEmpty
+                        ? (_, _) {}
                         : null,
+                    child: Text(
+                      initial.toUpperCase(),
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.moduleInstantWork,
+                      ),
+                    ),
                   ),
                   const SizedBox(width: 12),
                   Expanded(

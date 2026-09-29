@@ -1,17 +1,45 @@
 /// Reasons accepted by the backend for a refund request (km-backend
 /// `wallet.DisputeReason`).
+/// Labels and hints are the same as on the website.
 enum DisputeReason {
-  sessionCancelled('session_cancelled', 'Session was cancelled'),
-  serviceNotProvided('service_not_provided', 'Service was not provided'),
-  duplicateCharge('duplicate_charge', 'Charged more than once'),
-  technicalFailure('technical_failure', 'Technical problem'),
-  dissatisfied('dissatisfied', 'Not satisfied'),
-  other('other', 'Other');
+  serviceNotProvided(
+    'service_not_provided',
+    'Service / Mentorship Not Delivered',
+    'The session did not take place or the mentor was absent',
+  ),
+  sessionCancelled(
+    'session_cancelled',
+    'Session Cancelled',
+    'The scheduled session or booking was cancelled',
+  ),
+  duplicateCharge(
+    'duplicate_charge',
+    'Duplicate Deduction',
+    'The amount was deducted more than once',
+  ),
+  technicalFailure(
+    'technical_failure',
+    'Technical Failure',
+    'A technical problem or disconnection prevented delivery',
+  ),
+  dissatisfied(
+    'dissatisfied',
+    'Quality / Dissatisfied',
+    'The quality did not meet what was agreed',
+  ),
+  other(
+    'other',
+    'Other Reason',
+    'Any other issue that needs a refund or review',
+  );
 
-  const DisputeReason(this.value, this.label);
+  const DisputeReason(this.value, this.label, this.hint);
 
   final String value;
   final String label;
+
+  /// One line under the chosen reason.
+  final String hint;
 
   static DisputeReason? fromValue(String? value) {
     for (final r in values) {

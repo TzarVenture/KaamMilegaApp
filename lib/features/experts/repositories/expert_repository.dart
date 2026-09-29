@@ -7,6 +7,7 @@ import '../../../core/network/response_list.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../wallet/models/wallet_summary.dart';
 import '../models/booking.dart';
+import '../models/expert_plan.dart';
 import '../models/expert_profile.dart';
 
 final expertRepositoryProvider = Provider<ExpertRepository>((ref) {
@@ -193,6 +194,86 @@ class ExpertRepository {
     await _apiClient.post(
       '${ApiConstants.mentorshipBookings}/$bookingId/review',
       data: {'rating': rating, 'review': review.trim()},
+    );
+  }
+
+  // --- Pro Expert plans (/subscriptions/expert) ---
+
+  /// Plans with their perks (GET /subscriptions/expert/plans, public).
+  Future<List<ExpertPlan>> getExpertPlans() async {
+    final response = await _apiClient.get(ApiConstants.expertPlans);
+    return readListResponse(
+      response.data,
+      keys: const ['plans', 'data'],
+    ).map(ExpertPlan.fromJson).where((p) => p.isValid).toList();
+  }
+
+  /// The signed-in user's plan (GET /subscriptions/expert/my).
+  Future<ExpertSubscriptionStatus> getMyExpertSubscription() async {
+    final response = await _apiClient.get(ApiConstants.expertSubscriptionMy);
+    final data = response.data;
+    if (data is Map<String, dynamic>) {
+      return ExpertSubscriptionStatus.fromJson(data);
+    }
+    throw const AppValidationException(
+      'Could not read your plan status. Please try again.',
+    );
+  }
+
+  /// Razorpay order for a plan (POST /subscriptions/expert/create-order).
+  Future<PaymentOrder> createExpertPlanOrder(String planType) async {
+    final response = await _apiClient.post(
+      ApiConstants.expertSubscriptionCreateOrder,
+      data: {'plan_type': planType},
+    );
+    final data = response.data;
+    if (data is Map<String, dynamic>) {
+      final order = PaymentOrder.fromJson(data);
+      if (order.isValid) return order;
+    }
+    throw const AppValidationException(
+      'Could not start the payment. Please try again.',
+    );
+  }
+
+  /// The server checks the Razorpay signature and activates the plan
+  /// (POST /subscriptions/expert/verify-payment). Returns its message.
+  Future<String> verifyExpertPlanPayment({
+    required String planType,
+    required String orderId,
+    required String paymentId,
+    required String signature,
+  }) async {
+    final response = await _apiClient.post(
+      ApiConstants.expertSubscriptionVerify,
+      data: {
+        'plan_type': planType,
+        'razorpay_order_id': orderId,
+        'razorpay_payment_id': paymentId,
+        'razorpay_signature': signature,
+      },
+    );
+    return _activatedMessage(response.data);
+  }
+
+  /// Pays for a plan from the wallet main balance
+  /// (POST /subscriptions/expert/wallet-checkout). Returns its message.
+  Future<String> buyExpertPlanWithWallet(String planType) async {
+    final response = await _apiClient.post(
+      ApiConstants.expertSubscriptionWalletCheckout,
+      data: {'plan_type': planType},
+    );
+    return _activatedMessage(response.data);
+  }
+
+  /// Reads `{message, subscription}`; a reply without the subscription is
+  /// an error, not a silent success.
+  static String _activatedMessage(dynamic data) {
+    if (data is Map<String, dynamic> && data['subscription'] is Map) {
+      return data['message']?.toString().trim() ?? '';
+    }
+    throw const AppValidationException(
+      'Unexpected response from server. Please check your plan status.',
     );
   }
 }

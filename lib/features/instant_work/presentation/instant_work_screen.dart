@@ -9,9 +9,13 @@ import '../../../shared/widgets/shimmer_loading.dart';
 import '../../../shared/widgets/themed_category_bottom_nav.dart';
 import '../../jobs/models/job.dart';
 import '../../jobs/presentation/job_detail_screen.dart';
+import '../providers/instant_candidate_provider.dart';
 import '../providers/instant_milega_provider.dart';
 import '../providers/instant_work_provider.dart';
-import 'widgets/instant_milega_map.dart';
+import '../providers/spot_gigs_provider.dart';
+import 'widgets/instant_availability_card.dart';
+import 'widgets/instant_location_bar.dart';
+import 'widgets/spot_gigs_widgets.dart';
 import 'widgets/nearby_professionals_section.dart';
 import '../../../shared/widgets/fade_slide_in.dart';
 import '../../../app/theme/app_colors.dart';
@@ -45,17 +49,6 @@ class _InstantWorkScreenState extends ConsumerState<InstantWorkScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) ref.read(instantMilegaProvider.notifier).locate();
     });
-  }
-
-  /// Map area: about 28% of the screen (max 300). Hidden while the keyboard
-  /// is open or when the screen is too short, so nothing overflows.
-  Widget _buildMapSection(BuildContext context) {
-    final media = MediaQuery.of(context);
-    if (media.viewInsets.bottom > 0) return const SizedBox.shrink();
-    final available = media.size.height - media.padding.vertical;
-    final height = (available * 0.28).clamp(0.0, 300.0);
-    if (height < 140) return const SizedBox.shrink();
-    return InstantMilegaMapSection(height: height);
   }
 
   @override
@@ -101,15 +94,14 @@ class _InstantWorkScreenState extends ConsumerState<InstantWorkScreen> {
               },
             ),
 
-            // Current location + map (Instant Milega)
-            _buildMapSection(context),
-
             Expanded(
               child: RefreshIndicator(
                 color: AppColors.moduleInstantWork,
                 onRefresh: () => Future.wait([
                   ref.read(instantWorkProvider.notifier).loadGigs(),
                   ref.read(instantMilegaProvider.notifier).loadProfessionals(),
+                  ref.read(instantCandidateProvider.notifier).load(),
+                  ref.read(spotGigsProvider.notifier).refreshAll(),
                 ]),
                 child: ListView(
                   padding: const EdgeInsets.symmetric(
@@ -117,6 +109,29 @@ class _InstantWorkScreenState extends ConsumerState<InstantWorkScreen> {
                     vertical: 14,
                   ),
                   children: [
+                    // Location status (needed for gigs; no map)
+                    const InstantLocationBar(),
+
+                    const SizedBox(height: 14),
+
+                    // Go online (InstantPass) card, as on the website
+                    const InstantAvailabilityCard(),
+
+                    const SizedBox(height: 18),
+
+                    // Claimed spot gig (call, chat, directions, complete)
+                    const ActiveGigCard(),
+
+                    // Live open spot gigs for the primary trade
+                    const SpotGigsSection(),
+
+                    const SizedBox(height: 18),
+
+                    // Gig pay credited to the wallet
+                    const GigEarningsCard(),
+
+                    const SizedBox(height: 18),
+
                     // 0. Nearby professionals (backend-pending until the
                     // nearby-professionals API exists)
                     const NearbyProfessionalsSection(),

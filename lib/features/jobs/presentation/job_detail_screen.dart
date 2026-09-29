@@ -388,526 +388,33 @@ class _JobDetailScreenState extends ConsumerState<JobDetailScreen> {
         onRefresh: _loadJob,
         child: CustomScrollView(
           slivers: [
-            // Deep Navy Top Header Section (media_1789976851914.png)
+            // Compact header: back, title, company · city, salary, facts
             SliverToBoxAdapter(
               child: FadeSlideIn(
                 offsetY: 8,
-                child: Container(
-                  decoration: const BoxDecoration(
-                    color: AppColors.deepNavy, // Brand Deep Navy
-                    borderRadius: BorderRadius.vertical(
-                      bottom: Radius.circular(32),
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black26,
-                        blurRadius: 18,
-                        offset: Offset(0, 8),
-                      ),
-                    ],
-                  ),
-                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Back Button & Bookmark Save Button Row
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          InkWell(
-                            onTap: () {
-                              if (context.canPop()) {
-                                context.pop();
-                              } else {
-                                context.go('/jobs');
-                              }
-                            },
-                            borderRadius: BorderRadius.circular(20),
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 14,
-                                vertical: 7,
-                              ),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF1E293B)
-                                    .withValues(alpha: 0.8),
-                                borderRadius: BorderRadius.circular(20),
-                                border: Border.all(color: Colors.white12),
-                              ),
-                              child: const Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(
-                                    Icons.arrow_back_rounded,
-                                    color: Colors.white,
-                                    size: 14,
-                                  ),
-                                  SizedBox(width: 6),
-                                  Text(
-                                    'BACK TO SEARCH',
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.w900,
-                                      letterSpacing: 0.5,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                          IconButton(
-                            padding: EdgeInsets.zero,
-                            constraints: const BoxConstraints(),
-                            icon: Icon(
-                              isSaved
-                                  ? Icons.bookmark_rounded
-                                  : Icons.bookmark_outline_rounded,
-                              color: isSaved
-                                  ? AppColors.accent
-                                  : Colors.white70,
-                              size: 24,
-                            ),
-                            onPressed: () {
-                              ref
-                                  .read(jobsProvider.notifier)
-                                  .toggleSaveJob(widget.jobId);
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                    isSaved
-                                        ? 'Job removed from saved list.'
-                                        : 'Job saved to your bookmarks!',
-                                  ),
-                                  duration: const Duration(seconds: 2),
-                                ),
-                              );
-                            },
-                          ),
-                        ],
-                      ),
-
-                      const SizedBox(height: 18),
-
-                      // Job Title
-                      Text(
-                        job.title.toUpperCase(),
-                        style: const TextStyle(
-                          fontSize: 26,
-                          fontWeight: FontWeight.w900,
-                          color: Colors.white,
-                          letterSpacing: -0.5,
-                          height: 1.2,
+                child: _JobHeader(
+                  job: job,
+                  isSaved: isSaved,
+                  onBack: () {
+                    if (context.canPop()) {
+                      context.pop();
+                    } else {
+                      context.go('/jobs');
+                    }
+                  },
+                  onToggleSave: () {
+                    ref.read(jobsProvider.notifier).toggleSaveJob(widget.jobId);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          isSaved
+                              ? 'Job removed from saved list.'
+                              : 'Job saved to your bookmarks!',
                         ),
+                        duration: const Duration(seconds: 2),
                       ),
-
-                      const SizedBox(height: 8),
-
-                      // DIRECT HIRING
-                      Row(
-                        children: [
-                          Container(
-                            width: 6,
-                            height: 6,
-                            decoration: const BoxDecoration(
-                              color: Color(0xFF3B82F6),
-                              shape: BoxShape.circle,
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          const Text(
-                            'DIRECT HIRING',
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w900,
-                              color: AppColors.accent,
-                              letterSpacing: 0.5,
-                            ),
-                          ),
-                        ],
-                      ),
-
-                      const SizedBox(height: 18),
-
-                      // Horizontal Metrics Row (Salary, Location, Experience)
-                      IntrinsicHeight(
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            // 1. MONTHLY SALARY
-                            Expanded(
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 10,
-                                  vertical: 12,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFF1E293B)
-                                      .withValues(alpha: 0.9),
-                                  borderRadius: BorderRadius.circular(14),
-                                  border: Border.all(color: Colors.white10),
-                                ),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Container(
-                                      width: 32,
-                                      height: 32,
-                                      decoration: BoxDecoration(
-                                        color: AppColors.textPrimary,
-                                        borderRadius: BorderRadius.circular(8),
-                                      ),
-                                      child: const Center(
-                                        child: Text(
-                                          '₹',
-                                          style: TextStyle(
-                                            color: Color(
-                                              0xFF10B981,
-                                            ), // Bright Emerald Green
-                                            fontWeight: FontWeight.w900,
-                                            fontSize: 18,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                    const SizedBox(height: 8),
-                                    const Text(
-                                      'SALARY',
-                                      style: TextStyle(
-                                        fontSize: 9,
-                                        fontWeight: FontWeight.w800,
-                                        color: Color(0xFF94A3B8),
-                                        letterSpacing: 0.5,
-                                      ),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                    const SizedBox(height: 2),
-                                    Text(
-                                      job.formattedSalary,
-                                      style: const TextStyle(
-                                        fontSize: 12.5,
-                                        fontWeight: FontWeight.w900,
-                                        color: Colors.white,
-                                        height: 1.2,
-                                      ),
-                                      maxLines: 2,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-
-                            // 2. LOCATION
-                            Expanded(
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 10,
-                                  vertical: 12,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFF1E293B)
-                                      .withValues(alpha: 0.9),
-                                  borderRadius: BorderRadius.circular(14),
-                                  border: Border.all(color: Colors.white10),
-                                ),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Container(
-                                      width: 32,
-                                      height: 32,
-                                      decoration: BoxDecoration(
-                                        color: AppColors.textPrimary,
-                                        borderRadius: BorderRadius.circular(8),
-                                      ),
-                                      child: const Center(
-                                        child: Icon(
-                                          Icons.location_on_rounded,
-                                          color: Color(
-                                            0xFF38BDF8,
-                                          ), // Bright Sky Blue
-                                          size: 18,
-                                        ),
-                                      ),
-                                    ),
-                                    const SizedBox(height: 8),
-                                    const Text(
-                                      'LOCATION',
-                                      style: TextStyle(
-                                        fontSize: 9,
-                                        fontWeight: FontWeight.w800,
-                                        color: Color(0xFF94A3B8),
-                                        letterSpacing: 0.5,
-                                      ),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                    const SizedBox(height: 2),
-                                    Text(
-                                      job.cityName.isNotEmpty
-                                          ? (job.location.isNotEmpty &&
-                                                    job.location != job.cityName
-                                                ? '${job.location}, ${job.cityName}'
-                                                : job.cityName)
-                                          : (job.location.isNotEmpty
-                                                ? job.location
-                                                : 'Flexible'),
-                                      style: const TextStyle(
-                                        fontSize: 12.5,
-                                        fontWeight: FontWeight.w900,
-                                        color: Colors.white,
-                                        height: 1.2,
-                                      ),
-                                      maxLines: 2,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-
-                            // 3. EXPERIENCE
-                            Expanded(
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 10,
-                                  vertical: 12,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFF1E293B)
-                                      .withValues(alpha: 0.9),
-                                  borderRadius: BorderRadius.circular(14),
-                                  border: Border.all(color: Colors.white10),
-                                ),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Container(
-                                      width: 32,
-                                      height: 32,
-                                      decoration: BoxDecoration(
-                                        color: AppColors.textPrimary,
-                                        borderRadius: BorderRadius.circular(8),
-                                      ),
-                                      child: const Center(
-                                        child: Icon(
-                                          Icons.access_time_rounded,
-                                          color: Color(
-                                            0xFFFBBF24,
-                                          ), // Bright Golden Amber
-                                          size: 18,
-                                        ),
-                                      ),
-                                    ),
-                                    const SizedBox(height: 8),
-                                    const Text(
-                                      'EXPERIENCE',
-                                      style: TextStyle(
-                                        fontSize: 9,
-                                        fontWeight: FontWeight.w800,
-                                        color: Color(0xFF94A3B8),
-                                        letterSpacing: 0.5,
-                                      ),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                    const SizedBox(height: 2),
-                                    Text(
-                                      job.formattedExperience,
-                                      style: const TextStyle(
-                                        fontSize: 12.5,
-                                        fontWeight: FontWeight.w900,
-                                        color: Colors.white,
-                                        height: 1.2,
-                                      ),
-                                      maxLines: 2,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-
-                      const SizedBox(height: 16),
-
-                      // Badges Horizontal Row
-                      SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        physics: const BouncingScrollPhysics(),
-                        child: Row(
-                          children: [
-                            // HOT LISTING
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                                vertical: 6,
-                              ),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFE11D48),
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              child: const Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(
-                                    Icons.local_fire_department_rounded,
-                                    size: 13,
-                                    color: Colors.white,
-                                  ),
-                                  SizedBox(width: 4),
-                                  Text(
-                                    'HOT LISTING',
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.w900,
-                                      fontSize: 11,
-                                      letterSpacing: 0.5,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-
-                            // JOB TYPE
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                                vertical: 6,
-                              ),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF1E293B),
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              child: Text(
-                                job.jobType.isNotEmpty
-                                    ? job.jobType.toUpperCase()
-                                    : 'FULL-TIME',
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w800,
-                                  fontSize: 11,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-
-                            // OPENINGS
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                                vertical: 6,
-                              ),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF1E293B),
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              child: Text(
-                                '${job.vacancies > 0 ? job.vacancies : 1} OPENINGS',
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w800,
-                                  fontSize: 11,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-
-                            // KM VERIFIED
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                                vertical: 6,
-                              ),
-                              decoration: BoxDecoration(
-                                color: AppColors.blue,
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Container(
-                                    width: 8,
-                                    height: 8,
-                                    decoration: const BoxDecoration(
-                                      color: Colors.white,
-                                      shape: BoxShape.circle,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 6),
-                                  const Text(
-                                    'KM VERIFIED',
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.w900,
-                                      fontSize: 11,
-                                      letterSpacing: 0.5,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-
-                      const SizedBox(height: 16),
-
-                      // Social proof: Candidates applied
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 14,
-                          vertical: 10,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.08),
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: Colors.white10),
-                        ),
-                        child: Row(
-                          children: [
-                            const Icon(
-                              Icons.people_alt_rounded,
-                              color: Color(0xFF60A5FA),
-                              size: 20,
-                            ),
-                            const SizedBox(width: 10),
-                            Flexible(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const Text(
-                                    'CANDIDATES APPLIED',
-                                    style: TextStyle(
-                                      fontSize: 9,
-                                      fontWeight: FontWeight.w900,
-                                      color: Colors.white60,
-                                      letterSpacing: 0.5,
-                                    ),
-                                  ),
-                                  Text(
-                                    '${job.applicantCount > 0 ? job.applicantCount : 90}+ People Interested',
-                                    style: const TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w800,
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
+                    );
+                  },
                 ),
               ),
             ),
@@ -924,8 +431,8 @@ class _JobDetailScreenState extends ConsumerState<JobDetailScreen> {
                       children: [
                         _HighlightRow(
                           icon: Icons.access_time_filled_rounded,
-                          label: 'Job Shift & Type',
-                          value: '${job.jobType} • Day Shift',
+                          label: 'Job Type',
+                          value: job.jobType,
                         ),
                         const Divider(height: 20),
                         _HighlightRow(
@@ -947,7 +454,7 @@ class _JobDetailScreenState extends ConsumerState<JobDetailScreen> {
                           label: 'Education Level',
                           value: job.education.isNotEmpty
                               ? job.education
-                              : '10th Pass or Above',
+                              : 'Any / Not specified',
                         ),
                         if (job.weOffer.isNotEmpty) ...[
                           const Divider(height: 20),
@@ -1160,190 +667,93 @@ class _JobDetailScreenState extends ConsumerState<JobDetailScreen> {
         ),
       ),
 
-      // Fixed Bottom Action Bar
+      // Fixed bottom action bar: call, chat, apply
       bottomNavigationBar: Container(
         padding: EdgeInsets.only(
           left: 16,
           right: 16,
-          top: 12,
-          bottom: MediaQuery.of(context).padding.bottom + 12,
+          top: 10,
+          bottom: MediaQuery.of(context).padding.bottom + 10,
         ),
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           color: Colors.white,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.08),
-              blurRadius: 16,
-              offset: const Offset(0, -4),
-            ),
-          ],
+          border: Border(top: BorderSide(color: AppColors.border)),
         ),
         child: Row(
           children: [
-            // Call button
-            IconButton.filledTonal(
+            _BarIconButton(
+              icon: Icons.phone_outlined,
+              tooltip: 'Call',
               onPressed: _callHR,
-              style: IconButton.styleFrom(
-                backgroundColor: AppColors.background,
-                foregroundColor: AppColors.textSecondary,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                  side: const BorderSide(color: AppColors.border),
-                ),
-                minimumSize: const Size(50, 50),
-              ),
-              icon: const Icon(Icons.phone_outlined, size: 22),
             ),
-
-            const SizedBox(width: 10),
-
-            // Chat button
-            Expanded(
-              flex: 2,
-              child: OutlinedButton.icon(
-                onPressed: _chatWithHR,
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: AppColors.primary,
-                  side: const BorderSide(color: AppColors.primary, width: 1.5),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                ),
-                icon: const Icon(Icons.chat_bubble_outline_rounded, size: 18),
-                label: const Text(
-                  'CHAT',
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: 1,
-                  ),
-                ),
-              ),
+            const SizedBox(width: 8),
+            _BarIconButton(
+              icon: Icons.chat_bubble_outline_rounded,
+              tooltip: 'Chat with recruiter',
+              onPressed: _chatWithHR,
             ),
-
             const SizedBox(width: 10),
-
-            // Apply Now / Applied button
             Expanded(
-              flex: 3,
               child: PressableScale(
                 child: hasAlreadyApplied
-                    ? InkWell(
-                        onTap: () =>
-                            context.push('/applications/${widget.jobId}'),
-                        borderRadius: BorderRadius.circular(16),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          decoration: BoxDecoration(
-                            color: AppColors.success.withValues(alpha: 0.12),
-                            borderRadius: BorderRadius.circular(16),
-                            border: Border.all(
-                              color: AppColors.success.withValues(alpha: 0.3),
-                            ),
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: const [
-                              Icon(
-                                Icons.check_circle_rounded,
-                                color: AppColors.success,
-                                size: 18,
-                              ),
-                              SizedBox(width: 6),
-                              Text(
-                                'APPLIED',
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w900,
+                    ? Material(
+                        color: AppColors.successLight,
+                        borderRadius: BorderRadius.circular(14),
+                        child: InkWell(
+                          onTap: () =>
+                              context.push('/applications/${widget.jobId}'),
+                          borderRadius: BorderRadius.circular(14),
+                          child: const SizedBox(
+                            height: 48,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.check_circle_rounded,
                                   color: AppColors.success,
-                                  letterSpacing: 1,
+                                  size: 18,
                                 ),
+                                SizedBox(width: 6),
+                                Flexible(
+                                  child: Text(
+                                    'Applied · View status',
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w700,
+                                      color: AppColors.success,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      )
+                    : ElevatedButton(
+                        onPressed: isAuthenticated
+                            ? _openApplyModal
+                            : () => showAuthPromptDialog(
+                                context,
+                                title: 'Sign In to Apply',
+                                message:
+                                    'Please sign in to your KaamMilega account to apply for ${job.title} at ${job.company}.',
                               ),
-                            ],
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primary,
+                          foregroundColor: Colors.white,
+                          elevation: 0,
+                          minimumSize: const Size(0, 48),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
                           ),
                         ),
-                      )
-                    : !isAuthenticated
-                    ? Container(
-                        decoration: BoxDecoration(
-                          color: const Color(
-                            0xFF94A3B8,
-                          ), // Slate gray for guest mode
-                          borderRadius: BorderRadius.circular(16),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.08),
-                              blurRadius: 6,
-                              offset: const Offset(0, 2),
-                            ),
-                          ],
-                        ),
-                        child: ElevatedButton(
-                          onPressed: () {
-                            showAuthPromptDialog(
-                              context,
-                              title: 'Sign In to Apply',
-                              message:
-                                  'Please sign in to your KaamMilega account to apply for ${job.title} at ${job.company}.',
-                            );
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.transparent,
-                            shadowColor: Colors.transparent,
-                            foregroundColor: Colors.white,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                            padding: const EdgeInsets.symmetric(vertical: 14),
-                          ),
-                          child: const Text(
-                            'APPLY NOW',
-                            style: TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w900,
-                              letterSpacing: 1,
-                              fontStyle: FontStyle.italic,
-                            ),
-                          ),
-                        ),
-                      )
-                    : Container(
-                        decoration: BoxDecoration(
-                          gradient: const LinearGradient(
-                            colors: [
-                              AppColors.primaryGradientStart,
-                              AppColors.primaryGradientEnd,
-                            ],
-                          ),
-                          borderRadius: BorderRadius.circular(16),
-                          boxShadow: [
-                            BoxShadow(
-                              color: AppColors.primary.withValues(alpha: 0.35),
-                              blurRadius: 10,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
-                        ),
-                        child: ElevatedButton(
-                          onPressed: _openApplyModal,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.transparent,
-                            shadowColor: Colors.transparent,
-                            foregroundColor: Colors.white,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                            padding: const EdgeInsets.symmetric(vertical: 14),
-                          ),
-                          child: const Text(
-                            'APPLY NOW',
-                            style: TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w900,
-                              letterSpacing: 1,
-                              fontStyle: FontStyle.italic,
-                            ),
+                        child: const Text(
+                          'Apply now',
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w700,
                           ),
                         ),
                       ),
@@ -1543,6 +953,325 @@ class _StepItem extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+/// Top of the job page: back and save, title with company and city, the
+/// salary, and short facts. Everything shown comes from the job itself.
+class _JobHeader extends StatelessWidget {
+  const _JobHeader({
+    required this.job,
+    required this.isSaved,
+    required this.onBack,
+    required this.onToggleSave,
+  });
+
+  final Job job;
+  final bool isSaved;
+  final VoidCallback onBack;
+  final VoidCallback onToggleSave;
+
+  @override
+  Widget build(BuildContext context) {
+    final company = job.company.trim();
+    final city = job.cityName.trim().isNotEmpty
+        ? job.cityName.trim()
+        : job.location.trim();
+    final subtitle = [company, city].where((v) => v.isNotEmpty).join(' · ');
+    final posted = job.postedLabel;
+    final salaryBoth = job.salaryMin > 0 && job.salaryMax > 0;
+
+    // Navy panel in the app's brand colours (white text on top)
+    return Container(
+      padding: const EdgeInsets.fromLTRB(8, 4, 8, 20),
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [AppColors.brandNavy, AppColors.navy],
+        ),
+        borderRadius: BorderRadius.vertical(bottom: Radius.circular(24)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              TextButton.icon(
+                onPressed: onBack,
+                icon: const Icon(Icons.arrow_back_rounded, size: 18),
+                label: const Text('Back'),
+                style: TextButton.styleFrom(
+                  foregroundColor: Colors.white,
+                  textStyle: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+              const Spacer(),
+              IconButton(
+                tooltip: isSaved ? 'Remove from saved' : 'Save job',
+                onPressed: onToggleSave,
+                icon: Icon(
+                  isSaved
+                      ? Icons.bookmark_rounded
+                      : Icons.bookmark_border_rounded,
+                  color: isSaved ? AppColors.accent : Colors.white,
+                ),
+              ),
+            ],
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      width: 52,
+                      height: 52,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [AppColors.accent, AppColors.accentBright],
+                        ),
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      child: company.isEmpty
+                          ? const Icon(
+                              Icons.work_outline_rounded,
+                              color: Colors.white,
+                            )
+                          : Text(
+                              company[0].toUpperCase(),
+                              style: const TextStyle(
+                                fontSize: 21,
+                                fontWeight: FontWeight.w800,
+                                color: Colors.white,
+                              ),
+                            ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            job.displayTitle,
+                            style: const TextStyle(
+                              fontSize: 19,
+                              fontWeight: FontWeight.w800,
+                              color: Colors.white,
+                              height: 1.25,
+                            ),
+                          ),
+                          if (subtitle.isNotEmpty) ...[
+                            const SizedBox(height: 4),
+                            Text(
+                              subtitle,
+                              style: TextStyle(
+                                fontSize: 13.5,
+                                color: Colors.white.withValues(alpha: 0.75),
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 14),
+                Row(
+                  children: [
+                    Container(
+                      width: 30,
+                      height: 30,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color:
+                            (job.hasSalary ? AppColors.success : Colors.white)
+                                .withValues(alpha: 0.22),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        Icons.currency_rupee_rounded,
+                        size: 17,
+                        color: job.hasSalary
+                            ? Color.lerp(AppColors.success, Colors.white, 0.4)
+                            : Colors.white.withValues(alpha: 0.6),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Flexible(
+                      child: Text.rich(
+                        TextSpan(
+                          children: [
+                            TextSpan(
+                              text: job.hasSalary
+                                  ? job.formattedSalary
+                                  : 'Salary disclosed at interview',
+                              style: TextStyle(
+                                fontSize: job.hasSalary ? 16 : 14,
+                                fontWeight: job.hasSalary
+                                    ? FontWeight.w800
+                                    : FontWeight.w600,
+                                color: job.hasSalary
+                                    ? Colors.white
+                                    : Colors.white.withValues(alpha: 0.8),
+                              ),
+                            ),
+                            if (salaryBoth)
+                              TextSpan(
+                                text: ' / month',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: Colors.white.withValues(alpha: 0.7),
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    if (city.isNotEmpty)
+                      _Fact(
+                        icon: Icons.location_on_rounded,
+                        label: city,
+                        color: AppColors.moduleServices,
+                      ),
+                    _Fact(
+                      icon: Icons.schedule_rounded,
+                      label: job.formattedExperience,
+                      color: AppColors.moduleEvents,
+                    ),
+                    if (job.jobType.trim().isNotEmpty)
+                      _Fact(
+                        icon: Icons.work_rounded,
+                        label: job.jobType.trim(),
+                        color: AppColors.moduleExperts,
+                      ),
+                    _Fact(
+                      icon: Icons.groups_rounded,
+                      color: AppColors.moduleSkills,
+                      label:
+                          '${job.vacancies} ${job.vacancies == 1 ? 'opening' : 'openings'}',
+                    ),
+                    // Real count only; nothing shown when nobody applied yet
+                    if (job.applicantCount > 0)
+                      _Fact(
+                        icon: Icons.how_to_reg_rounded,
+                        color: AppColors.moduleP2P,
+                        label: '${job.applicantCount} applied',
+                      ),
+                    if (posted.isNotEmpty)
+                      _Fact(
+                        icon: Icons.today_rounded,
+                        label: posted,
+                        color: AppColors.accent,
+                      ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _Fact extends StatelessWidget {
+  const _Fact({required this.icon, required this.label, required this.color});
+
+  final IconData icon;
+  final String label;
+
+  /// Brand colour for the icon; lightened so it stays bright on navy.
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(5, 5, 10, 5),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.14)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 22,
+            height: 22,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.28),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              icon,
+              size: 13,
+              color: Color.lerp(color, Colors.white, 0.35),
+            ),
+          ),
+          const SizedBox(width: 6),
+          Flexible(
+            child: Text(
+              label,
+              style: const TextStyle(
+                fontSize: 12.5,
+                fontWeight: FontWeight.w600,
+                color: Colors.white,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _BarIconButton extends StatelessWidget {
+  const _BarIconButton({
+    required this.icon,
+    required this.tooltip,
+    required this.onPressed,
+  });
+
+  final IconData icon;
+  final String tooltip;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 48,
+      height: 48,
+      child: OutlinedButton(
+        onPressed: onPressed,
+        style: OutlinedButton.styleFrom(
+          padding: EdgeInsets.zero,
+          foregroundColor: AppColors.primary,
+          side: const BorderSide(color: AppColors.border),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
+          ),
+        ),
+        child: Tooltip(message: tooltip, child: Icon(icon, size: 21)),
+      ),
     );
   }
 }

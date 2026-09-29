@@ -177,29 +177,22 @@ class ProfileDrawer extends ConsumerWidget {
                       padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
                       child: Row(
                         children: [
-                          Container(
-                            width: 46,
-                            height: 46,
-                            decoration: BoxDecoration(
-                              color: AppColors.navy,
-                              shape: BoxShape.circle,
-                              image: hasAvatar
-                                  ? DecorationImage(
-                                      image: NetworkImage(userAvatar),
-                                      fit: BoxFit.cover,
-                                      onError: (_, _) {},
-                                    )
-                                  : null,
-                            ),
-                            child: !hasAvatar
-                                ? const Center(
-                                    child: Icon(
-                                      Icons.person_rounded,
-                                      color: Colors.white,
-                                      size: 26,
-                                    ),
-                                  )
+                          // A photo that fails to load falls back to the
+                          // person icon instead of an empty circle.
+                          CircleAvatar(
+                            radius: 23,
+                            backgroundColor: AppColors.navy,
+                            foregroundImage: hasAvatar
+                                ? NetworkImage(userAvatar)
                                 : null,
+                            onForegroundImageError: hasAvatar
+                                ? (_, _) {}
+                                : null,
+                            child: const Icon(
+                              Icons.person_rounded,
+                              color: Colors.white,
+                              size: 26,
+                            ),
                           ),
                           const SizedBox(width: 12),
                           Expanded(
@@ -281,6 +274,7 @@ class ProfileDrawer extends ConsumerWidget {
                     // 3. Main Nav Items with Icons (Screenshot 1)
                     _DrawerIconTile(
                       icon: Icons.home_outlined,
+                      color: AppColors.brandNavy,
                       title: 'Home',
                       onTap: () {
                         Navigator.pop(context);
@@ -293,6 +287,7 @@ class ProfileDrawer extends ConsumerWidget {
                     ),
                     _DrawerIconTile(
                       icon: Icons.people_outline_rounded,
+                      color: AppColors.moduleP2P,
                       title: 'Network',
                       onTap: () {
                         Navigator.pop(context);
@@ -301,6 +296,7 @@ class ProfileDrawer extends ConsumerWidget {
                     ),
                     _DrawerIconTile(
                       icon: Icons.calendar_today_outlined,
+                      color: AppColors.moduleEvents,
                       title: 'Events',
                       onTap: () {
                         Navigator.pop(context);
@@ -309,6 +305,7 @@ class ProfileDrawer extends ConsumerWidget {
                     ),
                     _DrawerIconTile(
                       icon: Icons.business_center_outlined,
+                      color: AppColors.blue,
                       title: 'Jobs',
                       onTap: () {
                         Navigator.pop(context);
@@ -321,6 +318,7 @@ class ProfileDrawer extends ConsumerWidget {
                     ),
                     _DrawerIconTile(
                       icon: Icons.menu_book_outlined,
+                      color: AppColors.moduleExperts,
                       title: 'Mentors',
                       onTap: () {
                         Navigator.pop(context);
@@ -329,6 +327,7 @@ class ProfileDrawer extends ConsumerWidget {
                     ),
                     _DrawerIconTile(
                       icon: Icons.chat_bubble_outline_rounded,
+                      color: AppColors.accent,
                       title: 'Chat',
                       onTap: () {
                         Navigator.pop(context);
@@ -341,6 +340,7 @@ class ProfileDrawer extends ConsumerWidget {
                     ),
                     _DrawerIconTile(
                       icon: Icons.library_books_outlined,
+                      color: AppColors.moduleSkills,
                       title: 'Resources',
                       onTap: () {
                         Navigator.pop(context);
@@ -357,14 +357,18 @@ class ProfileDrawer extends ConsumerWidget {
                     const SizedBox(height: 6),
 
                     // 4. Secondary Text Menu Items (Screenshot 1)
-                    _DrawerTextTile(
+                    _DrawerIconTile(
+                      icon: Icons.apps_rounded,
+                      color: AppColors.moduleServices,
                       title: 'Explore All Modules',
                       onTap: () {
                         Navigator.pop(context);
                         context.push('/explore');
                       },
                     ),
-                    _DrawerTextTile(
+                    _DrawerIconTile(
+                      icon: Icons.account_balance_wallet_outlined,
+                      color: AppColors.success,
                       title: 'Digital Wallet & Ledger',
                       onTap: () {
                         Navigator.pop(context);
@@ -375,43 +379,52 @@ class ProfileDrawer extends ConsumerWidget {
                         );
                       },
                     ),
-                    _DrawerTextTile(
+                    _DrawerIconTile(
+                      icon: Icons.settings_outlined,
+                      color: AppColors.navy,
                       title: 'Setting & Privacy',
                       onTap: () {
                         Navigator.pop(context);
                         AuthGuard.openProtected(context, '/settings');
                       },
                     ),
-                    _DrawerTextTile(
+                    _DrawerIconTile(
+                      icon: Icons.assignment_turned_in_outlined,
+                      color: AppColors.blue,
                       title: 'Applied Jobs Status',
                       onTap: () {
                         Navigator.pop(context);
                         AuthGuard.openProtected(context, '/my-applications');
                       },
                     ),
-                    _DrawerTextTile(
+                    _DrawerIconTile(
+                      icon: Icons.video_call_outlined,
+                      color: AppColors.moduleP2P,
                       title: 'Interviews',
                       onTap: () {
                         Navigator.pop(context);
                         AuthGuard.openProtected(context, '/interviews');
                       },
                     ),
-                    _DrawerTextTile(
+                    _DrawerIconTile(
+                      icon: Icons.co_present_outlined,
+                      color: AppColors.moduleExperts,
                       title: 'My Sessions',
                       onTap: () {
                         Navigator.pop(context);
                         AuthGuard.openProtected(context, '/my-sessions');
                       },
                     ),
-                    _DrawerTextTile(
+                    _DrawerIconTile(
+                      icon: Icons.confirmation_number_outlined,
+                      color: AppColors.moduleEvents,
                       title: 'My Tickets',
                       onTap: () {
                         Navigator.pop(context);
                         AuthGuard.openProtected(context, '/my-tickets');
                       },
                     ),
-                    _DrawerTextTile(
-                      title: 'Apply to be an Expert',
+                    _ApplyExpertDrawerCard(
                       onTap: () {
                         Navigator.pop(context);
                         AuthGuard.openProtected(context, '/apply-expert');
@@ -428,9 +441,11 @@ class ProfileDrawer extends ConsumerWidget {
 
                     // 5. Auth Sign Out / Sign In
                     if (isAuth)
-                      _DrawerTextTile(
+                      _DrawerIconTile(
+                        icon: Icons.logout_rounded,
+                        color: AppColors.error,
                         title: 'Sign Out',
-                        textColor: const Color(0xFFDC2626),
+                        textColor: AppColors.error,
                         onTap: () async {
                           Navigator.pop(context);
                           await ref.read(authProvider.notifier).logout();
@@ -446,7 +461,9 @@ class ProfileDrawer extends ConsumerWidget {
                         },
                       )
                     else
-                      _DrawerTextTile(
+                      _DrawerIconTile(
+                        icon: Icons.login_rounded,
+                        color: AppColors.primary,
                         title: 'Sign In / Create Account',
                         textColor: AppColors.primary,
                         onTap: () {
@@ -472,10 +489,16 @@ class _DrawerIconTile extends StatelessWidget {
   final String title;
   final VoidCallback onTap;
 
+  /// Module colour of the icon (on a light tint of the same colour).
+  final Color color;
+  final Color textColor;
+
   const _DrawerIconTile({
     required this.icon,
     required this.title,
     required this.onTap,
+    required this.color,
+    this.textColor = AppColors.textPrimary,
   });
 
   @override
@@ -483,17 +506,29 @@ class _DrawerIconTile extends StatelessWidget {
     return InkWell(
       onTap: onTap,
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 7),
         child: Row(
           children: [
-            Icon(icon, size: 20, color: const Color(0xFF334155)),
-            const SizedBox(width: 16),
-            Text(
-              title,
-              style: const TextStyle(
-                fontSize: 14.5,
-                fontWeight: FontWeight.w600,
-                color: Color(0xFF1E293B),
+            Container(
+              width: 36,
+              height: 36,
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(icon, size: 19, color: color),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Text(
+                title,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 14.5,
+                  fontWeight: FontWeight.w600,
+                  color: textColor,
+                ),
               ),
             ),
           ],
@@ -503,31 +538,97 @@ class _DrawerIconTile extends StatelessWidget {
   }
 }
 
-class _DrawerTextTile extends StatelessWidget {
-  final String title;
+/// "Apply to be an Expert" as a highlighted orange card, so it stands out
+/// from the plain menu rows.
+class _ApplyExpertDrawerCard extends StatelessWidget {
   final VoidCallback onTap;
-  final Color textColor;
 
-  const _DrawerTextTile({
-    required this.title,
-    required this.onTap,
-    this.textColor = const Color(0xFF1E293B),
-  });
+  const _ApplyExpertDrawerCard({required this.onTap});
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 13),
-        child: SizedBox(
-          width: double.infinity,
-          child: Text(
-            title,
-            style: TextStyle(
-              fontSize: 14.5,
-              fontWeight: FontWeight.w600,
-              color: textColor,
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(14, 10, 14, 6),
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(16),
+        clipBehavior: Clip.antiAlias,
+        child: Ink(
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [AppColors.accent, AppColors.accentBright],
+            ),
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.accent.withValues(alpha: 0.25),
+                blurRadius: 12,
+                offset: const Offset(0, 5),
+              ),
+            ],
+          ),
+          child: InkWell(
+            onTap: onTap,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(12, 12, 10, 12),
+              child: Row(
+                children: [
+                  Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Icon(
+                      Icons.workspace_premium_rounded,
+                      size: 22,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  const Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Apply to be an Expert',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 14.5,
+                            fontWeight: FontWeight.w800,
+                            color: Colors.white,
+                          ),
+                        ),
+                        SizedBox(height: 2),
+                        Text(
+                          'Host paid 1-on-1 mentorship calls',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(fontSize: 12, color: Colors.white),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  Container(
+                    width: 28,
+                    height: 28,
+                    decoration: const BoxDecoration(
+                      color: Colors.white,
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.arrow_forward_rounded,
+                      size: 16,
+                      color: AppColors.accent,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),

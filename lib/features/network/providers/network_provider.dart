@@ -42,6 +42,14 @@ final featuredExpertsProvider = FutureProvider<List<UserProfile>>((ref) async {
 
 /// Provider for list of candidate's active connection user IDs
 /// (Rebuilt on logout / account switch; no request without a session.)
+/// Who viewed the signed-in user's profile (profile Analytics).
+final profileViewersProvider = FutureProvider.autoDispose<List<UserProfile>>((
+  ref,
+) {
+  if (ref.watch(sessionUserIdProvider) == null) return const <UserProfile>[];
+  return ref.watch(networkRepositoryProvider).getProfileViewers();
+});
+
 final connectionsProvider = FutureProvider<List<String>>((ref) {
   if (ref.watch(sessionUserIdProvider) == null) return const <String>[];
   return ref.watch(networkRepositoryProvider).getConnections();

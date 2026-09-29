@@ -509,22 +509,23 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                                           backgroundColor:
                                               AppColors.primaryLight,
                                           radius: 24,
-                                          backgroundImage: avatarUrl.isNotEmpty
+                                          foregroundImage: avatarUrl.isNotEmpty
                                               ? NetworkImage(avatarUrl)
                                               : null,
-                                          child: avatarUrl.isNotEmpty
-                                              ? null
-                                              : Text(
-                                                  displayName.isNotEmpty
-                                                      ? displayName[0]
-                                                            .toUpperCase()
-                                                      : 'U',
-                                                  style: const TextStyle(
-                                                    color: AppColors.primary,
-                                                    fontWeight: FontWeight.w800,
-                                                    fontSize: 16,
-                                                  ),
-                                                ),
+                                          onForegroundImageError:
+                                              avatarUrl.isNotEmpty
+                                              ? (_, _) {}
+                                              : null,
+                                          child: Text(
+                                            displayName.isNotEmpty
+                                                ? displayName[0].toUpperCase()
+                                                : 'U',
+                                            style: const TextStyle(
+                                              color: AppColors.primary,
+                                              fontWeight: FontWeight.w800,
+                                              fontSize: 16,
+                                            ),
+                                          ),
                                         ),
                                         const SizedBox(width: 14),
                                         Expanded(

@@ -20,6 +20,7 @@ import '../../network/providers/network_provider.dart';
 import '../providers/profile_jobs_provider.dart';
 import 'widgets/open_to_sheets.dart';
 import 'widgets/edit_public_url_dialog.dart';
+import 'widgets/profile_analytics_card.dart';
 import '../../../shared/widgets/app_dialog.dart';
 import '../../../shared/widgets/sheet_drag_handle.dart';
 import '../../../shared/widgets/pressable_scale.dart';
@@ -4014,19 +4015,17 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                           child: CircleAvatar(
                             radius: 42,
                             backgroundColor: AppColors.heroBg,
-                            backgroundImage: hasAvatar
+                            foregroundImage: hasAvatar
                                 ? NetworkImage(profileImage)
                                 : null,
-                            onBackgroundImageError: hasAvatar
+                            onForegroundImageError: hasAvatar
                                 ? (_, _) {}
                                 : null,
-                            child: !hasAvatar
-                                ? const Icon(
-                                    Icons.person_rounded,
-                                    size: 48,
-                                    color: Colors.white,
-                                  )
-                                : null,
+                            child: const Icon(
+                              Icons.person_rounded,
+                              size: 48,
+                              color: Colors.white,
+                            ),
                           ),
                         ),
                       ),
@@ -5194,111 +5193,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  // -------------------------------------------------------------------
-  // ANALYTICS CARD WIDGET
-  // -------------------------------------------------------------------
-  /// Analytics in the secondary font (Inter), per brand spec.
-  Widget _buildAnalyticsCard(UserProfile? user) {
-    return DefaultTextStyle.merge(
-      style: const TextStyle(fontFamily: AppFonts.secondary),
-      child: _buildAnalyticsCardContent(user),
-    );
-  }
-
-  Widget _buildAnalyticsCardContent(UserProfile? user) {
-    return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.border),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: const [
-              Text(
-                'Analytics',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
-              ),
-              SizedBox(width: 6),
-              Icon(
-                Icons.visibility_off_outlined,
-                size: 14,
-                color: AppColors.textLight,
-              ),
-              SizedBox(width: 4),
-              Text(
-                'Private To You',
-                style: TextStyle(fontSize: 11, color: AppColors.textLight),
-              ),
-            ],
-          ),
-          const SizedBox(height: 14),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              _buildAnalyticsMetric(
-                '${user?.profileViewsCount ?? 0} Profile Views',
-                "Discover who's viewed your profile",
-                Icons.bar_chart_rounded,
-              ),
-              _buildAnalyticsMetric(
-                '${user?.postImpressionsCount ?? 0} Post Impressions',
-                "Check out who's engaging",
-                Icons.ssid_chart_rounded,
-              ),
-              _buildAnalyticsMetric(
-                '${user?.searchAppearancesCount ?? 0} Search Appearances',
-                'How often you appear',
-                Icons.search_rounded,
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildAnalyticsMetric(String title, String subtitle, IconData icon) {
-    return Expanded(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(icon, size: 16, color: AppColors.primary),
-              const SizedBox(width: 4),
-              Expanded(
-                child: Text(
-                  title,
-                  style: const TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w800,
-                    color: AppColors.textPrimary,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 2),
-          Text(
-            subtitle,
-            style: const TextStyle(
-              fontSize: 10,
-              color: AppColors.textSecondary,
-            ),
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ],
       ),
     );
   }
@@ -7060,7 +6954,17 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                           // 5. Analytics Card - Private To You (media_1789560057892.png)
                           FadeSlideIn(
                             index: 3,
-                            child: _buildAnalyticsCard(user),
+                            child: DefaultTextStyle.merge(
+                              // Secondary font (Inter), per brand spec
+                              style: const TextStyle(
+                                fontFamily: AppFonts.secondary,
+                              ),
+                              child: ProfileAnalyticsCard(
+                                user: user,
+                                onViewersTap: () =>
+                                    context.push('/profile-viewers'),
+                              ),
+                            ),
                           ),
 
                           const SizedBox(height: 16),

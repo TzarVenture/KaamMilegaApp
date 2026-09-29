@@ -103,6 +103,25 @@ class ApiConstants {
       '/user/bookmarks'; // GET (not used, see note)
   static const String userSearch = '/user/search'; // GET ?q=
   static const String userById = '/user/'; // GET, append :id
+  // InstantMilega for workers (login required)
+  static const String instantCandidateStatus =
+      '/instant-work/candidate/status'; // GET
+  static const String instantAvailability =
+      '/instant-work/availability'; // POST online / offline
+  static const String instantLocation =
+      '/instant-work/location'; // POST {lat, lng} while online
+  static const String instantPassPayWallet =
+      '/instant-work/pass/pay-wallet'; // POST (₹99 InstantPass)
+  static const String instantCandidateFeed =
+      '/instant-work/candidate/feed'; // GET ?lat&lng&radius_km&skill
+  static const String instantClaim = '/instant-work/claim'; // POST {job_id}
+  static const String instantActiveJob =
+      '/instant-work/candidate/active-job'; // GET (null = none)
+  static const String instantJobs = '/instant-work/jobs/'; // PUT :id/complete
+  // Profile analytics
+  static const String userViewers = '/user/viewers'; // GET who viewed me
+  static const String userImpressions =
+      '/user/impressions'; // POST {author_ids}
   static const String applicationCheck =
       '/applications/check/'; // GET, append :jobId
 
@@ -114,6 +133,15 @@ class ApiConstants {
   // Public people list shown on the website home ("Connect Just Like You")
   static const String communityUsers = '/community/users'; // GET
   static const String experts = '/experts'; // GET public list of experts
+  // Pro Expert plans (Apply to be an Expert)
+  static const String expertPlans = '/subscriptions/expert/plans'; // GET
+  static const String expertSubscriptionMy = '/subscriptions/expert/my';
+  static const String expertSubscriptionCreateOrder =
+      '/subscriptions/expert/create-order'; // POST {plan_type}
+  static const String expertSubscriptionVerify =
+      '/subscriptions/expert/verify-payment'; // POST
+  static const String expertSubscriptionWalletCheckout =
+      '/subscriptions/expert/wallet-checkout'; // POST {plan_type}
   static const String companiesTop =
       '/companies/top'; // GET ?limit= public employers
   static const String networkAccept = '/network/accept';

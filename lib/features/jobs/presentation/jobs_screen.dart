@@ -19,6 +19,7 @@ import '../providers/jobs_provider.dart';
 import '../../../shared/widgets/network_state_view.dart';
 import 'widgets/filter_modal.dart';
 import 'widgets/job_card.dart';
+import 'widgets/jobs_hero_card.dart';
 import 'widgets/pagination_bar.dart';
 import 'widgets/promo_banner.dart';
 import '../../../shared/widgets/fade_slide_in.dart';
@@ -365,396 +366,87 @@ class _JobsScreenState extends ConsumerState<JobsScreen> {
                 ),
               ),
 
-            // ============================================================
-            // 1. HERO HEADER CARD (Matching Web Screenshot)
-            // ============================================================
+            // Navy intro card (scrolls away; the toolbar below stays)
             SliverToBoxAdapter(
-              child: Container(
-                margin: const EdgeInsets.fromLTRB(16, 14, 16, 12),
-                padding: const EdgeInsets.all(22),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      Color(0xFF030712),
-                      AppColors.textPrimary,
-                      Color(0xFF0B193D),
+              child: JobsHeroCard(
+                // The total is shown only when it means "all open jobs"
+                openJobs:
+                    jobsState.isLoading ||
+                        activeFilters > 0 ||
+                        filter.searchQuery.isNotEmpty ||
+                        filter.city != 'All'
+                    ? null
+                    : jobsState.totalJobs,
+                savedCount: jobsState.savedJobIds.length,
+                onSavedJobs: () => context.push('/saved-jobs'),
+              ),
+            ),
+
+            // ============================================================
+            // COMPACT TOOLBAR: job count, sort and filters (stays on top)
+            // ============================================================
+            SliverPersistentHeader(
+              pinned: true,
+              delegate: _PinnedBarDelegate(
+                height:
+                    58 *
+                    MediaQuery.textScalerOf(context)
+                        .scale(1)
+                        .clamp(1.0, 1.6)
+                        .toDouble(),
+                child: _buildToolbar(
+                  countLabel: jobsState.isLoading
+                      ? 'Loading jobs...'
+                      : _jobCountLabel(
+                          _filterSavedOnly
+                              ? displayedJobs.length
+                              : jobsState.totalJobs,
+                        ),
+                  activeFilters: activeFilters,
+                ),
+              ),
+            ),
+
+            // Active search / city / saved-only, with a way to change it
+            if (filter.searchQuery.isNotEmpty ||
+                filter.city != 'All' ||
+                _filterSavedOnly)
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
+                  child: Wrap(
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    spacing: 6,
+                    children: [
+                      Text(
+                        'Filtered by: '
+                        '${filter.searchQuery.isNotEmpty ? '"${filter.searchQuery}" ' : ''}'
+                        '${filter.city != 'All' ? 'in ${filter.city} ' : ''}'
+                        '${_filterSavedOnly ? '• Saved Only' : ''}',
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: AppColors.textSecondary,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      if (filter.city != 'All')
+                        GestureDetector(
+                          onTap: () => _openCitySelector(filter.city),
+                          child: const Text(
+                            '(Change City)',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w800,
+                              color: AppColors.primary,
+                            ),
+                          ),
+                        ),
                     ],
                   ),
-                  borderRadius: BorderRadius.circular(24),
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color(0xFF030712).withValues(alpha: 0.25),
-                      blurRadius: 16,
-                      offset: const Offset(0, 6),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Top pill: Verified Indian Employment Portal
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 6,
-                      ),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF1E293B).withValues(alpha: 0.7),
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(
-                          color: const Color(0xFF38BDF8).withValues(alpha: 0.3),
-                        ),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: const [
-                          Icon(
-                            Icons.verified_user_rounded,
-                            color: Color(0xFFFBBF24),
-                            size: 14,
-                          ),
-                          SizedBox(width: 6),
-                          Text(
-                            'Verified Indian Employment Portal',
-                            style: TextStyle(
-                              color: AppColors.border,
-                              fontSize: 11.5,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    const SizedBox(height: 16),
-
-                    // Main Headline: Find Jobs & Connect Direct
-                    const Text(
-                      'Find Jobs & Connect Direct',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 24,
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: -0.5,
-                        height: 1.2,
-                      ),
-                    ),
-
-                    const SizedBox(height: 10),
-
-                    // Subtitle
-                    const Text(
-                      'Direct candidate-to-recruiter hiring with 1-click apply and real-time interview management.',
-                      style: TextStyle(
-                        color: Color(0xFF94A3B8),
-                        fontSize: 12.5,
-                        height: 1.45,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-
-                    const SizedBox(height: 18),
-
-                    // 3 Metric Badges
-                    Wrap(
-                      spacing: 16,
-                      runSpacing: 10,
-                      children: [
-                        _buildHeroMetric(
-                          icon: Icons.trending_up_rounded,
-                          color: const Color(0xFF34D399),
-                          // Real total from the server (was a made-up "1,250+")
-                          text: '${jobsState.totalJobs} Active Listings',
-                        ),
-                        _buildHeroMetric(
-                          icon: Icons.apartment_rounded,
-                          color: const Color(0xFF60A5FA),
-                          text: 'Verified Companies',
-                        ),
-                        _buildHeroMetric(
-                          icon: Icons.bolt_rounded,
-                          color: const Color(0xFFFBBF24),
-                          text: 'Instant Application',
-                        ),
-                      ],
-                    ),
-
-                    const SizedBox(height: 20),
-
-                    // Saved Jobs Button
-                    InkWell(
-                      onTap: () {
-                        context.push('/saved-jobs');
-                      },
-                      borderRadius: BorderRadius.circular(12),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 10,
-                        ),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF1E293B).withValues(alpha: 0.8),
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: const Color(0xFF475569)),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Icon(
-                              Icons.bookmark_rounded,
-                              color: Color(0xFFF59E0B),
-                              size: 18,
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              'Saved Jobs (${jobsState.savedJobIds.length})',
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 13,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                            const SizedBox(width: 4),
-                            const Icon(
-                              Icons.chevron_right_rounded,
-                              color: Colors.white70,
-                              size: 18,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
                 ),
               ),
-            ),
 
-            // ============================================================
-            // 2. POSITIONS COUNT & FILTER CARD (Matching Web Screenshot)
-            // ============================================================
-            SliverToBoxAdapter(
-              child: Container(
-                margin: const EdgeInsets.fromLTRB(16, 0, 16, 10),
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: AppColors.border),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.02),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // "Showing [N] Available Positions"
-                    Text.rich(
-                      TextSpan(
-                        style: const TextStyle(
-                          fontSize: 16.5,
-                          color: AppColors.textPrimary,
-                          fontWeight: FontWeight.w900,
-                          letterSpacing: -0.3,
-                        ),
-                        children: [
-                          const TextSpan(text: 'Showing  '),
-                          TextSpan(
-                            text: jobsState.isLoading
-                                ? '...'
-                                : '${displayedJobs.length} Available Positions',
-                            style: const TextStyle(
-                              color: AppColors.navy,
-                              fontWeight: FontWeight.w900,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    const SizedBox(height: 14),
-
-                    // Sort & Filter Action Pills (Responsive Wrap to prevent any overflow)
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      crossAxisAlignment: WrapCrossAlignment.center,
-                      children: [
-                        // 1. Sort Dropdown Pill
-                        PopupMenuButton<String>(
-                          onSelected: (val) {
-                            setState(() => _selectedSort = val);
-                          },
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          itemBuilder: (ctx) => [
-                            const PopupMenuItem(
-                              value: 'Newest First',
-                              child: Text(
-                                'Newest First',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.w700,
-                                  fontSize: 13,
-                                ),
-                              ),
-                            ),
-                            const PopupMenuItem(
-                              value: 'Highest Salary',
-                              child: Text(
-                                'Highest Salary',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.w700,
-                                  fontSize: 13,
-                                ),
-                              ),
-                            ),
-                            const PopupMenuItem(
-                              value: 'Lowest Salary',
-                              child: Text(
-                                'Lowest Salary',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.w700,
-                                  fontSize: 13,
-                                ),
-                              ),
-                            ),
-                            const PopupMenuItem(
-                              value: 'Most Vacancies',
-                              child: Text(
-                                'Most Vacancies',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.w700,
-                                  fontSize: 13,
-                                ),
-                              ),
-                            ),
-                          ],
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 8,
-                            ),
-                            decoration: BoxDecoration(
-                              color: AppColors.background,
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(color: AppColors.border),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const Icon(
-                                  Icons.swap_vert_rounded,
-                                  size: 16,
-                                  color: Color(0xFF334155),
-                                ),
-                                const SizedBox(width: 4),
-                                Text(
-                                  'Sort: $_selectedSort',
-                                  style: const TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w700,
-                                    color: Color(0xFF334155),
-                                  ),
-                                ),
-                                const SizedBox(width: 4),
-                                const Icon(
-                                  Icons.keyboard_arrow_down_rounded,
-                                  size: 16,
-                                  color: AppColors.textSecondary,
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-
-                        // 2. Filters Pill Button
-                        InkWell(
-                          onTap: _openFilters,
-                          borderRadius: BorderRadius.circular(12),
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 14,
-                              vertical: 8,
-                            ),
-                            decoration: BoxDecoration(
-                              color: AppColors.primaryLight,
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(
-                                color: const Color(0xFFBFDBFE),
-                              ),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const Icon(
-                                  Icons.tune_rounded,
-                                  size: 15,
-                                  color: AppColors.blue,
-                                ),
-                                const SizedBox(width: 5),
-                                Text(
-                                  activeFilters > 0
-                                      ? 'Filters ($activeFilters)'
-                                      : 'Filters',
-                                  style: const TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w800,
-                                    color: AppColors.blue,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-
-                    // City / Search Indicator if active
-                    if (filter.searchQuery.isNotEmpty ||
-                        filter.city != 'All' ||
-                        _filterSavedOnly)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 10),
-                        child: Wrap(
-                          crossAxisAlignment: WrapCrossAlignment.center,
-                          spacing: 6,
-                          children: [
-                            Text(
-                              'Filtered by: '
-                              '${filter.searchQuery.isNotEmpty ? '"${filter.searchQuery}" ' : ''}'
-                              '${filter.city != 'All' ? 'in ${filter.city} ' : ''}'
-                              '${_filterSavedOnly ? '• Saved Only' : ''}',
-                              style: const TextStyle(
-                                fontSize: 11.5,
-                                color: AppColors.textSecondary,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                            if (filter.city != 'All')
-                              GestureDetector(
-                                onTap: () => _openCitySelector(filter.city),
-                                child: const Text(
-                                  '(Change City)',
-                                  style: TextStyle(
-                                    fontSize: 11.5,
-                                    fontWeight: FontWeight.w800,
-                                    color: AppColors.primary,
-                                  ),
-                                ),
-                              ),
-                          ],
-                        ),
-                      ),
-                  ],
-                ),
-              ),
-            ),
+            const SliverToBoxAdapter(child: SizedBox(height: 6)),
 
             // Inline Error Banner if jobs exist but last action failed
             if (jobsState.errorMessage != null && jobsState.jobs.isNotEmpty)
@@ -964,13 +656,11 @@ class _JobsScreenState extends ConsumerState<JobsScreen> {
               SliverList(
                 delegate: SliverChildBuilderDelegate((context, index) {
                   final job = displayedJobs[index];
-                  final isTopMatch = filter.page == 1 && index == 0;
 
                   return FadeSlideIn(
                     index: index,
                     child: JobCard(
                       job: job,
-                      isTopMatch: isTopMatch,
                       isApplying: _applyingJobId == job.id,
                       isApplied: appliedJobIds.contains(job.id),
                       isSaved: jobsState.savedJobIds.contains(job.id),
@@ -1004,25 +694,162 @@ class _JobsScreenState extends ConsumerState<JobsScreen> {
     );
   }
 
-  Widget _buildHeroMetric({
-    required IconData icon,
-    required Color color,
-    required String text,
+  static const Map<String, String> _sortShortLabels = {
+    'Newest First': 'Newest',
+    'Highest Salary': 'Highest pay',
+    'Lowest Salary': 'Lowest pay',
+    'Most Vacancies': 'Most openings',
+  };
+
+  static String _jobCountLabel(int count) =>
+      '$count ${count == 1 ? 'job' : 'jobs'}';
+
+  /// One slim bar: "12 jobs", sort menu and Filters (with active count).
+  Widget _buildToolbar({
+    required String countLabel,
+    required int activeFilters,
   }) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(icon, color: color, size: 16),
-        const SizedBox(width: 6),
-        Text(
-          text,
-          style: const TextStyle(
-            color: Color(0xFFF1F5F9),
-            fontSize: 12.5,
-            fontWeight: FontWeight.w600,
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        border: Border(bottom: BorderSide(color: AppColors.border)),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(
+              countLabel,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w800,
+                color: AppColors.textPrimary,
+              ),
+            ),
           ),
-        ),
-      ],
+          Flexible(
+            child: PopupMenuButton<String>(
+              tooltip: 'Sort jobs',
+              initialValue: _selectedSort,
+              onSelected: (val) => setState(() => _selectedSort = val),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14),
+              ),
+              itemBuilder: (ctx) => [
+                for (final option in _sortShortLabels.keys)
+                  PopupMenuItem(
+                    value: option,
+                    child: Text(
+                      option,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 13.5,
+                      ),
+                    ),
+                  ),
+              ],
+              child: _ToolbarPill(
+                icon: Icons.swap_vert_rounded,
+                label: _sortShortLabels[_selectedSort] ?? _selectedSort,
+                trailing: Icons.keyboard_arrow_down_rounded,
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          Flexible(
+            child: InkWell(
+              onTap: _openFilters,
+              borderRadius: BorderRadius.circular(10),
+              child: _ToolbarPill(
+                icon: Icons.tune_rounded,
+                label: activeFilters > 0
+                    ? 'Filters ($activeFilters)'
+                    : 'Filters',
+                highlighted: activeFilters > 0,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
+}
+
+/// Small rounded control used in the Jobs toolbar.
+class _ToolbarPill extends StatelessWidget {
+  const _ToolbarPill({
+    required this.icon,
+    required this.label,
+    this.trailing,
+    this.highlighted = false,
+  });
+
+  final IconData icon;
+  final String label;
+  final IconData? trailing;
+  final bool highlighted;
+
+  @override
+  Widget build(BuildContext context) {
+    final color = highlighted ? AppColors.blue : AppColors.textPrimary;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+      decoration: BoxDecoration(
+        color: highlighted ? AppColors.primaryLight : AppColors.background,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(
+          color: highlighted ? AppColors.primaryLightBorder : AppColors.border,
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 16, color: color),
+          const SizedBox(width: 5),
+          Flexible(
+            child: Text(
+              label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: 12.5,
+                fontWeight: FontWeight.w700,
+                color: color,
+              ),
+            ),
+          ),
+          if (trailing != null) ...[
+            const SizedBox(width: 2),
+            Icon(trailing, size: 16, color: AppColors.textSecondary),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+/// Keeps the toolbar visible at the top while the job list scrolls.
+class _PinnedBarDelegate extends SliverPersistentHeaderDelegate {
+  _PinnedBarDelegate({required this.height, required this.child});
+
+  final double height;
+  final Widget child;
+
+  @override
+  double get minExtent => height;
+
+  @override
+  double get maxExtent => height;
+
+  @override
+  Widget build(
+    BuildContext context,
+    double shrinkOffset,
+    bool overlapsContent,
+  ) => SizedBox.expand(child: child);
+
+  @override
+  bool shouldRebuild(_PinnedBarDelegate oldDelegate) => true;
 }

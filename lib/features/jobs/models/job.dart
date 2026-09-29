@@ -97,6 +97,64 @@ class Job {
     return 'Up to ₹${formatter.format(salaryMax)} / Month';
   }
 
+  /// True when the employer gave a salary.
+  bool get hasSalary => salaryMin > 0 || salaryMax > 0;
+
+  /// Short salary for list cards, e.g. "₹25K – ₹35K" or "₹1.2L – ₹1.5L"
+  /// (monthly), so the full range fits on a phone instead of being cut off.
+  String get compactSalary {
+    if (!hasSalary) return 'Salary disclosed at interview';
+    if (salaryMin > 0 && salaryMax > 0) {
+      if (salaryMin == salaryMax) return '₹${_shortAmount(salaryMin)}';
+      return '₹${_shortAmount(salaryMin)} – ₹${_shortAmount(salaryMax)}';
+    }
+    if (salaryMin > 0) return '₹${_shortAmount(salaryMin)}+';
+    return 'Up to ₹${_shortAmount(salaryMax)}';
+  }
+
+  /// 950 -> "950", 25000 -> "25K", 12500 -> "12.5K", 150000 -> "1.5L".
+  static String _shortAmount(int value) {
+    String trim(double v) {
+      final text = v.toStringAsFixed(1);
+      return text.endsWith('.0') ? text.substring(0, text.length - 2) : text;
+    }
+
+    if (value >= 100000) return '${trim(value / 100000)}L';
+    if (value >= 1000) return '${trim(value / 1000)}K';
+    return '$value';
+  }
+
+  /// Title for display. Titles typed in ALL CAPS are shown in normal case
+  /// ("DEV ENGINEER" -> "Dev Engineer"); short words such as "UI" or "HR"
+  /// keep their capitals. Other titles are shown as typed.
+  String get displayTitle {
+    final t = title.trim();
+    if (t.isEmpty || t != t.toUpperCase() || t == t.toLowerCase()) return t;
+    return t
+        .split(RegExp(r'\s+'))
+        .map((w) {
+          if (w.length <= 2) return w;
+          return w[0] + w.substring(1).toLowerCase();
+        })
+        .join(' ');
+  }
+
+  /// "Today", "1 day ago", "5 days ago", "2 weeks ago", then a date.
+  String get postedLabel {
+    final created = createdAt;
+    if (created == null) return '';
+    final days = DateTime.now().difference(created.toLocal()).inDays;
+    if (days < 0) return '';
+    if (days == 0) return 'Today';
+    if (days == 1) return '1 day ago';
+    if (days < 7) return '$days days ago';
+    if (days < 30) {
+      final weeks = days ~/ 7;
+      return weeks == 1 ? '1 week ago' : '$weeks weeks ago';
+    }
+    return DateFormat('d MMM yyyy').format(created.toLocal());
+  }
+
   /// Formatted experience string, e.g. "0-2 Yrs" or "Fresher"
   String get formattedExperience {
     if (experienceMin == 0 && experienceMax == 0) return 'Fresher';

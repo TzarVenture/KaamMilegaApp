@@ -46,6 +46,7 @@ import '../features/skills_marketplace/presentation/skills_marketplace_screen.da
 import '../features/experts/presentation/experts_screen.dart';
 import '../features/services/presentation/services_marketplace_screen.dart';
 import '../features/peer_to_peer/presentation/peer_to_peer_screen.dart';
+import '../features/profile/presentation/profile_viewers_screen.dart';
 
 /// Shortest time the Splash (brand) screen stays visible at app start.
 /// It only delays leaving Splash; Home vs Login is still decided by the
@@ -242,6 +243,11 @@ class AppRouter {
           title: title,
         );
       },
+    ),
+    GoRoute(
+      path: '/profile-viewers',
+      name: 'profile_viewers',
+      builder: (context, state) => const ProfileViewersScreen(),
     ),
     GoRoute(
       path: '/members/:id',

@@ -219,18 +219,21 @@ class _SessionCard extends StatelessWidget {
                 CircleAvatar(
                   radius: 16,
                   backgroundColor: AppColors.primaryLight,
-                  backgroundImage: booking.expertImage.isNotEmpty
+                  foregroundImage: booking.expertImage.isNotEmpty
                       ? NetworkImage(booking.expertImage)
                       : null,
-                  child: booking.expertImage.isEmpty
-                      ? Text(
-                          booking.expertName[0].toUpperCase(),
-                          style: const TextStyle(
-                            color: AppColors.primary,
-                            fontWeight: FontWeight.w800,
-                          ),
-                        )
+                  onForegroundImageError: booking.expertImage.isNotEmpty
+                      ? (_, _) {}
                       : null,
+                  child: Text(
+                    booking.expertName.trim().isNotEmpty
+                        ? booking.expertName.trim()[0].toUpperCase()
+                        : 'E',
+                    style: const TextStyle(
+                      color: AppColors.primary,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
                 ),
                 const SizedBox(width: 10),
                 Expanded(

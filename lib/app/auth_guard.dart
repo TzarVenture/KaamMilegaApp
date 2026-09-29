@@ -33,6 +33,7 @@ class AuthGuard {
     '/my-sessions', // booked mentorship sessions
     '/my-tickets', // event tickets
     '/members', // other members' profiles (GET /user/:id needs a login)
+    '/profile-viewers', // who viewed my profile (GET /user/viewers)
     '/network',
     '/apply-expert',
     '/settings',

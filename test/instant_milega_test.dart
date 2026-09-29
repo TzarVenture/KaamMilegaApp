@@ -1,16 +1,14 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kaam_milega/app/auth_guard.dart';
 import 'package:kaam_milega/app/theme/app_theme.dart';
-import 'package:kaam_milega/core/constants/map_config.dart';
 import 'package:kaam_milega/core/network/app_exception.dart';
 import 'package:kaam_milega/features/auth/providers/auth_provider.dart';
 import 'package:kaam_milega/features/instant_work/models/nearby_professional.dart';
-import 'package:kaam_milega/features/instant_work/presentation/widgets/instant_milega_map.dart';
+import 'package:kaam_milega/features/instant_work/presentation/widgets/instant_location_bar.dart';
 import 'package:kaam_milega/features/instant_work/presentation/widgets/nearby_professionals_section.dart';
 import 'package:kaam_milega/features/instant_work/providers/instant_milega_provider.dart';
 import 'package:kaam_milega/features/instant_work/repositories/nearby_professionals_repository.dart';
@@ -85,10 +83,7 @@ class _HostState extends ConsumerState<_Host> {
     return Scaffold(
       body: ListView(
         padding: const EdgeInsets.all(16),
-        children: const [
-          InstantMilegaMapSection(height: 220),
-          NearbyProfessionalsSection(),
-        ],
+        children: const [InstantLocationBar(), NearbyProfessionalsSection()],
       ),
     );
   }
@@ -99,7 +94,6 @@ Widget _app(LocationService location, NearbyProfessionalsRepository repo) {
     overrides: [
       locationServiceProvider.overrideWithValue(location),
       nearbyProfessionalsRepositoryProvider.overrideWithValue(repo),
-      mapTilesEnabledProvider.overrideWithValue(false),
     ],
     child: MaterialApp(theme: AppTheme.lightTheme, home: const _Host()),
   );
@@ -160,7 +154,7 @@ void main() {
     );
   });
 
-  testWidgets('while locating: loading state, no map yet', (tester) async {
+  testWidgets('while locating: loading state', (tester) async {
     final pending = Completer<LocationResult>();
     final location = _FakeLocation([() => pending.future]);
     await tester.pumpWidget(_app(location, _Repo(() async => const [])));
@@ -168,11 +162,10 @@ void main() {
     await tester.pump();
 
     expect(location.calls, 1);
-    expect(find.text('Finding your location…'), findsWidgets);
-    expect(find.byType(FlutterMap), findsNothing);
+    expect(find.text('Finding your location…'), findsOneWidget);
   });
 
-  testWidgets('location found: map with "My location"; backend pending', (
+  testWidgets('location found: shown with accuracy; backend pending', (
     tester,
   ) async {
     final location = _FakeLocation([_found]);
@@ -181,8 +174,6 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.byType(FlutterMap), findsOneWidget);
-    expect(find.byTooltip('My location'), findsOneWidget);
     expect(find.textContaining('Your current location'), findsOneWidget);
     expect(find.textContaining('about 25 m'), findsOneWidget);
     expect(
@@ -193,12 +184,11 @@ void main() {
       findsOneWidget,
     );
     expect(find.byType(ProfessionalCard), findsNothing);
-    expect(find.byType(ProfessionalMapPin), findsNothing);
 
-    // Recentering on the user does nothing harmful.
-    await tester.tap(find.byTooltip('My location'));
+    // "Update location" reads the location again.
+    await tester.tap(find.byTooltip('Update location'));
     await tester.pumpAndSettle();
-    expect(tester.takeException(), isNull);
+    expect(location.calls, 2);
   });
 
   testWidgets('permission denied: explained, and can be asked again', (
@@ -209,7 +199,6 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Location permission is off'), findsOneWidget);
-    expect(find.byType(FlutterMap), findsNothing);
     expect(
       find.text('Turn on location to see who is near you'),
       findsOneWidget,
@@ -260,7 +249,7 @@ void main() {
     await tester.tap(find.text('Retry'));
     await tester.pumpAndSettle();
     expect(location.calls, 2);
-    expect(find.byType(FlutterMap), findsOneWidget);
+    expect(find.textContaining('Your current location'), findsOneWidget);
   });
 
   testWidgets('a future API with no results: "no professionals nearby"', (
@@ -287,9 +276,7 @@ void main() {
     expect(repo.queries, hasLength(2));
   });
 
-  testWidgets('results render as cards and pins; category is sent', (
-    tester,
-  ) async {
+  testWidgets('results render as cards; category is sent', (tester) async {
     // Test fixture only (never used by the app).
     const fixture = NearbyProfessional(
       id: 'p1',
@@ -305,7 +292,6 @@ void main() {
     expect(find.byType(ProfessionalCard), findsOneWidget);
     expect(find.text('Fixture Person'), findsOneWidget);
     expect(find.text('1.2 km'), findsOneWidget);
-    expect(find.byType(ProfessionalMapPin), findsOneWidget);
     // No actions are offered until booking / profiles exist.
     expect(find.text('Book Now'), findsNothing);
     expect(repo.queries.single.categoryId, isNull);

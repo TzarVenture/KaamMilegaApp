@@ -621,15 +621,26 @@ void main() {
       await tester.tap(find.text('open'));
       await tester.pumpAndSettle();
 
-      final submit = find.text('Submit request');
-      await tester.ensureVisible(submit);
-      await tester.tap(submit);
+      // Submit stays off until a reason and 10+ characters are given
+      final submit = find.widgetWithText(ElevatedButton, 'Submit dispute');
+      expect(tester.widget<ElevatedButton>(submit).onPressed, isNull);
+
+      await tester.tap(find.text('Choose a reason'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Duplicate Deduction').last);
+      await tester.pumpAndSettle();
+      expect(
+        find.text('The amount was deducted more than once'),
+        findsOneWidget,
+      );
+
+      await tester.enterText(find.byType(TextField), 'Paid');
       await tester.pump();
-      expect(find.text('Please choose a reason.'), findsOneWidget);
+      expect(tester.widget<ElevatedButton>(submit).onPressed, isNull);
       expect(f.sent, isEmpty);
 
-      await tester.tap(find.text('Charged more than once'));
       await tester.enterText(find.byType(TextField), 'Paid twice');
+      await tester.pump();
       await tester.ensureVisible(submit);
       await tester.tap(submit);
       await tester.pumpAndSettle();
@@ -663,7 +674,7 @@ void main() {
       );
       expect(find.text('Event ticket'), findsOneWidget);
       expect(find.text('Approved'), findsOneWidget);
-      expect(find.text('Service was not provided'), findsOneWidget);
+      expect(find.text('Service / Mentorship Not Delivered'), findsOneWidget);
       expect(find.textContaining('Refund approved'), findsOneWidget);
       expect(find.textContaining('added to your wallet'), findsOneWidget);
     });
