@@ -4,7 +4,9 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/network/app_exception.dart';
+import '../../../core/payments/razorpay_checkout.dart';
 import '../../auth/providers/auth_provider.dart';
+import '../../wallet/models/wallet_summary.dart';
 import '../../wallet/providers/wallet_provider.dart';
 import '../models/instant_candidate.dart';
 import '../repositories/instant_candidate_repository.dart';
@@ -29,6 +31,12 @@ enum InstantActionOutcome {
 
 typedef InstantActionResult = ({InstantActionOutcome outcome, String message});
 
+/// Whether the pass can be paid online ([InstantPassTerms.onlinePaymentLive];
+/// replaced in tests).
+final instantPassOnlinePaymentProvider = Provider<bool>(
+  (ref) => InstantPassTerms.onlinePaymentLive,
+);
+
 @immutable
 class InstantCandidateState {
   const InstantCandidateState({
@@ -37,6 +45,7 @@ class InstantCandidateState {
     this.status,
     this.isBusy = false,
     this.skill = 'All',
+    this.pendingPayment,
   });
 
   final bool isLoading;
@@ -49,6 +58,10 @@ class InstantCandidateState {
   /// Primary trade sent with the availability ("All" or a trade name).
   final String skill;
 
+  /// An online pass payment Razorpay completed but the server has not
+  /// confirmed yet. Activation can be retried with it; never pay again.
+  final RazorpayResult? pendingPayment;
+
   InstantCandidateState copyWith({
     bool? isLoading,
     Object? error,
@@ -56,12 +69,17 @@ class InstantCandidateState {
     InstantCandidateStatus? status,
     bool? isBusy,
     String? skill,
+    RazorpayResult? pendingPayment,
+    bool clearPendingPayment = false,
   }) => InstantCandidateState(
     isLoading: isLoading ?? this.isLoading,
     error: clearError ? null : (error ?? this.error),
     status: status ?? this.status,
     isBusy: isBusy ?? this.isBusy,
     skill: skill ?? this.skill,
+    pendingPayment: clearPendingPayment
+        ? null
+        : (pendingPayment ?? this.pendingPayment),
   );
 }
 
@@ -253,6 +271,102 @@ class InstantCandidateNotifier extends Notifier<InstantCandidateState> {
             'We could not confirm your pass purchase. Please check your '
             'pass and wallet before trying again, so you are not charged '
             'twice.',
+      );
+    }
+  }
+
+  /// Pays for the InstantPass online: server order, Razorpay checkout,
+  /// then server verification. The pass is active only after the server
+  /// confirms it.
+  Future<InstantActionResult> buyPassOnline({
+    String? email,
+    String? contact,
+  }) async {
+    if (state.isBusy) {
+      return (outcome: InstantActionOutcome.failed, message: '');
+    }
+    state = state.copyWith(isBusy: true);
+    final repo = _repo;
+    final PaymentOrder order;
+    try {
+      order = await repo.createPassOrder();
+    } on AppAuthException catch (e) {
+      if (!ref.mounted) return _gone;
+      state = state.copyWith(isBusy: false);
+      return (outcome: InstantActionOutcome.failed, message: e.message);
+    } on AppException {
+      if (!ref.mounted) return _gone;
+      state = state.copyWith(isBusy: false);
+      return (
+        outcome: InstantActionOutcome.failed,
+        message:
+            'Online payment could not be started. No money was charged. '
+            'Please try again.',
+      );
+    }
+    if (!ref.mounted) return _gone;
+
+    final payment = await ref.read(paymentLauncherProvider)(
+      keyId: order.keyId,
+      orderId: order.orderId,
+      amountPaise: order.amountPaise,
+      description:
+          'InstantPass (${InstantPassTerms.gigs} gigs, '
+          '${InstantPassTerms.validityDays} days)',
+      email: email,
+      contact: contact,
+    );
+    if (payment.cancelled || !payment.success) {
+      if (ref.mounted) state = state.copyWith(isBusy: false);
+      return (
+        outcome: InstantActionOutcome.failed,
+        message: payment.cancelled
+            ? 'Payment cancelled. No money was charged.'
+            : (payment.errorMessage ?? 'Payment failed.'),
+      );
+    }
+    return _verifyPayment(repo, payment);
+  }
+
+  /// Retries server activation of a payment Razorpay already completed.
+  Future<InstantActionResult> retryPassActivation() async {
+    final payment = state.pendingPayment;
+    if (payment == null || state.isBusy) {
+      return (outcome: InstantActionOutcome.failed, message: '');
+    }
+    state = state.copyWith(isBusy: true);
+    return _verifyPayment(_repo, payment);
+  }
+
+  Future<InstantActionResult> _verifyPayment(
+    InstantCandidateRepository repo,
+    RazorpayResult payment,
+  ) async {
+    try {
+      await repo.verifyPassPayment(
+        orderId: payment.orderId,
+        paymentId: payment.paymentId,
+        signature: payment.signature,
+      );
+      if (!ref.mounted) return _gone;
+      state = state.copyWith(isBusy: false, clearPendingPayment: true);
+      _afterPurchase();
+      return (
+        outcome: InstantActionOutcome.success,
+        message:
+            'Payment verified. InstantPass is active: '
+            '${InstantPassTerms.gigs} gigs.',
+      );
+    } on AppException catch (e) {
+      if (!ref.mounted) return _gone;
+      state = state.copyWith(isBusy: false, pendingPayment: payment);
+      return (
+        outcome: InstantActionOutcome.unknown,
+        message:
+            'Your payment was received but the pass could not be activated '
+            'yet (${e.message}). Please do not pay again. Payment ID: '
+            '${payment.paymentId}. Try again, or contact support with this '
+            'ID.',
       );
     }
   }

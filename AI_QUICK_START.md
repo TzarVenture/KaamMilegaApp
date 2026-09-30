@@ -1,8 +1,15 @@
 # KaamMilega AI Quick Start
 
-> Backend re-checked 26 Sep 2026: `main` @ `51c8e10`; new expert subscription API not integrated (API_CONTRACT §9b).
-> Last Audited: 25 September 2026 · branch `feat/ui-ux-polish` @ `eaf5dc8` · backend `km-backend` @ `b5a2956` (Batch 7 contracts re-checked @ `51c8e10`).
-> **Updated 25 Sep 2026 after fix Batches 1–7** (uncommitted). Format/analyze/test pass (172 tests, 25 Sep 16:04); phone testing is **pending** — see [KNOWN_ISSUES.md § Verification log](KNOWN_ISSUES.md#verification-log). Source code wins over docs.
+> **Last updated: 30 September 2026** · app branch `feat/map-location-integration` @ `0fa522f` + uncommitted 29–30 Sep work · backend monorepo `main` @ `5e57311` (read-only). Source code wins over docs.
+> Last test run (29 Sep): `flutter analyze` no issues, `flutter test` +309 −1 (test-setup fix applied, re-run pending). Phone testing of the 26–30 Sep work is **pending** — [KNOWN_ISSUES.md § Verification log](KNOWN_ISSUES.md#verification-log).
+
+## Status at a glance (30 Sep 2026)
+- **Done:** auth + guest mode; jobs (search, voice search, filters, hero card, apply, saved); applications; interviews; profile (all sections, analytics, profile viewers); network + People You May Know card grid + member profiles; real-time chat (reconnect fixed 29 Sep, avatars); experts (booking, paid sessions, Pro Expert plans, My Booked Sessions, upcoming-call banner, ratings); events (register, paid tickets, My Tickets); Instant Milega (availability, InstantPass via wallet, Spot Gigs, active gig); wallet (balances, history, add money, withdraw request, refunds & disputes); settings; offline handling.
+- **Waiting for checks:** run `dart format . && flutter analyze && flutter test` for the 30 Sep People You May Know grid; phone-test live chat; Razorpay TEST-mode runs (top-up, sessions, Pro Expert, event tickets).
+- **Pending (app work):** event attendee list (backend ready), InstantPass by Razorpay, Home ₹99 banner decision, old Instant Work filter chips (M-01), fallback labels/cities (M-02/M-03), profile link `/in/` vs `/profile/` (M-05), jobs cache per filter (M-09), secure token storage (M-10), Android release signing, iOS signing.
+- **Pending (backend first):** in-app notifications, wallet transfer, feed, services marketplace, resume field, push (FCM), chat unread counts, bank verification / automatic payouts, nearby professionals API, plus backend bugs B-01…B-16.
+- **Open decisions:** rename "Instant UPI" → "UPI" on withdraw screen (offered, not confirmed).
+- Details: [FEATURE_STATUS.md](FEATURE_STATUS.md) (per feature) · [KNOWN_ISSUES.md](KNOWN_ISSUES.md) (bugs + 26–30 Sep work log) · [flutter_app_feature_tracker.md](flutter_app_feature_tracker.md) (sheet view).
 
 ## What is this project?
 KaamMilega is an Indian jobs and gig-work platform. This repo is its Flutter mobile app for candidates, guests and gig workers: jobs, applications, profile, networking, chat, experts/mentorship, events, skills and a Razorpay-backed wallet. All data comes from the separate Go backend `km-backend` (`https://api.kaammilega.com/api`), which is never edited from here.
@@ -60,43 +67,44 @@ Phone OTP (`/auth/otp/send` → `/auth/otp/verify`) or email+password. JWT saved
 GoRouter with one redirect (`AuthGuard.redirect`). Tabs `/home`, `/jobs`, `/chats`, `/profile` share `MainNavigationShell` (IndexedStack; centre "+" = quick actions). Other screens are pushed routes. Full table: architecture.md §8.
 
 ## API
-All paths in `api_constants.dart`, called through `ApiClient` from repositories. Errors become `AppException` subclasses (401/403 auth, 404 not found → "coming soon", 5xx server, others validation). Chat realtime uses `wss://…/api/ws/chats?token=…` with `NEW_MESSAGE` events.
+All paths in `api_constants.dart`, called through `ApiClient` from repositories. Errors become `AppException` subclasses (401/403 auth, 404 not found → "coming soon", 5xx server, others validation). Chat realtime uses `wss://…/api/ws/chats?token=…` with `NEW_MESSAGE` events — one socket per account, 20 s ping, endless backoff reconnect (architecture.md §12).
 
 ## Major features
 | Feature | Status |
 |---|---|
-| Login (OTP, email), reset password, settings | Implemented |
-| New-user registration after OTP (`/complete-profile`) | Implemented (Batch 1) |
-| Jobs list/filter/detail/apply | Implemented |
-| Saved jobs (loaded by ID) | Implemented (Batch 6) |
+| Login (OTP, email), reset password, settings, session expiry | Implemented |
+| New-user registration after OTP (`/complete-profile`) | Implemented |
+| Jobs list/filter/detail/apply, blue hero card, voice search, filter reset from Home | Implemented |
+| Home: horizontal quick actions + Popular Categories, featured companies | Implemented (₹99 banner still coming soon) |
+| Saved jobs (loaded by ID) | Implemented |
 | Applications, interviews | Implemented |
-| Profile (intro, photos, projects, analytics) | Implemented |
-| Education / experience edit & delete (7a) | Implemented |
-| Remove skill (7b) | Implemented; names with spaces or "/" fail on backend (B-07) |
-| My Sessions `/my-sessions` (7c) + rate a completed session | Implemented |
-| Open To Work / Providing Services sheets (7d) | Implemented, **awaiting verification** |
-| Profile viewers (7e) | **Blocked** — backend returns private fields (B-08) |
-| Network, chat (WebSocket) | Implemented |
-| Experts, free & paid bookings | Implemented |
-| Events + registration | Implemented |
+| Profile (intro, photos, education/experience/skills/projects, analytics) | Implemented |
+| Profile viewers `/profile-viewers` | Implemented (backend also sends private fields — B-08) |
+| Open To Work / Providing Services sheets | Implemented, **awaiting verification** |
+| Network, member profile `/members/:id`, People You May Know grid | Implemented (grid 30 Sep, tests not run yet) |
+| Chat (REST + WebSocket), avatars | Implemented (reconnect fix 29 Sep) |
+| Experts, free & paid bookings, Pro Expert plans | Implemented |
+| My Booked Sessions `/my-sessions` + upcoming-call banner + rating | Implemented |
+| Events + registration + paid tickets + My Tickets | Implemented (attendee list pending) |
+| Instant Milega: availability, InstantPass (wallet), Spot Gigs, active gig | Implemented (map removed; nearby professionals coming soon) |
 | Skills marketplace | Implemented |
-| Wallet balance / history / add money / withdraw | Implemented (withdraw: Batch 2, no real payout tested) |
-| Wallet transfer, notifications, feed, services, ₹99 pass, gig dispatch, company pages | Coming soon (backend missing) |
+| Wallet balance / history / add money / withdraw / refunds & disputes | Implemented (no real payout or refund made in testing) |
+| Wallet transfer, notifications, feed, services, company pages | Coming soon (backend missing) |
 Full matrix: [FEATURE_STATUS.md](FEATURE_STATUS.md).
 
 ## Real vs hardcoded data
-- **Real backend:** jobs, applications, interviews, profile, network, chat, events, experts, skills, wallet.
-- **Local device:** guest bookmarks, resume URL, gig availability, old phone-only Open To text (read only), offline caches (jobs, applications — offline only, wallet, user).
+- **Real backend:** jobs, applications, interviews, profile, analytics, viewers, network, community members, chat, events + tickets, experts + subscriptions, Instant Milega, skills, wallet + disputes, top companies.
+- **Local device:** guest bookmarks, resume URL, old phone-only Open To text (read only), offline caches (jobs, applications — offline only, wallet, user). Gig availability is now real (`/instant-work/availability`).
 - **Hard-coded content:** home banners/categories, ₹99 benefits, explore modules, services categories, "coming soon" screens.
 - **Mock:** none known (removed in Batch 3; `CompanyScreen` now "Coming Soon").
 - **Website-confirmed constants:** Open To job types (`Full-time, Part-time, Contract, Freelance, Hourly`), visibility (`all`/`recruiters`), currency `INR`.
 - **Fallback:** hard-coded 10 cities on `/cities` failure; default expert rating 5.0 / labels; event/interview/application placeholder labels.
 
 ## Known important issues
-See [KNOWN_ISSUES.md](KNOWN_ISSUES.md) — open: H-02 remainder, M-01…M-03, M-05, M-07, M-09…M-11, L-01…L-07; backend: B-01…B-10 (incl. B-07 skill-name decoding, B-08 viewers privacy).
+See [KNOWN_ISSUES.md](KNOWN_ISSUES.md) — open (Flutter): H-02 remainder, M-01…M-03, M-05, M-07, M-09…M-11, L-01…L-07. Backend: B-01…B-16 — most important: B-11 chat hub (one socket per user), B-12 InstantPass / spot-gig money bugs, B-14 secrets committed in `docker-compose.yml`, B-08/B-04 private fields in public lists.
 
 ## Pending work
-See [FEATURE_STATUS.md](FEATURE_STATUS.md) ("Pending Work" column separates Flutter / Backend / Nowhere).
+Summary above ("Status at a glance"); full list in [FEATURE_STATUS.md](FEATURE_STATUS.md) § Summary ("Pending Work" column separates Flutter / Backend / Nowhere).
 
 ## API reference
 See [API_CONTRACT.md](API_CONTRACT.md) (verified requests/responses + mismatch table).
@@ -109,7 +117,8 @@ See [architecture.md](architecture.md) (§21 "Where do I change this?").
 - Do not guess.
 - Do not invent APIs.
 - Do not create fake production data.
-- Do not modify backend unless explicitly requested.
+- Do not modify backend unless explicitly requested (the backend is developed by another developer; read the latest `main` only).
+- The app is for candidates, guests and gig workers — not recruiters.
 - Reuse existing architecture.
 - Make minimal scoped changes.
 - Test before finishing.

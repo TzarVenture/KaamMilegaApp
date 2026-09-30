@@ -843,10 +843,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       },
     ];
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+    return _HorizontalStrip(
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        spacing: 18,
         children: actions.map((item) {
           final label = item['label'] as String;
           final icon = item['icon'] as IconData;
@@ -958,10 +958,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           ),
         ),
         const SizedBox(height: 12),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
+        _HorizontalStrip(
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            spacing: 18,
             children: categories.map((cat) {
               final name = cat['name'] as String;
               final icon = cat['icon'] as IconData;
@@ -1832,6 +1832,33 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           );
         }),
       ],
+    );
+  }
+}
+
+/// A row that spreads its items across the screen like before, and
+/// scrolls sideways when they do not fit (small phones, large text).
+class _HorizontalStrip extends StatelessWidget {
+  const _HorizontalStrip({required this.child});
+
+  final Widget child;
+
+  static const double _sidePadding = 16;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) => SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: _sidePadding),
+        child: ConstrainedBox(
+          // At least the screen width, so items stay spread out when they fit
+          constraints: BoxConstraints(
+            minWidth: constraints.maxWidth - _sidePadding * 2,
+          ),
+          child: child,
+        ),
+      ),
     );
   }
 }

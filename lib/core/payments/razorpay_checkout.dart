@@ -1,6 +1,22 @@
 import 'dart:async';
 
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:razorpay_flutter/razorpay_flutter.dart';
+
+/// Opens a Razorpay checkout; [RazorpayCheckout.pay] in the app, replaced
+/// in tests so no real checkout is ever opened.
+typedef PaymentLauncher = Future<RazorpayResult> Function({
+  required String keyId,
+  required String orderId,
+  required int amountPaise,
+  required String description,
+  String? email,
+  String? contact,
+});
+
+final paymentLauncherProvider = Provider<PaymentLauncher>(
+  (ref) => RazorpayCheckout.pay,
+);
 
 /// Result of one Razorpay checkout attempt.
 class RazorpayResult {

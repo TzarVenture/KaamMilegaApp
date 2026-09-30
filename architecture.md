@@ -3,14 +3,14 @@
 > **IMPORTANT:**
 > This document describes the current implementation and must be updated after significant architectural or feature changes.
 >
-> **Last Audited:** 25 September 2026
-> **Audited code:** branch `feat/ui-ux-polish`, HEAD `eaf5dc8`.
-> **Updated:** 25 September 2026 after fix Batches 1–7 (uncommitted working tree). Summary of changes: [KNOWN_ISSUES.md § Fix batches](KNOWN_ISSUES.md#fix-batches-25-sep-2026).
+> **Last updated:** **30 September 2026** — branch `feat/map-location-integration`, HEAD `0fa522f` + uncommitted work (chat reconnect fix, upcoming-call banner, My Sessions redesign, Home strips, Jobs filter reset, People You May Know grid). Backend re-checked @ `5e57311`. What changed 26–30 Sep: [KNOWN_ISSUES.md § Work 26–30 Sep](KNOWN_ISSUES.md#work-2630-sep-2026).
+> **Last full audit:** 25 September 2026, branch `feat/ui-ux-polish`, HEAD `eaf5dc8`.
+> **History:** 25 September 2026 fix Batches 1–7. Summary of changes: [KNOWN_ISSUES.md § Fix batches](KNOWN_ISSUES.md#fix-batches-25-sep-2026).
 > **Backend checked (read-only):** `TzarVenture/KaamMilega` → `km-backend`, `main` @ `b5a2956` (audit) and `51c8e10` (25 Sep, for Batch 7 contracts).
 > **Rule:** SOURCE CODE > this document. Verify before relying on any detail.
 
 Related docs: [AI_QUICK_START.md](AI_QUICK_START.md) · [CLAUDE.md](CLAUDE.md) · [FEATURE_STATUS.md](FEATURE_STATUS.md) · [API_CONTRACT.md](API_CONTRACT.md) · [KNOWN_ISSUES.md](KNOWN_ISSUES.md)
-Older docs in the repo (not maintained by this audit): `API_INTEGRATION_STATUS.md` (23 Sep, partly outdated, see KNOWN_ISSUES D-01), `flutter_app_feature_tracker.md/.csv` (feature IDs reused in FEATURE_STATUS.md).
+Also refreshed 30 Sep: `API_INTEGRATION_STATUS.md` (endpoint overview), `flutter_app_feature_tracker.md/.csv` (Google-Sheet tracker; feature IDs reused in FEATURE_STATUS.md).
 
 ---
 
@@ -61,10 +61,10 @@ lib/
 │   ├── models/                   # fromJson/toJson by hand
 │   ├── repositories/             # ApiClient calls; Provider<XRepository>
 │   ├── providers/                # Notifier / AsyncNotifier / FutureProvider
-│   ├── services/                 # chat only (WebSocket)
+│   ├── services/                 # chat (WebSocket), network (impression_tracker.dart)
 │   └── presentation/             # screens + widgets/
-└── shared/widgets/               # reusable UI (buttons, fields, shimmer, dialogs, state views)
-test/                             # 13 test files (see §19)
+└── shared/widgets/               # reusable UI (buttons, fields, shimmer, dialogs, state views, voice_search_button.dart)
+test/                             # ~40 test files (see §19)
 ```
 
 Features: `applications, auth, chat, cities, company, events, experts, explore, feed, home, instant_work, interviews, jobs, navigation, network, notifications, peer_to_peer, profile, services, skills_marketplace, splash, wallet`.
@@ -157,6 +157,7 @@ Files: `lib/main.dart`, `lib/app/app.dart`, `lib/app/router.dart`, `lib/features
 
 - `GoRouter` built in `routerProvider` (`lib/app/router.dart`); single global `redirect` → `AuthGuard.redirect` (`lib/app/auth_guard.dart`). `refreshListenable` = auth fields `(isChecking, isAuthenticated, isGuest, needsProfileCompletion)` + splash timer.
 - Tabs: `/home`(0), `/jobs`(1), `/chats`(3), `/profile`(4) all build `MainNavigationShell(initialIndex)` (`features/navigation/presentation/main_navigation_shell.dart`), which holds an `IndexedStack` of Home / Jobs / ChatList / Profile. Index 2 is the centre "+" quick-action sheet. Tab switches inside the shell use `setState`, not routes.
+- **Tab switching (29 Sep):** all tab changes go through `_selectTab(index)`. Going back to Home (0) calls `jobsProvider.notifier.resetFilters()` and bumps `_jobsVisit`; `JobsScreen` is keyed `ValueKey('jobs-$_jobsVisit')`, so a Popular Categories filter set from Home does not stick when the user later opens the Jobs tab directly. Home, Jobs and ChatList receive `onNavigateTab: _selectTab`.
 
 | Path | Screen | Params / extra | Access |
 |---|---|---|---|
@@ -170,12 +171,15 @@ Files: `lib/main.dart`, `lib/app/app.dart`, `lib/app/router.dart`, `lib/features
 | `/my-applications` | `MyApplicationsScreen` | — | protected |
 | `/applications/:id` | `ApplicationDetailScreen` | `id` = application id **or job id** (matched either way) | protected |
 | `/interviews` | `InterviewsScreen` | — | protected |
-| `/my-sessions` | `MySessionsScreen` (drawer "My Sessions") | — | protected |
+| `/my-sessions` | `MySessionsScreen` (drawer "My Sessions"; Experts page upcoming-call banner) | — | protected |
+| `/my-tickets` | `MyTicketsScreen` (event tickets) | — | protected |
+| `/members/:id` | `MemberProfileScreen` (other member's profile, Connect / Message) | `id` user id | protected |
+| `/profile-viewers` | `ProfileViewersScreen` | — | protected |
 | `/network` | `NetworkScreen` | — | protected |
 | `/chats/:id` | `ChatDetailScreen` | `id` conversation id or `new-<userId>`; extra `Map<String,String>{receiverId,title}` | protected (pending path not restored) |
 | `/apply-expert` | `ApplyExpertScreen` | — | protected |
 | `/settings` | `SettingsScreen` | — | protected |
-| `/wallet`, `/wallet/transactions`, `/wallet/add-money`, `/wallet/withdraw`, `/wallet/transfer` | wallet screens | — | protected |
+| `/wallet`, `/wallet/transactions`, `/wallet/disputes`, `/wallet/add-money`, `/wallet/withdraw`, `/wallet/transfer` | wallet screens | — | protected |
 | `/events` | `EventsScreen` (detail opened as a pushed page) | — | guest + user |
 | `/experts` | `ExpertsScreen` | — | guest + user |
 | `/explore` | `ExploreScreen` | — | guest + user |
@@ -241,7 +245,7 @@ Refresh / invalidation patterns: `ref.invalidate(...)` after mutations (network,
 
 ## 11. API Endpoint Inventory
 
-Full contracts: [API_CONTRACT.md](API_CONTRACT.md). Status: **Live** = used by app and verified on backend `b5a2956`; **404** = app calls it, backend has no route; **Mismatch** = route exists, body/shape differs.
+Full contracts: [API_CONTRACT.md](API_CONTRACT.md). Status: **Live** = used by app and verified on backend `b5a2956` (rows added 30 Sep verified on `5e57311`); **404** = app calls it, backend has no route; **Mismatch** = route exists, body/shape differs.
 
 | Feature | HTTP | Endpoint (`/api` prefix omitted) | Flutter file | Purpose | Status |
 |---|---|---|---|---|---|
@@ -279,20 +283,34 @@ Full contracts: [API_CONTRACT.md](API_CONTRACT.md). Status: **Live** = used by a
 | Wallet | GET | `/wallet/balance`, `/wallet/transactions` | `wallet_repository.dart` | wallet | Live |
 | Wallet | POST | `/wallet/topup/create-order`, `/wallet/topup/verify` | `wallet_repository.dart` | add money | Live |
 | Wallet | POST | `/wallet/withdraw` | `wallet_repository.dart` | withdraw (`WithdrawalRequest`) | Live (Batch 2) |
+| Wallet | POST / GET | `/wallet/disputes`, `/wallet/my/disputes` | `wallet_repository.dart` | refunds & disputes | Live (29 Sep) |
 | Wallet | POST | `/wallet/transfer` | `wallet_repository.dart` | transfer | 404 → "coming soon" |
+| Users | GET | `/community/users`, `/experts` | `network_repository.dart` | People You May Know, featured experts | Live (returns private fields — B-04) |
+| Users | GET / POST | `/user/viewers`, `/user/impressions` | `network_repository.dart` | profile viewers, impression counts | Live (B-08, B-13) |
+| Users | PATCH / GET | `/user/username`, `/user/username/check` | `auth_repository.dart` | custom profile URL | Live |
+| Companies | GET | `/companies/top` | `company_repository.dart` | Home featured companies | Live |
+| Subscriptions | GET / POST | `/subscriptions/expert/plans`, `/my`, `/create-order`, `/verify-payment`, `/wallet-checkout` | `expert_repository.dart` | Pro Expert plans | Live (29 Sep) |
+| Events | POST / GET | `/events/:id/create-order`, `/verify-payment`, `/wallet-checkout`, `/events/my/tickets` | `event_repository.dart` | paid tickets, My Tickets | Live (28 Sep) |
+| Instant Milega | GET / POST / PUT | `/instant-work/candidate/status`, `/availability`, `/location`, `/pass/pay-wallet`, `/candidate/feed`, `/claim`, `/candidate/active-job`, `/jobs/:id/complete` | `instant_candidate_repository.dart` | gig worker availability, pass, spot gigs | Live (29 Sep) |
 | Notifications | GET | `/notifications` | `notification_repository.dart` | list | 404 → "coming soon" |
 
 Declared in `api_constants.dart` but not called: `userBookmarks`, `userSettings` (GET), `posts`, `feed`, `adminCompanies`, `mentorship` (duplicate of `mentorships`).
 
 ## 12. WebSocket Architecture
 
-- **Service:** `ChatWebSocketService` (`lib/features/chat/services/chat_websocket_service.dart`), one instance via `chatWebSocketServiceProvider` (never auto-disposed).
-- **URL:** built from `baseUrl` → `wss://api.kaammilega.com/api/ws/chats?token=<JWT>` (token in query string; backend reads `ctx.Query("token")`).
-- **Connect:** lazily, from `ChatMessagesNotifier._init()` (opening a chat). Skips when offline or no token. 8 s connect timeout.
-- **Messages:** JSON `{"type":"NEW_MESSAGE","message":{…ChatMessage}}` — the backend sends it to receiver **and** sender. Other types ignored. Deduplicated by message id (`_processedMessageIds`, grows unbounded).
-- **Reconnect:** on error/close while online: up to 5 attempts, delay `attempt × 2 s` (linear). Resets when `ConnectivityService` reports online.
-- **Chat state:** `ChatMessagesNotifier` loads history (`GET /chats/:id/messages?limit=50&offset=0`), appends socket messages for the active conversation id, sends via REST `POST /chats/messages` (not over the socket); switches from temporary `new-<userId>` id to the real conversation id after the first send; invalidates `conversationsProvider`.
-- **Cleanup:** `dispose()` closes socket/streams, but the provider is never disposed and logout does not close the socket (KNOWN_ISSUES H-03).
+(Rewritten 29 Sep — was stuck on "Reconnecting live chat...".)
+
+- **Service:** `ChatWebSocketService` (`lib/features/chat/services/chat_websocket_service.dart`), one instance per signed-in account via `chatWebSocketServiceProvider` (watches `sessionUserIdProvider`; disposed on logout / account switch). Constructor takes an optional `connector`, `networkStatus` stream and `isOnline` (used by tests).
+- **URL:** `ChatWebSocketService.socketUrl(baseUrl, token)` → `wss://api.kaammilega.com/api/ws/chats?token=JWT` (keeps the base path/port; token URL-encoded).
+- **One socket at a time:** `connect()` returns early while connecting or connected; each socket gets a generation number and callbacks from older sockets are ignored. Needed because the backend hub keeps one socket per user and removes by user id (KNOWN_ISSUES B-11).
+- **Keep-alive:** `pingInterval` 20 s (dead sockets are detected and closed). 10 s connect timeout.
+- **Reconnect:** never gives up while online; backoff 1, 2, 4, 8, 16, then 30 s. Resets after a socket stayed open ≥ 10 s (a socket the server closes at once — e.g. rejected token — keeps backing off). `retryNow()` on network back (ConnectivityService), app resume (`AppLifecycleListener` in `ChatDetailScreen`) and the banner's Retry button.
+- **Messages:** `{"type":"NEW_MESSAGE","message":{…}}` (sent to receiver **and** sender), deduplicated by id (`_processedMessageIds`, capped at 1000).
+- **Status:** `webSocketStatusStreamProvider` yields the current status first, then changes. `ChatDetailScreen` header: "Live Chat Online" / "Connecting..." / "Reconnecting..."; banner only when not connected ("Connecting live chat..." or "Live updates paused. You can still send messages." + Retry).
+- **Catch-up:** `reconnected` stream fires after a reconnect; `ChatMessagesNotifier._refreshSilently()` re-reads history and merges (the server does not re-send missed events).
+- **Chat state:** `ChatMessagesNotifier` (autoDispose family) loads the full history page by page (`GET /chats/:id/messages`, 50 per page, max 20 pages — the backend returns the **oldest** first), appends socket messages for the active conversation, sends via REST `POST /chats/messages`, switches from a temporary `new-<userId>` id to the real conversation id after the first send, invalidates `conversationsProvider`.
+- **UI:** `_MessageRow` shows a small round `PersonAvatar` (mine right, theirs left, one per run of messages); the other person's photo is also in the app bar (`userLookupProvider`).
+- **Test:** `test/chat_live_socket_test.dart` runs a local fake hub over real sockets (one socket, live delivery, server drop → reconnect, full history, catch-up).
 
 ## 13. Feature Architecture
 
@@ -301,8 +319,8 @@ Data source codes: **REAL** backend · **LOCAL** device · **HC** hard-coded con
 | Feature | UI | State | Repository / API | Model | Data | Status |
 |---|---|---|---|---|---|---|
 | Auth | `auth/presentation/{login,otp,register,forgot_password}_screen.dart` | `authProvider` | `AuthRepository` → `/auth/*` | `UserProfile`, `AuthVerificationResult` | REAL | Implemented (incl. `/complete-profile`) |
-| Home | `home/presentation/home_screen.dart` | `jobsProvider`, `unreadNotificationsCountProvider` | via `JobRepository` | `Job` | REAL jobs + HC sections (₹99 banner, categories, quick actions) | Partial |
-| Jobs list / filters | `jobs/presentation/jobs_screen.dart`, `widgets/filter_modal.dart`, `job_card.dart`, `pagination_bar.dart` | `jobsProvider` | `GET /jobs` | `Job`, `JobFilter`, `JobsResponse` | REAL + CACHED (`km_cache_jobs`) | Implemented |
+| Home | `home/presentation/home_screen.dart` (`_HorizontalStrip` for quick actions + Popular Categories), `widgets/featured_companies_section.dart`, `widgets/job_categories_section.dart`, `widgets/connect_like_you_section.dart` (`PersonAvatar`) | `jobsProvider`, company provider, `unreadNotificationsCountProvider` | `JobRepository`, `CompanyRepository` → `GET /companies/top` | `Job`, `TopCompany` | REAL jobs/companies + HC sections (₹99 banner, quick actions); voice search | Partial |
+| Jobs list / filters | `jobs/presentation/jobs_screen.dart`, `widgets/jobs_hero_card.dart`, `widgets/filter_modal.dart`, `job_card.dart`, `pagination_bar.dart` | `jobsProvider` (`resetFilters`) | `GET /jobs` | `Job`, `JobFilter`, `JobsResponse` | REAL + CACHED (`km_cache_jobs`) | Implemented |
 | Job detail | `jobs/presentation/job_detail_screen.dart` | direct repo calls + `jobsProvider` | `GET /jobs/:id`, `GET /applications/check/:jobId` | `Job` | REAL | Implemented |
 | Saved jobs | `jobs/presentation/saved_jobs_screen.dart` | `savedJobsProvider`, `savedJobDetailProvider` | `POST /user/bookmark/:jobId`, ids from `GET /user/profile`, `GET /jobs/:id` per id | `Job` | REAL (user) / LOCAL ids (guest) | Implemented (Batch 6) |
 | Apply | `applications/presentation/apply_modal.dart` | direct repo | `POST /applications` | — | REAL | Implemented |
@@ -314,23 +332,23 @@ Data source codes: **REAL** backend · **LOCAL** device · **HC** hard-coded con
 | Projects | same | `addProject/deleteProject` | `/user/project` POST/PUT/DELETE | `ProjectItem` | REAL | Implemented |
 | Resume | same | `uploadResumePdf` | `POST /files/upload` | — | LOCAL URL (`km_resume_url`), sent as `resume_url` on apply | Partial (backend has no resume field) |
 | Open To / Providing services | `profile/presentation/widgets/open_to_sheets.dart` (`showOpenToWorkSheet`, `showProvidingServicesSheet`) | `authProvider.saveOpenToWork/saveProvidingServices` | `PATCH /user/open-to-work`, `/user/providing-services` | `OpenToWorkPreferences`, `ProvidingServicesPreferences` | REAL (old phone-only text shown, not sent — M-11) | Implemented (7d), awaiting verification |
-| Profile analytics | same `_buildAnalyticsCard` | `authProvider` | `GET /user/profile` (`profile_views`, …) | `UserProfile` | REAL | Implemented |
-| Profile viewers | `_buildPeopleWhoViewedCard` | none | none (`GET /user/viewers` exposes private fields, B-08) | — | — | Blocked (7e), "coming soon" |
+| Profile analytics | `profile/presentation/widgets/profile_analytics_card.dart` | `authProvider`; `impressionTrackerProvider` | `GET /user/profile` counters; `POST /user/impressions` (`ImpressionBeacon` on member cards) | `UserProfile` | REAL | Implemented |
+| Profile viewers | `profile/presentation/profile_viewers_screen.dart` | `profileViewersProvider` | `GET /user/viewers` (backend also returns private fields — B-08; app shows public ones) | `UserProfile` | REAL | Implemented |
 | Jobs based on profile | `_buildJobsBasedOnProfileCard` | `profileJobsProvider` | `GET /jobs` | `Job` | REAL | Implemented |
 | Settings | `profile/presentation/settings_screen.dart` | direct repo | `GET /user/profile`→`settings`, `PUT /user/settings`, `PUT /user/password` | map | REAL | Implemented |
 | Network | `network/presentation/network_screen.dart` | network providers | `/network/*` | `ConnectionRequestItem` | REAL | Implemented |
-| Peer-to-peer | `peer_to_peer/presentation/peer_to_peer_screen.dart` | local `setState` | `GET /user/search`, `/network/*` | `UserProfile` | REAL | Implemented (protected route) |
-| Chat | `chat/presentation/{chat_list,chat_detail}_screen.dart`, `open_chat.dart` | `conversationsProvider`, `chatMessagesProvider` | `/chats*`, WS | `ConversationItem`, `ChatMessage` | REAL | Implemented; unread count HC 0 |
-| Instant work (gig) | `instant_work/presentation/instant_work_screen.dart` | `instantWorkProvider` | `GET /jobs?job_types=Instant,Hourly,Gig,Part-time` | `Job` | REAL; filter chips do nothing | Partial |
+| Peer-to-peer / People You May Know | `peer_to_peer/presentation/peer_to_peer_screen.dart`, `widgets/people_suggestion_grid.dart` (2-column card grid, 3 on tablets), `network/presentation/member_profile_screen.dart`, `network/presentation/widgets/connect_button.dart` (`ConnectButton`, `chatWithMember`) | local `setState`, `memberProfileProvider`, `connectionStatusProvider` | `GET /community/users`, `GET /user/search`, `GET /user/:id`, `/network/*` | `UserProfile` | REAL | Implemented (protected route) |
+| Chat | `chat/presentation/{chat_list,chat_detail}_screen.dart`, `open_chat.dart` | `conversationsProvider`, `chatMessagesProvider`, `webSocketStatusStreamProvider` | `/chats*`, WS (§12) | `ConversationItem`, `ChatMessage` | REAL | Implemented (29 Sep reconnect fix, avatars); unread count not available |
+| Instant Milega (gig) | `instant_work/presentation/instant_work_screen.dart`, `widgets/{instant_location_bar,instant_availability_card,spot_gigs_widgets,nearby_professionals_section}.dart` | `instantCandidateProvider`, `spotGigsProvider`, `instantMilegaProvider`, `instantWorkProvider` (old job list) | `InstantCandidateRepository` → `/instant-work/*`; old list `GET /jobs?job_types=…` | `InstantCandidateStatus`, `SpotGig`, `NearbyProfessional`, `Job` | REAL; nearby professionals "coming soon" (no API); map removed 29 Sep | Implemented (old filter chips M-01) |
 | Skills marketplace | `skills_marketplace/presentation/skills_marketplace_screen.dart` | `skillsProvider` | `GET /skills`, `/skills/categories` | `SkillItem` | REAL | Implemented |
-| Experts / mentorship | `experts/presentation/{experts,expert_detail,apply_expert}_screen.dart` | `expertProvider`, direct repo | `/mentorships*`, `/user/apply-expert` | `ExpertItem` | REAL + FALLBACK labels/rating | Implemented |
-| My Sessions | `experts/presentation/my_sessions_screen.dart` | `myBookingsProvider` | `GET /mentorships/bookings/my` | `BookingItem` (`experts/models/booking.dart`) | REAL | Implemented (7c) |
+| Experts / mentorship / Pro Expert | `experts/presentation/{experts,expert_detail,apply_expert}_screen.dart`, `widgets/{expert_plan_widgets,upcoming_session_banner}.dart` | `expertProvider`, `expert_plan_provider.dart`, `myBookingsProvider` | `/mentorships*`, `/user/apply-expert`, `/subscriptions/expert/*` | `ExpertItem`, `ExpertPlan`, `ExpertSubscriptionStatus` | REAL + FALLBACK labels/rating | Implemented |
+| My Booked Sessions | `experts/presentation/my_sessions_screen.dart` (filter chips, escrow card, status badges, payment labels, `RateSessionSheet`), `widgets/upcoming_session_banner.dart` (`UpcomingSessionBanner.nextCall`) | `myBookingsProvider` | `GET /mentorships/bookings/my`, `POST /mentorships/bookings/:id/review` | `BookingItem` | REAL | Implemented |
 | Services marketplace | `services/presentation/services_marketplace_screen.dart` | none | none | — | HC "coming soon" | UI only |
-| Events | `events/presentation/{events,event_detail}_screen.dart` | `eventsProvider` | `GET /events`, `POST /events/:id/register` | `EventItem` | REAL + FALLBACK labels | Implemented |
+| Events + tickets | `events/presentation/{events,event_detail,my_tickets}_screen.dart`, `widgets/{ticket_checkout_sheets,event_ticket_view,event_pricing_filter}.dart` | `eventsProvider`, `event_ticket_provider.dart` | `GET /events`, `POST /events/:id/register`, create-order / verify-payment / wallet-checkout, `GET /events/my/tickets` | `EventItem`, `EventTicket` | REAL + FALLBACK labels | Implemented (attendee list pending) |
 | Feed / resources | `feed/presentation/feed_screen.dart` | none | none | — | HC "coming soon" | Pending (backend) |
 | Explore | `explore/presentation/explore_screen.dart` | none | none | inline `_modules` | HC navigation hub | Implemented |
 | Company page | `company/presentation/company_screen.dart` | none | none | — | — | "Coming Soon", unreachable |
-| Wallet | `wallet/presentation/*.dart` | `walletProvider` | `/wallet/*` | `WalletSummary`, `WalletTransaction`, `PaymentOrder` | REAL + CACHED (`km_cache_wallet`) | Balance/tx/top-up/withdraw implemented; transfer pending |
+| Wallet | `wallet/presentation/*.dart`, `widgets/wallet_transaction_tile.dart`, `refund_request_sheet.dart` | `walletProvider`, `myWalletDisputesProvider` | `/wallet/*` incl. `/wallet/disputes`, `/wallet/my/disputes` | `WalletSummary`, `WalletTransaction`, `WalletDispute`, `PaymentOrder` | REAL + CACHED (`km_cache_wallet`) | Balance/tx/top-up/withdraw/disputes implemented; transfer pending (backend) |
 | Payments | `core/payments/razorpay_checkout.dart` | `walletProvider.addMoney`, `expert_detail_screen.dart` | create-order → Razorpay → verify | `RazorpayResult` | REAL (server-verified) | Implemented (test mode verification pending) |
 | Notifications | `notifications/presentation/notifications_screen.dart` | `notificationsProvider` | `GET /notifications` (404) | `NotificationItem` | — | Backend dependency |
 | Cities | `cities/presentation/city_selector_sheet.dart` | `citiesFutureProvider` | `GET /cities` | `City` | REAL + **FALLBACK hard-coded 10 cities** | Implemented |
@@ -389,7 +407,7 @@ All in SharedPreferences via `LocalStorage` (`core/storage/local_storage.dart`).
 
 ## 19. Testing
 
-`test/` — 21 files, 184 `test`/`testWidgets` cases (counted by pattern, 26 Sep 2026).
+`test/` — about 40 files; the 29 Sep run executed **310** cases (+309 −1). Suites added 26–30 Sep include `expert_pro_plans_test`, `peer_people_card_test`, `jobs_hero_card_test`, `profile_analytics_test`, `instant_availability_test`, `spot_gigs_test`, `instant_milega_test`, `wallet_transaction_tile_test`, `paid_events_refunds_test`, `home_jobs_filter_test`, `upcoming_session_banner_test`, `chat_live_socket_test` (real local sockets), `people_suggestion_grid_test`. Table below lists the 25 Sep suites.
 
 | File | Covers |
 |---|---|
@@ -404,8 +422,8 @@ All in SharedPreferences via `LocalStorage` (`core/storage/local_storage.dart`).
 | `open_to_preferences_test.dart` (14) | Open To PATCH bodies, sheets, turn off, old text, small screen (Batch 7d) |
 | `auth_error_messages_test.dart` (9), `auth_screens_ui_test.dart` (3), `network_resilience_test.dart` (14), `wallet_test.dart` (7), `explore_modules_test.dart` (8), `widget_test.dart` (7), `profile_share_link_test.dart` (3), `splash_screen_test.dart` (3), `app_button_text_field_test.dart` (5), `dialogs_sheets_test.dart` (6), `cards_lists_states_test.dart` (7), `home_jobs_ui_test.dart` (2) | audit-time suites |
 
-- Repository tests use a Dio interceptor that answers locally (no network, no real payments). No WebSocket or integration tests.
-- **Verification:** run by the owner (Windows). Latest (25 Sep, 16:04): `dart format` 0 changed, `flutter analyze` no issues, `flutter test` 172 passed. **Phone testing pending** (log in [KNOWN_ISSUES.md](KNOWN_ISSUES.md#verification-log)).
+- Repository tests use a Dio interceptor that answers locally (no network, no real payments). `chat_live_socket_test.dart` uses a local `HttpServer` WebSocket (plain `test()`, no widget binding; override `sessionUserIdProvider` so the auth/connectivity plugins are not started). No integration tests.
+- **Verification:** run by the owner (Windows). Latest (29 Sep): `flutter analyze` no issues, `flutter test` +309 −1 (test-setup fix applied, re-run pending); 30 Sep grid test not run yet. **Phone testing pending** (log in [KNOWN_ISSUES.md](KNOWN_ISSUES.md#verification-log)).
 - Widget tests use a wide test font: text in a `Row` must be `Flexible`/`Expanded`. A focused text field scrolls itself back into view — unfocus before tapping buttons lower in a sheet.
 
 ## 20. Important File Map
@@ -422,7 +440,9 @@ All in SharedPreferences via `LocalStorage` (`core/storage/local_storage.dart`).
 | Applications / interviews | `lib/features/applications/…`, `lib/features/interviews/…` |
 | Profile UI | `lib/features/profile/presentation/profile_screen.dart`, `settings_screen.dart`, `widgets/profile_drawer.dart`, `widgets/open_to_sheets.dart`, `providers/profile_jobs_provider.dart` |
 | Chat | `lib/features/chat/{models,providers,repositories,services,presentation}/…` |
-| Network | `lib/features/network/…`, `lib/features/peer_to_peer/presentation/peer_to_peer_screen.dart` |
+| Network | `lib/features/network/…` (incl. `services/impression_tracker.dart`, `presentation/member_profile_screen.dart`), `lib/features/peer_to_peer/presentation/peer_to_peer_screen.dart`, `widgets/people_suggestion_grid.dart` |
+| Instant Milega | `lib/features/instant_work/…` (`repositories/instant_candidate_repository.dart`, `providers/{instant_candidate,spot_gigs}_provider.dart`) |
+| Events / tickets | `lib/features/events/…` (`my_tickets_screen.dart`, `widgets/ticket_checkout_sheets.dart`) |
 | Wallet / payments | `lib/features/wallet/…`, `lib/core/payments/razorpay_checkout.dart` |
 | Experts | `lib/features/experts/…` |
 | Shell / tabs | `lib/features/navigation/presentation/main_navigation_shell.dart` |

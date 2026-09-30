@@ -565,6 +565,12 @@ class InstantPassSheet extends ConsumerStatefulWidget {
 class _InstantPassSheetState extends ConsumerState<InstantPassSheet> {
   String? _error;
 
+  /// Online (Razorpay) selected instead of the wallet.
+  bool _online = false;
+
+  /// Why a completed online payment is still waiting for activation.
+  String? _pendingMessage;
+
   @override
   void initState() {
     super.initState();
@@ -576,10 +582,35 @@ class _InstantPassSheetState extends ConsumerState<InstantPassSheet> {
 
   Future<void> _pay() async {
     setState(() => _error = null);
+    final notifier = ref.read(instantCandidateProvider.notifier);
+    final user = ref.read(authProvider).user;
+    final online = _online && ref.read(instantPassOnlinePaymentProvider);
+    final result = online
+        ? await notifier.buyPassOnline(
+            email: user?.email,
+            contact: user?.mobile,
+          )
+        : await notifier.buyPassWithWallet();
+    if (!mounted) return;
+    await _handle(result, online: online);
+  }
+
+  Future<void> _retryActivation() async {
+    setState(() => _error = null);
     final result = await ref
         .read(instantCandidateProvider.notifier)
-        .buyPassWithWallet();
+        .retryPassActivation();
     if (!mounted) return;
+    await _handle(result, online: true);
+  }
+
+  Future<void> _handle(InstantActionResult result, {required bool online}) async {
+    if (online && result.outcome == InstantActionOutcome.unknown) {
+      // Paid by Razorpay, not yet activated: keep the sheet open with the
+      // retry, and never offer to pay again.
+      setState(() => _pendingMessage = result.message);
+      return;
+    }
     switch (result.outcome) {
       case InstantActionOutcome.success:
         final messenger = ScaffoldMessenger.of(context);
@@ -624,6 +655,12 @@ class _InstantPassSheetState extends ConsumerState<InstantPassSheet> {
     final balance = summary?.mainBalance;
     final walletReady = summary != null && !wallet.isComingSoon;
     final enough = balance != null && balance >= InstantPassTerms.priceInr;
+    final onlineLive = ref.watch(instantPassOnlinePaymentProvider);
+    final pending = ref.watch(
+      instantCandidateProvider.select((s) => s.pendingPayment),
+    );
+    final online = onlineLive && _online;
+    final canPay = !busy && (online || (walletReady && enough));
 
     return SafeArea(
       top: false,
@@ -687,6 +724,8 @@ class _InstantPassSheetState extends ConsumerState<InstantPassSheet> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
+                    const _UspGrid(),
+                    const SizedBox(height: 16),
                     const _PriceCard(),
                     const SizedBox(height: 18),
                     const Text(
@@ -704,6 +743,9 @@ class _InstantPassSheetState extends ConsumerState<InstantPassSheet> {
                         children: [
                           Expanded(
                             child: _MethodTile(
+                              onTap: onlineLive
+                                  ? () => setState(() => _online = false)
+                                  : null,
                               icon: Icons.account_balance_wallet_outlined,
                               title: 'KaamMilega Wallet',
                               subtitle: !walletReady
@@ -716,20 +758,26 @@ class _InstantPassSheetState extends ConsumerState<InstantPassSheet> {
                                         ? AppColors.success
                                         : AppColors.error)
                                   : AppColors.textSecondary,
-                              selected: true,
+                              selected: !online,
                             ),
                           ),
                           const SizedBox(width: 10),
-                          // Online payment is switched off until the
-                          // server stops also debiting the wallet for it.
-                          const Expanded(
+                          // Online payment stays off until the server stops
+                          // also debiting the wallet for it
+                          // (InstantPassTerms.onlinePaymentLive).
+                          Expanded(
                             child: _MethodTile(
+                              onTap: onlineLive
+                                  ? () => setState(() => _online = true)
+                                  : null,
                               icon: Icons.credit_card_rounded,
                               title: 'Online payment',
-                              subtitle: 'Temporarily unavailable',
+                              subtitle: onlineLive
+                                  ? 'UPI, card or net banking'
+                                  : 'Temporarily unavailable',
                               subtitleColor: AppColors.textSecondary,
-                              selected: false,
-                              disabled: true,
+                              selected: online,
+                              disabled: !onlineLive,
                             ),
                           ),
                         ],
@@ -760,12 +808,21 @@ class _InstantPassSheetState extends ConsumerState<InstantPassSheet> {
                       ),
                     ],
                     const SizedBox(height: 14),
+                    if (pending != null)
+                      _PendingActivation(
+                        message:
+                            _pendingMessage ??
+                            'Your payment ${pending.paymentId} was received '
+                                'but the pass is not active yet. Please do '
+                                'not pay again.',
+                        busy: busy,
+                        onRetry: _retryActivation,
+                      )
+                    else
                     SizedBox(
                       height: 52,
                       child: ElevatedButton(
-                        onPressed: busy || !walletReady || !enough
-                            ? null
-                            : _pay,
+                        onPressed: canPay ? _pay : null,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.brandNavy,
                           foregroundColor: Colors.white,
@@ -786,15 +843,20 @@ class _InstantPassSheetState extends ConsumerState<InstantPassSheet> {
                             : Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  const Icon(
-                                    Icons.account_balance_wallet_outlined,
+                                  Icon(
+                                    online
+                                        ? Icons.credit_card_rounded
+                                        : Icons.account_balance_wallet_outlined,
                                     size: 18,
                                   ),
                                   const SizedBox(width: 8),
                                   Flexible(
                                     child: Text(
-                                      'Pay ${InstantPassTerms.priceLabel} '
-                                      'from KaamMilega Wallet',
+                                      online
+                                          ? 'Pay ${InstantPassTerms.priceLabel} '
+                                                'online'
+                                          : 'Pay ${InstantPassTerms.priceLabel} '
+                                                'from KaamMilega Wallet',
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
                                       style: const TextStyle(
@@ -812,7 +874,7 @@ class _InstantPassSheetState extends ConsumerState<InstantPassSheet> {
                               ),
                       ),
                     ),
-                    if (walletReady && !enough)
+                    if (!online && pending == null && walletReady && !enough)
                       TextButton(
                         onPressed: () {
                           Navigator.pop(context);
@@ -821,19 +883,23 @@ class _InstantPassSheetState extends ConsumerState<InstantPassSheet> {
                         child: const Text('Add money to your wallet'),
                       ),
                     const SizedBox(height: 8),
-                    const Row(
+                    Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(
+                        const Icon(
                           Icons.verified_user_outlined,
                           size: 15,
                           color: AppColors.success,
                         ),
-                        SizedBox(width: 6),
+                        const SizedBox(width: 6),
                         Flexible(
                           child: Text(
-                            'Paid from your wallet · Pass starts at once',
-                            style: TextStyle(
+                            online
+                                ? 'Secured by Razorpay · Pass starts once '
+                                      'the payment is verified'
+                                : 'Paid from your wallet · Pass starts at '
+                                      'once',
+                            style: const TextStyle(
                               fontSize: 12,
                               color: AppColors.textSecondary,
                             ),
@@ -952,8 +1018,11 @@ class _MethodTile extends StatelessWidget {
     required this.subtitleColor,
     required this.selected,
     this.disabled = false,
+    this.onTap,
   });
 
+  /// Selects this method; null when there is nothing to choose.
+  final VoidCallback? onTap;
   final IconData icon;
   final String title;
   final String subtitle;
@@ -963,6 +1032,18 @@ class _MethodTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    return Semantics(
+      button: onTap != null,
+      selected: selected,
+      child: GestureDetector(
+        onTap: disabled ? null : onTap,
+        behavior: HitTestBehavior.opaque,
+        child: _tile(),
+      ),
+    );
+  }
+
+  Widget _tile() {
     return Opacity(
       opacity: disabled ? 0.55 : 1,
       child: Container(
@@ -1070,6 +1151,172 @@ class _Perk extends StatelessWidget {
                 ],
               ),
               style: const TextStyle(fontSize: 13, height: 1.35),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// What KaamMilega offers (client's wording, point 31), shown when the
+/// pass is offered.
+class _UspGrid extends StatelessWidget {
+  const _UspGrid();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text(
+          'With KaamMilega you can',
+          style: TextStyle(
+            fontSize: 13.5,
+            fontWeight: FontWeight.w800,
+            color: AppColors.textPrimary,
+          ),
+        ),
+        SizedBox(height: 10),
+        IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Expanded(
+                child: _Usp(icon: Icons.bolt_rounded, text: 'Get instant jobs'),
+              ),
+              SizedBox(width: 10),
+              Expanded(
+                child: _Usp(
+                  icon: Icons.handyman_outlined,
+                  text: 'Become an instant service provider',
+                ),
+              ),
+            ],
+          ),
+        ),
+        SizedBox(height: 10),
+        IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Expanded(
+                child: _Usp(
+                  icon: Icons.currency_rupee_rounded,
+                  text: 'Earn money instantly',
+                ),
+              ),
+              SizedBox(width: 10),
+              Expanded(
+                child: _Usp(
+                  icon: Icons.workspace_premium_outlined,
+                  text: 'Become a KaamMilega Expert',
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _Usp extends StatelessWidget {
+  const _Usp({required this.icon, required this.text});
+
+  final IconData icon;
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: AppColors.accentLight,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, size: 20, color: AppColors.accent),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              text,
+              maxLines: 3,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                fontSize: 12.5,
+                height: 1.25,
+                fontWeight: FontWeight.w700,
+                color: AppColors.textPrimary,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Razorpay took the money but the server has not activated the pass:
+/// explain, and offer only a retry of the activation (never a new payment).
+class _PendingActivation extends StatelessWidget {
+  const _PendingActivation({
+    required this.message,
+    required this.busy,
+    required this.onRetry,
+  });
+
+  final String message;
+  final bool busy;
+  final VoidCallback onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: AppColors.warning.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppColors.warning.withValues(alpha: 0.5)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            message,
+            style: const TextStyle(
+              fontSize: 13,
+              height: 1.35,
+              color: AppColors.textPrimary,
+            ),
+          ),
+          const SizedBox(height: 10),
+          SizedBox(
+            height: 46,
+            child: ElevatedButton(
+              onPressed: busy ? null : onRetry,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.brandNavy,
+                foregroundColor: Colors.white,
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              child: busy
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2.2,
+                        color: Colors.white,
+                      ),
+                    )
+                  : const Text(
+                      'Retry activation',
+                      style: TextStyle(fontWeight: FontWeight.w800),
+                    ),
             ),
           ),
         ],

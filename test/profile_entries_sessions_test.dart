@@ -72,6 +72,14 @@ class _SkillRepo extends AuthRepository {
       UserProfile.fromJson(_user(skills: skillsAfter));
 }
 
+/// Sessions page on a tall screen, so every card is built.
+Future<void> _pumpTall(WidgetTester tester, Widget widget) {
+  tester.view.physicalSize = const Size(1200, 4200);
+  tester.view.devicePixelRatio = 3;
+  addTearDown(tester.view.reset);
+  return tester.pumpWidget(widget);
+}
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -249,7 +257,8 @@ void main() {
     testWidgets('shows booked sessions with a Join button when confirmed', (
       tester,
     ) async {
-      await tester.pumpWidget(
+      await _pumpTall(
+        tester,
         screen(
           () => [
             BookingItem.fromJson({
@@ -267,19 +276,26 @@ void main() {
       );
       await tester.pumpAndSettle();
       expect(find.text('Resume Review'), findsOneWidget);
-      expect(find.text('Asha Rao'), findsOneWidget);
-      expect(find.text('Confirmed'), findsOneWidget);
+      expect(
+        find.textContaining('Asha Rao', findRichText: true),
+        findsOneWidget,
+      );
+      expect(find.text('CONFIRMED · ESCROW PROTECTED'), findsOneWidget);
+      expect(find.text('PAID'), findsOneWidget);
       expect(find.text('Join Meeting'), findsOneWidget);
+      // Filter chips count the bookings
+      expect(find.text('Upcoming / Confirmed (1)'), findsOneWidget);
+      expect(find.text('Completed (0)'), findsOneWidget);
     });
 
     testWidgets('no sessions: empty state (not an error)', (tester) async {
-      await tester.pumpWidget(screen(() => const []));
+      await _pumpTall(tester, screen(() => const []));
       await tester.pumpAndSettle();
       expect(find.text('No sessions booked yet'), findsOneWidget);
     });
 
     testWidgets('failure: error with Retry', (tester) async {
-      await tester.pumpWidget(screen(() => throw const AppServerException()));
+      await _pumpTall(tester, screen(() => throw const AppServerException()));
       await tester.pumpAndSettle();
       expect(find.text('Unable to Load Data'), findsOneWidget);
       expect(find.text('Retry'), findsOneWidget);
@@ -426,7 +442,8 @@ void main() {
     testWidgets('Rate button only on completed, unrated sessions', (
       tester,
     ) async {
-      await tester.pumpWidget(
+      await _pumpTall(
+        tester,
         screen(_ReviewRepo(), [booking('completed'), booking('confirmed')]),
       );
       await tester.pumpAndSettle();
@@ -437,7 +454,8 @@ void main() {
       tester,
     ) async {
       final semantics = tester.ensureSemantics();
-      await tester.pumpWidget(
+      await _pumpTall(
+        tester,
         screen(_ReviewRepo(), [
           booking('completed', rating: 4, review: 'Clear advice'),
         ]),
@@ -454,7 +472,8 @@ void main() {
     ) async {
       final repo = _ReviewRepo();
       var loads = 0;
-      await tester.pumpWidget(
+      await _pumpTall(
+        tester,
         screen(repo, [booking('completed')], onLoad: () => loads++),
       );
       await tester.pumpAndSettle();
@@ -492,7 +511,7 @@ void main() {
           'can only review completed sessions',
         ),
       );
-      await tester.pumpWidget(screen(repo, [booking('completed')]));
+      await _pumpTall(tester, screen(repo, [booking('completed')]));
       await tester.pumpAndSettle();
       await tester.tap(find.text('Rate session'));
       await tester.pumpAndSettle();

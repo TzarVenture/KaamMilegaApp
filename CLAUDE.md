@@ -3,14 +3,14 @@
 Applies to Claude, Cursor, Antigravity and any other agent working in this repo.
 Start with [AI_QUICK_START.md](AI_QUICK_START.md). Details: [architecture.md](architecture.md) · [FEATURE_STATUS.md](FEATURE_STATUS.md) · [API_CONTRACT.md](API_CONTRACT.md) · [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
 **Source code wins over every doc.** Verify before acting.
-Docs updated 25 Sep 2026 after fix Batches 1–7 (see [KNOWN_ISSUES.md § Fix batches](KNOWN_ISSUES.md#fix-batches-25-sep-2026)).
+Docs updated **30 Sep 2026** (branch `feat/map-location-integration` @ `0fa522f` + uncommitted work; backend `5e57311`). What changed since 25 Sep: [KNOWN_ISSUES.md § Work 26–30 Sep](KNOWN_ISSUES.md#work-2630-sep-2026). Done / pending at a glance: [AI_QUICK_START.md](AI_QUICK_START.md#status-at-a-glance-30-sep-2026).
 
 ## Project
 KaamMilega Flutter mobile application (`kaam_milega`, app id `com.kaammilega.app`). Backend: separate Go repo `km-backend` at `https://api.kaammilega.com/api`.
 
 ## Scope
 - Primary users: normal users/candidates, guest users, gig workers.
-- Employer/Recruiter and Admin functionality is **out of Flutter scope** unless explicitly requested.
+- Employer/Recruiter and Admin functionality is **out of Flutter scope** unless explicitly requested ("the application is not for recruiters"): do not integrate `/instant-work/dispatch`, `/recruiter/*`, `/admin/*`, job posting, etc.
 
 ## Architecture (actual)
 ```
@@ -41,10 +41,11 @@ Future agents must:
 - **Preserve guest mode:** guests stay unauthenticated (`AuthState.isGuest`, memory only); protected actions use `showAuthPromptDialog` / `AuthGuard.openProtected`; guests must not call authenticated APIs.
 - **Preserve navigation:** add routes in `AppRouter.routes`; protected roots in `AuthGuard._protectedRoots`. No navigation from `build()`, no `Future.delayed` navigation, no competing redirects.
 - **Preserve API contracts** already working; when app and backend disagree on an existing endpoint, align the app to the backend.
-- **Backend bugs stay backend bugs:** do not hide or fake around them in Flutter (e.g. skill delete B-07: keep website URL-encoding and check the returned profile; profile viewers B-08: do not call `/user/viewers` until it returns public-safe fields). Record them in KNOWN_ISSUES.
+- **Backend bugs stay backend bugs:** do not hide or fake around them in Flutter (e.g. skill delete B-07: keep website URL-encoding and check the returned profile; profile viewers B-08 / community users B-04: the app shows only public fields even though the backend sends more; InstantPass B-12: wallet purchase only). Record them in KNOWN_ISSUES.
 - **Payments:** never mark money as added/paid unless the backend verify endpoint confirmed it (`core/payments/razorpay_checkout.dart` pattern).
 - **Avoid unrelated refactoring**, renames and file moves. Report unrelated problems under "DISCOVERED BUT NOT CHANGED".
 - **UI / brand (spec 25 Sep 2026):** use `AppColors` tokens only, never new inline hex values. Navy `#071A4D` (`brandNavy`/`primary`), Orange `#FF6B00` (`brandOrange`/`accent`), Blue `#0B5ED7` (`blue`: links, focus, Jobs), service colours `module*` (+ `module*Light`). Wordmark: "Kaammi" navy · "lega" orange · "™" navy. Fonts (`AppFonts`): Poppins (400 body, 500 labels, 600 buttons / H3, 700 headings, 800 hero); Inter for form fields, captions / meta, transaction ledgers and analytics; Noto Sans Devanagari for Hindi (fallback) and the Hindi tagline (`AppTextStyles.taglineHindi`). Type scale in `AppTextStyles`. Buttons: primary navy (hover / pressed `#0B1F52`), accent orange (`AppButton(accent: true)`, hover `#FF8A00`), outline navy (hover blue). Prohibited: emojis (UI text, messages, code comments), sparkle icons (`Icons.auto_awesome*`) as decoration, pulsing / blinking status dots, AI buzzword copy; do not cap text scaling — make layouts flexible; handle small screens, keyboard, long text, loading/empty/error states; mobile bottom sheets over desktop-style dropdowns.
+- **Chat socket:** keep exactly one socket per account through `ChatWebSocketService` (the backend hub drops a second one — B-11); never open sockets from widgets.
 - **Keep files' line endings** (repo uses CRLF on Windows, `core.autocrlf=true`).
 - **Test changes.**
 
@@ -67,6 +68,7 @@ flutter test
 - Widget tests use a wide test font: text inside a `Row` must be `Flexible`/`Expanded` or it overflows.
 - Avoid `<...>` in `///` doc comments (`unintended_html_in_doc_comment`); use backticks.
 - The owner runs these on Windows and pastes results; record them in KNOWN_ISSUES "Verification log".
+- Plain `test()` + `ProviderContainer` that touches `authProvider` starts the connectivity plugin and fails ("Binding has not yet been initialized"): override `sessionUserIdProvider` (or `authProvider`) instead.
 - A focused `TextField` scrolls itself back into view; unfocus before `ensureVisible` + tap on buttons lower in a sheet.
 - For release-related work also build (`flutter build apk` / iOS) and note that release signing currently uses the debug key.
 

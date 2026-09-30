@@ -19,10 +19,14 @@ final conversationsProvider = FutureProvider<List<ConversationItem>>((ref) {
   return ref.watch(chatRepositoryProvider).getConversations();
 });
 
-/// Stream provider for WebSocket connection status
-final webSocketStatusStreamProvider = StreamProvider<WebSocketStatus>((ref) {
+/// Live chat connection status. Starts with the current status (the
+/// service's stream only reports changes), then follows every change.
+final webSocketStatusStreamProvider = StreamProvider<WebSocketStatus>((
+  ref,
+) async* {
   final wsService = ref.watch(chatWebSocketServiceProvider);
-  return wsService.statusStream;
+  yield wsService.status;
+  yield* wsService.statusStream;
 });
 
 /// State notifier for managing 1-on-1 chat messages in a conversation
@@ -32,6 +36,13 @@ class ChatMessagesNotifier extends ChangeNotifier {
   final Ref _ref;
   final String _conversationId;
   StreamSubscription<ChatMessage>? _subscription;
+  StreamSubscription<void>? _reconnectSubscription;
+
+  /// GET /chats/:id/messages returns the OLDEST messages first, [_pageSize]
+  /// at a time, so the whole history is read page by page (up to
+  /// [_maxPages]) to make sure the newest messages are included.
+  static const int _pageSize = 50;
+  static const int _maxPages = 20;
 
   /// The real conversation ID. For a brand-new chat the screen is opened
   /// with a temporary ID; after the first message is sent the server
@@ -67,12 +78,17 @@ class ChatMessagesNotifier extends ChangeNotifier {
   }
 
   void _init() {
-    _wsService.connect();
     _subscription = _wsService.messageStream.listen((newMsg) {
       if (newMsg.conversationId == _activeConversationId) {
         _appendMessage(newMsg);
       }
     });
+    // Messages sent while the socket was down are not pushed again by the
+    // server: read them from the history once it is back.
+    _reconnectSubscription = _wsService.reconnected.listen(
+      (_) => _refreshSilently(),
+    );
+    _wsService.connect();
     _fetchMessageHistory();
   }
 
@@ -80,6 +96,7 @@ class ChatMessagesNotifier extends ChangeNotifier {
   void dispose() {
     _disposed = true;
     _subscription?.cancel();
+    _reconnectSubscription?.cancel();
     super.dispose();
   }
 
@@ -89,14 +106,9 @@ class ChatMessagesNotifier extends ChangeNotifier {
     _error = null;
     notifyListeners();
     try {
-      final history = await _repository.getMessages(_activeConversationId);
+      final history = await _loadHistory();
       if (_disposed) return;
-      // Keep live messages that arrived while the history was loading.
-      final ids = history.map((m) => m.id).toSet();
-      _messages = [
-        ...history,
-        ..._messages.where((m) => m.id.isEmpty || !ids.contains(m.id)),
-      ];
+      _mergeHistory(history);
       _isLoading = false;
       notifyListeners();
     } catch (e) {
@@ -104,6 +116,48 @@ class ChatMessagesNotifier extends ChangeNotifier {
       _isLoading = false;
       _error = e;
       notifyListeners();
+    }
+  }
+
+  Future<List<ChatMessage>> _loadHistory() async {
+    final all = <ChatMessage>[];
+    for (var page = 0; page < _maxPages; page++) {
+      final batch = await _repository.getMessages(
+        _activeConversationId,
+        limit: _pageSize,
+        offset: page * _pageSize,
+      );
+      all.addAll(batch);
+      if (batch.length < _pageSize) break;
+    }
+    return all;
+  }
+
+  /// History first (oldest to newest), then live messages it does not
+  /// contain yet.
+  void _mergeHistory(List<ChatMessage> history) {
+    final ids = history.map((m) => m.id).toSet();
+    _messages = [
+      ...history,
+      ..._messages.where((m) => m.id.isEmpty || !ids.contains(m.id)),
+    ];
+  }
+
+  /// Catch up after a reconnect without showing a loader; on failure the
+  /// messages already on screen stay as they are.
+  Future<void> _refreshSilently() async {
+    if (_disposed || _isNewChat || _isLoading) return;
+    try {
+      final history = await _loadHistory();
+      if (_disposed) return;
+      final before = _messages.length;
+      _mergeHistory(history);
+      if (_messages.length != before || _error != null) {
+        _error = null;
+        notifyListeners();
+      }
+    } catch (_) {
+      // Keep what is shown; the next reconnect or Retry tries again.
     }
   }
 

@@ -1,9 +1,10 @@
 # KaamMilega Flutter — API Contract
 
-> **Last Audited:** 25 September 2026
+> **Last updated:** 30 September 2026 (see "Re-checked 30 September" below) · **first audit:** 25 September 2026
 > **Verified against:** Flutter code (branch `feat/ui-ux-polish` @ `eaf5dc8` + uncommitted changes) and `km-backend` `main` @ `b5a2956` (`internal/features/<name>/{api,controller,domain,service}.go`), read-only.
 > **Updated:** 25 September 2026 after fix Batches 1–7 — new/changed calls re-verified on `KaamMilega` monorepo `main` @ `51c8e10` (`km-backend/`).
 > **Re-checked:** 26 September 2026 — backend `main` still @ `51c8e10`. Changes since `b5a2956` (aa366a7, c829a60): booking review endpoint (integrated), expert subscription (§9b, not integrated), wallet category `subscription`.
+> **Re-checked 30 September 2026** against monorepo `main` @ **`5e57311`** (changes since `51c8e10`: paid event tickets + attendees, wallet disputes, Instant Milega `/instant-work/*`, profile analytics/viewers, cookie auth + `/auth/logout`, Brevo e-mails). New sections: §8 tickets, §9b (now integrated), §11b disputes, §15 Instant Milega. App: `feat/map-location-integration` @ `0fa522f` + uncommitted.
 > **Base URL:** `https://api.kaammilega.com/api` (`ApiConstants.baseUrl`). Paths below omit `/api`.
 > **Rule:** Only verified fields are listed. Anything else: **"Not verified — do not assume."** Re-check `domain.go` + `api.go` before adding or changing a call; the backend changes often.
 
@@ -108,14 +109,26 @@ Most profile mutations return the **full updated `User`**; the app parses it wit
 
 ### GET `/user/:id`
 - **Response:** `User` for other users; **403** `"This profile is private"` when `settings.profile_visibility == "private"`; 404 `"User not found"`.
-- **Flutter:** `userLookupProvider` (returns `null` on any error) ← chat list/detail names & photos · **Status:** Active
+- **Flutter:** `userLookupProvider` (returns `null` on any error) ← chat list/detail names & photos; `NetworkRepository` ← member profile (`/members/:id`, `member_profile_screen.dart`) · **Status:** Active
 
 ### GET `/user/search?q=`
 - **Request:** query `q` (app also sends `limit=20`; limit handling not verified) · **Response:** `[User]`
-- **Flutter:** `peer_to_peer_screen.dart` `_searchUsers` (direct `ApiClient`, **no repository**; guests can trigger it) · **Status:** Active
+- **Flutter:** `peer_to_peer_screen.dart` `_searchUsers` (route `/peer-to-peer` is protected; empty query loads `GET /community/users` via `NetworkRepository.getCommunityUsers`) · **Status:** Active
 
-### Other user routes (available, not integrated)
-`GET /user/viewers` (blocked — B-08), `PATCH /user/username`, `GET /user/username/check`, `POST /user/impressions`.
+### GET `/community/users` (Public) · GET `/experts` (Public)
+- **Response:** `[User]` — **full user records incl. private fields (B-04)**. App reads only `id, name, profile_image, cover_image, headline, skills, job_categories, city` (`UserProfile.fromJson`).
+- **Flutter:** `NetworkRepository.getCommunityUsers` ← People You May Know (`peer_to_peer_screen.dart` → `PeopleSuggestionGrid`) and Home; `getExperts` ← `network_provider.dart` · **Status:** Active (26–30 Sep)
+
+### GET `/user/viewers`
+- **Response:** `[User]` of people who viewed my profile — **includes private fields (B-08)**; app shows public fields only.
+- **Flutter:** `NetworkRepository.getProfileViewers` ← `profileViewersProvider` ← `profile_viewers_screen.dart` (route `/profile-viewers`, protected) · **Status:** Active (26–30 Sep)
+
+### POST `/user/impressions`
+- **Request:** `{author_ids: [userId, …]}` (app sends at most 100) · **Response:** not used.
+- **Flutter:** `NetworkRepository.recordImpressions` ← `ImpressionTracker` (batches ids from `ImpressionBeacon` widgets on member cards) · **Status:** Active (26–30 Sep). Backend counting issues: B-13.
+
+### PATCH `/user/username` · GET `/user/username/check?username=`
+- **Flutter:** `AuthRepository.updateUsername/checkUsername` ← `edit_public_url_dialog.dart` · **Status:** Active
 
 ## 3. Files (`file/api.go`)
 
@@ -182,16 +195,17 @@ Errors: 401, 500 with `error`. GET errors are rethrown (Batch 5). **Status:** Ac
 - **Flutter:** `ChatRepository.getConversations` (rethrows) ← `conversationsProvider` ← `chat_list_screen.dart` (guests see a login prompt, no call), `open_chat.dart` · **Status:** Active
 
 ### GET `/chats/:id/messages?limit=50&offset=0`
-- **Response:** `[Message {id, conversation_id, sender_id, content, is_read, created_at}]`; 400 on invalid id
-- **Flutter:** `ChatRepository.getMessages` (rethrows) ← `ChatMessagesNotifier` (error + `retryHistory`) · **Status:** Active
+- **Response:** `[Message {id, conversation_id, sender_id, content, is_read, created_at}]`, sorted **oldest first** (`repository.go` `created_at: 1`), so `offset=0` returns the *oldest* 50; 400 on invalid id; a non-participant gets 200 `[]` (B-11).
+- **Flutter:** `ChatRepository.getMessages` (rethrows) ← `ChatMessagesNotifier._loadHistory` reads pages of 50 until a short page (max 20 pages = 1000 messages); error + `retryHistory`; silent refresh after a socket reconnect · **Status:** Active (29 Sep)
 
 ### POST `/chats/messages`
 - **Request:** `{receiver_id, content}` · **Response:** 201 `Message` (creates the conversation if needed); also pushed over WebSocket to sender and receiver
 - **Errors:** 400 `"Receiver ID is required"`, `"Message content is required"` · **Flutter:** `ChatRepository.sendMessage` ← `ChatMessagesNotifier.sendMessage` · **Status:** Active
 
-### WebSocket `GET /api/ws/chats?token=<JWT>`
-- **Auth:** JWT in query string (`controller.go` `ctx.Query("token")`)
-- **Server → client:** `{"type":"NEW_MESSAGE","message": Message}`. Client → server messages: none used.
+### WebSocket `GET /api/ws/chats?token=JWT`
+- **Auth:** JWT in query string (`controller.go` `ctx.Query("token")`), or cookie `km_auth_token` (website). Claim `sub` = user id. Invalid token: upgrade succeeds, then the server closes with no reason.
+- **Server → client:** `{"type":"NEW_MESSAGE","message": Message}` sent to receiver **and** sender. Client → server messages: none used. Server never pings; the app pings every 20 s (`WebSocket.pingInterval`).
+- **Hub:** one socket per user id (`hub.go`) — a second socket from the same account replaces the first; `Unregister` removes by user id (B-11). The app keeps exactly one socket.
 - **Flutter:** `ChatWebSocketService` (`chat/services/chat_websocket_service.dart`), status via `webSocketStatusStreamProvider`. Details in [architecture.md §12](architecture.md#12-websocket-architecture). · **Status:** Active
 
 ## 8. Events (`event/api.go`)
@@ -204,6 +218,15 @@ Errors: 401, 500 with `error`. GET errors are rethrown (Batch 5). **Status:** Ac
 - **Auth:** Required · **Response:** `{"message":"Successfully registered for event"}`; 500 text on failure
 - **Flutter:** `EventRepository.registerForEvent` ← `EventsNotifier.registerForEvent` (optimistic) ← `event_detail_screen.dart` · **Status:** Active
 - `GET /events/:id` (Public) — available, not integrated.
+
+### Paid tickets (Required) — `event/domain.go`, backend `1beaa8f`
+- **POST `/events/:id/create-order`** `{attendee_name, attendee_email, attendee_phone?}` → `{order_id, amount, amount_paise, currency, key_id, event_title}` → Razorpay → **POST `/events/:id/verify-payment`** `{razorpay_order_id, razorpay_payment_id, razorpay_signature, attendee_name, attendee_email, attendee_phone?}`.
+- **POST `/events/:id/wallet-checkout`** `{attendee_name, attendee_email, attendee_phone?}`.
+- **GET `/events/my/tickets`** → tickets `EventTicket {id, ticket_number, event_id, user_id, attendee_name, attendee_email, attendee_phone?, amount, payment_status:"free"|"paid"|"refunded", payment_method:"free"|"razorpay"|"wallet", …}`.
+- **Flutter:** `EventRepository` create-order / verify / wallet-checkout / my tickets ← `ticket_checkout_sheets.dart`, `event_ticket_view.dart` (QR), `my_tickets_screen.dart` (`/my-tickets`, protected), `event_ticket_provider.dart` · **Status:** Active (28 Sep; Razorpay TEST mode not verified). `GET /events/:id/ticket` not used.
+
+### GET `/events/:id/attendees` (Public) — available, not integrated
+- → `{event_id, event_title, total_joined, attendees:[{id, name, headline?, profile_image?, city?, role?, ticket_number?, payment_type?, joined_at}]}` (backend `119c629`). For F64.
 
 ## 9. Experts / Mentorship (`mentorship/api.go`)
 
@@ -231,9 +254,9 @@ Errors: 401, 500 with `error`. GET errors are rethrown (Batch 5). **Status:** Ac
 - **Flutter:** `ExpertRepository.submitBookingReview` (no request without an id or with a rating outside 1–5) ← `RateSessionSheet` in `my_sessions_screen.dart`: "Rate session" only for completed, unrated sessions; list reloaded after success (stars shown from the server). · **Status:** Active (26 Sep)
 - `GET /mentorships/expert/:expert_id/availability` — available, not integrated.
 
-## 9b. Expert Subscription (`subscription/api.go`) — available, not integrated
+## 9b. Expert Subscription (`subscription/api.go`) — **Active since 29 Sep**
 
-Added in backend `c829a60` (F75 "Pro Expert"). Expert-side payment feature; **not in mobile scope until requested**.
+Added in backend `c829a60` (F75 "Pro Expert"). **Integrated** (`0fa522f`): `ExpertRepository` plans / my / create-order / verify / wallet-checkout ← `expert_plan_provider.dart` (`ExpertPlanCheckout`) ← `apply_expert_screen.dart` (Pro Expert plans). Razorpay TEST mode not verified.
 - `GET /subscriptions/expert/plans` (Public) → plans `{plan_type:"monthly"|"yearly", name, price (499 / 4499), duration_days, savings_percent, description, perks[]}`.
 - Required: `GET /subscriptions/expert/my` → `{is_active, subscription?, days_remaining, plan_type?, expires_at?}`; `POST /subscriptions/expert/create-order` `{plan_type}` → `{order_id, amount, amount_paise, currency, key_id, plan_type, plan_name}`; `POST /subscriptions/expert/verify-payment` `{plan_type, razorpay_order_id, razorpay_payment_id, razorpay_signature}`; `POST /subscriptions/expert/wallet-checkout` `{plan_type}`.
 - Response shapes of verify-payment / wallet-checkout **not verified — do not assume.**
@@ -251,8 +274,8 @@ Added in backend `c829a60` (F75 "Pro Expert"). Expert-side payment feature; **no
 
 ### GET `/wallet/transactions?page&limit`
 - **Response:** `{transactions:[{id, wallet_id, type:"credit"|"debit", target_balance, category, amount, balance_after, status, reference_id?, description, metadata?, created_at}], total, page, limit, total_pages}`. Backend also filters by `type`, `category`, `target_balance`. App requests `limit=50` (backend default 20).
-- **Categories** (`wallet/domain.go`): `topup, pass_purchase, session_booking, session_payout, gig_payout, withdrawal, bonus_reward, refund, subscription`. App titles via `WalletTransaction.titleForCategory` (`subscription` → "Expert subscription"; unknown → "Transaction").
-- **Flutter:** `WalletRepository.getTransactions` ← `walletProvider` · **Status:** Active
+- **Categories** (`wallet/domain.go` @ `5e57311`): `topup, pass_purchase, session_booking, session_payout, gig_payout, withdrawal, bonus_reward, refund, subscription, event_ticket`. `target_balance`: `main, earnings, locked, bonus`. The app shows the server `description` as the title, falling back to a category name; `locked` = mentorship escrow.
+- **Flutter:** `WalletRepository.getTransactions(category:)` ← `walletProvider` / transactions screen → `WalletTransactionTile` (`wallet/presentation/widgets/wallet_transaction_tile.dart`) · **Status:** Active
 
 ### POST `/wallet/topup/create-order` → Razorpay → POST `/wallet/topup/verify`
 - **create-order request:** `{amount}` (INR; ₹10 – ₹1,00,000) → `{order_id, amount, amount_paise, currency, key_id}`
@@ -263,6 +286,11 @@ Added in backend `c829a60` (F75 "Pro Expert"). Expert-side payment feature; **no
 ### POST `/wallet/withdraw`
 - **Request:** `WithdrawalRequest {amount (₹50–₹5,00,000), payout_method:"upi"|"bank", account_holder, account_number, ifsc_code, bank_name, upi_id, phone_number}`. Backend requires `account_number` + `ifsc_code` for `bank` and a valid `upi_id` for `upi` (`wallet/service.go`); the app also asks for `account_holder`; `bank_name` and `phone_number` are optional → `{transaction, wallet, message}`; 400 `error` text on validation. Withdraws from earnings. **No idempotency key** (B-06).
 - **Flutter:** `WithdrawalRequest.upi/.bank` (`wallet/models/withdrawal.dart`) → `WalletRepository.requestWithdrawal` → `WithdrawalResult` ← `WalletNotifier.withdraw` ← `wallet_withdraw_screen.dart` (min ₹50, confirmation sheet). 404 → coming soon; timeout/5xx → `isOutcomeUnknown` ("check transactions before retrying"); 401 stays an auth error. · **Status:** Active (Batch 2; no real payout made in testing)
+
+### POST `/wallet/disputes` · GET `/wallet/my/disputes` (§11b, backend `719977f`)
+- **Request:** `{transaction_id, reason, description}`; `reason` ∈ `session_cancelled, service_not_provided, duplicate_charge, technical_failure, dissatisfied, other`. Only debit transactions can be disputed.
+- **Response (list):** `WalletDispute {id, transaction_id, reference_id, amount, target_balance, category, reason, description, status:"pending"|"under_review"|"approved"|"rejected", admin_notes?, refund_transaction_id?, …}`. Approved refunds are credited to the **main** balance.
+- **Flutter:** `WalletRepository` raise / my disputes ← `myWalletDisputesProvider` ← `refund_request_sheet.dart` (description 10–1000 characters) and the transaction tile (shows the request status instead of the button) · **Status:** Active (29 Sep). Admin routes `/admin/disputes*` out of scope.
 
 ### POST `/wallet/transfer`
 - No backend route → 404 → `WalletApiException(isBackendPending)` → "coming soon". · **Status:** Backend unavailable
@@ -278,19 +306,34 @@ Added in backend `c829a60` (F75 "Pro Expert"). Expert-side payment feature; **no
 
 ## 14. Backend endpoints relevant to mobile, not integrated
 
-`GET /user/viewers` (**do not integrate** — returns private user fields, B-08), `PATCH /user/username`, `GET /user/username/check`, `GET /settings/me`, `PUT /settings/me`, `GET /events/:id`, `GET /mentorships/expert/:expert_id/availability`, `/subscriptions/expert/*` (§9b), `GET /companies/top`, `GET /companies`, `GET /questions`, `GET /platform/stats`, `GET /platform/live-activity`, `GET /files/download/:id`. Response shapes of these were **not verified** in this audit unless stated above.
+`GET /settings/me`, `PUT /settings/me`, `GET /events/:id`, `GET /events/:id/ticket`, `GET /events/:id/attendees` (§8), `POST /instant-work/pass/order` + `/pass/verify` (§15), `POST/GET /auth/logout`, `GET /mentorships/expert/:expert_id/availability`, `GET /companies`, `GET /questions`, `GET /platform/stats`, `GET /platform/live-activity`, `GET /files/download/:id`. Response shapes of these were **not verified** in this audit unless stated above.
 
 Out of mobile scope (do not integrate without an explicit request): `/admin/*`, `POST/PATCH/DELETE /jobs`, `/jobs/my`, `/applications/job/:jobId`, `/applications/recruiter/all`, `PATCH /applications/:id/status`, `POST /interviews`, mentorship expert management routes, `/cities` mutations, `/skills` mutations, `/sms/send`, `POST /settings/:key`.
 
+## 15. Instant Milega — gig worker (`instant_work/api.go`, Required, backend `fb1c62e`)
+
+| Endpoint | Request | Response | Flutter |
+|---|---|---|---|
+| GET `/instant-work/candidate/status` | — | `{is_free_now, active_skill, hourly_rate, quota_remaining, has_active_pass, pass_expires_at?, current_location{type,coordinates[lng,lat]}, last_ping_at?}` | `InstantCandidateRepository.getStatus` ← `instantCandidateProvider` |
+| POST `/instant-work/availability` | `{is_free_now, skill, hourly_rate, lat, lng}` | status; **402** `{requires_pass: true, …}` without a pass | `setAvailability` → `InstantPassRequired` ← `instant_availability_card.dart` |
+| POST `/instant-work/location` | `{lat, lng}` | `{success: true}` | `pingLocation` ← `instant_location_bar.dart` |
+| POST `/instant-work/pass/pay-wallet` | — | pass | `buyPassWithWallet` |
+| GET `/instant-work/candidate/feed?lat&lng&radius_km&skill` | — | `[InstantJob {id, recruiter_id, recruiter_name, recruiter_mobile?, company_name, skill, location, address, pay_rate, rate_type:"hourly"\|"flat", duration_hours, required_workers, notes, status, expires_at, distance_km?, …}]` | `getNearbyGigs` ← `spotGigsProvider` ← `spot_gigs_widgets.dart` |
+| POST `/instant-work/claim` | `{job_id}` | job; **402** `requires_pass`; **409** with `error` text when the claim fails | `claimGig` |
+| GET `/instant-work/candidate/active-job` | — | `InstantJob` or none | `getActiveGig` ← `ActiveGigCard` |
+| PUT `/instant-work/jobs/:id/complete` | — | job | `completeGig` |
+
+`/pass/order` (response `amount` is in **paise**, `pass_inr` in rupees) and `/pass/verify` `{razorpay_order_id, razorpay_payment_id, razorpay_signature}` are integrated (`createPassOrder`, `verifyPassPayment`, `InstantCandidateNotifier.buyPassOnline` / `retryPassActivation`) but **switched off** by `InstantPassTerms.onlinePaymentLive = false` until the double debit (B-12) is fixed; recruiter routes (`/recruiter/radar`, `/dispatch`, `/recruiter/active-job`, `/jobs/:id/close`) are out of scope. Status: **Active (29 Sep)**. Backend issues: B-12.
+
 ## Known Mismatches
 
-| # | Flutter | Backend (`b5a2956`) | Impact | Ref |
+| # | Flutter | Backend (`b5a2956`; re-checked `5e57311`) | Impact | Ref |
 |---|---|---|---|---|
 | 1 | ~~Withdraw body `{destination_type, destination_detail}`~~ | `WithdrawalRequest` | **Fixed (Batch 2)** | C-02 |
 | 2 | ~~New OTP user → `POST /auth/register/password`~~ | `POST /user/register` | **Fixed (Batch 1)** | C-01 |
 | 3 | ~~Open To / Providing services saved on device~~ | `PATCH /user/open-to-work`, `/user/providing-services` | **Implemented (7d), awaiting verification** | M-06 |
 | 4 | ~~Education/experience/skills add-only~~ | PUT/DELETE | **Fixed (7a, 7b)**; multi-word skill delete fails on backend | M-06, B-07 |
 | 5 | Reads bookmarks/settings from `/user/profile` | `GET /user/bookmarks`, `/user/settings` shadowed by `/user/:id` (500) | Workaround OK; full saved-jobs list impossible | B-01, H-06 |
-| 6 | Instant Work `job_types=Instant,Hourly,Gig,Part-time` | Only `Full-time/Part-time/Internship/Freelance/Contract` seen in backend/website | Likely only Part-time results | M-01 |
+| 6 | Old Instant Work job list `job_types=Instant,Hourly,Gig,Part-time` (spot gigs now use `/instant-work/*`) | Only `Full-time/Part-time/Internship/Freelance/Contract` seen in backend/website | Likely only Part-time results | M-01 |
 | 7 | ~~`UserProfile` read `profile_views_count` etc.~~ | `profile_views`, `post_impressions`, `search_appearances` | **Fixed** | — |
 | 8 | `UserProfile.publicProfileUrl` `/in/{id}` | Website route `/profile/[Id]` | Broken shared link | M-05 |

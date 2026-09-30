@@ -4,6 +4,7 @@ import '../../../core/constants/api_constants.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/network/app_exception.dart';
 import '../../../core/network/response_list.dart';
+import '../../wallet/models/wallet_summary.dart';
 import '../models/instant_candidate.dart';
 import '../models/spot_gig.dart';
 
@@ -80,6 +81,58 @@ class InstantCandidateRepository {
     throw const AppValidationException(
       'Unexpected response from server. Please check your pass status.',
     );
+  }
+
+  /// Starts an online (Razorpay) pass payment
+  /// (POST /instant-work/pass/order). Here the server sends `amount` in
+  /// paise (9900) and `pass_inr` in rupees.
+  Future<PaymentOrder> createPassOrder() async {
+    final response = await _client.post(ApiConstants.instantPassOrder);
+    final data = response.data;
+    if (data is Map<String, dynamic>) {
+      final paise = data['amount'] is num
+          ? (data['amount'] as num).round()
+          : 0;
+      final order = PaymentOrder(
+        orderId: data['order_id']?.toString() ?? '',
+        amount: data['pass_inr'] is num
+            ? (data['pass_inr'] as num).toDouble()
+            : paise / 100,
+        amountPaise: paise,
+        keyId: data['key_id']?.toString() ?? '',
+      );
+      if (order.orderId.isNotEmpty &&
+          order.keyId.isNotEmpty &&
+          order.amountPaise > 0) {
+        return order;
+      }
+    }
+    throw const AppValidationException(
+      'Online payment could not be started. No money was charged.',
+    );
+  }
+
+  /// Sends a completed Razorpay payment for server verification
+  /// (POST /instant-work/pass/verify). The pass is active only after this
+  /// succeeds.
+  Future<void> verifyPassPayment({
+    required String orderId,
+    required String paymentId,
+    required String signature,
+  }) async {
+    final response = await _client.post(
+      ApiConstants.instantPassVerify,
+      data: {
+        'razorpay_order_id': orderId,
+        'razorpay_payment_id': paymentId,
+        'razorpay_signature': signature,
+      },
+    );
+    if (response.data is! Map) {
+      throw const AppValidationException(
+        'Unexpected response from server. Please check your pass status.',
+      );
+    }
   }
 
   // --- Spot gigs ---

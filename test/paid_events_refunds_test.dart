@@ -625,7 +625,7 @@ void main() {
       final submit = find.widgetWithText(ElevatedButton, 'Submit dispute');
       expect(tester.widget<ElevatedButton>(submit).onPressed, isNull);
 
-      await tester.tap(find.text('Choose a reason'));
+      await tester.tap(find.byType(DropdownButtonFormField<DisputeReason>));
       await tester.pumpAndSettle();
       await tester.tap(find.text('Duplicate Deduction').last);
       await tester.pumpAndSettle();

@@ -1,7 +1,8 @@
 # KaamMilega Flutter — Known Issues
 
-> **Last Audited:** 25 September 2026 · app branch `feat/ui-ux-polish` @ `eaf5dc8` + uncommitted `user_profile.dart` / `profile_screen.dart` · backend `km-backend` `main` @ `b5a2956` (read-only).
-> **Updated:** 25 September 2026 after fix Batches 1–7 (Flutter only; backend read-only, re-checked on `KaamMilega` monorepo `main` @ `51c8e10`). Each issue below carries an **Update** line with its current state. Fix summary: [§ Fix batches](#fix-batches-25-sep-2026).
+> **Last updated:** **30 September 2026** · app branch `feat/map-location-integration` @ `0fa522f` + uncommitted 29–30 Sep work · backend `KaamMilega` monorepo `main` @ `5e57311` (read-only). New since 25 Sep: [§ Work 26–30 Sep](#work-2630-sep-2026), backend issues **B-11 … B-16**, updates on M-08, B-04, B-08.
+> Previous audit: 25 September 2026 · `feat/ui-ux-polish` @ `eaf5dc8` · backend `b5a2956`.
+> **History:** 25 September 2026 fix Batches 1–7 (Flutter only; backend read-only, re-checked on `KaamMilega` monorepo `main` @ `51c8e10`). Each issue below carries an **Update** line with its current state. Fix summary: [§ Fix batches](#fix-batches-25-sep-2026).
 > Status values: **Open** (confirmed in code) · **Fixed (Batch N)** · **Partly fixed** · **Backend** (needs backend developer) · **Blocked** · **Needs verification** (evidence strong, runtime not tested).
 > Architecture context: [architecture.md](architecture.md) · API details: [API_CONTRACT.md](API_CONTRACT.md) · Feature impact: [FEATURE_STATUS.md](FEATURE_STATUS.md)
 
@@ -87,6 +88,7 @@
 ### M-01 — Instant Work filters do nothing; job types not verified
 - **Files:** `instant_work/providers/instant_work_provider.dart`, `instant_work/presentation/instant_work_screen.dart`.
 - **Evidence:** `setFilter` stores `activeFilter` ('Today', 'Hourly', 'Urgent', 'Nearby') but `loadGigs` always sends the same query `job_types=Instant,Hourly,Gig,Part-time`. `Instant`, `Hourly`, `Gig` do not appear anywhere in km-backend or km-frontend (only `Full-time`, `Part-time`, `Internship`, `Freelance`, `Contract` found) → probably only Part-time jobs match. **Status:** Open / needs verification against production data.
+- **Update (30 Sep):** the Instant Milega page now leads with the real gig-worker features (availability, InstantPass, Spot Gigs from `/instant-work/*`); the older job list with these filter chips is still further down the page and the chips still do nothing.
 
 ### M-11 — Old phone-only Open To text still counts as "On"
 - **Files:** `auth/models/user_profile.dart` (`isOpenToWork`, `isProvidingServices`, `*Summary`).
@@ -118,7 +120,7 @@
   - **7b Fixed in app** — remove skill (chip ✕ → `DELETE /user/skill/:skillName`, name URL-encoded like the website). Success only if the returned profile no longer has the skill. Multi-word names fail on the backend — **B-07**.
   - **7c Fixed** — My Sessions: `/my-sessions` (protected, drawer entry) → `GET /mentorships/bookings/my` (`experts/presentation/my_sessions_screen.dart`, `myBookingsProvider`).
   - **7d Implemented, awaiting verification** — structured Open To Work / Providing Services sheets (`profile/presentation/widgets/open_to_sheets.dart`) save with `PATCH /user/open-to-work` and `/user/providing-services`. Old phone-only text is shown, never split or sent automatically. See B-09, M-11.
-  - **7e Blocked** — Profile viewers stay "coming soon" until `GET /user/viewers` returns public-safe fields — **B-08**.
+  - **7e Blocked (25 Sep) → implemented 26–30 Sep** — Profile Viewers screen now uses `GET /user/viewers` and shows public fields only; the backend still sends private fields — **B-08**.
   - Tests: `profile_entries_sessions_test.dart`, `open_to_preferences_test.dart`.
 
 ### M-07 — Connectivity override can hide real offline state
@@ -128,8 +130,9 @@
 ### M-08 — Chat robustness gaps
 - `main_navigation_shell.dart`: unread chat count hard-coded `0`.
 - `chat_provider.dart`: `chatMessagesProvider` family is not autoDispose (stream subscriptions and message lists kept per conversation); history load failure → empty conversation (no error state).
-- `chat_websocket_service.dart`: reconnect gives up after 5 attempts (linear 2/4/6/8/10 s, comment says exponential); `_processedMessageIds` grows without limit. **Status:** Open.
-- **Update:** `chatMessagesProvider` is now autoDispose and has an error state + Retry (Batch 5). Unread badge (backend has no counts) and WebSocket reconnect/ID growth are still open.
+- `chat_websocket_service.dart`: reconnect gives up after 5 attempts (linear 2/4/6/8/10 s, comment says exponential); `_processedMessageIds` grows without limit. **Status:** Partly fixed — socket issues fixed 29 Sep (see updates below); unread badge still open.
+- **Update:** `chatMessagesProvider` is now autoDispose and has an error state + Retry (Batch 5).
+- **Update (29 Sep, uncommitted): WebSocket fixed.** Users saw "Reconnecting live chat..." forever. Causes: reconnect gave up after 5 tries while the banner stayed; two sockets could open at once and the backend's one-socket-per-user hub dropped the newer one; no keep-alive; the status stream only reported changes. Now: one socket at a time, stale-socket callbacks ignored, 20 s ping, endless backoff (1 s → 30 s), reconnect on network back / app resume / Retry, status starts with the current value, missed messages fetched after a reconnect, full history read page by page (backend returns the **oldest** 50 first), `_processedMessageIds` capped at 1000. Chat shows small profile photos. Test: `chat_live_socket_test.dart` (local fake hub, real sockets). **Still open:** unread badge (backend has no counts); backend-side problems in B-11.
 
 ### M-09 — Jobs offline cache is not tied to the filter
 - `jobs_provider.dart` `fetchJobs`: on any error it shows the last cached list (single key `km_cache_jobs`) even when the current search/filter/page differs, labelled only by timestamp; 404/500 are also replaced by cache. **Status:** Open.
@@ -165,21 +168,28 @@ Backend-side issues (report to backend developer; **do not fix from this repo**)
 | B-01 | `GET /user/:id` registered before `GET /user/bookmarks` and `GET /user/settings` | `user/api.go` lines 42 vs 58–59 | reads `bookmarked_jobs` / `settings` from `GET /user/profile` |
 | B-02 | `POST /wallet/topup/verify` credits the client-sent `amount` | `wallet/service.go` uses `req.Amount` for the credit | app sends the server order amount |
 | B-03 | `POST /mentorships/book-wallet` charges ₹100 when price ≤ 0 | `mentorship/service.go` `price = 100 // fallback` | app books price ≤ 0 via `/mentorships/book` (`expert_detail_screen.dart` line ~72) |
-| B-04 | `GET /api/community/users` returns full user records publicly | `user/controller.go` `GetCommunityUsers` returns `users` | app does not call it |
+| B-04 | `GET /api/community/users` returns full user records publicly | `user/controller.go` `GetCommunityUsers` returns `users` | **since 26–30 Sep** the app uses it for People You May Know and shows only name, photo, cover, headline/skills, city |
 | B-06 | `POST /wallet/withdraw` has no idempotency key | `wallet/api.go`, `WithdrawalRequest` has no request id | a retried request could create a second withdrawal; app treats timeout/5xx as "outcome unknown" and tells the user to check transactions first |
 | B-07 | `DELETE /user/skill/:skillName` does not URL-decode the name | Fiber config has no `UnescapePath`; `controller.go` `c.Params("skillName")` compared with `strings.EqualFold` (`service.go` `DeleteSkill`), 200 even when nothing matched | app keeps website-style encoding and reports "Could not remove …" when the returned profile still has the skill (single-word skills work). Backend fix: `url.PathUnescape` before comparing |
-| B-08 | `GET /user/viewers` returns private fields of viewers (mobile, email) | `user/controller.go` `GetProfileViewers` returns full `[]*User` records | app does **not** call it; Profile viewers blocked (7e) until public-safe fields are returned |
+| B-08 | `GET /user/viewers` returns private fields of viewers (mobile, email) | `user/controller.go` `GetProfileViewers` returns full `[]*User` records | **since 26–30 Sep** the app shows Profile Viewers (`profile_viewers_screen.dart`) with public fields only; the private fields still travel over the network — backend should strip them |
 | B-09 | `open_to_work.visibility` "recruiters" is not enforced | only used as a default in `service.go` `UpdateOpenToWork`; website shows it publicly | app says "Saved as your preference. KaamMilega does not yet limit who can see this status." |
 | B-10 | Open To / Providing Services values are not validated | `UpdateOpenToWork` / `UpdateProvidingServices` accept any strings | app offers only the website's job types, `all`/`recruiters`, and `INR` |
-| B-05 | No `/notifications`, `/wallet/transfer`, feed/posts, services, ₹99 pass, gig dispatch, resume field, push/FCM | route list | coming-soon states |
+| B-05 | No `/notifications` (404), `/wallet/transfer`, feed/posts, services, resume field, push/FCM, nearby-professionals API, chat unread counts | route list @ `5e57311` | coming-soon states. (InstantPass and spot gigs now exist under `/instant-work/*` — see B-12.) |
+| B-11 | Chat hub: one socket per user; stale unregister; oldest-first history | `chat/hub.go` keeps `map[userID]*Conn` (web + phone → only the last one gets live messages); `Unregister(userID)` deletes whatever is registered, so an old socket closing removes the new one; `repository.go` sorts messages `created_at: 1` with limit/offset; non-participant gets 200 `[]`; invalid WS token closes with no reason; server never pings; no read receipts | app keeps one socket, pings, reconnects, and pages through history (M-08). Reverse-proxy config for `api.kaammilega.com` is not in the repo, so WebSocket upgrade / idle timeout could not be verified |
+| B-12 | InstantPass & spot gigs (`instant_work/*`, `fb1c62e`) | pass `verify` online also debits the wallet (double charge); `ActivatePass` does not check the user; mock-order path gives a free pass; pass created before the debit; `UpsertWorker` wipes worker fields; default rating 4.9 / 12 gigs are invented; closing a job pays workers without charging the recruiter and a double close pays twice; feed exposes `recruiter_mobile`; one worker can claim many gigs | app buys the pass with the wallet only and does not read the worker rating / gig-count fields; the recruiter's number is used only for the Call button on the worker's own claimed gig (`ActiveGigCard`), never in the open feed |
+| B-13 | Profile analytics counting | profile-view debounce is not 24 h; `UpdateUser` writes the whole document, so parallel counters race | app only reads the numbers |
+| B-14 | **Secrets committed** | `km-backend/docker-compose.yml` contains the Mongo password and `JWT_SECRET` | none possible in the app — backend owner should rotate both and move them out of git |
+| B-15 | Uploaded files disappear | uploads saved to a container folder (`FS_PATH=./static/uploads`); lost when the container is rebuilt | app shows initials / gradient when an image fails to load (`onForegroundImageError`, `errorBuilder`) |
+| B-16 | No bank verification / automatic payouts | no RazorpayX / payout API; `POST /wallet/withdraw` only records a request | app shows the backend's own response message after a withdrawal; no fake "paid" state |
 
 ## Authentication Issues
-- H-05 (mid-session 401), M-10 (token storage) — open. C-01, H-03, H-04 fixed (Batches 1, 4).
+- M-10 (token storage) — open. C-01, H-03, H-04, H-05 fixed.
+- Backend `e53899e` (26–28 Sep) moved the **website** to HttpOnly cookie auth and added `POST/GET /auth/logout`. AuthMiddleware and the chat socket still accept the Bearer / `?token=` JWT the app uses. The app does not call `/auth/logout` (logout is local) — optional follow-up.
 
 ## Performance Issues
 - `IndexedStack` builds all four tab screens (incl. 7.3k-line Profile) at shell start. Observed in code; impact not measured.
 - `chatMessagesProvider` now autoDispose; `userLookupProvider` resets per session (Batch 4).
-- `_processedMessageIds` unbounded (M-08).
+- `_processedMessageIds` now capped at 1000 (M-08, 29 Sep).
 - No measured performance problems — **not profiled** in this audit.
 
 ## Fix batches (25 Sep 2026)
@@ -192,10 +202,31 @@ Backend-side issues (report to backend developer; **do not fix from this repo**)
 | 4 | H-03 logout leftovers, H-04 guest API calls | Fixed |
 | 5 | H-02 errors as empty data, M-04 cache | Partly fixed (see H-02) |
 | 6 | H-06 saved jobs | Fixed |
-| 7 | M-06: 7a edit/delete education & experience, 7b remove skill, 7c My Sessions, 7d Open To sheets, 7e profile viewers | 7a–7c fixed · 7d implemented, awaiting verification · 7e blocked (B-08) |
+| 7 | M-06: 7a edit/delete education & experience, 7b remove skill, 7c My Sessions, 7d Open To sheets, 7e profile viewers | 7a–7c fixed ·  7d implemented, awaiting verification · 7e blocked (B-08), implemented 26–30 Sep |
 | — | Test-run fixes | App-wide provider retry policy (M-12) |
 
-Not addressed yet: H-05, M-01, M-02, M-03, M-05, M-07, M-09, M-10, M-11, L-01…L-07, B-01…B-10.
+Not addressed yet (Flutter): M-01, M-02, M-03, M-05, M-07, M-09, M-10, M-11, L-01…L-07. Backend-owned: B-01…B-16.
+
+## Work 26–30 Sep 2026
+
+| Date | Area | What was done | Where |
+|---|---|---|---|
+| 26 Sep | Brand / typography | Inter, Poppins, Noto Sans Devanagari fonts; Home filter fix | `a687443` |
+| 26 Sep | Voice search | Mic button in Home search (`speech_to_text`) | `1510338` |
+| 28 Sep | Events | Paid tickets (Razorpay / wallet), QR ticket, My Tickets | `95c0800` |
+| 28 Sep | Home / Instant Milega | Category photos, featured companies (`/companies/top`), Instant Milega logic | `95c0800` |
+| 29 Sep | Experts | Pro Expert plans (`/subscriptions/expert/*`), coloured drawer + Apply card | `0fa522f` |
+| 29 Sep | Instant Milega | Availability toggle + InstantPass (402 `requires_pass`), location bar, Spot Gigs feed/claim, active gig; **map removed** | `0fa522f` |
+| 29 Sep | Wallet | Website-style transaction tile; Dispute / Refund sheet | `0fa522f` |
+| 29 Sep | Profile / Network | Analytics card, impression tracking, Profile Viewers, People You May Know → profile + Message | `0fa522f` |
+| 29 Sep | Jobs | Blue hero card, duplicate bookmark removed | `0fa522f` |
+| 29 Sep | Experts | Upcoming-call banner, My Booked Sessions redesign | uncommitted |
+| 29 Sep | Home / Jobs | Quick actions + Popular Categories scroll horizontally; Jobs filters reset when returning to Home | uncommitted |
+| 29 Sep | Chat | Live-chat reconnect fix, avatars, full history (M-08, B-11) | uncommitted |
+| 30 Sep | Network | People You May Know as LinkedIn-style card grid | uncommitted |
+| 30 Sep | Docs | All `.md` files refreshed | uncommitted |
+
+**Pending decisions:** rename "Instant UPI" → "UPI" on the withdraw screen (offered, not confirmed); whether the Home ₹99 Access banner should sell InstantPass.
 
 ## Verification log
 | When | `dart format` | `flutter analyze` | `flutter test` | Phone |
@@ -204,11 +235,13 @@ Not addressed yet: H-05, M-01, M-02, M-03, M-05, M-07, M-09, M-10, M-11, L-01…
 | After retry-policy fix + 7d (25 Sep, 15:57) | 4 files formatted | 1 warning, 2 info (all in `open_to_preferences_test.dart`) | +171 −1 (`Open To Work sheet server error` — Save scrolled off the 800×600 test view) | — |
 | After backend sync A + B (26 Sep, 13:04) | 0 files changed | **No issues found** | +183 −1 (test clean-up bug, fixed in test only; re-run pending) | **pending** |
 | After test fix (25 Sep, 16:04) | 0 files changed | **No issues found** | **+172, all passed** | **pending** |
+| After chat fix (29 Sep) | 2 files formatted | **No issues found** | +309 −1 (`chat_live_socket_test.dart`: test missing `sessionUserIdProvider` override — fixed in the test; re-run pending) | **pending** |
+| After People You May Know grid (30 Sep) | not run | not run | not run (new `people_suggestion_grid_test.dart`) | **pending** |
 
 ## Build/Environment Issues
 - **Release signing:** `android/app/build.gradle.kts` release build uses `signingConfigs.getByName("debug")`. iOS signing team not configured (per project notes; not re-verified in Xcode).
 - **Base URL is a compile-time constant** (`ApiConstants.baseUrl`), no dev/staging flavour.
-- **Working tree:** branch `feat/ui-ux-polish`; Batches 1–8 are uncommitted (the owner commits and pushes). Empty folders `Daily report/` and `New folder/` at repo root (not tracked by git).
+- **Working tree (30 Sep):** branch `feat/map-location-integration` @ `0fa522f`; uncommitted: chat fix, upcoming-call banner, My Sessions, Home strips, Jobs filter reset, People You May Know grid, docs (the owner commits and pushes).
 - **Verification:** `dart format` / `flutter analyze` / `flutter test` are run by the owner on Windows (see Verification log). Not verified yet: Android/iOS release builds, Razorpay TEST mode, phone testing of Batches 1–7.
 - Platform folders `web/`, `windows/`, `macos/`, `linux/` exist, but `razorpay_flutter` supports Android/iOS only; other platforms are untested.
 
@@ -217,7 +250,7 @@ Not addressed yet: H-05, M-01, M-02, M-03, M-05, M-07, M-09, M-10, M-11, L-01…
 - Profile analytics read backend keys `profile_views`, `post_impressions`, `search_appearances` (correct per backend `User` struct).
 
 ## Documentation Issues
-- **D-01 — `API_INTEGRATION_STATUS.md` (23 Sep) is outdated:** says education/experience have no update/delete (now exist), withdraw is not built (now exists, C-02), `PATCH /user/profile` ignores open-to-work (now separate endpoints), and lists `POST /user/register` as used by Register (it is not, C-01).
-- **D-02 — `flutter_app_feature_tracker.md`** is not maintained with these docs; use FEATURE_STATUS.md for current status.
-- **D-03 — `README.md`** is the default Flutter template.
-- Code comment still wrong: `chat_websocket_service.dart` "Exponential backoff" (backoff is linear).
+- **D-01 — Fixed 30 Sep** (`API_INTEGRATION_STATUS.md` rewritten against backend `5e57311`). Was: `API_INTEGRATION_STATUS.md` (23 Sep) is outdated: says education/experience have no update/delete (now exist), withdraw is not built (now exists, C-02), `PATCH /user/profile` ignores open-to-work (now separate endpoints), and lists `POST /user/register` as used by Register (it is not, C-01).
+- **D-02 — `flutter_app_feature_tracker.md`** + `.csv` refreshed 30 Sep; FEATURE_STATUS.md stays the detailed source.
+- **D-03 — Fixed 30 Sep** (`README.md` now describes the project and links the docs).
+- Fixed 29 Sep: `chat_websocket_service.dart` backoff comment (service rewritten).

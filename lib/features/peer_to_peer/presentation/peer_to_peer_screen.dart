@@ -17,12 +17,12 @@ import '../../auth/providers/auth_provider.dart';
 import '../../chat/presentation/open_chat.dart';
 import '../../network/models/connection_request.dart';
 import '../../network/presentation/widgets/connect_button.dart';
-import '../../network/services/impression_tracker.dart';
 import '../../network/providers/network_provider.dart';
 import '../../network/repositories/network_repository.dart';
 import '../../../shared/widgets/fade_slide_in.dart';
 import '../../../shared/widgets/network_state_view.dart';
 import '../../../app/theme/app_colors.dart';
+import 'widgets/people_suggestion_grid.dart';
 
 class PeerToPeerScreen extends ConsumerStatefulWidget {
   const PeerToPeerScreen({super.key});
@@ -366,7 +366,16 @@ class _PeerToPeerScreenState extends ConsumerState<PeerToPeerScreen>
             ),
           )
         else
-          ..._discoveredUsers.map((u) => _buildUserCard(u)),
+          PeopleSuggestionGrid(
+            users: _discoveredUsers,
+            onOpen: (u) => context.push('/members/${u.id}'),
+            onMessage: (u) => chatWithMember(
+              context,
+              ref,
+              userId: u.id,
+              name: u.name.trim().isNotEmpty ? u.name.trim() : 'Member',
+            ),
+          ),
 
         const SizedBox(height: 24),
       ],
@@ -434,141 +443,6 @@ class _PeerToPeerScreenState extends ConsumerState<PeerToPeerScreen>
   /// Tapping the card opens the person's profile (which also has Connect
   /// and Message). Connect shows the server's state (Connect, Pending or
   /// Connected); the chat button opens a conversation with them.
-  Widget _buildUserCard(UserProfile user) {
-    final name = user.name.trim().isNotEmpty ? user.name.trim() : 'Member';
-    final card = Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: Material(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        child: InkWell(
-          borderRadius: BorderRadius.circular(16),
-          onTap: () => context.push('/members/${user.id}'),
-          child: Ink(
-            padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: AppColors.borderLight),
-            ),
-            child: Row(
-              children: [
-                CircleAvatar(
-                  radius: 24,
-                  backgroundColor: AppColors.moduleP2PLight,
-                  foregroundImage: user.profileImage.isNotEmpty
-                      ? NetworkImage(user.profileImage)
-                      : null,
-                  onForegroundImageError: user.profileImage.isNotEmpty
-                      ? (_, _) {}
-                      : null,
-                  child: Text(
-                    name[0].toUpperCase(),
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w800,
-                      color: AppColors.moduleP2P,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        name,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w800,
-                          color: AppColors.textPrimary,
-                        ),
-                      ),
-                      if (user.headline.trim().isNotEmpty)
-                        Text(
-                          user.headline.trim(),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            fontSize: 11.5,
-                            color: AppColors.textSecondary,
-                          ),
-                        ),
-                      if (user.city.trim().isNotEmpty)
-                        Row(
-                          children: [
-                            const Icon(
-                              Icons.location_on_outlined,
-                              size: 12,
-                              color: AppColors.textLight,
-                            ),
-                            const SizedBox(width: 2),
-                            Flexible(
-                              child: Text(
-                                user.city.trim(),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(
-                                  fontSize: 11,
-                                  color: AppColors.textLight,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 8),
-                SizedBox(
-                  width: 92,
-                  child: ConnectButton(
-                    userId: user.id,
-                    name: name,
-                    height: 36,
-                    fontSize: 12,
-                  ),
-                ),
-                const SizedBox(width: 6),
-                SizedBox(
-                  width: 36,
-                  height: 36,
-                  child: OutlinedButton(
-                    onPressed: () => chatWithMember(
-                      context,
-                      ref,
-                      userId: user.id,
-                      name: name,
-                    ),
-                    style: OutlinedButton.styleFrom(
-                      padding: EdgeInsets.zero,
-                      foregroundColor: AppColors.moduleP2P,
-                      side: const BorderSide(color: AppColors.border),
-                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
-                    child: Tooltip(
-                      message: 'Message $name',
-                      child: const Icon(
-                        Icons.chat_bubble_outline_rounded,
-                        size: 17,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-    // Seen cards count as "Post impressions" for that member
-    return ImpressionBeacon(authorId: user.id, child: card);
-  }
-
   Widget _buildConnectionsTab(AsyncValue<List<String>> connectionsAsync) {
     return connectionsAsync.when(
       data: (connections) {

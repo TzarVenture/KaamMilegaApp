@@ -8,7 +8,9 @@ import '../../../shared/widgets/shimmer_loading.dart';
 import '../../../shared/widgets/themed_category_bottom_nav.dart';
 import '../models/expert_profile.dart';
 import '../providers/expert_provider.dart';
+import '../repositories/expert_repository.dart';
 import 'expert_detail_screen.dart';
+import 'widgets/upcoming_session_banner.dart';
 import '../../../shared/widgets/fade_slide_in.dart';
 import '../../../app/theme/app_colors.dart';
 
@@ -74,14 +76,19 @@ class _ExpertsScreenState extends ConsumerState<ExpertsScreen> {
             Expanded(
               child: RefreshIndicator(
                 color: AppColors.moduleExperts,
-                onRefresh: () =>
-                    ref.read(expertProvider.notifier).loadExperts(),
+                onRefresh: () {
+                  ref.invalidate(myBookingsProvider);
+                  return ref.read(expertProvider.notifier).loadExperts();
+                },
                 child: ListView(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 16,
                     vertical: 14,
                   ),
                   children: [
+                    // 0. The user's next booked call (hidden when none)
+                    const UpcomingSessionBanner(),
+
                     // 1. Indigo Hero Banner (IMAGE 2)
                     _buildHeroBanner(context),
 

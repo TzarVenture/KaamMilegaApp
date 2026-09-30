@@ -12,6 +12,12 @@ class InstantPassTerms {
 
   static String get priceLabel => '₹${priceInr.toStringAsFixed(0)}';
 
+  /// Online (Razorpay) payment for the pass. Kept OFF: the backend's
+  /// `POST /instant-work/pass/verify` also debits Rs 99 from the wallet
+  /// after Razorpay has taken the money (double charge, KNOWN_ISSUES B-12).
+  /// Turn on once that is fixed on the server; the app flow is ready.
+  static const bool onlinePaymentLive = false;
+
   /// "₹9.90"
   static String get perGigLabel => '₹${(priceInr / gigs).toStringAsFixed(2)}';
 }

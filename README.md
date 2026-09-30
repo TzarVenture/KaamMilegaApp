@@ -1,17 +1,32 @@
-# kaam_milega
+# KaamMilega — Flutter mobile app
 
-A new Flutter project.
+KaamMilega is an Indian jobs and gig-work platform. This repository is the **Flutter mobile app** for **candidates, guests and gig workers** (not recruiters or admins): jobs, applications, interviews, profile, networking, real-time chat, experts / mentorship, events and tickets, Instant Milega spot gigs, skills and a Razorpay-backed wallet.
 
-## Getting Started
+- App id: `com.kaammilega.app` · package `kaam_milega`
+- Backend: separate Go service **km-backend** at `https://api.kaammilega.com/api` (repository `TzarVenture/KaamMilega`, developed by another developer — **never edited from here**)
+- Stack: Flutter, Riverpod 3, GoRouter, Dio, SharedPreferences, connectivity_plus, razorpay_flutter, speech_to_text, geolocator
 
-This project is a starting point for a Flutter application.
+## Where to find what (for people and AI tools)
 
-A few resources to get you started if this is your first Flutter project:
+| Question | Read |
+|---|---|
+| What is done and what is pending? | [AI_QUICK_START.md](AI_QUICK_START.md) → "Status at a glance", then [FEATURE_STATUS.md](FEATURE_STATUS.md) |
+| Feature tracker in Google-Sheet format | [flutter_app_feature_tracker.md](flutter_app_feature_tracker.md) / `.csv` |
+| Bugs, backend problems, what changed recently | [KNOWN_ISSUES.md](KNOWN_ISSUES.md) (incl. "Work 26–30 Sep 2026" and the verification log) |
+| Which backend endpoints the app uses | [API_INTEGRATION_STATUS.md](API_INTEGRATION_STATUS.md) (overview) · [API_CONTRACT.md](API_CONTRACT.md) (fields) |
+| How the code is organised | [architecture.md](architecture.md) |
+| Rules for AI coding agents | [CLAUDE.md](CLAUDE.md) |
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+Docs last updated **30 September 2026**. Source code wins over the docs.
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## Run and check
+
+```
+flutter pub get
+flutter run
+dart format .
+flutter analyze
+flutter test
+```
+
+Release builds still use the debug signing key (Android) and have no iOS signing team yet — see KNOWN_ISSUES "Build/Environment Issues".

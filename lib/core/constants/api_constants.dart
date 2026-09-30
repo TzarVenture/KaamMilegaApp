@@ -112,6 +112,10 @@ class ApiConstants {
       '/instant-work/location'; // POST {lat, lng} while online
   static const String instantPassPayWallet =
       '/instant-work/pass/pay-wallet'; // POST (₹99 InstantPass)
+  static const String instantPassOrder =
+      '/instant-work/pass/order'; // POST → Razorpay order (amount in paise)
+  static const String instantPassVerify =
+      '/instant-work/pass/verify'; // POST {razorpay_order_id, …}
   static const String instantCandidateFeed =
       '/instant-work/candidate/feed'; // GET ?lat&lng&radius_km&skill
   static const String instantClaim = '/instant-work/claim'; // POST {job_id}

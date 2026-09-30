@@ -45,6 +45,19 @@ class _MainNavigationShellState extends ConsumerState<MainNavigationShell> {
     }
   }
 
+  /// Every tab change goes through here (bottom bar, back arrows, drawer).
+  /// Back on Home, the Jobs filters are cleared (the chosen city stays), so
+  /// a category picked on Home does not stay applied the next time Jobs is
+  /// opened. Home's shortcuts set their filter and then open Jobs, so they
+  /// keep working.
+  void _selectTab(int index) {
+    if (index == 0 && _currentIndex != 0) {
+      ref.read(jobsProvider.notifier).resetFilters();
+      _jobsVisit++;
+    }
+    setState(() => _currentIndex = index);
+  }
+
   void _showCenterActionMenu(BuildContext context) {
     showModalBottomSheet(
       context: context,
@@ -174,23 +187,10 @@ class _MainNavigationShellState extends ConsumerState<MainNavigationShell> {
     const unreadChats = 0;
 
     final screens = [
-      HomeScreen(
-        onNavigateTab: (index) {
-          setState(() => _currentIndex = index);
-        },
-      ),
-      JobsScreen(
-        key: ValueKey('jobs-$_jobsVisit'),
-        onNavigateTab: (index) {
-          setState(() => _currentIndex = index);
-        },
-      ),
+      HomeScreen(onNavigateTab: _selectTab),
+      JobsScreen(key: ValueKey('jobs-$_jobsVisit'), onNavigateTab: _selectTab),
       const SizedBox.shrink(), // Index 2 reserved for Center (+) action trigger
-      ChatListScreen(
-        onNavigateTab: (index) {
-          setState(() => _currentIndex = index);
-        },
-      ),
+      ChatListScreen(onNavigateTab: _selectTab),
       const ProfileScreen(),
     ];
 
@@ -305,7 +305,7 @@ class _MainNavigationShellState extends ConsumerState<MainNavigationShell> {
           ref.read(jobsProvider.notifier).resetFilters();
           _jobsVisit++;
         }
-        setState(() => _currentIndex = index);
+        _selectTab(index);
         // Profile tab: fresh analytics counters and profile from the server
         if (index == 4 && AuthGuard.isSignedIn(ref.read(authProvider))) {
           ref.read(authProvider.notifier).refreshProfile();
