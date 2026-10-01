@@ -181,6 +181,11 @@ Backend-side issues (report to backend developer; **do not fix from this repo**)
 | B-14 | **Secrets committed** | `km-backend/docker-compose.yml` contains the Mongo password and `JWT_SECRET` | none possible in the app — backend owner should rotate both and move them out of git |
 | B-15 | Uploaded files disappear | uploads saved to a container folder (`FS_PATH=./static/uploads`); lost when the container is rebuilt | app shows initials / gradient when an image fails to load (`onForegroundImageError`, `errorBuilder`) |
 | B-16 | No bank verification / automatic payouts | no RazorpayX / payout API; `POST /wallet/withdraw` only records a request | app shows the backend's own response message after a withdrawal; no fake "paid" state |
+| B-17 | Anyone can create session offers | `POST /mentorships` (`mentorship/service.go` `CreateMentorship`) has no `expert` role check; create/edit errors return 500 | app shows the Expert Dashboard only to the `expert` role and checks the fields before sending |
+| B-18 | An expert can mark a session completed before it happens | `UpdateBookingStatus` releases the mentee's held payment on `completed` at any time | app enables "Mark completed" only after the session start and asks for confirmation |
+| B-19 | A mentee cannot cancel their own booking | no user-side cancel endpoint in `mentorship/api.go` | none — needs a backend endpoint |
+| B-20 | **Anyone can change any interview's status** | `PATCH /interviews/:id/status` → `InterviewService.UpdateInterviewStatus` has no ownership or role check | app does not call it |
+| B-21 | Public attendee list shows ticket numbers and payment type | `GET /events/:id/attendees` (no login) returns `ticket_number`, `payment_type` per attendee | app shows only name, headline, city and photo |
 
 ## Authentication Issues
 - M-10 (token storage) — open. C-01, H-03, H-04, H-05 fixed.
@@ -205,7 +210,7 @@ Backend-side issues (report to backend developer; **do not fix from this repo**)
 | 7 | M-06: 7a edit/delete education & experience, 7b remove skill, 7c My Sessions, 7d Open To sheets, 7e profile viewers | 7a–7c fixed ·  7d implemented, awaiting verification · 7e blocked (B-08), implemented 26–30 Sep |
 | — | Test-run fixes | App-wide provider retry policy (M-12) |
 
-Not addressed yet (Flutter): M-01, M-02, M-03, M-05, M-07, M-09, M-10, M-11, L-01…L-07. Backend-owned: B-01…B-16.
+Not addressed yet (Flutter): M-01, M-02, M-03, M-05, M-07, M-09, M-10, M-11, L-01…L-07. Backend-owned: B-01…B-21.
 
 ## Work 26–30 Sep 2026
 

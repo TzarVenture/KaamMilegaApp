@@ -12,9 +12,9 @@
 
 | Status Category | Feature Count | Description |
 | :--- | :---: | :--- |
-| 🟢 **Fully Implemented** | **45** | Auth (OTP, email, reset, new-user sign-up, session expiry), Profile (info, education/experience/skills edit & delete, photo, resume, projects, strength bar), Jobs (search + voice, hero card, filters, detail, apply, bookmarks), Applications, Interviews, Experts (apply + Pro Expert plans, directory, free & paid booking, session rating), Pro Expert subscription, Connections, People You May Know, Real-time chat, Events (list, register, paid tickets), Wallet (balances, add money, history, refunds & disputes), Mentorship checkout, Emails, Instant Milega availability toggle, Settings, Guest mode |
+| 🟢 **Fully Implemented** | **46** | Auth (OTP, email, reset, new-user sign-up, session expiry), Profile (info, education/experience/skills edit & delete, photo, resume, projects, strength bar), Jobs (search + voice, hero card, filters, detail, apply, bookmarks), Applications, Interviews, Experts (apply + Pro Expert plans, directory, free & paid booking, session rating), Pro Expert subscription, Connections, People You May Know, Real-time chat, Events (list, register, paid tickets, attendee list), Wallet (balances, add money, history, refunds & disputes), Mentorship checkout, Emails, Instant Milega availability toggle, Settings, Guest mode |
 | 🟡 **Partially Implemented** | **10** | Chat unread badges, Android & iOS release (signing), Withdrawals (manual payouts), Expert earnings, Services browse, ₹99 pass / InstantPass (wallet only), GPS location (no background tracking), Spot-gig dispatch (list, no dispatch card) |
-| ⏳ **Pending Implementation** | **2** | Event attendee list (backend ready), FCM push notifications |
+| ⏳ **Pending Implementation** | **1** | FCM push notifications |
 | 🚀 **Upcoming / Not Started** | **15** | KYC, Skill certifications, Services booking / quotes / tracking, Community feed (3), Chat attachments & block/report, WebRTC audio & video, AI assistant, Refer & Earn, Offers |
 | **Total Tracked Mobile Features** | **72** | **Milestones 1 to 5 (Candidate & Gig Workers Exclusive)** |
 
@@ -112,7 +112,7 @@
 | **65** | **F55** | Networking - People You May Know / Suggested Connections | Social & Chat | M4 - Week 4 | `Fully Implemented` | `uncommitted (30 Sep)` | People You May Know from GET /community/users (public member list, not personalised). 30 Sep: LinkedIn-style 2-column cards with cover, photo, headline or skills, city, Connect and Message. Format/analyze/test pending. |
 | **66** | **F58** | Real-Time Chat - Media & Document Attachment Sharing | Social & Chat | M4 - Week 4 | `Upcoming` | `fix/backend-alignment-wallet-payments (a30fa29)` | Not built in the app (no attachment sending). Waiting on backend: chat attachment support. |
 | **67** | **F59** | Real-Time Chat - Block User & Report Conversation | Social & Chat | M4 - Week 4 | `Upcoming` | `fix/backend-alignment-wallet-payments (a30fa29)` | Not built in the app (no block/report actions). Waiting on backend: block and report API. |
-| **68** | **F64** | Events - Attendee List Modal (Clickable Join Count) | Events & Community | M4 - Week 4 | `Pending Implementation` | `main` | Backend now has GET /events/:id/attendees (public). Not integrated in the app yet. |
+| **68** | **F64** | Events - Attendee List Modal (Clickable Join Count) | Events & Community | M4 - Week 4 | `Fully Implemented` | `uncommitted (30 Sep)` | Event page shows "N attending" with photos; See all opens a searchable list; tap opens the member profile. Uses GET /events/:id/attendees (public fields only). |
 
 ---
 

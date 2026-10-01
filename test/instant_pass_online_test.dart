@@ -113,10 +113,7 @@ final _paid = RazorpayResult.paid(
   signature: 'sig_1',
 );
 
-Future<void> _openSheet(
-  WidgetTester tester,
-  List<Override> overrides,
-) async {
+Future<void> _openSheet(WidgetTester tester, List<Override> overrides) async {
   tester.view.physicalSize = const Size(1200, 3000);
   tester.view.devicePixelRatio = 3;
   addTearDown(tester.view.reset);
@@ -162,8 +159,7 @@ void main() {
     LocalStorage.setMockInstance(await SharedPreferences.getInstance());
   });
 
-  test('online payment stays off until the backend double charge is fixed',
-      () {
+  test('online payment stays off until the backend double charge is fixed', () {
     expect(InstantPassTerms.onlinePaymentLive, isFalse);
   });
 
@@ -223,7 +219,10 @@ void main() {
     expect(checkout.calls.single['contact'], '9876543210');
     expect(
       f.sent.map((o) => o.path),
-      containsAllInOrder(['/instant-work/pass/order', '/instant-work/pass/verify']),
+      containsAllInOrder([
+        '/instant-work/pass/order',
+        '/instant-work/pass/verify',
+      ]),
     );
     expect(find.textContaining('Payment verified'), findsOneWidget);
   });
@@ -244,11 +243,11 @@ void main() {
     await tester.tap(find.text('Pay ₹99 online'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Payment cancelled. No money was charged.'), findsOneWidget);
     expect(
-      f.sent.where((o) => o.path == '/instant-work/pass/verify'),
-      isEmpty,
+      find.text('Payment cancelled. No money was charged.'),
+      findsOneWidget,
     );
+    expect(f.sent.where((o) => o.path == '/instant-work/pass/verify'), isEmpty);
   });
 
   testWidgets('paid but not verified: retry activation, never pay again', (

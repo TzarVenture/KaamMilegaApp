@@ -25,6 +25,9 @@ class BookingItem {
   final String expertHeadline;
   final String expertImage;
 
+  /// Who booked (only in the Expert's list, GET /mentorships/bookings/expert).
+  final String menteeName;
+
   /// The user's rating of the session (1–5); 0 when not rated yet.
   final double rating;
 
@@ -46,6 +49,7 @@ class BookingItem {
     this.expertName = '',
     this.expertHeadline = '',
     this.expertImage = '',
+    this.menteeName = '',
     this.rating = 0,
     this.review = '',
   });
@@ -69,6 +73,7 @@ class BookingItem {
       expertName: str('expert_name'),
       expertHeadline: str('expert_headline'),
       expertImage: ApiConstants.resolveImageUrl(str('expert_image')),
+      menteeName: str('mentee_name'),
       rating: rating is num ? rating.toDouble() : 0,
       review: str('review'),
     );

@@ -604,7 +604,10 @@ class _InstantPassSheetState extends ConsumerState<InstantPassSheet> {
     await _handle(result, online: true);
   }
 
-  Future<void> _handle(InstantActionResult result, {required bool online}) async {
+  Future<void> _handle(
+    InstantActionResult result, {
+    required bool online,
+  }) async {
     if (online && result.outcome == InstantActionOutcome.unknown) {
       // Paid by Razorpay, not yet activated: keep the sheet open with the
       // retry, and never offer to pay again.
@@ -673,152 +676,175 @@ class _InstantPassSheetState extends ConsumerState<InstantPassSheet> {
           borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
         ),
         clipBehavior: Clip.antiAlias,
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // Navy header
-              Container(
-                color: AppColors.brandNavy,
-                padding: const EdgeInsets.fromLTRB(20, 18, 8, 18),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Flexible(
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    const Expanded(
-                      child: Column(
+                    // Navy header
+                    Container(
+                      color: AppColors.brandNavy,
+                      padding: const EdgeInsets.fromLTRB(20, 18, 8, 18),
+                      child: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            'InstantMilega™ Candidate Pass',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w800,
-                              color: Colors.white,
+                          const Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'InstantMilega™ Candidate Pass',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w800,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                                SizedBox(height: 4),
+                                Text(
+                                  'Go online and claim on-demand spot gigs near you',
+                                  style: TextStyle(
+                                    fontSize: 12.5,
+                                    color: Colors.white70,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
-                          SizedBox(height: 4),
-                          Text(
-                            'Go online and claim on-demand spot gigs near you',
-                            style: TextStyle(
-                              fontSize: 12.5,
-                              color: Colors.white70,
+                          IconButton(
+                            tooltip: 'Close',
+                            onPressed: () => Navigator.pop(context),
+                            icon: const Icon(
+                              Icons.close_rounded,
+                              color: Colors.white,
                             ),
                           ),
                         ],
                       ),
                     ),
-                    IconButton(
-                      tooltip: 'Close',
-                      onPressed: () => Navigator.pop(context),
-                      icon: const Icon(
-                        Icons.close_rounded,
-                        color: Colors.white,
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 18, 20, 8),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          const _UspGrid(),
+                          const SizedBox(height: 16),
+                          const _PriceCard(),
+                          const SizedBox(height: 18),
+                          const Text(
+                            'Select payment method',
+                            style: TextStyle(
+                              fontSize: 13.5,
+                              fontWeight: FontWeight.w800,
+                              color: AppColors.textPrimary,
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          IntrinsicHeight(
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                Expanded(
+                                  child: _MethodTile(
+                                    onTap: onlineLive
+                                        ? () => setState(() => _online = false)
+                                        : null,
+                                    icon: Icons.account_balance_wallet_outlined,
+                                    title: 'KaamMilega Wallet',
+                                    subtitle: !walletReady
+                                        ? (wallet.isLoading
+                                              ? 'Checking balance...'
+                                              : 'Wallet unavailable')
+                                        : 'Balance: ${_rupees(balance!)}',
+                                    subtitleColor: walletReady
+                                        ? (enough
+                                              ? AppColors.success
+                                              : AppColors.error)
+                                        : AppColors.textSecondary,
+                                    selected: !online,
+                                  ),
+                                ),
+                                const SizedBox(width: 10),
+                                // Online payment stays off until the server stops
+                                // also debiting the wallet for it
+                                // (InstantPassTerms.onlinePaymentLive).
+                                Expanded(
+                                  child: _MethodTile(
+                                    onTap: onlineLive
+                                        ? () => setState(() => _online = true)
+                                        : null,
+                                    icon: Icons.credit_card_rounded,
+                                    title: 'Online payment',
+                                    subtitle: onlineLive
+                                        ? 'UPI, card or net banking'
+                                        : 'Temporarily unavailable',
+                                    subtitleColor: AppColors.textSecondary,
+                                    selected: online,
+                                    disabled: !onlineLive,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          const _Perk(
+                            title: '${InstantPassTerms.gigs} gig claims',
+                            text: 'Your quota goes down only when you claim a gig.',
+                          ),
+                          const _Perk(
+                            title: 'Direct employer contact',
+                            text: 'Talk to the employer directly after you claim.',
+                          ),
+                          const _Perk(
+                            title:
+                                '${InstantPassTerms.validityDays} days validity',
+                            text: 'Use your gigs any time within 30 days.',
+                          ),
+                          if (_error != null) ...[
+                            const SizedBox(height: 6),
+                            Text(
+                              _error!,
+                              style: const TextStyle(
+                                fontSize: 13,
+                                color: AppColors.error,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ],
                       ),
                     ),
                   ],
                 ),
               ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(20, 18, 20, 20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    const _UspGrid(),
-                    const SizedBox(height: 16),
-                    const _PriceCard(),
-                    const SizedBox(height: 18),
-                    const Text(
-                      'Select payment method',
-                      style: TextStyle(
-                        fontSize: 13.5,
-                        fontWeight: FontWeight.w800,
-                        color: AppColors.textPrimary,
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    IntrinsicHeight(
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          Expanded(
-                            child: _MethodTile(
-                              onTap: onlineLive
-                                  ? () => setState(() => _online = false)
-                                  : null,
-                              icon: Icons.account_balance_wallet_outlined,
-                              title: 'KaamMilega Wallet',
-                              subtitle: !walletReady
-                                  ? (wallet.isLoading
-                                        ? 'Checking balance...'
-                                        : 'Wallet unavailable')
-                                  : 'Balance: ${_rupees(balance!)}',
-                              subtitleColor: walletReady
-                                  ? (enough
-                                        ? AppColors.success
-                                        : AppColors.error)
-                                  : AppColors.textSecondary,
-                              selected: !online,
-                            ),
-                          ),
-                          const SizedBox(width: 10),
-                          // Online payment stays off until the server stops
-                          // also debiting the wallet for it
-                          // (InstantPassTerms.onlinePaymentLive).
-                          Expanded(
-                            child: _MethodTile(
-                              onTap: onlineLive
-                                  ? () => setState(() => _online = true)
-                                  : null,
-                              icon: Icons.credit_card_rounded,
-                              title: 'Online payment',
-                              subtitle: onlineLive
-                                  ? 'UPI, card or net banking'
-                                  : 'Temporarily unavailable',
-                              subtitleColor: AppColors.textSecondary,
-                              selected: online,
-                              disabled: !onlineLive,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    const _Perk(
-                      title: '${InstantPassTerms.gigs} gig claims',
-                      text: 'Your quota goes down only when you claim a gig.',
-                    ),
-                    const _Perk(
-                      title: 'Direct employer contact',
-                      text: 'Talk to the employer directly after you claim.',
-                    ),
-                    const _Perk(
-                      title: '${InstantPassTerms.validityDays} days validity',
-                      text: 'Use your gigs any time within 30 days.',
-                    ),
-                    if (_error != null) ...[
-                      const SizedBox(height: 6),
-                      Text(
-                        _error!,
-                        style: const TextStyle(
-                          fontSize: 13,
-                          color: AppColors.error,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
-                    const SizedBox(height: 14),
-                    if (pending != null)
-                      _PendingActivation(
-                        message:
-                            _pendingMessage ??
-                            'Your payment ${pending.paymentId} was received '
-                                'but the pass is not active yet. Please do '
-                                'not pay again.',
-                        busy: busy,
-                        onRetry: _retryActivation,
-                      )
-                    else
+            ),
+            // Pay button stays in view; the details above scroll.
+            Container(
+              padding: const EdgeInsets.fromLTRB(20, 10, 20, 12),
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                border: Border(top: BorderSide(color: AppColors.borderLight)),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  if (pending != null)
+                    _PendingActivation(
+                      message:
+                          _pendingMessage ??
+                          'Your payment ${pending.paymentId} was received '
+                              'but the pass is not active yet. Please do '
+                              'not pay again.',
+                      busy: busy,
+                      onRetry: _retryActivation,
+                    )
+                  else
                     SizedBox(
                       height: 52,
                       child: ElevatedButton(
@@ -874,44 +900,43 @@ class _InstantPassSheetState extends ConsumerState<InstantPassSheet> {
                               ),
                       ),
                     ),
-                    if (!online && pending == null && walletReady && !enough)
-                      TextButton(
-                        onPressed: () {
-                          Navigator.pop(context);
-                          context.push('/wallet');
-                        },
-                        child: const Text('Add money to your wallet'),
+                  if (!online && pending == null && walletReady && !enough)
+                    TextButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                        context.push('/wallet');
+                      },
+                      child: const Text('Add money to your wallet'),
+                    ),
+                  const SizedBox(height: 8),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(
+                        Icons.verified_user_outlined,
+                        size: 15,
+                        color: AppColors.success,
                       ),
-                    const SizedBox(height: 8),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Icon(
-                          Icons.verified_user_outlined,
-                          size: 15,
-                          color: AppColors.success,
-                        ),
-                        const SizedBox(width: 6),
-                        Flexible(
-                          child: Text(
-                            online
-                                ? 'Secured by Razorpay · Pass starts once '
-                                      'the payment is verified'
-                                : 'Paid from your wallet · Pass starts at '
-                                      'once',
-                            style: const TextStyle(
-                              fontSize: 12,
-                              color: AppColors.textSecondary,
-                            ),
+                      const SizedBox(width: 6),
+                      Flexible(
+                        child: Text(
+                          online
+                              ? 'Secured by Razorpay · Pass starts once '
+                                    'the payment is verified'
+                              : 'Paid from your wallet · Pass starts at '
+                                    'once',
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: AppColors.textSecondary,
                           ),
                         ),
-                      ],
-                    ),
-                  ],
-                ),
+                      ),
+                    ],
+                  ),
+                ],
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

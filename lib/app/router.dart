@@ -20,6 +20,7 @@ import '../features/company/presentation/company_screen.dart';
 import '../features/events/presentation/events_screen.dart';
 import '../features/events/presentation/my_tickets_screen.dart';
 import '../features/experts/presentation/apply_expert_screen.dart';
+import '../features/experts/presentation/expert_dashboard_screen.dart';
 import '../features/experts/presentation/my_sessions_screen.dart';
 import '../features/interviews/presentation/interviews_screen.dart';
 import '../features/jobs/models/job.dart';
@@ -27,6 +28,7 @@ import '../features/jobs/presentation/job_detail_screen.dart';
 import '../features/jobs/presentation/saved_jobs_screen.dart';
 import '../features/navigation/presentation/main_navigation_shell.dart';
 import '../features/network/presentation/member_profile_screen.dart';
+import '../features/help/presentation/help_screen.dart';
 import '../features/profile/presentation/settings_screen.dart';
 import '../features/splash/presentation/splash_screen.dart';
 
@@ -130,6 +132,11 @@ class AppRouter {
       builder: (context, state) => const NotificationsScreen(),
     ),
     GoRoute(
+      path: '/help',
+      name: 'help',
+      builder: (context, state) => const HelpScreen(),
+    ),
+    GoRoute(
       path: '/events',
       name: 'events',
       builder: (context, state) => const EventsScreen(),
@@ -213,6 +220,11 @@ class AppRouter {
       path: '/my-sessions',
       name: 'my_sessions',
       builder: (context, state) => const MySessionsScreen(),
+    ),
+    GoRoute(
+      path: '/expert-dashboard',
+      name: 'expert_dashboard',
+      builder: (context, state) => const ExpertDashboardScreen(),
     ),
     GoRoute(
       path: '/interviews',

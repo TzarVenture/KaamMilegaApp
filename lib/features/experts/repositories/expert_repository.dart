@@ -7,6 +7,7 @@ import '../../../core/network/response_list.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../wallet/models/wallet_summary.dart';
 import '../models/booking.dart';
+import '../models/expert_offering.dart';
 import '../models/expert_plan.dart';
 import '../models/expert_profile.dart';
 
@@ -197,6 +198,144 @@ class ExpertRepository {
     );
   }
 
+  // --- Expert dashboard (user with the "expert" role) ---
+
+  /// Sessions other users booked with me (GET /mentorships/bookings/expert),
+  /// soonest first; each carries the mentee's name.
+  Future<List<BookingItem>> getExpertBookings() async {
+    final response = await _apiClient.get(
+      ApiConstants.mentorshipExpertBookings,
+    );
+    final bookings = readListResponse(response.data)
+        .map(BookingItem.fromJson)
+        .where((b) => b.id.isNotEmpty)
+        .toList();
+    bookings.sort((a, b) {
+      final at = a.scheduledAt, bt = b.scheduledAt;
+      if (at == null && bt == null) return 0;
+      if (at == null) return 1;
+      if (bt == null) return -1;
+      return at.compareTo(bt);
+    });
+    return bookings;
+  }
+
+  /// Confirm, cancel (refunds a paid mentee) or complete (releases the
+  /// held payment to my earnings) a booking
+  /// (PATCH /mentorships/bookings/:id/status, body `{status}`).
+  Future<void> updateBookingStatus(String bookingId, String status) async {
+    const allowed = {'confirmed', 'cancelled', 'completed'};
+    if (bookingId.trim().isEmpty || !allowed.contains(status)) {
+      throw const AppValidationException(
+        'This session cannot be updated. Please refresh and try again.',
+      );
+    }
+    await _apiClient.patch(
+      '${ApiConstants.mentorshipBookings}/$bookingId/status',
+      data: {'status': status},
+    );
+  }
+
+  /// Sets the video-call link for a booking
+  /// (PATCH /mentorships/bookings/:id/meeting-link).
+  Future<void> updateMeetingLink(String bookingId, String link) async {
+    final url = normalizeMeetingLink(link);
+    if (bookingId.trim().isEmpty || url == null) {
+      throw const AppValidationException(
+        'Please enter a valid meeting link (for example a Google Meet or '
+        'Zoom link).',
+      );
+    }
+    await _apiClient.patch(
+      '${ApiConstants.mentorshipBookings}/$bookingId/meeting-link',
+      data: {'meeting_link': url},
+    );
+  }
+
+  /// An http(s) link with a host, "https://" added when missing; null when
+  /// it is not a usable link.
+  static String? normalizeMeetingLink(String input) {
+    var value = input.trim();
+    if (value.isEmpty || value.contains(' ')) return null;
+    if (!value.startsWith('http://') && !value.startsWith('https://')) {
+      value = 'https://$value';
+    }
+    final uri = Uri.tryParse(value);
+    if (uri == null || !uri.host.contains('.')) return null;
+    return value;
+  }
+
+  /// My session offerings (GET /mentorships/expert/my).
+  Future<List<ExpertOffering>> getMyOfferings() async {
+    final response = await _apiClient.get(ApiConstants.mentorshipExpertMy);
+    return readListResponse(response.data)
+        .map(ExpertOffering.fromJson)
+        .where((o) => o.id.isNotEmpty)
+        .toList();
+  }
+
+  /// Creates an offering (POST /mentorships) or, with [id], updates it
+  /// (PATCH /mentorships/:id; the server replaces every field).
+  Future<void> saveOffering(ExpertOfferingDraft draft, {String? id}) async {
+    final problem = draft.problem;
+    if (problem != null) throw AppValidationException(problem);
+    if (id == null) {
+      await _apiClient.post(ApiConstants.mentorships, data: draft.toJson());
+    } else {
+      await _apiClient.patch(
+        '${ApiConstants.mentorships}/$id',
+        data: draft.toJson(),
+      );
+    }
+  }
+
+  /// Deletes an offering (DELETE /mentorships/:id).
+  Future<void> deleteOffering(String id) async {
+    if (id.trim().isEmpty) {
+      throw const AppValidationException('This session cannot be deleted.');
+    }
+    await _apiClient.delete('${ApiConstants.mentorships}/$id');
+  }
+
+  /// My weekly hours (GET /mentorships/availability).
+  Future<List<WeeklyHours>> getMyAvailability() async {
+    final response = await _apiClient.get(ApiConstants.mentorshipAvailability);
+    return _hours(response.data);
+  }
+
+  /// An Expert's weekly hours for booking
+  /// (GET /mentorships/expert/:id/availability, public).
+  Future<List<WeeklyHours>> getExpertAvailability(String expertId) async {
+    final response = await _apiClient.get(
+      ApiConstants.mentorshipExpertAvailability(expertId),
+    );
+    return _hours(response.data);
+  }
+
+  /// Replaces all my weekly hours (PUT /mentorships/availability, a JSON
+  /// list of `{day_of_week, start_time, end_time}`).
+  Future<void> saveAvailability(List<WeeklyHours> hours) async {
+    if (hours.isEmpty) {
+      throw const AppValidationException('Please turn on at least one day.');
+    }
+    if (hours.any((h) => !h.isValid)) {
+      throw const AppValidationException('Each day must end after it starts.');
+    }
+    await _apiClient.put(
+      ApiConstants.mentorshipAvailability,
+      data: hours.map((h) => h.toJson()).toList(),
+    );
+  }
+
+  static List<WeeklyHours> _hours(dynamic data) {
+    final list = readListResponse(data)
+        .map(WeeklyHours.fromJson)
+        .whereType<WeeklyHours>()
+        .toList();
+    list.sort((a, b) => a.dayOfWeek.compareTo(b.dayOfWeek));
+    return list;
+  }
+
   // --- Pro Expert plans (/subscriptions/expert) ---
 
   /// Plans with their perks (GET /subscriptions/expert/plans, public).
@@ -287,3 +426,14 @@ final myBookingsProvider = FutureProvider.autoDispose<List<BookingItem>>((ref) {
   }
   return ref.watch(expertRepositoryProvider).getMyBookings();
 });
+
+/// An Expert's published weekly hours, for the booking screen
+/// (GET /mentorships/expert/:id/availability, public). Empty when the
+/// Expert has not set any.
+final expertAvailabilityProvider = FutureProvider.autoDispose
+    .family<List<WeeklyHours>, String>((ref, expertId) {
+      if (expertId.trim().isEmpty) return const <WeeklyHours>[];
+      return ref
+          .watch(expertRepositoryProvider)
+          .getExpertAvailability(expertId);
+    });

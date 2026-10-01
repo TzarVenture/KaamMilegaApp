@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../auth/providers/auth_provider.dart';
 import '../models/event.dart';
+import '../models/event_participant.dart';
 import '../repositories/event_repository.dart';
 
 class EventsNotifier extends AsyncNotifier<List<EventItem>> {
@@ -80,3 +81,10 @@ class EventsNotifier extends AsyncNotifier<List<EventItem>> {
 final eventsProvider = AsyncNotifierProvider<EventsNotifier, List<EventItem>>(
   EventsNotifier.new,
 );
+
+/// Who is attending an event (public list, loaded when the event opens).
+final eventAttendeesProvider = FutureProvider.autoDispose
+    .family<EventAttendees, String>(
+      (ref, eventId) =>
+          ref.watch(eventRepositoryProvider).getAttendees(eventId),
+    );

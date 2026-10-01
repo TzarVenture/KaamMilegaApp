@@ -6,6 +6,7 @@ import '../../../core/network/app_exception.dart';
 import '../../../core/network/response_list.dart';
 import '../../wallet/models/wallet_summary.dart';
 import '../models/event.dart';
+import '../models/event_participant.dart';
 import '../models/event_ticket.dart';
 
 /// Repository for handling Career Events and Webinars with km-backend
@@ -142,6 +143,19 @@ class EventRepository {
       response.data,
       keys: const ['tickets', 'data'],
     ).map(EventTicket.fromJson).toList();
+  }
+
+  /// Who is attending (GET /events/:id/attendees, public). 404 when the
+  /// event no longer exists.
+  Future<EventAttendees> getAttendees(String eventId) async {
+    final response = await _client.get(
+      '${ApiConstants.events}/$eventId/attendees',
+    );
+    final data = response.data;
+    if (data is Map<String, dynamic>) return EventAttendees.fromJson(data);
+    throw const AppValidationException(
+      'Could not read who is attending. Please try again.',
+    );
   }
 
   /// Reads `{message, ticket}`; a success without a ticket is an error, not

@@ -8,6 +8,7 @@ import 'package:kaam_milega/core/payments/razorpay_checkout.dart';
 import 'package:kaam_milega/features/auth/models/user_profile.dart';
 import 'package:kaam_milega/features/auth/providers/auth_provider.dart';
 import 'package:kaam_milega/features/events/models/event.dart';
+import 'package:kaam_milega/features/events/models/event_participant.dart';
 import 'package:kaam_milega/features/events/models/event_ticket.dart';
 import 'package:kaam_milega/features/events/presentation/event_detail_screen.dart';
 import 'package:kaam_milega/features/events/presentation/widgets/event_ticket_view.dart';
@@ -433,6 +434,12 @@ void main() {
       addTearDown(tester.view.reset);
       await tester.pumpWidget(
         ProviderScope(
+          overrides: [
+            // The detail screen also shows who is attending; not under test.
+            eventAttendeesProvider.overrideWith(
+              (ref, id) async => const EventAttendees(total: 0, people: []),
+            ),
+          ],
           child: MaterialApp(home: EventDetailScreen(event: event)),
         ),
       );

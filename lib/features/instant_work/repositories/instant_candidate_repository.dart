@@ -90,9 +90,7 @@ class InstantCandidateRepository {
     final response = await _client.post(ApiConstants.instantPassOrder);
     final data = response.data;
     if (data is Map<String, dynamic>) {
-      final paise = data['amount'] is num
-          ? (data['amount'] as num).round()
-          : 0;
+      final paise = data['amount'] is num ? (data['amount'] as num).round() : 0;
       final order = PaymentOrder(
         orderId: data['order_id']?.toString() ?? '',
         amount: data['pass_inr'] is num

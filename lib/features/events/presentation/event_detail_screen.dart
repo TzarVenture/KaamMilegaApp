@@ -12,6 +12,7 @@ import '../models/event_ticket.dart';
 import '../providers/event_provider.dart';
 import '../providers/event_ticket_provider.dart';
 import '../repositories/event_repository.dart';
+import 'widgets/event_attendees.dart';
 import 'widgets/event_ticket_view.dart';
 import 'widgets/ticket_checkout_sheets.dart';
 import '../../../app/theme/app_colors.dart';
@@ -80,7 +81,10 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
       _isRegistering = false;
       if (success) _isRegistered = true;
     });
-    if (success) ref.invalidate(myEventTicketsProvider);
+    if (success) {
+      ref.invalidate(myEventTicketsProvider);
+      ref.invalidate(eventAttendeesProvider(widget.event.id));
+    }
     _showMessage(
       success
           ? 'Successfully registered for ${widget.event.title}!'
@@ -150,6 +154,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
     switch (result.outcome) {
       case TicketPurchaseOutcome.success:
         setState(() => _isRegistered = true);
+        ref.invalidate(eventAttendeesProvider(widget.event.id));
         _showMessage(result.message);
         final ticket = result.ticket;
         if (ticket != null) await showEventTicketSheet(context, ticket);
@@ -486,6 +491,8 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
                     ),
                   ],
                 ),
+                const SizedBox(height: 10),
+                EventAttendeesRow(eventId: event.id),
               ],
             ),
           ),

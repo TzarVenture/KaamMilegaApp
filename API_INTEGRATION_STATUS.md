@@ -59,12 +59,16 @@
 | Experts / mentorship | `GET /mentorships`, `GET /mentorships/:id`, `POST /mentorships/book` | Experts |
 | Paid session | `POST /mentorships/book-wallet`, or `POST /mentorships/create-order` → Razorpay → `POST /mentorships/verify-payment` | Expert detail |
 | My booked sessions + review | `GET /mentorships/bookings/my`, `POST /mentorships/bookings/:id/review` | My Booked Sessions, upcoming-call banner |
+| Expert Dashboard (expert role) | `GET /mentorships/bookings/expert`, `PATCH /mentorships/bookings/:id/status`, `PATCH /mentorships/bookings/:id/meeting-link`, `GET /mentorships/expert/my`, `POST /mentorships`, `PATCH`/`DELETE /mentorships/:id`, `GET`/`PUT /mentorships/availability` | Drawer → Expert Dashboard (added 30 Sep) |
 | Instant Milega (gig worker) | `GET /instant-work/candidate/status`, `POST /instant-work/availability`, `POST /instant-work/location`, `GET /instant-work/candidate/feed`, `POST /instant-work/claim`, `GET /instant-work/candidate/active-job`, `PUT /instant-work/jobs/:id/complete`, `POST /instant-work/pass/pay-wallet` | Instant Milega page |
 | Wallet balances | `GET /wallet/balance` | Wallet, Add Money, Withdraw, Profile |
 | Wallet transactions | `GET /wallet/transactions?page&limit&category` | Wallet, Transactions |
 | Add money | `POST /wallet/topup/create-order` → Razorpay → `POST /wallet/topup/verify` | Add Money |
 | Withdraw request | `POST /wallet/withdraw` (`payout_method` `upi`/`bank`) | Withdraw |
 | Refunds & disputes | `POST /wallet/disputes`, `GET /wallet/my/disputes` | Transaction row → Dispute / Refund |
+| Event attendees | `GET /events/:id/attendees` | Event page "N attending" → list |
+| Expert's hours when booking | `GET /mentorships/expert/:expert_id/availability` | Expert detail → available times |
+| Help & FAQ | `GET /questions?page&limit` (`{data: [...]}`) | Drawer → Help & FAQ |
 | Skills catalog | `GET /skills`, `GET /skills/categories` | Skills Marketplace |
 
 ---
@@ -73,7 +77,6 @@
 
 | Path | Note |
 | :--- | :--- |
-| `GET /events/:id/attendees` | Attendee list (F64). Verify the fields before using. |
 | `GET /events/:id`, `GET /events/:id/ticket` | Single event / single ticket (the app uses the list and My Tickets). |
 | `POST /instant-work/pass/order`, `POST /instant-work/pass/verify` | InstantPass by Razorpay — app flow built 30 Sep, switched off (`InstantPassTerms.onlinePaymentLive`) until the backend double debit B-12 is fixed. |
 | `POST/GET /auth/logout` | Clears the website cookie; app logout is local. |

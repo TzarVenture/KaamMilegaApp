@@ -6,6 +6,7 @@ import '../../../../app/auth_guard.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../core/constants/api_constants.dart';
 import '../../../auth/providers/auth_provider.dart';
+import '../../../experts/providers/expert_dashboard_provider.dart';
 import '../../../notifications/providers/notification_provider.dart';
 
 /// Unified Application Navigation Drawer matching the Home Screen design (Screenshot 1)
@@ -389,6 +390,15 @@ class ProfileDrawer extends ConsumerWidget {
                       },
                     ),
                     _DrawerIconTile(
+                      icon: Icons.help_outline_rounded,
+                      color: AppColors.blue,
+                      title: 'Help & FAQ',
+                      onTap: () {
+                        Navigator.pop(context);
+                        context.push('/help');
+                      },
+                    ),
+                    _DrawerIconTile(
                       icon: Icons.assignment_turned_in_outlined,
                       color: AppColors.blue,
                       title: 'Applied Jobs Status',
@@ -415,6 +425,17 @@ class ProfileDrawer extends ConsumerWidget {
                         AuthGuard.openProtected(context, '/my-sessions');
                       },
                     ),
+                    // Only for Experts, like the website's Expert Portal
+                    if (ref.watch(isExpertProvider))
+                      _DrawerIconTile(
+                        icon: Icons.dashboard_customize_outlined,
+                        color: AppColors.moduleExperts,
+                        title: 'Expert Dashboard',
+                        onTap: () {
+                          Navigator.pop(context);
+                          AuthGuard.openProtected(context, '/expert-dashboard');
+                        },
+                      ),
                     _DrawerIconTile(
                       icon: Icons.confirmation_number_outlined,
                       color: AppColors.moduleEvents,

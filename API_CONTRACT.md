@@ -225,8 +225,12 @@ Errors: 401, 500 with `error`. GET errors are rethrown (Batch 5). **Status:** Ac
 - **GET `/events/my/tickets`** → tickets `EventTicket {id, ticket_number, event_id, user_id, attendee_name, attendee_email, attendee_phone?, amount, payment_status:"free"|"paid"|"refunded", payment_method:"free"|"razorpay"|"wallet", …}`.
 - **Flutter:** `EventRepository` create-order / verify / wallet-checkout / my tickets ← `ticket_checkout_sheets.dart`, `event_ticket_view.dart` (QR), `my_tickets_screen.dart` (`/my-tickets`, protected), `event_ticket_provider.dart` · **Status:** Active (28 Sep; Razorpay TEST mode not verified). `GET /events/:id/ticket` not used.
 
-### GET `/events/:id/attendees` (Public) — available, not integrated
-- → `{event_id, event_title, total_joined, attendees:[{id, name, headline?, profile_image?, city?, role?, ticket_number?, payment_type?, joined_at}]}` (backend `119c629`). For F64.
+### GET `/events/:id/attendees` (Public) — **Active since 30 Sep**
+- → `{event_id, event_title, total_joined, attendees:[{id, name, headline?, profile_image?, city?, role?, ticket_number?, payment_type?, joined_at}]}` (backend `119c629`). Flutter: `EventRepository.getAttendees` ← `eventAttendeesProvider` ← `EventAttendeesRow` / `EventAttendeesSheet`; only name, headline, city and photo are read (ticket number and payment type are ignored — they should not be public).
+
+### GET `/questions?page&limit` (Public) — **Active since 30 Sep**
+- → `{data: [{id, question, answer, created_at, updated_at}], total, page, limit, totalPages}` (default limit 10; the app asks for 100).
+- Flutter: `HelpRepository.getFaqs` ← `faqProvider` ← `help_screen.dart` (route `/help`, public).
 
 ## 9. Experts / Mentorship (`mentorship/api.go`)
 
@@ -253,6 +257,17 @@ Errors: 401, 500 with `error`. GET errors are rethrown (Batch 5). **Status:** Ac
 - **Rules (backend `service.go`):** only the user who booked; only `status == "completed"`; a new review replaces the old one; the expert's overall rating is **not** recalculated.
 - **Flutter:** `ExpertRepository.submitBookingReview` (no request without an id or with a rating outside 1–5) ← `RateSessionSheet` in `my_sessions_screen.dart`: "Rate session" only for completed, unrated sessions; list reloaded after success (stars shown from the server). · **Status:** Active (26 Sep)
 - `GET /mentorships/expert/:expert_id/availability` — available, not integrated.
+
+## 9c. Expert Dashboard (`mentorship/api.go`, Required) — **Active since 30 Sep**
+
+For users with the `expert` role (drawer "Expert Dashboard", route `/expert-dashboard`).
+- `GET /mentorships/bookings/expert` → `[Booking]` + `mentee_name`, `mentee_email` (app shows the name only).
+- `PATCH /mentorships/bookings/:id/status` `{status: confirmed|cancelled|completed}` (query `?status=` also accepted). `completed` moves the mentee's held (locked) amount to the expert's earnings; `cancelled` refunds a paid mentee to main; completed/cancelled are final; 400 with `error` text.
+- `PATCH /mentorships/bookings/:id/meeting-link` `{meeting_link}` → `{message, meeting_link}`.
+- `GET /mentorships/expert/my` → `[Mentorship {id, expert_id, title, description, category, duration, price, rating?, reviews?, status}]`.
+- `POST /mentorships` and `PATCH /mentorships/:id` `{title, description, category, duration, price}` (PATCH replaces every field); `DELETE /mentorships/:id` → 204. No server-side validation; errors are 500 (B-17).
+- `GET /mentorships/availability` and public `GET /mentorships/expert/:expert_id/availability` → `[{id, expert_id, day_of_week (0 = Sunday), start_time "HH:mm", end_time, is_active}]`; `PUT /mentorships/availability` with a JSON **list** of `{day_of_week, start_time, end_time}` replaces all days.
+- Flutter: `ExpertRepository` (`getExpertBookings`, `updateBookingStatus`, `updateMeetingLink`, `getMyOfferings`, `saveOffering`, `deleteOffering`, `getMyAvailability`, `getExpertAvailability`, `saveAvailability`) ← `expert_dashboard_provider.dart` ← `expert_dashboard_screen.dart`.
 
 ## 9b. Expert Subscription (`subscription/api.go`) — **Active since 29 Sep**
 
@@ -306,7 +321,7 @@ Added in backend `c829a60` (F75 "Pro Expert"). **Integrated** (`0fa522f`): `Expe
 
 ## 14. Backend endpoints relevant to mobile, not integrated
 
-`GET /settings/me`, `PUT /settings/me`, `GET /events/:id`, `GET /events/:id/ticket`, `GET /events/:id/attendees` (§8), `POST /instant-work/pass/order` + `/pass/verify` (§15), `POST/GET /auth/logout`, `GET /mentorships/expert/:expert_id/availability`, `GET /companies`, `GET /questions`, `GET /platform/stats`, `GET /platform/live-activity`, `GET /files/download/:id`. Response shapes of these were **not verified** in this audit unless stated above.
+`GET /settings/me`, `PUT /settings/me`, `GET /events/:id`, `GET /events/:id/ticket`, `GET /events/:id/attendees` (§8), `POST /instant-work/pass/order` + `/pass/verify` (§15), `POST/GET /auth/logout`, `GET /companies`, `GET /questions`, `GET /platform/stats`, `GET /platform/live-activity`, `GET /files/download/:id`. Response shapes of these were **not verified** in this audit unless stated above.
 
 Out of mobile scope (do not integrate without an explicit request): `/admin/*`, `POST/PATCH/DELETE /jobs`, `/jobs/my`, `/applications/job/:jobId`, `/applications/recruiter/all`, `PATCH /applications/:id/status`, `POST /interviews`, mentorship expert management routes, `/cities` mutations, `/skills` mutations, `/sms/send`, `POST /settings/:key`.
 

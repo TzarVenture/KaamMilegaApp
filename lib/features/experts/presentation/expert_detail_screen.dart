@@ -5,6 +5,7 @@ import '../../../core/network/app_exception.dart';
 import '../../../core/payments/razorpay_checkout.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../wallet/providers/wallet_provider.dart';
+import '../models/expert_offering.dart';
 import '../models/expert_profile.dart';
 import '../repositories/expert_repository.dart';
 import '../../../shared/widgets/app_dialog.dart';
@@ -41,6 +42,57 @@ class _ExpertDetailScreenState extends ConsumerState<ExpertDetailScreen> {
     _selectedTime.minute,
   );
 
+  /// Bookings must start at least 30 minutes from now.
+  DateTime get _earliest => DateTime.now().add(const Duration(minutes: 30));
+
+  int get _sessionMinutes => widget.expert.duration;
+
+  /// The Expert's published hours (empty = none set, or not loaded).
+  List<WeeklyHours> get _hours =>
+      ref
+          .read(expertAvailabilityProvider(widget.expert.expertId))
+          .asData
+          ?.value ??
+      const <WeeklyHours>[];
+
+  /// Moves the chosen day and time onto the Expert's hours when they are
+  /// outside them (first free slot from now).
+  void _snapToHours(List<WeeklyHours> hours) {
+    if (hours.isEmpty) return;
+    final fits = hours.any((h) => h.fits(_scheduledAt, _sessionMinutes));
+    if (fits && !_scheduledAt.isBefore(_earliest)) return;
+    final day = WeeklyHours.firstBookableDay(
+      hours,
+      _sessionMinutes,
+      earliest: _earliest,
+    );
+    if (day == null) return;
+    final slots = WeeklyHours.slots(
+      hours,
+      day,
+      _sessionMinutes,
+      earliest: _earliest,
+    );
+    setState(() {
+      _selectedDate = day;
+      _selectedTime = slots.first;
+    });
+  }
+
+  /// After a new day is picked, keep the time if it is free that day,
+  /// else take the day's first free slot.
+  void _snapTimeToDay(List<WeeklyHours> hours) {
+    if (hours.isEmpty) return;
+    final slots = WeeklyHours.slots(
+      hours,
+      _selectedDate,
+      _sessionMinutes,
+      earliest: _earliest,
+    );
+    if (slots.isEmpty || slots.contains(_selectedTime)) return;
+    setState(() => _selectedTime = slots.first);
+  }
+
   void _showMessage(String text, {bool isError = false}) {
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
@@ -64,6 +116,15 @@ class _ExpertDetailScreenState extends ConsumerState<ExpertDetailScreen> {
     )) {
       _showMessage(
         'Please choose a time at least 30 minutes from now.',
+        isError: true,
+      );
+      return;
+    }
+    final hours = _hours;
+    if (hours.isNotEmpty &&
+        !hours.any((h) => h.fits(_scheduledAt, _sessionMinutes))) {
+      _showMessage(
+        'Please pick one of the times this expert is available.',
         isError: true,
       );
       return;
@@ -321,6 +382,20 @@ class _ExpertDetailScreenState extends ConsumerState<ExpertDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final expert = widget.expert;
+    final hoursAsync = ref.watch(expertAvailabilityProvider(expert.expertId));
+    final hours = hoursAsync.asData?.value ?? const <WeeklyHours>[];
+    ref.listen(expertAvailabilityProvider(expert.expertId), (_, next) {
+      final loaded = next.asData?.value;
+      if (loaded != null) _snapToHours(loaded);
+    });
+    final slots = hours.isEmpty
+        ? const <TimeOfDay>[]
+        : WeeklyHours.slots(
+            hours,
+            _selectedDate,
+            _sessionMinutes,
+            earliest: _earliest,
+          );
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -575,39 +650,98 @@ class _ExpertDetailScreenState extends ConsumerState<ExpertDetailScreen> {
                     subtitle: const Text('Tap to choose a different day'),
                     trailing: const Icon(Icons.chevron_right_rounded),
                     onTap: () async {
+                      bool bookable(DateTime day) =>
+                          hours.isEmpty ||
+                          WeeklyHours.slots(
+                            hours,
+                            day,
+                            _sessionMinutes,
+                            earliest: _earliest,
+                          ).isNotEmpty;
+                      final firstDate = DateTime.now();
+                      final lastDate = firstDate.add(const Duration(days: 60));
+                      var initial = _selectedDate;
+                      if (initial.isBefore(DateUtils.dateOnly(firstDate)) ||
+                          !bookable(initial)) {
+                        final first = hours.isEmpty
+                            ? firstDate
+                            : WeeklyHours.firstBookableDay(
+                                hours,
+                                _sessionMinutes,
+                                earliest: _earliest,
+                              );
+                        if (first == null) {
+                          _showMessage(
+                            'This expert has no free times in the next '
+                            '60 days.',
+                            isError: true,
+                          );
+                          return;
+                        }
+                        initial = first;
+                      }
                       final picked = await showDatePicker(
                         context: context,
-                        initialDate: _selectedDate,
-                        firstDate: DateTime.now(),
-                        lastDate: DateTime.now().add(const Duration(days: 60)),
+                        initialDate: initial,
+                        firstDate: firstDate,
+                        lastDate: lastDate,
+                        selectableDayPredicate: bookable,
                       );
                       if (picked != null) {
                         setState(() => _selectedDate = picked);
+                        _snapTimeToDay(hours);
                       }
                     },
                   ),
-                  ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    leading: const Icon(
-                      Icons.schedule_rounded,
-                      color: AppColors.moduleExperts,
+                  if (hoursAsync.isLoading)
+                    const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 10),
+                      child: LinearProgressIndicator(minHeight: 2),
+                    )
+                  else if (hours.isNotEmpty)
+                    _SlotPicker(
+                      slots: slots,
+                      selected: _selectedTime,
+                      onSelected: (t) => setState(() => _selectedTime = t),
+                    )
+                  else ...[
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 4),
+                      child: Text(
+                        hoursAsync.hasError
+                            ? 'Could not load this expert\'s hours. Pick a time; '
+                                  'the expert will confirm it.'
+                            : 'This expert has not set fixed hours. Pick a '
+                                  'time; the expert will confirm it.',
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
                     ),
-                    title: Text(
-                      _selectedTime.format(context),
-                      style: const TextStyle(fontWeight: FontWeight.w700),
+                    ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      leading: const Icon(
+                        Icons.schedule_rounded,
+                        color: AppColors.moduleExperts,
+                      ),
+                      title: Text(
+                        _selectedTime.format(context),
+                        style: const TextStyle(fontWeight: FontWeight.w700),
+                      ),
+                      subtitle: const Text('Tap to choose a time'),
+                      trailing: const Icon(Icons.chevron_right_rounded),
+                      onTap: () async {
+                        final picked = await showTimePicker(
+                          context: context,
+                          initialTime: _selectedTime,
+                        );
+                        if (picked != null) {
+                          setState(() => _selectedTime = picked);
+                        }
+                      },
                     ),
-                    subtitle: const Text('Tap to choose a time'),
-                    trailing: const Icon(Icons.chevron_right_rounded),
-                    onTap: () async {
-                      final picked = await showTimePicker(
-                        context: context,
-                        initialTime: _selectedTime,
-                      );
-                      if (picked != null) {
-                        setState(() => _selectedTime = picked);
-                      }
-                    },
-                  ),
+                  ],
                   const SizedBox(height: 10),
                   TextField(
                     controller: _notesController,
@@ -691,6 +825,60 @@ class _ExpertDetailScreenState extends ConsumerState<ExpertDetailScreen> {
             fontWeight: FontWeight.w700,
             color: AppColors.textPrimary,
           ),
+        ),
+      ],
+    );
+  }
+}
+
+/// Start times inside the Expert's hours for the chosen day.
+class _SlotPicker extends StatelessWidget {
+  const _SlotPicker({
+    required this.slots,
+    required this.selected,
+    required this.onSelected,
+  });
+
+  final List<TimeOfDay> slots;
+  final TimeOfDay selected;
+  final ValueChanged<TimeOfDay> onSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    if (slots.isEmpty) {
+      return const Padding(
+        padding: EdgeInsets.symmetric(vertical: 8),
+        child: Text(
+          'No free times on this day. Please choose another day.',
+          style: TextStyle(fontSize: 12.5, color: AppColors.textSecondary),
+        ),
+      );
+    }
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Padding(
+          padding: EdgeInsets.only(top: 4, bottom: 8),
+          child: Text(
+            'Available times',
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w700,
+              color: AppColors.textSecondary,
+            ),
+          ),
+        ),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            for (final t in slots)
+              ChoiceChip(
+                label: Text(t.format(context)),
+                selected: t == selected,
+                onSelected: (_) => onSelected(t),
+              ),
+          ],
         ),
       ],
     );

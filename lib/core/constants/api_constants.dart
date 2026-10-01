@@ -165,6 +165,9 @@ class ApiConstants {
   static const String posts = '/posts';
   static const String feed = '/feed';
 
+  // --- Help ---
+  static const String faqQuestions = '/questions'; // GET (public FAQ)
+
   // --- Notifications Endpoints ---
   static const String notifications = '/notifications';
 
@@ -200,6 +203,15 @@ class ApiConstants {
       '/mentorships/verify-payment'; // POST
   static const String mentorshipMyBookings =
       '/mentorships/bookings/my'; // GET sessions booked by the user
+  // Expert side (user with the "expert" role)
+  static const String mentorshipExpertBookings =
+      '/mentorships/bookings/expert'; // GET sessions booked with me
+  static const String mentorshipExpertMy =
+      '/mentorships/expert/my'; // GET my offerings
+  static const String mentorshipAvailability =
+      '/mentorships/availability'; // GET / PUT my weekly hours
+  static String mentorshipExpertAvailability(String expertId) =>
+      '/mentorships/expert/$expertId/availability'; // GET (public)
   static const String mentorshipBookings =
       '/mentorships/bookings'; // POST /:id/review (completed sessions)
 

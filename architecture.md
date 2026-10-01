@@ -175,6 +175,8 @@ Files: `lib/main.dart`, `lib/app/app.dart`, `lib/app/router.dart`, `lib/features
 | `/my-tickets` | `MyTicketsScreen` (event tickets) | — | protected |
 | `/members/:id` | `MemberProfileScreen` (other member's profile, Connect / Message) | `id` user id | protected |
 | `/profile-viewers` | `ProfileViewersScreen` | — | protected |
+| `/help` | `HelpScreen` (FAQ from `GET /questions`; drawer "Help & FAQ") | — | guest + user |
+| `/expert-dashboard` | `ExpertDashboardScreen` (drawer entry only for the `expert` role; tabs Bookings / My Sessions / Hours) | — | protected |
 | `/network` | `NetworkScreen` | — | protected |
 | `/chats/:id` | `ChatDetailScreen` | `id` conversation id or `new-<userId>`; extra `Map<String,String>{receiverId,title}` | protected (pending path not restored) |
 | `/apply-expert` | `ApplyExpertScreen` | — | protected |
