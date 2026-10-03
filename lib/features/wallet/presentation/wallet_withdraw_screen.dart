@@ -629,7 +629,7 @@ class _WalletWithdrawScreenState extends ConsumerState<WalletWithdrawScreen> {
                     style: TextStyle(
                       fontSize: 26,
                       fontWeight: FontWeight.w800,
-                      color: AppColors.accent,
+                      color: AppColors.accentOnLight,
                     ),
                   ),
                   const SizedBox(width: 8),

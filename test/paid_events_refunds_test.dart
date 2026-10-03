@@ -439,6 +439,8 @@ void main() {
             eventAttendeesProvider.overrideWith(
               (ref, id) async => const EventAttendees(total: 0, people: []),
             ),
+            // The page also reloads the event; same data here.
+            eventDetailProvider.overrideWith((ref, id) async => event),
           ],
           child: MaterialApp(home: EventDetailScreen(event: event)),
         ),

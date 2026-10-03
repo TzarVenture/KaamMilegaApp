@@ -103,7 +103,7 @@ class _TicketTile extends StatelessWidget {
                 ),
                 child: const Icon(
                   Icons.confirmation_number_outlined,
-                  color: AppColors.moduleEvents,
+                  color: AppColors.moduleEventsText,
                 ),
               ),
               const SizedBox(width: 12),

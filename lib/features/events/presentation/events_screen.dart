@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -11,6 +13,7 @@ import '../../../shared/widgets/themed_category_bottom_nav.dart';
 import '../models/event.dart';
 import '../providers/event_provider.dart';
 import 'event_detail_screen.dart';
+import 'widgets/event_attendees.dart';
 import 'widgets/event_pricing_filter.dart';
 import '../../../shared/widgets/fade_slide_in.dart';
 import '../../../shared/widgets/pressable_scale.dart';
@@ -28,11 +31,46 @@ class _EventsScreenState extends ConsumerState<EventsScreen> {
   String _searchQuery = '';
   EventPricingFilter _pricing = EventPricingFilter.all;
   final Set<String> _registeringEventIds = {};
+  Timer? _searchDebounce;
 
   @override
   void dispose() {
+    _searchDebounce?.cancel();
     _searchController.dispose();
     super.dispose();
+  }
+
+  EventsQuery get _query => ref.read(eventsQueryProvider);
+
+  void _setQuery(EventsQuery query) =>
+      ref.read(eventsQueryProvider.notifier).set(query);
+
+  /// Search runs on the server (title, organizer, category) after a short
+  /// pause in typing, so every page of results is searched.
+  void _onSearchChanged(String value) {
+    setState(() => _searchQuery = value.trim());
+    _searchDebounce?.cancel();
+    _searchDebounce = Timer(
+      const Duration(milliseconds: 400),
+      () => _setQuery(_query.copyWith(search: value.trim())),
+    );
+  }
+
+  void _onPricingChanged(EventPricingFilter value) {
+    setState(() => _pricing = value);
+    _setQuery(_query.withPricing(EventPricingChips.isPaidParam(value)));
+  }
+
+  Future<void> _loadMore() async {
+    final ok = await ref.read(eventsProvider.notifier).loadMore();
+    if (!ok && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Could not load more events. Please try again.'),
+          backgroundColor: AppColors.error,
+        ),
+      );
+    }
   }
 
   Future<void> _handleRegistration(EventItem event) async {
@@ -120,14 +158,28 @@ class _EventsScreenState extends ConsumerState<EventsScreen> {
               themeColor: AppColors.moduleEvents,
               searchHint: 'Search events, webinars & summits...',
               searchController: _searchController,
-              onSearchChanged: (val) =>
-                  setState(() => _searchQuery = val.trim()),
-              onSearchSubmitted: () =>
-                  setState(() => _searchQuery = _searchController.text.trim()),
+              onSearchChanged: _onSearchChanged,
+              onSearchSubmitted: () {
+                _searchDebounce?.cancel();
+                final text = _searchController.text.trim();
+                setState(() => _searchQuery = text);
+                _setQuery(_query.copyWith(search: text));
+              },
             ),
             EventPricingChips(
               selected: _pricing,
-              onChanged: (value) => setState(() => _pricing = value),
+              onChanged: _onPricingChanged,
+              trailing: FilterChip(
+                label: const Text('Soonest date'),
+                avatar: const Icon(Icons.event_rounded, size: 16),
+                showCheckmark: false,
+                selected: ref.watch(
+                  eventsQueryProvider.select((q) => q.upcomingFirst),
+                ),
+                tooltip: 'Show events with the nearest date first',
+                onSelected: (on) =>
+                    _setQuery(_query.copyWith(upcomingFirst: on)),
+              ),
             ),
             Expanded(
               child: RefreshIndicator(
@@ -142,6 +194,7 @@ class _EventsScreenState extends ConsumerState<EventsScreen> {
                       return e.title.toLowerCase().contains(q) ||
                           e.description.toLowerCase().contains(q) ||
                           e.organizer.toLowerCase().contains(q) ||
+                          e.category.toLowerCase().contains(q) ||
                           e.location.toLowerCase().contains(q);
                     }).toList();
                     // Why the list is empty: search, pricing, or no events
@@ -230,6 +283,7 @@ class _EventsScreenState extends ConsumerState<EventsScreen> {
                             child: _buildEventCard(event, isRegistering),
                           );
                         }),
+                        _buildLoadMore(),
                       ],
                     );
                   },
@@ -301,6 +355,41 @@ class _EventsScreenState extends ConsumerState<EventsScreen> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  /// "Load more events" while the server has more pages.
+  Widget _buildLoadMore() {
+    final notifier = ref.read(eventsProvider.notifier);
+    if (!notifier.hasMore) return const SizedBox(height: 8);
+    return Padding(
+      padding: const EdgeInsets.only(top: 4, bottom: 24),
+      child: Column(
+        children: [
+          Text(
+            'Showing ${ref.read(eventsProvider).value?.length ?? 0} of '
+            '${notifier.total} events',
+            style: const TextStyle(
+              fontSize: 13,
+              color: AppColors.textSecondary,
+            ),
+          ),
+          const SizedBox(height: 8),
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton(
+              onPressed: notifier.isLoadingMore ? null : _loadMore,
+              child: notifier.isLoadingMore
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Text('Load more events'),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -449,12 +538,38 @@ class _EventsScreenState extends ConsumerState<EventsScreen> {
                             ),
                           ),
                         ),
-                        Text(
-                          '${event.attendeesCount} attending',
-                          style: const TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w700,
-                            color: AppColors.textPrimary,
+                        // Opens who is attending (as on the website)
+                        InkWell(
+                          onTap: event.attendeesCount > 0
+                              ? () => showEventAttendeesFor(context, event.id)
+                              : null,
+                          borderRadius: BorderRadius.circular(8),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 6,
+                              vertical: 8,
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  '${event.attendeesCount} attending',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w700,
+                                    color: event.attendeesCount > 0
+                                        ? AppColors.blue
+                                        : AppColors.textPrimary,
+                                  ),
+                                ),
+                                if (event.attendeesCount > 0)
+                                  const Icon(
+                                    Icons.chevron_right_rounded,
+                                    size: 16,
+                                    color: AppColors.blue,
+                                  ),
+                              ],
+                            ),
                           ),
                         ),
                       ],

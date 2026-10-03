@@ -231,7 +231,7 @@ class _PeerToPeerScreenState extends ConsumerState<PeerToPeerScreen>
               ),
               prefixIcon: const Icon(
                 Icons.search_rounded,
-                color: AppColors.moduleP2P,
+                color: AppColors.moduleP2PText,
               ),
               suffixIcon: _searchController.text.isNotEmpty
                   ? IconButton(
@@ -285,7 +285,7 @@ class _PeerToPeerScreenState extends ConsumerState<PeerToPeerScreen>
                   child: const Icon(
                     Icons.people_outline_rounded,
                     size: 32,
-                    color: AppColors.moduleP2P,
+                    color: AppColors.moduleP2PText,
                   ),
                 ),
                 const SizedBox(height: 14),
@@ -342,7 +342,7 @@ class _PeerToPeerScreenState extends ConsumerState<PeerToPeerScreen>
                 Icon(
                   Icons.people_outline_rounded,
                   size: 36,
-                  color: AppColors.moduleP2P,
+                  color: AppColors.moduleP2PText,
                 ),
                 SizedBox(height: 12),
                 Text(
@@ -456,7 +456,7 @@ class _PeerToPeerScreenState extends ConsumerState<PeerToPeerScreen>
                   const Icon(
                     Icons.group_outlined,
                     size: 40,
-                    color: AppColors.moduleP2P,
+                    color: AppColors.moduleP2PText,
                   ),
                   const SizedBox(height: 12),
                   const Text(
@@ -504,7 +504,7 @@ class _PeerToPeerScreenState extends ConsumerState<PeerToPeerScreen>
                         backgroundColor: AppColors.moduleP2PLight,
                         child: Icon(
                           Icons.person_rounded,
-                          color: AppColors.moduleP2P,
+                          color: AppColors.moduleP2PText,
                           size: 20,
                         ),
                       ),
@@ -533,7 +533,7 @@ class _PeerToPeerScreenState extends ConsumerState<PeerToPeerScreen>
                       IconButton(
                         icon: const Icon(
                           Icons.chat_bubble_outline_rounded,
-                          color: AppColors.moduleP2P,
+                          color: AppColors.moduleP2PText,
                         ),
                         onPressed: () => openChatWithUser(
                           context,
@@ -624,7 +624,7 @@ class _PeerToPeerScreenState extends ConsumerState<PeerToPeerScreen>
                         backgroundColor: AppColors.moduleP2PLight,
                         child: const Icon(
                           Icons.person_add_rounded,
-                          color: AppColors.moduleP2P,
+                          color: AppColors.moduleP2PText,
                           size: 20,
                         ),
                       ),

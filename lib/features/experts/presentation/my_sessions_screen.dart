@@ -54,6 +54,8 @@ class _MySessionsScreenState extends ConsumerState<MySessionsScreen> {
     );
     if (submitted != true || !mounted) return;
     ref.invalidate(myBookingsProvider);
+    // The Expert's public rating and reviews now include this one.
+    ref.invalidate(expertReviewsProvider(booking.expertId));
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text('Thanks! Your review was submitted.'),
@@ -194,7 +196,7 @@ class _Header extends StatelessWidget {
                 style: const TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w800,
-                  color: AppColors.accent,
+                  color: AppColors.accentOnLight,
                 ),
               ),
             ),
@@ -797,7 +799,7 @@ class _YourReview extends StatelessWidget {
                   Icon(
                     i <= stars ? Icons.star_rounded : Icons.star_border_rounded,
                     size: 18,
-                    color: AppColors.moduleEvents,
+                    color: AppColors.moduleEventsText,
                   ),
               ],
             ),
@@ -923,7 +925,7 @@ class _RateSessionSheetState extends ConsumerState<RateSessionSheet> {
                                 ? Icons.star_rounded
                                 : Icons.star_border_rounded,
                             size: 36,
-                            color: AppColors.moduleEvents,
+                            color: AppColors.moduleEventsText,
                           ),
                         ),
                     ],

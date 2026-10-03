@@ -12,6 +12,7 @@ import 'package:kaam_milega/features/jobs/models/job_filter.dart';
 import 'package:kaam_milega/features/jobs/models/jobs_response.dart';
 import 'package:kaam_milega/features/jobs/presentation/job_detail_screen.dart';
 import 'package:kaam_milega/features/jobs/repositories/job_repository.dart';
+import 'package:kaam_milega/features/network/providers/network_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 final _job = Job.fromJson({
@@ -69,6 +70,8 @@ void main() {
           authProvider.overrideWith(_Guest.new),
           jobRepositoryProvider.overrideWithValue(_Jobs()),
           applicationRepositoryProvider.overrideWithValue(_Apps()),
+          // People Like You on the page; not under test here.
+          communityUsersProvider.overrideWith((ref) async => []),
         ],
         child: MaterialApp(
           theme: AppTheme.lightTheme,

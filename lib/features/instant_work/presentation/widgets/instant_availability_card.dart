@@ -164,7 +164,7 @@ class InstantAvailabilityCard extends ConsumerWidget {
                   label: Text('Activate Pass (${InstantPassTerms.priceLabel})'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.accent,
-                    foregroundColor: Colors.white,
+                    foregroundColor: AppColors.onAccent,
                     elevation: 0,
                     minimumSize: const Size(0, 42),
                     padding: const EdgeInsets.symmetric(horizontal: 16),

@@ -650,14 +650,25 @@ class ProvidingServicesPreferences {
     'description': description,
   };
 
+  /// "500" for 500.0, "499.50" for 499.5.
+  static String formatAmount(double value) => value == value.roundToDouble()
+      ? value.toInt().toString()
+      : value.toStringAsFixed(2);
+
+  /// e.g. "₹500 / hr" (or "USD 20 / hr"); empty when no rate is set.
+  String get rateLabel {
+    if (hourlyRate <= 0) return '';
+    final code = currency.trim().isEmpty ? defaultCurrency : currency.trim();
+    final symbol = code.toUpperCase() == 'INR' ? '₹' : '$code ';
+    return '$symbol${formatAmount(hourlyRate)} / hr';
+  }
+
   /// e.g. "Web Development, AC Repair · INR 500/hr". Uses the description
   /// when no services are listed.
   String get summary {
     final main = services.isNotEmpty ? services.join(', ') : description.trim();
     if (hourlyRate <= 0) return main;
-    final amount = hourlyRate == hourlyRate.roundToDouble()
-        ? hourlyRate.toInt().toString()
-        : hourlyRate.toStringAsFixed(2);
+    final amount = formatAmount(hourlyRate);
     final rate = '${currency.trim()} $amount/hr'.trim();
     return main.isEmpty ? rate : '$main · $rate';
   }

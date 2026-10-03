@@ -10,6 +10,7 @@ import '../models/booking.dart';
 import '../models/expert_offering.dart';
 import '../models/expert_plan.dart';
 import '../models/expert_profile.dart';
+import '../models/expert_review.dart';
 
 final expertRepositoryProvider = Provider<ExpertRepository>((ref) {
   final apiClient = ref.watch(apiClientProvider);
@@ -196,6 +197,21 @@ class ExpertRepository {
       '${ApiConstants.mentorshipBookings}/$bookingId/review',
       data: {'rating': rating, 'review': review.trim()},
     );
+  }
+
+  /// An Expert's ratings and reviews from mentees of completed sessions
+  /// (GET /mentorships/expert/:id/reviews, public): average, count per star
+  /// and the reviews, newest first. Throws on failure, so the page shows an
+  /// error, never "no reviews".
+  Future<ExpertReviews> getExpertReviews(String expertId) async {
+    final response = await _apiClient.get(
+      ApiConstants.mentorshipExpertReviews(expertId),
+    );
+    final data = response.data;
+    if (data is! Map) {
+      throw const AppServerException('Unexpected reviews response.');
+    }
+    return ExpertReviews.fromJson(Map<String, dynamic>.from(data));
   }
 
   // --- Expert dashboard (user with the "expert" role) ---
@@ -426,6 +442,14 @@ final myBookingsProvider = FutureProvider.autoDispose<List<BookingItem>>((ref) {
   }
   return ref.watch(expertRepositoryProvider).getMyBookings();
 });
+
+/// An Expert's ratings and reviews (GET /mentorships/expert/:id/reviews,
+/// public). Reloaded each time the Expert's page opens.
+final expertReviewsProvider = FutureProvider.autoDispose
+    .family<ExpertReviews, String>((ref, expertId) {
+      if (expertId.trim().isEmpty) return ExpertReviews.empty;
+      return ref.watch(expertRepositoryProvider).getExpertReviews(expertId);
+    });
 
 /// An Expert's published weekly hours, for the booking screen
 /// (GET /mentorships/expert/:id/availability, public). Empty when the

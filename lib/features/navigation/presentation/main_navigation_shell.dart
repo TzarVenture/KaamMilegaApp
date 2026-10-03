@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../app/auth_guard.dart';
 import '../../../app/theme/app_colors.dart';
+import '../../../shared/widgets/app_bottom_nav.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../chat/presentation/chat_list_screen.dart';
 import '../../home/presentation/home_screen.dart';
@@ -181,10 +182,8 @@ class _MainNavigationShellState extends ConsumerState<MainNavigationShell> {
 
   @override
   Widget build(BuildContext context) {
-    // The chats API has no unread counts yet, so there is no badge. (The
-    // conversations list is not loaded here: it is account-only data and
-    // must not be requested for guests.)
-    const unreadChats = 0;
+    // The conversations list is not loaded here: it is account-only data
+    // and must not be requested for guests.
 
     final screens = [
       HomeScreen(onNavigateTab: _selectTab),
@@ -199,88 +198,62 @@ class _MainNavigationShellState extends ConsumerState<MainNavigationShell> {
         index: _currentIndex == 2 ? 0 : _currentIndex,
         children: screens,
       ),
-      bottomNavigationBar: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.06),
-              blurRadius: 10,
-              offset: const Offset(0, -2),
-            ),
-          ],
-        ),
-        child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                // 1. HOME TAB
-                _buildNavItem(
-                  index: 0,
-                  icon: Icons.home_outlined,
-                  activeIcon: Icons.home_rounded,
-                  label: 'Home',
+      bottomNavigationBar: AppBottomNav.frame(
+        children: [
+          _buildNavItem(
+            index: 0,
+            icon: Icons.home_outlined,
+            activeIcon: Icons.home_rounded,
+            label: 'Home',
+          ),
+          _buildNavItem(
+            index: 1,
+            icon: Icons.work_outline_rounded,
+            activeIcon: Icons.work_rounded,
+            label: 'Jobs',
+          ),
+          // Center (+): quick actions
+          AppNavCenterButton(
+            onTap: () => _showCenterActionMenu(context),
+            legacy: Container(
+              width: 56,
+              height: 56,
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [AppColors.brandBlue, AppColors.deepNavy],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
                 ),
-
-                // 2. JOBS TAB
-                _buildNavItem(
-                  index: 1,
-                  icon: Icons.work_outline_rounded,
-                  activeIcon: Icons.work_rounded,
-                  label: 'Jobs',
-                ),
-
-                // 3. CENTER (+) BUTTON (Design System 6.3: 56px circle, Brand Blue bg #1a2b8c, white + icon, shadow rgba(26,43,140, 0.4))
-                GestureDetector(
-                  onTap: () => _showCenterActionMenu(context),
-                  child: Container(
-                    width: 56,
-                    height: 56,
-                    decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [AppColors.brandBlue, AppColors.deepNavy],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppColors.brandBlue.withValues(alpha: 0.40),
-                          blurRadius: 12,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: const Icon(
-                      Icons.add_rounded,
-                      color: Colors.white,
-                      size: 30,
-                    ),
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.brandBlue.withValues(alpha: 0.40),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
                   ),
-                ),
-
-                // 4. CHATS TAB
-                _buildNavItem(
-                  index: 3,
-                  icon: Icons.chat_bubble_outline_rounded,
-                  activeIcon: Icons.chat_bubble_rounded,
-                  label: 'Chats',
-                  badgeCount: unreadChats,
-                ),
-
-                // 5. PROFILE TAB
-                _buildNavItem(
-                  index: 4,
-                  icon: Icons.person_outline_rounded,
-                  activeIcon: Icons.person_rounded,
-                  label: 'Profile',
-                ),
-              ],
+                ],
+              ),
+              child: const Icon(
+                Icons.add_rounded,
+                color: Colors.white,
+                size: 30,
+              ),
             ),
           ),
-        ),
+          // The chats API has no unread counts yet, so there is no badge.
+          _buildNavItem(
+            index: 3,
+            icon: Icons.chat_bubble_outline_rounded,
+            activeIcon: Icons.chat_bubble_rounded,
+            label: 'Chats',
+          ),
+          _buildNavItem(
+            index: 4,
+            icon: Icons.person_outline_rounded,
+            activeIcon: Icons.person_rounded,
+            label: 'Profile',
+          ),
+        ],
       ),
     );
   }
@@ -290,13 +263,13 @@ class _MainNavigationShellState extends ConsumerState<MainNavigationShell> {
     required IconData icon,
     IconData? activeIcon,
     required String label,
-    int? badgeCount,
   }) {
-    final isSelected = _currentIndex == index;
-    final primaryColor = AppColors.primary;
-    final inactiveColor = AppColors.textSecondary;
-
-    return InkWell(
+    return AppBottomNavItem(
+      icon: icon,
+      activeIcon: activeIcon,
+      label: label,
+      selected: _currentIndex == index,
+      legacyPadding: 12,
       onTap: () {
         // Jobs from the bottom bar: a clean list (filters from an earlier
         // visit are cleared; the chosen city stays). Home shortcuts open
@@ -311,57 +284,6 @@ class _MainNavigationShellState extends ConsumerState<MainNavigationShell> {
           ref.read(authProvider.notifier).refreshProfile();
         }
       },
-      borderRadius: BorderRadius.circular(16),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Stack(
-              clipBehavior: Clip.none,
-              children: [
-                Icon(
-                  isSelected ? (activeIcon ?? icon) : icon,
-                  color: isSelected ? primaryColor : inactiveColor,
-                  size: 24,
-                ),
-                if (badgeCount != null && badgeCount > 0)
-                  Positioned(
-                    top: -4,
-                    right: -8,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 5,
-                        vertical: 1.5,
-                      ),
-                      decoration: const BoxDecoration(
-                        color: Color(0xFFEF4444),
-                        shape: BoxShape.circle,
-                      ),
-                      child: Text(
-                        '$badgeCount',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 10,
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-                    ),
-                  ),
-              ],
-            ),
-            const SizedBox(height: 3),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 11,
-                fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
-                color: isSelected ? primaryColor : inactiveColor,
-              ),
-            ),
-          ],
-        ),
-      ),
     );
   }
 }

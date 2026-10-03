@@ -167,7 +167,7 @@ class _IconLine extends StatelessWidget {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(icon, size: 16, color: AppColors.moduleEvents),
+        Icon(icon, size: 16, color: AppColors.moduleEventsText),
         const SizedBox(width: 8),
         Expanded(
           child: Text(

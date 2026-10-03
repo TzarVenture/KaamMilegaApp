@@ -145,7 +145,7 @@ class _ServicesMarketplaceScreenState extends State<ServicesMarketplaceScreen> {
                               ),
                               child: const Icon(
                                 Icons.handyman_rounded,
-                                color: AppColors.moduleServices,
+                                color: AppColors.moduleServicesText,
                                 size: 22,
                               ),
                             ),
@@ -167,7 +167,7 @@ class _ServicesMarketplaceScreenState extends State<ServicesMarketplaceScreen> {
                                     style: TextStyle(
                                       fontSize: 11,
                                       fontWeight: FontWeight.w600,
-                                      color: AppColors.moduleServices,
+                                      color: AppColors.moduleServicesText,
                                     ),
                                   ),
                                 ],

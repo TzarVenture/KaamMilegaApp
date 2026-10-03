@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'mobile_design_spec.dart';
+
 /// Single Source of Truth for KaamMilega™ UI/UX Design System Colors.
 ///
 /// Master brand system (25 Sep 2026): Navy #071A4D (trust + platform) and
@@ -38,6 +40,9 @@ class AppColors {
   static const Color accentBright = orangeLight; // Orange gradient end
   static const Color accentDark = brandOrange;
   static const Color accentLight = Color(0xFFFFF7ED); // Light orange tint
+  static const Color accentBorder = Color(0xFFFED7AA); // Border on accentLight
+  // Orange text on light tints (brand orange is too faint there to read)
+  static const Color accentText = Color(0xFFC2410C);
 
   // Header tokens
   static const Color deepPurpleHeader = brandNavy; // Navy top navbar/header
@@ -89,8 +94,14 @@ class AppColors {
   // -------------------------------------------------------------------
   static const Color textPrimary = black; // Main body text
   static const Color textSecondary = Color(0xFF5B6472); // Text Grey
-  static const Color textLight = Color(0xFF94A3B8); // Placeholders & hints
-  static const Color textMuted = Color(0xFF94A3B8);
+  // Mobile spec: hints and muted meta text use Text Secondary (#5B6472),
+  // because #94A3B8 is too faint on white (2.6 : 1).
+  static const Color textLight = kMobileDesignSpec
+      ? Color(0xFF5B6472)
+      : Color(0xFF94A3B8); // Placeholders & hints
+  static const Color textMuted = kMobileDesignSpec
+      ? Color(0xFF5B6472)
+      : Color(0xFF94A3B8);
 
   // -------------------------------------------------------------------
   // 7. BORDERS & DIVIDERS
@@ -113,5 +124,47 @@ class AppColors {
   static const Color successLight = Color(0xFFDCFCE7);
 
   static const Color warning = Color(0xFFEAB308);
-  static const Color error = Color(0xFFDC2626);
+  static const Color error = kMobileDesignSpec
+      ? Color(0xFFB91C1C)
+      : Color(0xFFDC2626);
+
+  // -------------------------------------------------------------------
+  // 9. MOBILE SPEC TOKENS (equal to the old colours when the trial is off)
+  // -------------------------------------------------------------------
+  /// Label colour on an orange (#FF6B00) button. White on orange is
+  /// 2.9 : 1 and fails WCAG; the spec's Option A uses Deep Navy (5.8 : 1).
+  static const Color onAccent = kMobileDesignSpec ? brandNavy : white;
+
+  /// Pressed orange button.
+  static const Color accentPressed = kMobileDesignSpec
+      ? Color(0xFFE05E00)
+      : accentBright;
+
+  /// Brand orange used as text on a light background.
+  static const Color accentOnLight = kMobileDesignSpec ? accentText : accent;
+
+  /// Skeleton (loading placeholder) block colour.
+  static const Color skeleton = kMobileDesignSpec ? Color(0xFFE6EBF2) : border;
+
+  /// Dimmed background behind bottom sheets and dialogs.
+  static const Color scrim = kMobileDesignSpec
+      ? Color(0x73071A4D)
+      : Color(0x8A000000);
+
+  /// Service colours as text or thin icons on white (text-safe variants).
+  static const Color moduleInstantWorkText = kMobileDesignSpec
+      ? Color(0xFFC2410C)
+      : moduleInstantWork;
+  static const Color moduleSkillsText = kMobileDesignSpec
+      ? Color(0xFF15803D)
+      : moduleSkills;
+  static const Color moduleServicesText = kMobileDesignSpec
+      ? Color(0xFFB91C1C)
+      : moduleServices;
+  static const Color moduleP2PText = kMobileDesignSpec
+      ? Color(0xFF0F766E)
+      : moduleP2P;
+  static const Color moduleEventsText = kMobileDesignSpec
+      ? Color(0xFFB45309)
+      : moduleEvents;
 }

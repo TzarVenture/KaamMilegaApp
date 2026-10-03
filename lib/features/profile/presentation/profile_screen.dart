@@ -19,6 +19,7 @@ import '../../wallet/providers/wallet_provider.dart';
 import '../../network/providers/network_provider.dart';
 import '../providers/profile_jobs_provider.dart';
 import 'widgets/open_to_sheets.dart';
+import 'widgets/open_to_status_cards.dart';
 import 'widgets/edit_public_url_dialog.dart';
 import 'widgets/profile_analytics_card.dart';
 import '../../../shared/widgets/app_dialog.dart';
@@ -4403,6 +4404,14 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     ),
                   ],
                 ),
+                // Open to work / Providing services cards (only while on).
+                if (user != null)
+                  OpenToStatusCards(
+                    user: user,
+                    onEditWork: () => _showOpenToModal(user),
+                    onEditServices: () =>
+                        _showOpenToModal(user, services: true),
+                  ),
                 const SizedBox(height: 18),
               ],
             ),

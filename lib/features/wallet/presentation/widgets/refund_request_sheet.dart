@@ -426,10 +426,10 @@ class _RefundRequestSheetState extends ConsumerState<RefundRequestSheet> {
                           onPressed: _canSubmit ? _submit : null,
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppColors.accent,
-                            foregroundColor: Colors.white,
+                            foregroundColor: AppColors.onAccent,
                             disabledBackgroundColor: AppColors.accent
                                 .withValues(alpha: _sending ? 0.8 : 0.45),
-                            disabledForegroundColor: Colors.white,
+                            disabledForegroundColor: AppColors.onAccent,
                             elevation: 0,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(14),

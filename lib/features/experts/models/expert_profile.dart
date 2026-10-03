@@ -24,7 +24,7 @@ class ExpertItem {
     this.category = 'Career',
     this.duration = 45,
     this.price = 0.0,
-    this.rating = 5.0,
+    this.rating = 0,
     this.reviews = 0,
     this.status = 'active',
     this.expertName = 'Industry Expert',
@@ -55,7 +55,7 @@ class ExpertItem {
       rating:
           (m['rating'] as num?)?.toDouble() ??
           (exp['rating'] as num?)?.toDouble() ??
-          5.0,
+          0.0,
       reviews: (m['reviews'] as num?)?.toInt() ?? 0,
       status: m['status']?.toString() ?? 'active',
       expertName:
@@ -72,6 +72,14 @@ class ExpertItem {
       ),
       expertBio: exp['bio']?.toString() ?? '',
     );
+  }
+
+  /// Rating text for badges: "4.6 (12)", "4.6", or "New" when the backend
+  /// has no rating yet (never an invented score).
+  String get ratingLabel {
+    if (rating <= 0) return 'New';
+    final value = rating.toStringAsFixed(1);
+    return reviews > 0 ? '$value ($reviews)' : value;
   }
 
   Map<String, dynamic> toJson() {

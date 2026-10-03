@@ -172,7 +172,7 @@ class JobsHeroCard extends StatelessWidget {
                             const Icon(
                               Icons.bookmark_rounded,
                               size: 19,
-                              color: AppColors.moduleEvents,
+                              color: AppColors.moduleEventsText,
                             ),
                             const SizedBox(width: 8),
                             Flexible(

@@ -150,7 +150,7 @@ class _SkillsMarketplaceScreenState
                                   children: [
                                     Icon(
                                       Icons.verified_user_rounded,
-                                      color: AppColors.moduleSkills,
+                                      color: AppColors.moduleSkillsText,
                                       size: 18,
                                     ),
                                     SizedBox(width: 8),
@@ -464,7 +464,11 @@ class _SkillsMarketplaceScreenState
       ),
       child: const Column(
         children: [
-          Icon(Icons.school_outlined, size: 36, color: AppColors.moduleSkills),
+          Icon(
+            Icons.school_outlined,
+            size: 36,
+            color: AppColors.moduleSkillsText,
+          ),
           SizedBox(height: 12),
           Text(
             'No matching skills found',
@@ -504,7 +508,7 @@ class _SkillsMarketplaceScreenState
             child: const Icon(
               Icons.construction_rounded,
               size: 32,
-              color: AppColors.moduleSkills,
+              color: AppColors.moduleSkillsText,
             ),
           ),
           const SizedBox(height: 14),

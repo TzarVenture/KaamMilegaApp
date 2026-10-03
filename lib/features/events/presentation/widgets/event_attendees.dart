@@ -127,6 +127,75 @@ class EventAttendeesRow extends ConsumerWidget {
   }
 }
 
+/// Opens the attendee list of [eventId] from anywhere, for example an
+/// event card. The sheet loads the list (GET /events/:id/attendees) and
+/// shows loading, an error with Retry, or the people.
+Future<void> showEventAttendeesFor(BuildContext context, String eventId) {
+  final page = context;
+  return showModalBottomSheet<void>(
+    context: context,
+    isScrollControlled: true,
+    useSafeArea: true,
+    builder: (_) => Consumer(
+      builder: (_, ref, _) {
+        final async = ref.watch(eventAttendeesProvider(eventId));
+        Widget box(Widget child) => SizedBox(
+          height: 220,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
+            child: Column(
+              children: [
+                const SheetDragHandle(),
+                Expanded(child: Center(child: child)),
+              ],
+            ),
+          ),
+        );
+        return async.when(
+          loading: () => box(const LinearProgressIndicator(minHeight: 2)),
+          error: (_, _) => box(
+            Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  'Could not load who is attending.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 13.5,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+                TextButton(
+                  onPressed: () =>
+                      ref.invalidate(eventAttendeesProvider(eventId)),
+                  child: const Text('Retry'),
+                ),
+              ],
+            ),
+          ),
+          data: (list) => list.people.isEmpty
+              ? box(
+                  const Text(
+                    'No one has joined yet. Be the first.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 13.5,
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                )
+              : EventAttendeesSheet(
+                  attendees: list,
+                  // The page's context: the sheet is closed by then.
+                  onOpenMember: (id) =>
+                      AuthGuard.openProtected(page, '/members/$id'),
+                ),
+        );
+      },
+    ),
+  );
+}
+
 Future<void> showEventAttendeesSheet(
   BuildContext context,
   EventAttendees attendees, {

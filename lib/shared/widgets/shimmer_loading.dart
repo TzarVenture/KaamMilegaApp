@@ -12,8 +12,10 @@ class AppShimmer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Shimmer.fromColors(
-      baseColor: AppColors.border,
+      baseColor: AppColors.skeleton,
       highlightColor: AppColors.background,
+      // Reduce motion (system setting): still blocks, no moving shine.
+      enabled: !MediaQuery.of(context).disableAnimations,
       child: child,
     );
   }

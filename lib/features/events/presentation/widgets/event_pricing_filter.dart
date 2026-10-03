@@ -35,10 +35,21 @@ class EventPricingChips extends StatelessWidget {
     super.key,
     required this.selected,
     required this.onChanged,
+    this.trailing,
   });
 
   final EventPricingFilter selected;
   final ValueChanged<EventPricingFilter> onChanged;
+
+  /// Optional extra chip at the end of the row (the sort chip).
+  final Widget? trailing;
+
+  /// The server's `is_paid` value for [filter] (null: all events).
+  static bool? isPaidParam(EventPricingFilter filter) => switch (filter) {
+    EventPricingFilter.all => null,
+    EventPricingFilter.free => false,
+    EventPricingFilter.paid => true,
+  };
 
   @override
   Widget build(BuildContext context) {
@@ -62,6 +73,7 @@ class EventPricingChips extends StatelessWidget {
               if (filter != EventPricingFilter.values.last)
                 const SizedBox(width: 8),
             ],
+            if (trailing != null) ...[const SizedBox(width: 8), trailing!],
           ],
         ),
       ),

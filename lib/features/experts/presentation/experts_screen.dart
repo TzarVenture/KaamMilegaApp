@@ -505,7 +505,7 @@ class _ExpertsScreenState extends ConsumerState<ExpertsScreen> {
                         ),
                         const SizedBox(width: 2),
                         Text(
-                          expert.rating.toStringAsFixed(1),
+                          expert.ratingLabel,
                           style: const TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w700,

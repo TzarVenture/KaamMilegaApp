@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../app/theme/mobile_design_spec.dart';
+
 /// Small grey bar at the top of a bottom sheet (the "drag handle").
 /// Same size and colour on every sheet in the app.
 class SheetDragHandle extends StatelessWidget {
@@ -13,10 +15,13 @@ class SheetDragHandle extends StatelessWidget {
     return Center(
       child: Container(
         margin: EdgeInsets.only(bottom: bottomSpacing),
-        width: 40,
+        // Mobile spec 7.10: 36 x 4, border grey #D9E0EA
+        width: kMobileDesignSpec ? 36 : 40,
         height: 4,
         decoration: BoxDecoration(
-          color: const Color(0xFFCBD5E1),
+          color: kMobileDesignSpec
+              ? const Color(0xFFD9E0EA)
+              : const Color(0xFFCBD5E1),
           borderRadius: BorderRadius.circular(2),
         ),
       ),

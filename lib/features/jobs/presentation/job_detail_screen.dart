@@ -14,6 +14,7 @@ import '../../profile/presentation/widgets/profile_drawer.dart';
 import '../models/job.dart';
 import '../providers/jobs_provider.dart';
 import '../repositories/job_repository.dart';
+import 'widgets/people_like_you_card.dart';
 import '../../../shared/widgets/fade_slide_in.dart';
 import '../../../shared/widgets/pressable_scale.dart';
 
@@ -659,6 +660,11 @@ class _JobDetailScreenState extends ConsumerState<JobDetailScreen> {
                     ),
                   ),
 
+                  const SizedBox(height: 16),
+
+                  // 6. People Like You (real members, GET /community/users)
+                  FadeSlideIn(index: 1, child: PeopleLikeYouCard(job: job)),
+
                   const SizedBox(height: 80), // Padding for sticky bottom bar
                 ]),
               ),
@@ -1046,14 +1052,14 @@ class _JobHeader extends StatelessWidget {
                       child: company.isEmpty
                           ? const Icon(
                               Icons.work_outline_rounded,
-                              color: Colors.white,
+                              color: AppColors.onAccent,
                             )
                           : Text(
                               company[0].toUpperCase(),
                               style: const TextStyle(
                                 fontSize: 21,
                                 fontWeight: FontWeight.w800,
-                                color: Colors.white,
+                                color: AppColors.onAccent,
                               ),
                             ),
                     ),

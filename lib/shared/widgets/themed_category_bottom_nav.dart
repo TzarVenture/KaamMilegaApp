@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../app/theme/app_colors.dart';
 import '../../features/chat/providers/chat_provider.dart';
+import 'app_bottom_nav.dart';
 
 /// Reusable themed bottom navigation bar for KaamMilega category modules.
 /// Colors and highlights adapt dynamically based on the active category theme.
@@ -144,169 +145,72 @@ class ThemedCategoryBottomNav extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final convosAsync = ref.watch(conversationsProvider);
-    final unreadChats = convosAsync.maybeWhen(
-      data: (convos) => 0,
-      orElse: () => 0,
-    );
+    // Kept as before: the bar listens to the conversations list (the
+    // chats API has no unread counts yet, so no badge is shown).
+    ref.watch(conversationsProvider);
 
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.06),
-            blurRadius: 10,
-            offset: const Offset(0, -2),
-          ),
-        ],
-      ),
-      child: SafeArea(
-        top: false,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              // 1. HOME TAB
-              _buildNavItem(
-                context: context,
-                index: 0,
-                icon: Icons.home_outlined,
-                activeIcon: Icons.home_rounded,
-                label: 'Home',
-                onTap: () => context.go('/home'),
-              ),
-
-              // 2. CATEGORY TAB (Active in theme color)
-              _buildNavItem(
-                context: context,
-                index: 1,
-                icon: categoryIcon,
-                activeIcon: categoryIcon,
-                label: categoryLabel,
-                onTap: onCategoryTap ?? () {},
-              ),
-
-              // 3. CENTER (+) BUTTON: solid service colour (no gradient) + shadow
-              GestureDetector(
-                onTap:
-                    onCenterTap ?? () => _showDefaultQuickActionSheet(context),
-                child: Container(
-                  width: 54,
-                  height: 54,
-                  decoration: BoxDecoration(
-                    color: activeColor,
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: activeColor.withValues(alpha: 0.40),
-                        blurRadius: 12,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: const Icon(
-                    Icons.add_rounded,
-                    color: Colors.white,
-                    size: 30,
-                  ),
-                ),
-              ),
-
-              // 4. CHATS TAB
-              _buildNavItem(
-                context: context,
-                index: 3,
-                icon: Icons.chat_bubble_outline_rounded,
-                activeIcon: Icons.chat_bubble_rounded,
-                label: 'Chats',
-                badgeCount: unreadChats,
-                onTap: () => context.go('/chats'),
-              ),
-
-              // 5. PROFILE TAB
-              _buildNavItem(
-                context: context,
-                index: 4,
-                icon: Icons.person_outline_rounded,
-                activeIcon: Icons.person_rounded,
-                label: 'Profile',
-                onTap: () => context.go('/profile'),
-              ),
-            ],
-          ),
+    return AppBottomNav.frame(
+      children: [
+        // 1. HOME TAB
+        AppBottomNavItem(
+          icon: Icons.home_outlined,
+          activeIcon: Icons.home_rounded,
+          label: 'Home',
+          selected: activeIndex == 0,
+          legacyActiveColor: activeColor,
+          onTap: () => context.go('/home'),
         ),
-      ),
-    );
-  }
 
-  Widget _buildNavItem({
-    required BuildContext context,
-    required int index,
-    required IconData icon,
-    IconData? activeIcon,
-    required String label,
-    int? badgeCount,
-    required VoidCallback onTap,
-  }) {
-    final isSelected = activeIndex == index;
-    final primaryColor = activeColor;
-    final inactiveColor = AppColors.textSecondary;
+        // 2. CATEGORY TAB
+        AppBottomNavItem(
+          icon: categoryIcon,
+          label: categoryLabel,
+          selected: activeIndex == 1,
+          legacyActiveColor: activeColor,
+          onTap: onCategoryTap ?? () {},
+        ),
 
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(16),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Stack(
-              clipBehavior: Clip.none,
-              children: [
-                Icon(
-                  isSelected ? (activeIcon ?? icon) : icon,
-                  color: isSelected ? primaryColor : inactiveColor,
-                  size: 24,
+        // 3. CENTER (+) BUTTON: quick actions
+        AppNavCenterButton(
+          onTap: onCenterTap ?? () => _showDefaultQuickActionSheet(context),
+          legacy: Container(
+            width: 54,
+            height: 54,
+            decoration: BoxDecoration(
+              color: activeColor,
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: activeColor.withValues(alpha: 0.40),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
                 ),
-                if (badgeCount != null && badgeCount > 0)
-                  Positioned(
-                    top: -4,
-                    right: -8,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 5,
-                        vertical: 1.5,
-                      ),
-                      decoration: const BoxDecoration(
-                        color: Color(0xFFEF4444),
-                        shape: BoxShape.circle,
-                      ),
-                      child: Text(
-                        '',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 10,
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-                    ),
-                  ),
               ],
             ),
-            const SizedBox(height: 3),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 11,
-                fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
-                color: isSelected ? primaryColor : inactiveColor,
-              ),
-            ),
-          ],
+            child: const Icon(Icons.add_rounded, color: Colors.white, size: 30),
+          ),
         ),
-      ),
+
+        // 4. CHATS TAB
+        AppBottomNavItem(
+          icon: Icons.chat_bubble_outline_rounded,
+          activeIcon: Icons.chat_bubble_rounded,
+          label: 'Chats',
+          selected: activeIndex == 3,
+          legacyActiveColor: activeColor,
+          onTap: () => context.go('/chats'),
+        ),
+
+        // 5. PROFILE TAB
+        AppBottomNavItem(
+          icon: Icons.person_outline_rounded,
+          activeIcon: Icons.person_rounded,
+          label: 'Profile',
+          selected: activeIndex == 4,
+          legacyActiveColor: activeColor,
+          onTap: () => context.go('/profile'),
+        ),
+      ],
     );
   }
 }

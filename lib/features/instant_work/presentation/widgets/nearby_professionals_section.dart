@@ -164,7 +164,7 @@ class _InfoCard extends StatelessWidget {
               color: AppColors.moduleInstantWorkLight,
               shape: BoxShape.circle,
             ),
-            child: Icon(icon, size: 20, color: AppColors.moduleInstantWork),
+            child: Icon(icon, size: 20, color: AppColors.moduleInstantWorkText),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -269,7 +269,7 @@ class ProfessionalCard extends StatelessWidget {
                       initial.toUpperCase(),
                       style: const TextStyle(
                         fontWeight: FontWeight.w700,
-                        color: AppColors.moduleInstantWork,
+                        color: AppColors.moduleInstantWorkText,
                       ),
                     ),
                   ),
@@ -311,7 +311,7 @@ class ProfessionalCard extends StatelessWidget {
                                     const Icon(
                                       Icons.star_rounded,
                                       size: 15,
-                                      color: AppColors.moduleEvents,
+                                      color: AppColors.moduleEventsText,
                                     ),
                                     Flexible(
                                       child: Text(

@@ -434,7 +434,7 @@ class _BestValueBadge extends StatelessWidget {
           fontSize: 11,
           fontWeight: FontWeight.w800,
           letterSpacing: 0.8,
-          color: Colors.white,
+          color: AppColors.onAccent,
         ),
       ),
     );

@@ -217,7 +217,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   style: TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w900,
-                    color: Colors.white,
+                    color: AppColors.onAccent,
                   ),
                 ),
               ),
@@ -1633,7 +1633,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   style: TextStyle(
                     fontSize: 14.5,
                     fontWeight: FontWeight.w900,
-                    color: Colors.white,
+                    color: AppColors.onAccent,
                   ),
                 ),
               ),

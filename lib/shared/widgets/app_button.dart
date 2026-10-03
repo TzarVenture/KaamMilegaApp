@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../app/theme/app_colors.dart';
 import '../../app/theme/app_text_styles.dart';
+import '../../app/theme/mobile_design_spec.dart';
 
 /// Primary full-width action button.
 ///
@@ -50,14 +51,28 @@ class _AppButtonState extends State<AppButton> {
   Widget build(BuildContext context) {
     final base = widget.accent ? AppColors.accent : AppColors.primary;
     final hover = widget.accent
-        ? AppColors.accentBright
+        ? AppColors.accentPressed
         : AppColors.primaryDark;
+    // Orange buttons get a navy label under the mobile spec (white on
+    // orange is unreadable); navy buttons keep white.
+    final fg = widget.accent ? AppColors.onAccent : AppColors.white;
+    // Disabled (not loading): grey fill and grey label under the spec.
+    final disabledBg = kMobileDesignSpec
+        ? AppColors.border
+        : base.withValues(alpha: 0.35);
+    final disabledFg = kMobileDesignSpec && !widget.isLoading
+        ? AppColors.textSecondary
+        : fg;
+    final textStyle = AppTextStyles.button.copyWith(
+      color: widget.onPressed == null && !widget.isLoading ? disabledFg : fg,
+      fontSize: kMobileDesignSpec ? 16 : null,
+    );
     final label = widget.icon == null
         ? Text(
             widget.text,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: AppTextStyles.button,
+            style: textStyle,
           )
         : Row(
             mainAxisSize: MainAxisSize.min,
@@ -69,7 +84,7 @@ class _AppButtonState extends State<AppButton> {
                   widget.text,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: AppTextStyles.button,
+                  style: textStyle,
                 ),
               ),
             ],
@@ -102,13 +117,12 @@ class _AppButtonState extends State<AppButton> {
             style:
                 ElevatedButton.styleFrom(
                   backgroundColor: base,
-                  foregroundColor: AppColors.white,
+                  foregroundColor: fg,
                   // While loading keep the brand colour (not the faded disabled
-                  // look); a truly disabled button is faded.
-                  disabledBackgroundColor: widget.isLoading
-                      ? base
-                      : base.withValues(alpha: 0.35),
-                  disabledForegroundColor: AppColors.white,
+                  // look); a truly disabled button is faded (grey under the
+                  // mobile spec).
+                  disabledBackgroundColor: widget.isLoading ? base : disabledBg,
+                  disabledForegroundColor: disabledFg,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
@@ -117,9 +131,7 @@ class _AppButtonState extends State<AppButton> {
                   // Hover / pressed: navy #0B1F52 (primary) or #FF8A00 (accent).
                   backgroundColor: WidgetStateProperty.resolveWith((states) {
                     if (states.contains(WidgetState.disabled)) {
-                      return widget.isLoading
-                          ? base
-                          : base.withValues(alpha: 0.35);
+                      return widget.isLoading ? base : disabledBg;
                     }
                     if (states.contains(WidgetState.hovered) ||
                         states.contains(WidgetState.pressed)) {
@@ -133,15 +145,14 @@ class _AppButtonState extends State<AppButton> {
               transitionBuilder: (child, animation) =>
                   FadeTransition(opacity: animation, child: child),
               child: widget.isLoading
-                  ? const SizedBox(
-                      key: ValueKey('loading'),
+                  ? SizedBox(
+                      key: const ValueKey('loading'),
                       width: 22,
                       height: 22,
                       child: CircularProgressIndicator(
                         strokeWidth: 2.5,
-                        valueColor: AlwaysStoppedAnimation<Color>(
-                          AppColors.white,
-                        ),
+                        // Spinner colour matches the label colour.
+                        valueColor: AlwaysStoppedAnimation<Color>(fg),
                       ),
                     )
                   : KeyedSubtree(key: const ValueKey('label'), child: label),

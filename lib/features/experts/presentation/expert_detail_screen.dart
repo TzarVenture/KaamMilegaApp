@@ -8,6 +8,7 @@ import '../../wallet/providers/wallet_provider.dart';
 import '../models/expert_offering.dart';
 import '../models/expert_profile.dart';
 import '../repositories/expert_repository.dart';
+import 'widgets/expert_reviews_section.dart';
 import '../../../shared/widgets/app_dialog.dart';
 import '../../../shared/widgets/sheet_drag_handle.dart';
 import '../../../app/theme/app_colors.dart';
@@ -512,7 +513,7 @@ class _ExpertDetailScreenState extends ConsumerState<ExpertDetailScreen> {
                           ),
                           const SizedBox(width: 4),
                           Text(
-                            expert.rating.toStringAsFixed(1),
+                            expert.ratingLabel,
                             style: const TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w700,
@@ -801,6 +802,11 @@ class _ExpertDetailScreenState extends ConsumerState<ExpertDetailScreen> {
                     ),
             ),
           ),
+
+          const SizedBox(height: 24),
+
+          // 5. Ratings & Reviews from mentees of completed sessions
+          ExpertReviewsSection(expertId: expert.expertId),
 
           const SizedBox(height: 32),
         ],

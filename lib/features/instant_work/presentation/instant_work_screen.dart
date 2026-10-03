@@ -319,7 +319,7 @@ class _InstantWorkScreenState extends ConsumerState<InstantWorkScreen> {
               child: const Icon(
                 Icons.bolt_rounded,
                 size: 36,
-                color: AppColors.moduleInstantWork,
+                color: AppColors.moduleInstantWorkText,
               ),
             ),
             const SizedBox(height: 14),
@@ -347,7 +347,7 @@ class _InstantWorkScreenState extends ConsumerState<InstantWorkScreen> {
               onPressed: () => context.go('/jobs'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.moduleInstantWork,
-                foregroundColor: Colors.white,
+                foregroundColor: AppColors.onAccent,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10),
                 ),
@@ -403,7 +403,7 @@ class _InstantWorkScreenState extends ConsumerState<InstantWorkScreen> {
                   child: Text(
                     job.jobType.isNotEmpty ? job.jobType : 'Instant Work',
                     style: const TextStyle(
-                      color: AppColors.moduleInstantWork,
+                      color: AppColors.moduleInstantWorkText,
                       fontSize: 11,
                       fontWeight: FontWeight.w700,
                     ),
@@ -538,7 +538,7 @@ class _InstantWorkScreenState extends ConsumerState<InstantWorkScreen> {
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.moduleInstantWork,
-                      foregroundColor: Colors.white,
+                      foregroundColor: AppColors.onAccent,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10),
                       ),

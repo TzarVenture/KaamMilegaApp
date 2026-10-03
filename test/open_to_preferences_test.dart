@@ -9,6 +9,7 @@ import 'package:kaam_milega/core/storage/local_storage.dart';
 import 'package:kaam_milega/features/auth/models/user_profile.dart';
 import 'package:kaam_milega/features/auth/repositories/auth_repository.dart';
 import 'package:kaam_milega/features/profile/presentation/widgets/open_to_sheets.dart';
+import 'package:kaam_milega/features/profile/presentation/widgets/open_to_status_cards.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 /// ApiClient answered locally; records every request.
@@ -243,7 +244,7 @@ void main() {
       // Typed but not added: still saved.
       await tester.enterText(find.byType(TextField).at(1), 'Pune');
       await _tapVisible(tester, find.text('Recruiters only'));
-      await _tapVisible(tester, find.text('Save'));
+      await _tapVisible(tester, find.text('Save Preferences'));
 
       final sent = repo.work.single;
       expect(sent.isOpen, isTrue);
@@ -258,7 +259,7 @@ void main() {
       final repo = _PrefsRepo();
       await tester.pumpWidget(_host(repo, (c) => showOpenToWorkSheet(c, user)));
       await _openSheet(tester);
-      await _tapVisible(tester, find.text('Save'));
+      await _tapVisible(tester, find.text('Save Preferences'));
       expect(repo.work, isEmpty);
       expect(find.text('Add at least one job title.'), findsOneWidget);
     });
@@ -270,7 +271,7 @@ void main() {
       await tester.pumpWidget(_host(repo, (c) => showOpenToWorkSheet(c, user)));
       await _openSheet(tester);
       await tester.enterText(find.byType(TextField).at(0), 'Driver');
-      await _tapVisible(tester, find.text('Save'));
+      await _tapVisible(tester, find.text('Save Preferences'));
       expect(repo.work, hasLength(1));
       expect(
         find.text(
@@ -302,7 +303,7 @@ void main() {
       await _openSheet(tester);
       // Saved value outside the website list is shown, not dropped.
       expect(find.widgetWithText(FilterChip, 'Internship'), findsOneWidget);
-      await _tapVisible(tester, find.text('Turn off Open To Work'));
+      await _tapVisible(tester, find.text('Remove Status'));
       final sent = repo.work.single;
       expect(sent.isOpen, isFalse);
       expect(sent.jobTitles, ['Driver']);
@@ -355,7 +356,7 @@ void main() {
         find.byType(TextField).at(2),
         '  Split and window ACs  ',
       );
-      await _tapVisible(tester, find.text('Save'));
+      await _tapVisible(tester, find.text('Save Services'));
 
       final sent = repo.services.single;
       expect(sent.isProviding, isTrue);
@@ -387,7 +388,7 @@ void main() {
       expect(find.text('300'), findsOneWidget);
       expect(find.text('Home repairs'), findsOneWidget);
 
-      await _tapVisible(tester, find.text('Turn off Providing Services'));
+      await _tapVisible(tester, find.text('Remove Services'));
       final sent = repo.services.single;
       expect(sent.isProviding, isFalse);
       expect(sent.services, ['Plumbing']);
@@ -402,9 +403,222 @@ void main() {
         _host(repo, (c) => showProvidingServicesSheet(c, user)),
       );
       await _openSheet(tester);
-      await _tapVisible(tester, find.text('Save'));
+      expect(find.text('Remove Services'), findsNothing); // nothing saved
+      await _tapVisible(tester, find.text('Save Services'));
       expect(repo.services, isEmpty);
       expect(find.text('Add at least one service.'), findsOneWidget);
+    });
+
+    testWidgets('a suggestion adds the service in one tap', (tester) async {
+      final repo = _PrefsRepo();
+      const user = UserProfile(id: 'u1', mobile: '9876543210');
+      await tester.pumpWidget(
+        _host(repo, (c) => showProvidingServicesSheet(c, user)),
+      );
+      await _openSheet(tester);
+      await _tapVisible(
+        tester,
+        find.widgetWithText(ActionChip, 'Electrical Wiring'),
+      );
+      // Now a chosen service, no longer a suggestion.
+      expect(
+        find.widgetWithText(InputChip, 'Electrical Wiring'),
+        findsOneWidget,
+      );
+      expect(
+        find.widgetWithText(ActionChip, 'Electrical Wiring'),
+        findsNothing,
+      );
+      // Chosen value sits inside the input box (above the typing line);
+      // the remaining suggestions stay below the box.
+      final chip = tester.getRect(
+        find.widgetWithText(InputChip, 'Electrical Wiring'),
+      );
+      final field = tester.getRect(find.byType(TextField).first);
+      expect(chip.bottom, lessThanOrEqualTo(field.top));
+      expect(
+        tester.getRect(find.byType(ActionChip).first).top,
+        greaterThan(field.bottom),
+      );
+      await _tapVisible(tester, find.text('Save Services'));
+      expect(repo.services.single.services, ['Electrical Wiring']);
+      expect(repo.services.single.hourlyRate, 0);
+    });
+
+    testWidgets('fits a small phone; Save Services stays on screen', (
+      tester,
+    ) async {
+      tester.view.physicalSize = const Size(320, 568);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      final saved = UserProfile.fromJson(
+        _user(
+          providingServices: {
+            'is_providing': true,
+            'services': [
+              'AC Repair & Service',
+              'A very long service name that does not fit on one line',
+            ],
+            'hourly_rate': 500,
+            'currency': 'INR',
+            'description': 'Home visits across the city',
+          },
+        ),
+      );
+      await tester.pumpWidget(
+        _host(_PrefsRepo(), (c) => showProvidingServicesSheet(c, saved)),
+      );
+      await _openSheet(tester);
+      expect(tester.takeException(), isNull);
+      final save = tester.getRect(find.text('Save Services'));
+      expect(save.bottom, lessThanOrEqualTo(568));
+      expect(find.text('Remove Services'), findsOneWidget);
+    });
+  });
+
+  group('Providing services card', () {
+    const prefs = ProvidingServicesPreferences(
+      isProviding: true,
+      services: ['AC Repair & Service', 'Plumbing'],
+      hourlyRate: 500,
+      currency: 'INR',
+      description: 'Split and window ACs',
+    );
+
+    test('rate label', () {
+      expect(prefs.rateLabel, '₹500 / hr');
+      expect(const ProvidingServicesPreferences().rateLabel, '');
+      expect(
+        const ProvidingServicesPreferences(
+          hourlyRate: 20.5,
+          currency: 'USD',
+        ).rateLabel,
+        'USD 20.50 / hr',
+      );
+    });
+
+    testWidgets('shows the saved values; Update details opens the form', (
+      tester,
+    ) async {
+      tester.view.physicalSize = const Size(320, 640);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      var edits = 0;
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: AppTheme.lightTheme,
+          home: Scaffold(
+            body: Padding(
+              padding: const EdgeInsets.all(16),
+              child: ProvidingServicesCard(prefs: prefs, onEdit: () => edits++),
+            ),
+          ),
+        ),
+      );
+      expect(tester.takeException(), isNull);
+      expect(find.text('Providing services'), findsOneWidget);
+      expect(find.text('AC Repair & Service, Plumbing'), findsOneWidget);
+      expect(find.text('₹500 / hr'), findsOneWidget);
+      expect(find.text('Split and window ACs'), findsOneWidget);
+      await tester.tap(find.text('Update details'));
+      expect(edits, 1);
+    });
+
+    testWidgets('a job title suggestion adds it in one tap', (tester) async {
+      final repo = _PrefsRepo();
+      const user = UserProfile(id: 'u1', mobile: '9876543210');
+      await tester.pumpWidget(_host(repo, (c) => showOpenToWorkSheet(c, user)));
+      await _openSheet(tester);
+      expect(find.text('Remove Status'), findsNothing); // nothing saved
+      await _tapVisible(tester, find.widgetWithText(ActionChip, 'Plumber'));
+      expect(find.widgetWithText(InputChip, 'Plumber'), findsOneWidget);
+      await _tapVisible(tester, find.text('Save Preferences'));
+      expect(repo.work.single.jobTitles, ['Plumber']);
+    });
+  });
+
+  group('Open To status cards', () {
+    Future<void> pumpCards(
+      WidgetTester tester,
+      UserProfile user, {
+      double width = 360,
+    }) async {
+      tester.view.physicalSize = Size(width, 800);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: AppTheme.lightTheme,
+          home: Scaffold(
+            body: Padding(
+              padding: const EdgeInsets.all(16),
+              child: OpenToStatusCards(
+                user: user,
+                onEditWork: () {},
+                onEditServices: () {},
+              ),
+            ),
+          ),
+        ),
+      );
+      expect(tester.takeException(), isNull);
+    }
+
+    final both = UserProfile.fromJson(
+      _user(
+        openToWork: {
+          'is_open': true,
+          'job_titles': ['Full Stack Developer'],
+          'job_types': ['Full-time'],
+          'locations': ['Pune'],
+          'visibility': 'all',
+        },
+        providingServices: {
+          'is_providing': true,
+          'services': ['AC Repair & Service', 'Rider'],
+          'hourly_rate': 600,
+          'currency': 'INR',
+        },
+      ),
+    );
+
+    testWidgets('both on: two cards, one under the other on a phone', (
+      tester,
+    ) async {
+      await pumpCards(tester, both);
+      expect(find.text('Open to work'), findsOneWidget);
+      expect(find.text('ALL MEMBERS'), findsOneWidget);
+      expect(find.text('Full Stack Developer'), findsOneWidget);
+      expect(find.text('Full-time · Pune'), findsOneWidget);
+      expect(find.text('Update preferences'), findsOneWidget);
+      expect(find.text('Providing services'), findsOneWidget);
+      expect(find.text('₹600 / hr'), findsOneWidget);
+      expect(find.text('AC Repair & Service, Rider'), findsOneWidget);
+      final work = tester.getTopLeft(find.text('Open to work'));
+      final services = tester.getTopLeft(find.text('Providing services'));
+      expect(services.dy, greaterThan(work.dy));
+    });
+
+    testWidgets('wide screen: side by side', (tester) async {
+      await pumpCards(tester, both, width: 900);
+      final work = tester.getTopLeft(find.text('Open to work'));
+      final services = tester.getTopLeft(find.text('Providing services'));
+      expect(services.dx, greaterThan(work.dx));
+      expect(services.dy, work.dy);
+    });
+
+    testWidgets('a status that is off shows no card', (tester) async {
+      final off = UserProfile.fromJson(
+        _user(
+          openToWork: {
+            'is_open': false,
+            'job_titles': ['Driver'],
+          },
+        ),
+      );
+      await pumpCards(tester, off);
+      expect(find.text('Open to work'), findsNothing);
+      expect(find.text('Providing services'), findsNothing);
     });
   });
 }

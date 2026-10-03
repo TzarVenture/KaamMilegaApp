@@ -15,12 +15,38 @@ class EventRepository {
 
   EventRepository(this._client);
 
+  /// Events page size (the website loads 9; the app shows more per page).
+  static const int pageSize = 20;
+
   /// Fetch events from backend with pagination and optional search
   Future<List<EventItem>> getEvents({
     String? search,
     String? location,
     int page = 1,
-    int limit = 20,
+    int limit = pageSize,
+    String? currentUserId,
+  }) async {
+    final result = await getEventsPage(
+      search: search,
+      location: location,
+      page: page,
+      limit: limit,
+      currentUserId: currentUserId,
+    );
+    return result.items;
+  }
+
+  /// One page of events (GET /events). The server filters and sorts:
+  /// `search` (title, organizer, category), `location`, `is_paid`
+  /// (true / false) and `sort=Upcoming` (by date); otherwise newest first.
+  /// [total] is the server's count of all matching events.
+  Future<({List<EventItem> items, int total})> getEventsPage({
+    String? search,
+    String? location,
+    bool? isPaid,
+    bool upcomingFirst = false,
+    int page = 1,
+    int limit = pageSize,
     String? currentUserId,
   }) async {
     final queryParams = <String, dynamic>{'page': page, 'limit': limit};
@@ -30,6 +56,8 @@ class EventRepository {
     if (location != null && location.trim().isNotEmpty) {
       queryParams['location'] = location.trim();
     }
+    if (isPaid != null) queryParams['is_paid'] = isPaid;
+    if (upcomingFirst) queryParams['sort'] = 'Upcoming';
 
     final response = await _client.get(
       ApiConstants.events,
@@ -38,6 +66,7 @@ class EventRepository {
 
     final dynamic body = response.data;
     List<dynamic> list = [];
+    int? total;
 
     if (body is Map<String, dynamic>) {
       if (body['data'] is List) {
@@ -45,21 +74,36 @@ class EventRepository {
       } else if (body['events'] is List) {
         list = body['events'];
       }
+      final t = body['total'];
+      if (t is num) total = t.toInt();
     } else if (body is List) {
       list = body;
     }
 
-    if (list.isNotEmpty) {
-      return list
-          .map(
-            (e) => EventItem.fromJson(
-              e as Map<String, dynamic>,
-              currentUserId: currentUserId,
-            ),
-          )
-          .toList();
+    final items = list
+        .whereType<Map<String, dynamic>>()
+        .map((e) => EventItem.fromJson(e, currentUserId: currentUserId))
+        .toList();
+    return (items: items, total: total ?? items.length);
+  }
+
+  /// One event, fresh from the server (GET /events/:id, public), for the
+  /// event page: seats left, price and who joined may have changed since
+  /// the list was loaded.
+  Future<EventItem> getEvent(String eventId, {String? currentUserId}) async {
+    final response = await _client.get('${ApiConstants.events}/$eventId');
+    final data = response.data;
+    final json = data is Map<String, dynamic> && data['event'] is Map
+        ? Map<String, dynamic>.from(data['event'] as Map)
+        : data;
+    if (json is! Map<String, dynamic>) {
+      throw const AppServerException('Unexpected event response.');
     }
-    return [];
+    final event = EventItem.fromJson(json, currentUserId: currentUserId);
+    if (event.id.isEmpty) {
+      throw const AppServerException('Unexpected event response.');
+    }
+    return event;
   }
 
   /// Register candidate for a specific event

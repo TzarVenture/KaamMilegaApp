@@ -212,6 +212,8 @@ class ApiConstants {
       '/mentorships/availability'; // GET / PUT my weekly hours
   static String mentorshipExpertAvailability(String expertId) =>
       '/mentorships/expert/$expertId/availability'; // GET (public)
+  static String mentorshipExpertReviews(String expertId) =>
+      '/mentorships/expert/$expertId/reviews'; // GET (public)
   static const String mentorshipBookings =
       '/mentorships/bookings'; // POST /:id/review (completed sessions)
 

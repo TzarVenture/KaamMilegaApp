@@ -275,7 +275,6 @@ class ProfileDrawer extends ConsumerWidget {
                     // 3. Main Nav Items with Icons (Screenshot 1)
                     _DrawerIconTile(
                       icon: Icons.home_outlined,
-                      color: AppColors.brandNavy,
                       title: 'Home',
                       onTap: () {
                         Navigator.pop(context);
@@ -288,7 +287,6 @@ class ProfileDrawer extends ConsumerWidget {
                     ),
                     _DrawerIconTile(
                       icon: Icons.people_outline_rounded,
-                      color: AppColors.moduleP2P,
                       title: 'Network',
                       onTap: () {
                         Navigator.pop(context);
@@ -297,7 +295,6 @@ class ProfileDrawer extends ConsumerWidget {
                     ),
                     _DrawerIconTile(
                       icon: Icons.calendar_today_outlined,
-                      color: AppColors.moduleEvents,
                       title: 'Events',
                       onTap: () {
                         Navigator.pop(context);
@@ -306,7 +303,6 @@ class ProfileDrawer extends ConsumerWidget {
                     ),
                     _DrawerIconTile(
                       icon: Icons.business_center_outlined,
-                      color: AppColors.blue,
                       title: 'Jobs',
                       onTap: () {
                         Navigator.pop(context);
@@ -319,7 +315,6 @@ class ProfileDrawer extends ConsumerWidget {
                     ),
                     _DrawerIconTile(
                       icon: Icons.menu_book_outlined,
-                      color: AppColors.moduleExperts,
                       title: 'Mentors',
                       onTap: () {
                         Navigator.pop(context);
@@ -328,7 +323,6 @@ class ProfileDrawer extends ConsumerWidget {
                     ),
                     _DrawerIconTile(
                       icon: Icons.chat_bubble_outline_rounded,
-                      color: AppColors.accent,
                       title: 'Chat',
                       onTap: () {
                         Navigator.pop(context);
@@ -341,7 +335,6 @@ class ProfileDrawer extends ConsumerWidget {
                     ),
                     _DrawerIconTile(
                       icon: Icons.library_books_outlined,
-                      color: AppColors.moduleSkills,
                       title: 'Resources',
                       onTap: () {
                         Navigator.pop(context);
@@ -360,7 +353,6 @@ class ProfileDrawer extends ConsumerWidget {
                     // 4. Secondary Text Menu Items (Screenshot 1)
                     _DrawerIconTile(
                       icon: Icons.apps_rounded,
-                      color: AppColors.moduleServices,
                       title: 'Explore All Modules',
                       onTap: () {
                         Navigator.pop(context);
@@ -369,7 +361,6 @@ class ProfileDrawer extends ConsumerWidget {
                     ),
                     _DrawerIconTile(
                       icon: Icons.account_balance_wallet_outlined,
-                      color: AppColors.success,
                       title: 'Digital Wallet & Ledger',
                       onTap: () {
                         Navigator.pop(context);
@@ -382,7 +373,6 @@ class ProfileDrawer extends ConsumerWidget {
                     ),
                     _DrawerIconTile(
                       icon: Icons.settings_outlined,
-                      color: AppColors.navy,
                       title: 'Setting & Privacy',
                       onTap: () {
                         Navigator.pop(context);
@@ -391,7 +381,6 @@ class ProfileDrawer extends ConsumerWidget {
                     ),
                     _DrawerIconTile(
                       icon: Icons.help_outline_rounded,
-                      color: AppColors.blue,
                       title: 'Help & FAQ',
                       onTap: () {
                         Navigator.pop(context);
@@ -400,7 +389,6 @@ class ProfileDrawer extends ConsumerWidget {
                     ),
                     _DrawerIconTile(
                       icon: Icons.assignment_turned_in_outlined,
-                      color: AppColors.blue,
                       title: 'Applied Jobs Status',
                       onTap: () {
                         Navigator.pop(context);
@@ -409,7 +397,6 @@ class ProfileDrawer extends ConsumerWidget {
                     ),
                     _DrawerIconTile(
                       icon: Icons.video_call_outlined,
-                      color: AppColors.moduleP2P,
                       title: 'Interviews',
                       onTap: () {
                         Navigator.pop(context);
@@ -418,7 +405,6 @@ class ProfileDrawer extends ConsumerWidget {
                     ),
                     _DrawerIconTile(
                       icon: Icons.co_present_outlined,
-                      color: AppColors.moduleExperts,
                       title: 'My Sessions',
                       onTap: () {
                         Navigator.pop(context);
@@ -429,7 +415,6 @@ class ProfileDrawer extends ConsumerWidget {
                     if (ref.watch(isExpertProvider))
                       _DrawerIconTile(
                         icon: Icons.dashboard_customize_outlined,
-                        color: AppColors.moduleExperts,
                         title: 'Expert Dashboard',
                         onTap: () {
                           Navigator.pop(context);
@@ -438,7 +423,6 @@ class ProfileDrawer extends ConsumerWidget {
                       ),
                     _DrawerIconTile(
                       icon: Icons.confirmation_number_outlined,
-                      color: AppColors.moduleEvents,
                       title: 'My Tickets',
                       onTap: () {
                         Navigator.pop(context);
@@ -464,7 +448,6 @@ class ProfileDrawer extends ConsumerWidget {
                     if (isAuth)
                       _DrawerIconTile(
                         icon: Icons.logout_rounded,
-                        color: AppColors.error,
                         title: 'Sign Out',
                         textColor: AppColors.error,
                         onTap: () async {
@@ -484,7 +467,6 @@ class ProfileDrawer extends ConsumerWidget {
                     else
                       _DrawerIconTile(
                         icon: Icons.login_rounded,
-                        color: AppColors.primary,
                         title: 'Sign In / Create Account',
                         textColor: AppColors.primary,
                         onTap: () {
@@ -505,54 +487,52 @@ class ProfileDrawer extends ConsumerWidget {
   }
 }
 
+/// One drawer row: a plain icon (no background box) and the title.
+/// Icons share one calm grey so the list reads as a simple menu; rows with
+/// a meaning colour (Sign Out red, Sign In navy) use it for the icon too.
 class _DrawerIconTile extends StatelessWidget {
   final IconData icon;
   final String title;
   final VoidCallback onTap;
-
-  /// Module colour of the icon (on a light tint of the same colour).
-  final Color color;
   final Color textColor;
 
   const _DrawerIconTile({
     required this.icon,
     required this.title,
     required this.onTap,
-    required this.color,
     this.textColor = AppColors.textPrimary,
   });
 
   @override
   Widget build(BuildContext context) {
+    final iconColor = textColor == AppColors.textPrimary
+        ? AppColors.textSecondary
+        : textColor;
     return InkWell(
       onTap: onTap,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 7),
-        child: Row(
-          children: [
-            Container(
-              width: 36,
-              height: 36,
-              decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Icon(icon, size: 19, color: color),
-            ),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Text(
-                title,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontSize: 14.5,
-                  fontWeight: FontWeight.w600,
-                  color: textColor,
+      child: ConstrainedBox(
+        // 48px tall rows: comfortable to tap
+        constraints: const BoxConstraints(minHeight: 48),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+          child: Row(
+            children: [
+              Icon(icon, size: 22, color: iconColor),
+              const SizedBox(width: 18),
+              Expanded(
+                child: Text(
+                  title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w500,
+                    color: textColor,
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

@@ -524,7 +524,7 @@ class SpotGigsSection extends ConsumerWidget {
                         TextSpan(text: 'Spot Gigs '),
                         TextSpan(
                           text: 'Near You',
-                          style: TextStyle(color: AppColors.accent),
+                          style: TextStyle(color: AppColors.accentOnLight),
                         ),
                       ],
                     ),
@@ -830,12 +830,12 @@ class _SpotGigCard extends StatelessWidget {
               onPressed: enabled ? onClaim : null,
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.accent,
-                foregroundColor: Colors.white,
+                foregroundColor: AppColors.onAccent,
                 disabledBackgroundColor: claiming
                     ? AppColors.accent.withValues(alpha: 0.7)
                     : AppColors.background,
                 disabledForegroundColor: claiming
-                    ? Colors.white
+                    ? AppColors.onAccent
                     : AppColors.textLight,
                 elevation: 0,
                 shape: RoundedRectangleBorder(

@@ -232,7 +232,7 @@ class _Problem extends StatelessWidget {
                 onPressed: onPrimary,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.accent,
-                  foregroundColor: Colors.white,
+                  foregroundColor: AppColors.onAccent,
                   elevation: 0,
                   minimumSize: const Size(0, 40),
                   shape: RoundedRectangleBorder(

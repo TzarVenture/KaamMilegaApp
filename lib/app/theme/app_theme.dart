@@ -2,10 +2,17 @@ import 'package:flutter/cupertino.dart' show CupertinoPageTransitionsBuilder;
 import 'package:flutter/material.dart';
 
 import 'app_colors.dart';
+import 'app_theme_mobile.dart';
+import 'mobile_design_spec.dart';
 import 'app_text_styles.dart';
 
 class AppTheme {
   AppTheme._();
+
+  /// The theme the app runs with: the Mobile Design Specification while
+  /// the trial switch is on, otherwise [lightTheme] (unchanged).
+  static ThemeData get appTheme =>
+      kMobileDesignSpec ? AppMobileTheme.theme : lightTheme;
 
   /// Soft press / hover / focus highlight for buttons, tinted with [base].
   static WidgetStateProperty<Color?> _pressOverlay(Color base) {

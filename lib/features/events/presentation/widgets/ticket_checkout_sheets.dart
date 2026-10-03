@@ -208,7 +208,7 @@ class TicketPaymentMethodSheet extends StatelessWidget {
               contentPadding: EdgeInsets.zero,
               leading: const Icon(
                 Icons.payments_rounded,
-                color: AppColors.moduleEvents,
+                color: AppColors.moduleEventsText,
               ),
               title: const Text(
                 'Pay online',
