@@ -19,6 +19,14 @@ final conversationsProvider = FutureProvider<List<ConversationItem>>((ref) {
   return ref.watch(chatRepositoryProvider).getConversations();
 });
 
+/// Unread messages over all conversations (Chats tab badge), from the
+/// `unread_count` of each conversation in GET /chats.
+final unreadChatMessagesProvider = Provider<int>((ref) {
+  final conversations = ref.watch(conversationsProvider).value;
+  if (conversations == null) return 0;
+  return conversations.fold<int>(0, (sum, c) => sum + c.unreadCount);
+});
+
 /// Live chat connection status. Starts with the current status (the
 /// service's stream only reports changes), then follows every change.
 final webSocketStatusStreamProvider = StreamProvider<WebSocketStatus>((
@@ -37,6 +45,16 @@ class ChatMessagesNotifier extends ChangeNotifier {
   final String _conversationId;
   StreamSubscription<ChatMessage>? _subscription;
   StreamSubscription<void>? _reconnectSubscription;
+  StreamSubscription<ChatEvent>? _eventSubscription;
+
+  /// True once the conversation was deleted (by either person); the chat
+  /// screen closes.
+  bool get conversationDeleted => _conversationDeleted;
+  bool _conversationDeleted = false;
+
+  /// The conversation's real ID ('' while it is a new chat with no
+  /// messages on the server yet).
+  String get conversationId => _isNewChat ? '' : _activeConversationId;
 
   /// GET /chats/:id/messages returns the OLDEST messages first, [_pageSize]
   /// at a time, so the whole history is read page by page (up to
@@ -85,6 +103,7 @@ class ChatMessagesNotifier extends ChangeNotifier {
     });
     // Messages sent while the socket was down are not pushed again by the
     // server: read them from the history once it is back.
+    _eventSubscription = _wsService.events.listen(_onEvent);
     _reconnectSubscription = _wsService.reconnected.listen(
       (_) => _refreshSilently(),
     );
@@ -97,6 +116,7 @@ class ChatMessagesNotifier extends ChangeNotifier {
     _disposed = true;
     _subscription?.cancel();
     _reconnectSubscription?.cancel();
+    _eventSubscription?.cancel();
     super.dispose();
   }
 
@@ -164,6 +184,88 @@ class ChatMessagesNotifier extends ChangeNotifier {
   /// Retry loading the message history after an error.
   Future<void> retryHistory() => _fetchMessageHistory();
 
+  void _onEvent(ChatEvent event) {
+    if (_disposed || event.conversationId != _activeConversationId) return;
+    switch (event) {
+      case MessagesReadEvent(:final readerId):
+        // The other person read the chat: their read ticks turn on.
+        bool unreadByThem(ChatMessage m) => !m.isRead && m.senderId != readerId;
+        if (_messages.any(unreadByThem)) {
+          _messages = [
+            for (final m in _messages)
+              unreadByThem(m) ? m.copyWith(isRead: true) : m,
+          ];
+          notifyListeners();
+        }
+      case MessageDeletedEvent(:final messageId):
+        final before = _messages.length;
+        _messages = _messages.where((m) => m.id != messageId).toList();
+        if (_messages.length != before) notifyListeners();
+      case ChatClearedEvent():
+        _messages = [];
+        notifyListeners();
+      case ConversationDeletedEvent():
+        _messages = [];
+        _conversationDeleted = true;
+        notifyListeners();
+      case TypingEvent():
+        break; // see typingUsersProvider
+    }
+  }
+
+  /// DELETE /chats/messages/:id — removes the message for both people.
+  /// False when the server refused (the message stays).
+  Future<bool> deleteMessage(String messageId) async {
+    final index = _messages.indexWhere((m) => m.id == messageId);
+    if (index < 0) return false;
+    final removed = _messages[index];
+    _messages = [..._messages]..removeAt(index);
+    notifyListeners();
+    try {
+      await _repository.deleteMessage(messageId);
+      _ref.invalidate(conversationsProvider); // last message may change
+      return true;
+    } catch (_) {
+      if (_disposed) return false;
+      _messages = [..._messages]
+        ..insert(index.clamp(0, _messages.length), removed);
+      notifyListeners();
+      return false;
+    }
+  }
+
+  /// DELETE /chats/:id/messages — removes every message for both people.
+  Future<bool> clearChat() async {
+    if (_isNewChat) return false;
+    try {
+      await _repository.clearChat(_activeConversationId);
+      if (_disposed) return true;
+      _messages = [];
+      notifyListeners();
+      _ref.invalidate(conversationsProvider);
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  /// DELETE /chats/:id — removes the conversation for both people.
+  Future<bool> deleteConversation() async {
+    if (_isNewChat) return false;
+    try {
+      await _repository.deleteConversation(_activeConversationId);
+      _ref.invalidate(conversationsProvider);
+      if (!_disposed) {
+        _messages = [];
+        _conversationDeleted = true;
+        notifyListeners();
+      }
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+
   void _appendMessage(ChatMessage msg) {
     if (_disposed) return;
     if (_messages.any((m) => m.id == msg.id && m.id.isNotEmpty)) return;
@@ -175,11 +277,13 @@ class ChatMessagesNotifier extends ChangeNotifier {
   Future<bool> sendMessage({
     required String receiverId,
     required String content,
+    ChatAttachment? attachment,
   }) async {
     try {
       final sentMessage = await _repository.sendMessage(
         receiverId: receiverId,
         content: content,
+        attachment: attachment,
       );
       _appendMessage(sentMessage);
       final realId = sentMessage.conversationId;
@@ -193,6 +297,54 @@ class ChatMessagesNotifier extends ChangeNotifier {
     }
   }
 }
+
+/// People typing to the signed-in user right now (their user IDs), from
+/// the chat socket. A "typing" signal expires after 6 s without news, and
+/// a new message from that person ends it.
+class TypingUsersNotifier extends Notifier<Set<String>> {
+  final Map<String, Timer> _timers = {};
+
+  @override
+  Set<String> build() {
+    final service = ref.watch(chatWebSocketServiceProvider);
+    ref.watch(sessionUserIdProvider);
+    final events = service.events.listen((e) {
+      if (e is TypingEvent && e.senderId.isNotEmpty) {
+        _set(e.senderId, e.isTyping);
+      }
+    });
+    final messages = service.messageStream.listen(
+      (m) => _set(m.senderId, false),
+    );
+    ref.onDispose(() {
+      events.cancel();
+      messages.cancel();
+      for (final t in _timers.values) {
+        t.cancel();
+      }
+      _timers.clear();
+    });
+    return const {};
+  }
+
+  void _set(String userId, bool typing) {
+    if (!ref.mounted) return;
+    _timers.remove(userId)?.cancel();
+    if (typing) {
+      _timers[userId] = Timer(
+        const Duration(seconds: 6),
+        () => _set(userId, false),
+      );
+      if (!state.contains(userId)) state = {...state, userId};
+    } else if (state.contains(userId)) {
+      state = {...state}..remove(userId);
+    }
+  }
+}
+
+final typingUsersProvider = NotifierProvider<TypingUsersNotifier, Set<String>>(
+  TypingUsersNotifier.new,
+);
 
 /// Disposed when the chat screen closes (stops listening to the socket) and
 /// rebuilt on logout / account switch.

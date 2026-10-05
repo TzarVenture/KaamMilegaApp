@@ -8,13 +8,14 @@ import '../../../shared/widgets/shimmer_loading.dart';
 import '../../../shared/widgets/voice_search_button.dart';
 import '../../applications/presentation/apply_modal.dart';
 import '../../auth/providers/auth_provider.dart';
-import '../../cities/presentation/city_selector_sheet.dart';
+import '../../cities/presentation/city_dropdown.dart';
 import '../../jobs/models/job.dart';
 import '../../jobs/models/job_filter.dart';
 import '../../jobs/providers/jobs_provider.dart';
-import '../../notifications/providers/notification_provider.dart';
+import '../../../shared/widgets/notification_bell_button.dart';
 import '../../profile/presentation/widgets/profile_drawer.dart';
 import 'widgets/connect_like_you_section.dart';
+import 'widgets/home_section_header.dart';
 import 'widgets/featured_companies_section.dart';
 import 'widgets/job_categories_section.dart';
 import 'widgets/job_shortcuts_sections.dart';
@@ -33,6 +34,9 @@ class HomeScreen extends ConsumerStatefulWidget {
 }
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
+  /// Space between two Home sections (the same everywhere).
+  static const double _sectionGap = 28;
+
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final ScrollController _scrollController = ScrollController();
   final TextEditingController _searchController = TextEditingController();
@@ -42,16 +46,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     _scrollController.dispose();
     _searchController.dispose();
     super.dispose();
-  }
-
-  void _openCitySelector(String currentCity) {
-    CitySelectorSheet.show(
-      context,
-      currentCity: currentCity,
-      onSelected: (selectedCity) {
-        ref.read(jobsProvider.notifier).setCity(selectedCity);
-      },
-    );
   }
 
   void _goToJobsTabWithQuery([String query = '']) {
@@ -277,7 +271,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final currentCity = jobsState.filter.city.isNotEmpty
         ? jobsState.filter.city
         : 'Delhi, India';
-    final unreadCount = ref.watch(unreadNotificationsCountProvider);
 
     return Scaffold(
       key: _scaffoldKey,
@@ -288,7 +281,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           children: [
             // 1. TOP APP BAR — pinned outside the scroll view so it stays
             // visible while scrolling (Logo, Search, Notification Bell, Menu)
-            _buildTopBar(unreadCount),
+            _buildTopBar(),
 
             Expanded(
               child: SingleChildScrollView(
@@ -298,109 +291,90 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // City selector scrolls with the content
+                    // Same order idea as a store front: find a job first,
+                    // then browse, then offers, then people. Every section
+                    // uses HomeSectionHeader and the same gap between them.
+
+                    // Where and what: city, then search.
                     FadeSlideIn(
                       index: 0,
                       child: _buildLocationSelector(currentCity),
                     ),
-
-                    // Search box with voice search
                     FadeSlideIn(index: 0, child: _buildSearchBox()),
+                    const SizedBox(height: 12),
 
-                    const SizedBox(height: 10),
-
-                    // 2. INSTANTMILEGA™ PROMO BANNER (Purple Card)
+                    // InstantMilega(TM) banner
                     FadeSlideIn(index: 1, child: _buildInstantMilegaBanner()),
+                    const SizedBox(height: _sectionGap),
 
-                    const SizedBox(height: 18),
-
-                    // 3. QUICK ACTION CIRCULAR ICONS ROW (Jobs, Instant Work, Skills, Experts, Services, More)
+                    // Shortcuts to the app's areas (Jobs, Instant Work, ...)
                     FadeSlideIn(index: 2, child: _buildQuickActionIcons()),
+                    const SizedBox(height: _sectionGap),
 
-                    const SizedBox(height: 22),
-
-                    // 4. POPULAR CATEGORIES SECTION
-                    FadeSlideIn(index: 3, child: _buildPopularCategories()),
-
-                    const SizedBox(height: 22),
-
-                    // 5. RECOMMENDED FOR YOU SECTION (Side by side cards)
+                    // Explore Popular Job Categories (photo tiles)
                     FadeSlideIn(
-                      index: 4,
-                      child: _buildRecommendedSection(
-                        homeJobs,
-                        homeJobsLoading,
-                      ),
-                    ),
-
-                    const SizedBox(height: 22),
-
-                    // 6. SEARCH JOBS BY QUALIFICATION (opens Jobs filtered)
-                    FadeSlideIn(
-                      index: 5,
-                      child: QualificationShortcutsSection(
-                        onSelected: _openJobsWithShortcut,
-                      ),
-                    ),
-
-                    const SizedBox(height: 22),
-
-                    // 7. UNLOCK ALL BENEFITS WITH ₹99 ACCESS BANNER
-                    FadeSlideIn(index: 6, child: _build99AccessBanner()),
-
-                    const SizedBox(height: 22),
-
-                    // 8. TOP PICKS SECTION (Vertical List Card)
-                    FadeSlideIn(
-                      index: 7,
-                      child: _buildTopPicksSection(homeJobs),
-                    ),
-
-                    const SizedBox(height: 22),
-
-                    // 9. WHAT TYPE OF JOB DO YOU WANT? (opens Jobs filtered)
-                    FadeSlideIn(
-                      index: 8,
-                      child: JobTypeShortcutsSection(
-                        onSelected: _openJobsWithShortcut,
-                      ),
-                    ),
-
-                    const SizedBox(height: 22),
-
-                    // 10a. EXPLORE POPULAR JOB CATEGORIES (photo tiles)
-                    FadeSlideIn(
-                      index: 9,
+                      index: 3,
                       child: JobCategoriesSection(
                         onSelected: _openJobsWithCategory,
                         onViewAll: _goToJobsTabWithQuery,
                       ),
                     ),
+                    const SizedBox(height: _sectionGap),
 
-                    const SizedBox(height: 22),
+                    // Jobs: Recommended for You (sideways), then Top Picks
+                    FadeSlideIn(
+                      index: 3,
+                      child: _buildRecommendedSection(
+                        homeJobs,
+                        homeJobsLoading,
+                      ),
+                    ),
+                    if (homeJobsLoading || homeJobs.isNotEmpty)
+                      const SizedBox(height: _sectionGap),
+                    FadeSlideIn(
+                      index: 4,
+                      child: _buildTopPicksSection(homeJobs),
+                    ),
+                    if (homeJobs.isNotEmpty)
+                      const SizedBox(height: _sectionGap),
 
-                    // 10. FEATURED COMPANIES ACTIVELY HIRING (real employers)
+                    // Find jobs your way: job type, then education
+                    FadeSlideIn(
+                      index: 5,
+                      child: JobTypeShortcutsSection(
+                        onSelected: _openJobsWithShortcut,
+                      ),
+                    ),
+                    const SizedBox(height: _sectionGap),
+                    FadeSlideIn(
+                      index: 6,
+                      child: QualificationShortcutsSection(
+                        onSelected: _openJobsWithShortcut,
+                      ),
+                    ),
+                    const SizedBox(height: _sectionGap),
+
+                    // Rs 99 Access offer
+                    FadeSlideIn(index: 8, child: _build99AccessBanner()),
+                    const SizedBox(height: _sectionGap),
+
+                    // Employers hiring (hidden when there are none)
                     const FadeSlideIn(
                       index: 9,
                       child: FeaturedCompaniesSection(),
                     ),
+                    const SizedBox(height: _sectionGap),
 
-                    const SizedBox(height: 22),
-
-                    // 11. CONNECT JUST LIKE YOU (same as the website home)
+                    // People: members, then experts
                     const FadeSlideIn(
                       index: 10,
                       child: ConnectLikeYouSection(),
                     ),
-
-                    const SizedBox(height: 22),
-
-                    // 12. CONNECT WITH OUR EXPERTS (GET /experts)
+                    const SizedBox(height: _sectionGap),
                     const FadeSlideIn(
                       index: 11,
                       child: ConnectExpertsSection(),
                     ),
-
                     const SizedBox(height: 16),
                   ],
                 ),
@@ -416,7 +390,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   // 1. TOP APP BAR (pinned: stays visible while the page scrolls,
   //    same behaviour as the Jobs tab app bar)
   // ==========================================
-  Widget _buildTopBar(int unreadCount) {
+  Widget _buildTopBar() {
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 10, 16, 8),
       decoration: const BoxDecoration(
@@ -475,36 +449,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Notification Bell with dynamic unread indicator dot
-              GestureDetector(
-                onTap: () => context.push('/notifications'),
-                child: Stack(
-                  clipBehavior: Clip.none,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(6),
-                      child: const Icon(
-                        Icons.notifications_none_rounded,
-                        color: Color(0xFF1E293B),
-                        size: 24,
-                      ),
-                    ),
-                    if (unreadCount > 0)
-                      Positioned(
-                        top: 4,
-                        right: 4,
-                        child: Container(
-                          width: 8,
-                          height: 8,
-                          decoration: const BoxDecoration(
-                            color: Color(0xFFEF4444),
-                            shape: BoxShape.circle,
-                          ),
-                        ),
-                      ),
-                  ],
-                ),
-              ),
+              // Notification bell (shared button: ripple, tap area, badge).
+              const NotificationBellButton(color: Color(0xFF1E293B)),
               const SizedBox(width: 8),
 
               // Three-line Hamburger Option Button (Right of Notification Bell)
@@ -534,34 +480,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   Widget _buildLocationSelector(String currentCity) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
-      child: GestureDetector(
-        onTap: () => _openCitySelector(currentCity),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(
-              Icons.location_on_rounded,
-              color: AppColors.accent,
-              size: 16,
-            ),
-            const SizedBox(width: 4),
-            Flexible(
-              child: Text(
-                currentCity,
-                style: const TextStyle(
-                  fontSize: 13.5,
-                  fontWeight: FontWeight.w800,
-                  color: AppColors.textPrimary,
-                ),
-              ),
-            ),
-            const SizedBox(width: 2),
-            const Icon(
-              Icons.keyboard_arrow_down_rounded,
-              color: AppColors.textPrimary,
-              size: 18,
-            ),
-          ],
+      // City filter: opens a dropdown with search right under the button
+      child: Align(
+        alignment: Alignment.centerLeft,
+        child: CityPickerButton(
+          currentCity: currentCity,
+          onSelected: (city) => ref.read(jobsProvider.notifier).setCity(city),
         ),
       ),
     );
@@ -882,128 +806,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
-  // ==========================================
-  // 5. POPULAR CATEGORIES SECTION
-  // ==========================================
-  Widget _buildPopularCategories() {
-    final categories = [
-      {
-        'name': 'Delivery',
-        'icon': Icons.electric_moped_rounded,
-        'bg': const Color(0xFFFFF7ED),
-        'color': AppColors.accent,
-      },
-      {
-        'name': 'Electrician',
-        'icon': Icons.electrical_services_rounded,
-        'bg': const Color(0xFFFEF2F2),
-        'color': const Color(0xFFDC2626),
-      },
-      {
-        'name': 'AC Repair',
-        'icon': Icons.ac_unit_rounded,
-        'bg': AppColors.primaryLight,
-        'color': AppColors.blue,
-      },
-      {
-        'name': 'House Help',
-        'icon': Icons.cleaning_services_rounded,
-        'bg': const Color(0xFFFFFBEB),
-        'color': const Color(0xFFD97706),
-      },
-      {
-        'name': 'Data Entry',
-        'icon': Icons.assignment_rounded,
-        'bg': AppColors.primaryLight,
-        'color': AppColors.blue,
-      },
-      {
-        'name': 'Driver',
-        'icon': Icons.directions_car_rounded,
-        'bg': const Color(0xFFF1F5F9),
-        'color': const Color(0xFF1E293B),
-      },
-    ];
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Flexible(
-                child: Text(
-                  'Popular Categories',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w900,
-                    color: AppColors.textPrimary,
-                  ),
-                ),
-              ),
-              GestureDetector(
-                onTap: () => _goToJobsTabWithQuery(''),
-                child: const Text(
-                  'View All',
-                  style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.blue,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 12),
-        _HorizontalStrip(
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            spacing: 18,
-            children: categories.map((cat) {
-              final name = cat['name'] as String;
-              final icon = cat['icon'] as IconData;
-              final bg = cat['bg'] as Color;
-              final color = cat['color'] as Color;
-
-              return GestureDetector(
-                onTap: () => _goToJobsTabWithQuery(name),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Container(
-                      width: 44,
-                      height: 44,
-                      decoration: BoxDecoration(
-                        color: bg,
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: color.withValues(alpha: 0.15),
-                        ),
-                      ),
-                      child: Icon(icon, color: color, size: 20),
-                    ),
-                    const SizedBox(height: 5),
-                    Text(
-                      name,
-                      style: const TextStyle(
-                        fontSize: 10.5,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.textPrimary,
-                      ),
-                    ),
-                  ],
-                ),
-              );
-            }).toList(),
-          ),
-        ),
-      ],
-    );
-  }
-
   // Category Icon & Color Helpers
   IconData _getJobCategoryIcon(String title, String jobType) {
     final t = title.toLowerCase();
@@ -1128,33 +930,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: const [
-                Flexible(
-                  child: Text(
-                    'Recommended for You',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w900,
-                      color: AppColors.textPrimary,
-                    ),
-                  ),
-                ),
-                Text(
-                  'View All',
-                  style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.blue,
-                  ),
-                ),
-              ],
-            ),
+          HomeSectionHeader(
+            title: 'Recommended for You',
+            subtitle: 'Latest jobs on KaamMilega',
+            onSeeAll: () => _goToJobsTabWithQuery(''),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: HomeSectionHeader.gap),
           SizedBox(
             height: _recommendedRowHeight(context),
             child: ListView.separated(
@@ -1179,36 +960,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Flexible(
-                child: Text(
-                  'Recommended for You',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w900,
-                    color: AppColors.textPrimary,
-                  ),
-                ),
-              ),
-              GestureDetector(
-                onTap: () => _goToJobsTabWithQuery(''),
-                child: const Text(
-                  'View All',
-                  style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.blue,
-                  ),
-                ),
-              ),
-            ],
-          ),
+        HomeSectionHeader(
+          title: 'Recommended for You',
+          subtitle: 'Latest jobs on KaamMilega',
+          onSeeAll: () => _goToJobsTabWithQuery(''),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: HomeSectionHeader.gap),
         SizedBox(
           height: _recommendedRowHeight(context),
           child: ListView.separated(
@@ -1661,36 +1418,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Flexible(
-                child: Text(
-                  'Top Picks',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w900,
-                    color: AppColors.textPrimary,
-                  ),
-                ),
-              ),
-              GestureDetector(
-                onTap: () => _goToJobsTabWithQuery(''),
-                child: const Text(
-                  'View All',
-                  style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.blue,
-                  ),
-                ),
-              ),
-            ],
-          ),
+        HomeSectionHeader(
+          title: 'Top Picks',
+          subtitle: 'More openings you may like',
+          onSeeAll: () => _goToJobsTabWithQuery(''),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: HomeSectionHeader.gap),
         ...topPicks.map((job) {
           final isSaved = savedJobIds.contains(job.id);
           final icon = _getJobCategoryIcon(job.title, job.jobType);
@@ -1752,17 +1485,20 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
-                            const SizedBox(height: 2),
-                            Text(
-                              job.company,
-                              style: const TextStyle(
-                                fontSize: 11.5,
-                                color: AppColors.textSecondary,
-                                fontWeight: FontWeight.w500,
+                            // Company only when known (no empty line).
+                            if (job.company.trim().isNotEmpty) ...[
+                              const SizedBox(height: 2),
+                              Text(
+                                job.company,
+                                style: const TextStyle(
+                                  fontSize: 11.5,
+                                  color: AppColors.textSecondary,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                               ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
+                            ],
                             const SizedBox(height: 4),
                             Text(
                               '${job.formattedSalary} /month',
@@ -1793,6 +1529,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
                           IconButton(
+                            tooltip: isSaved ? 'Remove from saved' : 'Save job',
                             icon: Icon(
                               isSaved
                                   ? Icons.bookmark_rounded
@@ -1802,8 +1539,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                   : const Color(0xFF94A3B8),
                               size: 24,
                             ),
-                            padding: EdgeInsets.zero,
-                            constraints: const BoxConstraints(),
+                            constraints: const BoxConstraints(
+                              minWidth: 40,
+                              minHeight: 40,
+                            ),
                             onPressed: () {
                               ref
                                   .read(jobsProvider.notifier)

@@ -1,15 +1,25 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../app/theme/app_colors.dart';
 import '../../auth/models/user_profile.dart';
 import '../../auth/providers/auth_provider.dart';
+import '../../notifications/providers/notification_provider.dart';
 import '../../home/presentation/widgets/connect_like_you_section.dart'
     show PersonAvatar;
 import '../models/chat_message.dart';
+import '../../network/presentation/widgets/connect_button.dart';
+import '../../network/providers/network_provider.dart';
+import '../providers/chat_access_provider.dart';
 import '../providers/chat_provider.dart';
 import '../providers/user_lookup_provider.dart';
+import '../repositories/chat_repository.dart';
 import '../services/chat_websocket_service.dart';
+import 'active_chat.dart';
+import 'widgets/chat_attachments.dart';
+import 'widgets/chat_emoji_sheet.dart';
 import '../../../shared/widgets/fade_slide_in.dart';
 import '../../../shared/widgets/pressable_scale.dart';
 import '../../../shared/widgets/shimmer_loading.dart';
@@ -37,20 +47,233 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
   final ScrollController _scrollController = ScrollController();
   bool _isSending = false;
 
+  /// Photo or file picked to send with the next message.
+  PickedChatFile? _pending;
+
+  Future<void> _attach() async {
+    if (_isSending) return;
+    final source = await showAttachmentOptions(context);
+    if (source == null || !mounted) return;
+    try {
+      final file = await ref.read(chatFilePickerProvider)(source);
+      if (file == null || !mounted) return;
+      if (file.size > ChatRepository.maxAttachmentBytes) {
+        _snack('Files must be 10 MB or smaller.', error: true);
+        return;
+      }
+      setState(() => _pending = file);
+    } catch (_) {
+      if (mounted) _snack('Could not open the file.', error: true);
+    }
+  }
+
   /// Phones drop sockets in the background: reconnect as soon as the app
   /// is back instead of waiting for the next backoff step.
   late final AppLifecycleListener _lifecycle;
 
+  /// The chat socket, kept for [dispose] (ref cannot be used there).
+  late final ChatWebSocketService _socket;
+
+  /// Set once the screen starts closing after the conversation was deleted.
+  bool _closing = false;
+
   @override
   void initState() {
     super.initState();
+    _socket = ref.read(chatWebSocketServiceProvider);
     _lifecycle = AppLifecycleListener(
       onResume: () => ref.read(chatWebSocketServiceProvider).retryNow(),
     );
+    // No notification banner for this person's messages while open.
+    ActiveChat.enter(widget.receiverId);
+    // Their message notifications are read now (clears the Chats badge).
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      ref.read(unreadCountsProvider.notifier).markChatRead(widget.receiverId);
+      _markConversationRead();
+    });
+  }
+
+  /// Last message from the other person that was marked read.
+  String _lastReadIncomingId = '';
+
+  /// Typing signal: "typing" is sent at most every 3 s while the user
+  /// types, "stopped" 3 s after the last key or when the message is sent.
+  DateTime? _lastTypingSent;
+  Timer? _typingIdle;
+
+  Future<void> _addEmoji() async {
+    final emoji = await showEmojiSheet(context);
+    if (emoji == null || !mounted) return;
+    insertAtCursor(_messageController, emoji);
+    _onComposerChanged(_messageController.text);
+  }
+
+  void _onComposerChanged(String text) {
+    if (text.trim().isEmpty) {
+      _sendTyping(false);
+      return;
+    }
+    final now = DateTime.now();
+    final last = _lastTypingSent;
+    if (last == null || now.difference(last) > const Duration(seconds: 3)) {
+      _sendTyping(true);
+    }
+    _typingIdle?.cancel();
+    _typingIdle = Timer(const Duration(seconds: 3), () => _sendTyping(false));
+  }
+
+  void _sendTyping(bool typing) {
+    _typingIdle?.cancel();
+    if (!typing && _lastTypingSent == null) return; // nothing to stop
+    _lastTypingSent = typing ? DateTime.now() : null;
+    ref
+        .read(chatWebSocketServiceProvider)
+        .sendTyping(
+          receiverId: widget.receiverId,
+          conversationId: ref
+              .read(chatMessagesProvider(widget.conversationId))
+              .conversationId,
+          isTyping: typing,
+        );
+  }
+
+  void _snack(String text, {bool error = false}) {
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          backgroundColor: error ? AppColors.error : null,
+          content: Text(text),
+        ),
+      );
+  }
+
+  Future<bool> _confirm({
+    required String title,
+    required String message,
+    required String action,
+  }) async {
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(title),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: TextButton.styleFrom(foregroundColor: AppColors.error),
+            child: Text(action),
+          ),
+        ],
+      ),
+    );
+    return ok == true;
+  }
+
+  /// Long-press on the user's own message.
+  Future<void> _onMessageLongPress(ChatMessage message) async {
+    final delete = await showModalBottomSheet<bool>(
+      context: context,
+      builder: (context) => SafeArea(
+        child: ListTile(
+          leading: const Icon(
+            Icons.delete_outline_rounded,
+            color: AppColors.error,
+          ),
+          title: const Text(
+            'Delete for everyone',
+            style: TextStyle(color: AppColors.error),
+          ),
+          onTap: () => Navigator.pop(context, true),
+        ),
+      ),
+    );
+    if (delete != true || !mounted) return;
+    final ok = await _confirm(
+      title: 'Delete message?',
+      message: 'This message will be deleted for both of you.',
+      action: 'Delete',
+    );
+    if (!ok || !mounted) return;
+    final done = await ref
+        .read(chatMessagesProvider(widget.conversationId))
+        .deleteMessage(message.id);
+    if (!done && mounted) {
+      _snack('Could not delete the message. Please try again.', error: true);
+    }
+  }
+
+  Future<void> _clearChat() async {
+    final ok = await _confirm(
+      title: 'Clear chat?',
+      message: 'All messages will be deleted for both of you.',
+      action: 'Clear',
+    );
+    if (!ok || !mounted) return;
+    final done = await ref
+        .read(chatMessagesProvider(widget.conversationId))
+        .clearChat();
+    if (mounted) {
+      _snack(
+        done ? 'Chat cleared.' : 'Could not clear the chat. Please try again.',
+        error: !done,
+      );
+    }
+  }
+
+  Future<void> _deleteConversation() async {
+    final ok = await _confirm(
+      title: 'Delete conversation?',
+      message:
+          'The conversation and all its messages will be deleted for both '
+          'of you.',
+      action: 'Delete',
+    );
+    if (!ok || !mounted) return;
+    final done = await ref
+        .read(chatMessagesProvider(widget.conversationId))
+        .deleteConversation();
+    if (!done && mounted) {
+      _snack(
+        'Could not delete the conversation. Please try again.',
+        error: true,
+      );
+    }
+    // On success the screen closes (see conversationDeleted in build).
+  }
+
+  /// PUT /chats/:id/read: clears this chat's unread count (Chats badge) and
+  /// tells the other person their messages were read.
+  Future<void> _markConversationRead() async {
+    final id = widget.conversationId;
+    if (id.isEmpty || id.startsWith('new-')) return; // nothing on the server
+    try {
+      await ref
+          .read(chatRepositoryProvider)
+          .markConversationRead(id, otherUserId: widget.receiverId);
+      if (mounted) ref.invalidate(conversationsProvider);
+    } catch (_) {
+      // Stays unread on the server; tried again on the next message.
+    }
   }
 
   @override
   void dispose() {
+    _typingIdle?.cancel();
+    if (_lastTypingSent != null) {
+      // Leaving while typing: tell the other person it stopped.
+      _socket.sendTyping(
+        receiverId: widget.receiverId,
+        conversationId: '',
+        isTyping: false,
+      );
+    }
+    ActiveChat.leave(widget.receiverId);
     _lifecycle.dispose();
     _messageController.dispose();
     _scrollController.dispose();
@@ -69,17 +292,50 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
 
   Future<void> _sendMessage() async {
     final text = _messageController.text.trim();
-    if (text.isEmpty || _isSending) return;
+    final pending = _pending;
+    if ((text.isEmpty && pending == null) || _isSending) return;
+    // Recruiters directly; anyone else only once connected.
+    if (ref.read(chatAccessProvider(widget.receiverId)).value !=
+        ChatAccess.allowed) {
+      return;
+    }
 
     setState(() => _isSending = true);
-    _messageController.clear();
+    _sendTyping(false);
 
+    // 1. Upload the picked file (kept, with the text, if this fails).
+    ChatAttachment? attachment;
+    if (pending != null) {
+      try {
+        attachment = await ref
+            .read(chatRepositoryProvider)
+            .uploadAttachment(pending.bytes, pending.name);
+      } catch (_) {
+        if (mounted) {
+          setState(() => _isSending = false);
+          _snack('Could not upload the file. Please try again.', error: true);
+        }
+        return;
+      }
+    }
+
+    // 2. Send the message.
     final success = await ref
         .read(chatMessagesProvider(widget.conversationId))
-        .sendMessage(receiverId: widget.receiverId, content: text);
+        .sendMessage(
+          receiverId: widget.receiverId,
+          content: text,
+          attachment: attachment,
+        );
 
     if (mounted) {
-      setState(() => _isSending = false);
+      setState(() {
+        _isSending = false;
+        if (success) {
+          _pending = null;
+          _messageController.clear();
+        }
+      });
       if (success) {
         Future.delayed(const Duration(milliseconds: 100), _scrollToBottom);
       } else {
@@ -105,9 +361,60 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
     // Small photos next to the messages (initial when there is no photo).
     final me =
         currentUser ?? const UserProfile(id: '', mobile: '', name: 'You');
+    final looked = ref.watch(userLookupProvider(widget.receiverId)).value;
+    // Name, photo and online status of the other person, as sent by
+    // GET /chats for this conversation (nothing made up when missing).
+    final partner = ref
+        .watch(conversationsProvider)
+        .value
+        ?.where(
+          (c) =>
+              c.id == widget.conversationId ||
+              c.otherUser?.id == widget.receiverId,
+        )
+        .firstOrNull
+        ?.otherUser;
+    final name = [
+      partner?.name ?? '',
+      looked?.name.trim() ?? '',
+      widget.title,
+    ].firstWhere((n) => n.isNotEmpty, orElse: () => '');
     final other =
-        ref.watch(userLookupProvider(widget.receiverId)).value ??
-        UserProfile(id: widget.receiverId, mobile: '', name: widget.title);
+        looked ??
+        UserProfile(
+          id: widget.receiverId,
+          mobile: '',
+          name: name,
+          profileImage: partner?.profileImage ?? '',
+        );
+    final isOnline = partner?.isOnline ?? false;
+    final isTyping = ref.watch(typingUsersProvider).contains(widget.receiverId);
+    final subtitle = isTyping
+        ? 'typing...'
+        : isOnline
+        ? 'Online'
+        : (partner?.headline ?? '');
+    final hasServerChat = chatNotifier.conversationId.isNotEmpty;
+    // Previous answer is kept while it reloads (no flicker).
+    final accessAsync = ref.watch(chatAccessProvider(widget.receiverId));
+    final access = accessAsync.value;
+    final canSend = access == ChatAccess.allowed;
+
+    // Deleted (here or by the other person): close the chat.
+    ref.listen<ChatMessagesNotifier>(
+      chatMessagesProvider(widget.conversationId),
+      (previous, next) {
+        if (next.conversationDeleted && mounted && !_closing) {
+          _closing = true;
+          ref.invalidate(conversationsProvider);
+          final messenger = ScaffoldMessenger.of(context);
+          Navigator.of(context).maybePop();
+          messenger.showSnackBar(
+            const SnackBar(content: Text('Conversation deleted.')),
+          );
+        }
+      },
+    );
 
     // Trigger scroll to bottom when messages update
     ref.listen<ChatMessagesNotifier>(
@@ -116,15 +423,47 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
         if (next.messages.length != (previous?.messages.length ?? 0)) {
           Future.delayed(const Duration(milliseconds: 100), _scrollToBottom);
         }
+        // A new message from the other person while this chat is open is
+        // read at once.
+        final last = next.messages.isEmpty ? null : next.messages.last;
+        if (last != null &&
+            last.id.isNotEmpty &&
+            last.senderId != currentUserId &&
+            last.id != _lastReadIncomingId) {
+          _lastReadIncomingId = last.id;
+          _markConversationRead();
+        }
       },
     );
 
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: AppColors.white,
         elevation: 0.5,
         titleSpacing: 0,
+        actions: [
+          if (hasServerChat)
+            PopupMenuButton<String>(
+              tooltip: 'Chat options',
+              icon: const Icon(
+                Icons.more_vert_rounded,
+                color: AppColors.textPrimary,
+              ),
+              onSelected: (value) =>
+                  value == 'clear' ? _clearChat() : _deleteConversation(),
+              itemBuilder: (context) => const [
+                PopupMenuItem(value: 'clear', child: Text('Clear chat')),
+                PopupMenuItem(
+                  value: 'delete',
+                  child: Text(
+                    'Delete conversation',
+                    style: TextStyle(color: AppColors.error),
+                  ),
+                ),
+              ],
+            ),
+        ],
         title: Row(
           children: [
             ExcludeSemantics(child: PersonAvatar(user: other, size: 38)),
@@ -134,7 +473,7 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    widget.title,
+                    name,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
@@ -143,38 +482,43 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
                       color: AppColors.textPrimary,
                     ),
                   ),
-                  const SizedBox(height: 2),
-                  Row(
-                    children: [
-                      Container(
-                        width: 8,
-                        height: 8,
-                        decoration: BoxDecoration(
-                          color: wsStatus == WebSocketStatus.connected
-                              ? AppColors.success
-                              : AppColors.warning,
-                          shape: BoxShape.circle,
-                        ),
-                      ),
-                      const SizedBox(width: 6),
-                      Flexible(
-                        child: Text(
-                          switch (wsStatus) {
-                            WebSocketStatus.connected => 'Live Chat Online',
-                            WebSocketStatus.connecting => 'Connecting...',
-                            _ => 'Reconnecting...',
-                          },
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            fontSize: 11,
-                            color: AppColors.textSecondary,
-                            fontWeight: FontWeight.w500,
+                  // The other person's real status from the server; the
+                  // connection state is shown by the banner below.
+                  if (subtitle.isNotEmpty) ...[
+                    const SizedBox(height: 2),
+                    Row(
+                      children: [
+                        if (isOnline && !isTyping) ...[
+                          Container(
+                            width: 8,
+                            height: 8,
+                            decoration: const BoxDecoration(
+                              color: AppColors.success,
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                        ],
+                        Flexible(
+                          child: Text(
+                            subtitle,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: isTyping
+                                  ? AppColors.success
+                                  : AppColors.textSecondary,
+                              fontWeight: FontWeight.w500,
+                              fontStyle: isTyping
+                                  ? FontStyle.italic
+                                  : FontStyle.normal,
+                            ),
                           ),
                         ),
-                      ),
-                    ],
-                  ),
+                      ],
+                    ),
+                  ],
                 ],
               ),
             ),
@@ -267,93 +611,144 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
                             isMe: isMe,
                             author: isMe ? me : other,
                             showAvatar: showAvatar,
+                            // Only the user's own messages can be deleted.
+                            onLongPress: isMe && msg.id.isNotEmpty
+                                ? () => _onMessageLongPress(msg)
+                                : null,
                           ),
                         );
                       },
                     ),
             ),
 
-            // Message Composer Bar
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                border: const Border(top: BorderSide(color: AppColors.border)),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.04),
-                    blurRadius: 10,
-                    offset: const Offset(0, -2),
+            if (access != null && !canSend)
+              _ConnectFirstBar(
+                userId: widget.receiverId,
+                name: name,
+                pending: access == ChatAccess.requestPending,
+              )
+            else if (access == null && accessAsync.hasError)
+              _AccessErrorBar(
+                onRetry: () {
+                  ref.invalidate(connectionStatusProvider(widget.receiverId));
+                  ref.invalidate(chatAccessProvider(widget.receiverId));
+                },
+              )
+            else
+              // Message composer: one rounded bar with attach, emoji, text
+              // and send (send waits for the connection check).
+              Container(
+                padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
+                decoration: BoxDecoration(
+                  color: AppColors.white,
+                  border: const Border(
+                    top: BorderSide(color: AppColors.border),
                   ),
-                ],
-              ),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: TextField(
-                      controller: _messageController,
-                      minLines: 1,
-                      maxLines: 4,
-                      onSubmitted: (_) => _sendMessage(),
-                      decoration: InputDecoration(
-                        hintText: 'Type your message...',
-                        filled: true,
-                        fillColor: AppColors.background,
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 12,
-                        ),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(24),
-                          borderSide: BorderSide.none,
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(24),
-                          borderSide: BorderSide.none,
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(24),
-                          borderSide: BorderSide(
-                            color: AppColors.primary.withValues(alpha: 0.5),
-                            width: 1.2,
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.brandNavy.withValues(alpha: 0.04),
+                      blurRadius: 10,
+                      offset: const Offset(0, -2),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (_pending != null)
+                      PendingAttachmentPreview(
+                        file: _pending!,
+                        onRemove: _isSending
+                            ? null
+                            : () => setState(() => _pending = null),
+                      ),
+                    Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: BoxDecoration(
+                        color: AppColors.background,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: AppColors.border),
+                      ),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          _ComposerIcon(
+                            tooltip: 'Attach photo or file',
+                            icon: Icons.attach_file_rounded,
+                            onPressed: _isSending ? null : _attach,
                           ),
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  PressableScale(
-                    pressedScale: 0.9,
-                    child: Container(
-                      decoration: const BoxDecoration(
-                        color: AppColors.primary,
-                        shape: BoxShape.circle,
-                      ),
-                      child: IconButton(
-                        icon: AnimatedSwitcher(
-                          duration: const Duration(milliseconds: 160),
-                          child: _isSending
-                              ? const SizedBox(
-                                  width: 18,
-                                  height: 18,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    color: Colors.white,
-                                  ),
-                                )
-                              : const Icon(
-                                  Icons.send_rounded,
-                                  color: Colors.white,
-                                  size: 20,
+                          _ComposerIcon(
+                            tooltip: 'Add emoji',
+                            icon: Icons.sentiment_satisfied_alt_outlined,
+                            onPressed: _isSending ? null : _addEmoji,
+                          ),
+                          Expanded(
+                            child: TextField(
+                              controller: _messageController,
+                              minLines: 1,
+                              maxLines: 4,
+                              textCapitalization: TextCapitalization.sentences,
+                              onSubmitted: (_) => _sendMessage(),
+                              onChanged: _onComposerChanged,
+                              decoration: const InputDecoration(
+                                hintText: 'Type a message...',
+                                hintStyle: TextStyle(
+                                  color: AppColors.textSecondary,
                                 ),
-                        ),
-                        onPressed: _isSending ? null : _sendMessage,
+                                isDense: true,
+                                filled: false,
+                                border: InputBorder.none,
+                                enabledBorder: InputBorder.none,
+                                focusedBorder: InputBorder.none,
+                                contentPadding: EdgeInsets.symmetric(
+                                  horizontal: 6,
+                                  vertical: 12,
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 4),
+                          PressableScale(
+                            pressedScale: 0.9,
+                            child: Material(
+                              color: AppColors.primary,
+                              borderRadius: BorderRadius.circular(12),
+                              clipBehavior: Clip.antiAlias,
+                              child: IconButton(
+                                tooltip: 'Send',
+                                constraints: const BoxConstraints(
+                                  minWidth: 44,
+                                  minHeight: 44,
+                                ),
+                                icon: AnimatedSwitcher(
+                                  duration: const Duration(milliseconds: 160),
+                                  child: _isSending
+                                      ? const SizedBox(
+                                          width: 18,
+                                          height: 18,
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 2,
+                                            color: AppColors.white,
+                                          ),
+                                        )
+                                      : const Icon(
+                                          Icons.send_rounded,
+                                          color: AppColors.white,
+                                          size: 20,
+                                        ),
+                                ),
+                                onPressed: _isSending || !canSend
+                                    ? null
+                                    : _sendMessage,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
           ],
         ),
       ),
@@ -369,12 +764,14 @@ class _MessageRow extends StatelessWidget {
     required this.isMe,
     required this.author,
     required this.showAvatar,
+    this.onLongPress,
   });
 
   final ChatMessage message;
   final bool isMe;
   final UserProfile author;
   final bool showAvatar;
+  final VoidCallback? onLongPress;
 
   static const double _avatarSize = 28;
 
@@ -396,7 +793,7 @@ class _MessageRow extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
           decoration: BoxDecoration(
-            color: isMe ? AppColors.primary : Colors.white,
+            color: isMe ? AppColors.primary : AppColors.white,
             borderRadius: BorderRadius.only(
               topLeft: const Radius.circular(18),
               topRight: const Radius.circular(18),
@@ -405,7 +802,7 @@ class _MessageRow extends StatelessWidget {
             ),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.03),
+                color: AppColors.brandNavy.withValues(alpha: 0.03),
                 blurRadius: 6,
                 offset: const Offset(0, 2),
               ),
@@ -416,22 +813,55 @@ class _MessageRow extends StatelessWidget {
                 ? CrossAxisAlignment.end
                 : CrossAxisAlignment.start,
             children: [
-              Text(
-                message.content,
-                style: TextStyle(
-                  fontSize: 14,
-                  height: 1.4,
-                  color: isMe ? Colors.white : AppColors.textPrimary,
-                  fontWeight: FontWeight.w500,
+              if (message.attachment != null)
+                Padding(
+                  padding: EdgeInsets.only(
+                    bottom: message.content.isNotEmpty ? 6 : 0,
+                  ),
+                  child: MessageAttachmentView(
+                    attachment: message.attachment!,
+                    isMe: isMe,
+                  ),
                 ),
-              ),
+              if (message.content.isNotEmpty)
+                Text(
+                  message.content,
+                  style: TextStyle(
+                    fontSize: 14,
+                    height: 1.4,
+                    color: isMe ? AppColors.white : AppColors.textPrimary,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
               const SizedBox(height: 4),
-              Text(
-                message.formattedTime,
-                style: TextStyle(
-                  fontSize: 10,
-                  color: isMe ? Colors.white70 : AppColors.textLight,
-                ),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    message.formattedTime,
+                    style: TextStyle(
+                      fontSize: 10,
+                      color: isMe
+                          ? AppColors.white.withValues(alpha: 0.75)
+                          : AppColors.textLight,
+                    ),
+                  ),
+                  // Ticks on the user's own messages: one when sent, two
+                  // when the other person has read it.
+                  if (isMe) ...[
+                    const SizedBox(width: 4),
+                    Icon(
+                      message.isRead
+                          ? Icons.done_all_rounded
+                          : Icons.done_rounded,
+                      size: 14,
+                      color: message.isRead
+                          ? AppColors.white
+                          : AppColors.white.withValues(alpha: 0.75),
+                      semanticLabel: message.isRead ? 'Read' : 'Sent',
+                    ),
+                  ],
+                ],
               ),
             ],
           ),
@@ -441,14 +871,18 @@ class _MessageRow extends StatelessWidget {
 
     return Padding(
       padding: EdgeInsets.only(bottom: showAvatar ? 12 : 4),
-      child: Row(
-        mainAxisAlignment: isMe
-            ? MainAxisAlignment.end
-            : MainAxisAlignment.start,
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: isMe
-            ? [bubble, const SizedBox(width: 8), avatar]
-            : [avatar, const SizedBox(width: 8), bubble],
+      child: GestureDetector(
+        onLongPress: onLongPress,
+        behavior: HitTestBehavior.opaque,
+        child: Row(
+          mainAxisAlignment: isMe
+              ? MainAxisAlignment.end
+              : MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: isMe
+              ? [bubble, const SizedBox(width: 8), avatar]
+              : [avatar, const SizedBox(width: 8), bubble],
+        ),
       ),
     );
   }
@@ -515,6 +949,130 @@ class _LiveStatusBanner extends StatelessWidget {
               ),
             ),
         ],
+      ),
+    );
+  }
+}
+
+/// Grey icon button inside the message bar.
+class _ComposerIcon extends StatelessWidget {
+  const _ComposerIcon({
+    required this.tooltip,
+    required this.icon,
+    required this.onPressed,
+  });
+
+  final String tooltip;
+  final IconData icon;
+  final VoidCallback? onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return IconButton(
+      tooltip: tooltip,
+      onPressed: onPressed,
+      constraints: const BoxConstraints(minWidth: 40, minHeight: 44),
+      padding: EdgeInsets.zero,
+      icon: Icon(icon, color: AppColors.textSecondary, size: 22),
+    );
+  }
+}
+
+/// Shown instead of the message box when the other person is not a
+/// recruiter and not a connection yet.
+class _ConnectFirstBar extends StatelessWidget {
+  const _ConnectFirstBar({
+    required this.userId,
+    required this.name,
+    required this.pending,
+  });
+
+  final String userId;
+  final String name;
+  final bool pending;
+
+  @override
+  Widget build(BuildContext context) {
+    final who = name.isNotEmpty ? name : 'this person';
+    return Container(
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+      decoration: const BoxDecoration(
+        color: AppColors.white,
+        border: Border(top: BorderSide(color: AppColors.border)),
+      ),
+      child: SafeArea(
+        top: false,
+        child: Row(
+          children: [
+            const Icon(
+              Icons.lock_outline_rounded,
+              color: AppColors.textSecondary,
+              size: 22,
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    pending ? 'Connection request pending' : 'Connect to chat',
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    pending
+                        ? 'You can message $who once the request is accepted.'
+                        : 'Connect with $who to send messages.',
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 10),
+            ConnectButton(userId: userId, name: who),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// The connection check failed: say so and offer Retry (sending stays
+/// off; a failed check is never treated as allowed).
+class _AccessErrorBar extends StatelessWidget {
+  const _AccessErrorBar({required this.onRetry});
+
+  final VoidCallback onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(16, 8, 8, 8),
+      decoration: const BoxDecoration(
+        color: AppColors.white,
+        border: Border(top: BorderSide(color: AppColors.border)),
+      ),
+      child: SafeArea(
+        top: false,
+        child: Row(
+          children: [
+            const Expanded(
+              child: Text(
+                'Could not check if you can message this person.',
+                style: TextStyle(fontSize: 13, color: AppColors.textSecondary),
+              ),
+            ),
+            TextButton(onPressed: onRetry, child: const Text('Retry')),
+          ],
+        ),
       ),
     );
   }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../app/theme/app_colors.dart';
+import 'home_section_header.dart';
 
 /// A photo tile that opens the Jobs tab searching for [query].
 class JobCategory {
@@ -92,58 +93,12 @@ class JobCategoriesSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text.rich(
-                      TextSpan(
-                        children: [
-                          TextSpan(text: 'Explore Popular '),
-                          TextSpan(
-                            text: 'Job Categories',
-                            style: TextStyle(color: AppColors.primary),
-                          ),
-                        ],
-                      ),
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w900,
-                        color: AppColors.textPrimary,
-                      ),
-                    ),
-                    SizedBox(height: 2),
-                    Text(
-                      'Logistics, technical trades, facility and office work',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: AppColors.textSecondary,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 8),
-              GestureDetector(
-                onTap: onViewAll,
-                child: const Text(
-                  'View All',
-                  style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.blue,
-                  ),
-                ),
-              ),
-            ],
-          ),
+        HomeSectionHeader(
+          title: 'Explore Popular Job Categories',
+          subtitle: 'Logistics, technical trades, facility and office work',
+          onSeeAll: onViewAll,
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: HomeSectionHeader.gap),
         SizedBox(
           height: tileHeight,
           child: ListView.separated(

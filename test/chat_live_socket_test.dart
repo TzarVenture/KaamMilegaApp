@@ -12,6 +12,7 @@ import 'package:kaam_milega/features/chat/providers/chat_provider.dart';
 import 'package:kaam_milega/features/chat/repositories/chat_repository.dart';
 import 'package:kaam_milega/features/chat/services/chat_websocket_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:web_socket_channel/io.dart';
 
 /// A local stand-in for km-backend's chat hub (GET /api/ws/chats?token=...):
 /// it accepts the socket, can push NEW_MESSAGE events and can drop sockets.
@@ -96,10 +97,12 @@ void main() {
     await hub.start();
     service = ChatWebSocketService(
       // Same path and token as production, pointed at the local hub.
-      connector: (url) => WebSocket.connect(
-        Uri.parse(url)
-            .replace(scheme: 'ws', host: '127.0.0.1', port: hub.port)
-            .toString(),
+      connector: (url) async => IOWebSocketChannel(
+        await WebSocket.connect(
+          Uri.parse(url)
+              .replace(scheme: 'ws', host: '127.0.0.1', port: hub.port)
+              .toString(),
+        ),
       ),
       networkStatus: const Stream.empty(),
       isOnline: () => true,

@@ -10,6 +10,7 @@ import '../../chat/presentation/chat_list_screen.dart';
 import '../../home/presentation/home_screen.dart';
 import '../../jobs/presentation/jobs_screen.dart';
 import '../../jobs/providers/jobs_provider.dart';
+import '../../chat/providers/chat_provider.dart';
 import '../../profile/presentation/profile_screen.dart';
 
 /// Full KaamMilega™ 5-Tab Navigation Shell matching official design
@@ -240,12 +241,13 @@ class _MainNavigationShellState extends ConsumerState<MainNavigationShell> {
               ),
             ),
           ),
-          // The chats API has no unread counts yet, so there is no badge.
+          // Badge: unread messages over all chats (GET /chats).
           _buildNavItem(
             index: 3,
             icon: Icons.chat_bubble_outline_rounded,
             activeIcon: Icons.chat_bubble_rounded,
             label: 'Chats',
+            badgeCount: ref.watch(unreadChatMessagesProvider),
           ),
           _buildNavItem(
             index: 4,
@@ -263,11 +265,13 @@ class _MainNavigationShellState extends ConsumerState<MainNavigationShell> {
     required IconData icon,
     IconData? activeIcon,
     required String label,
+    int badgeCount = 0,
   }) {
     return AppBottomNavItem(
       icon: icon,
       activeIcon: activeIcon,
       label: label,
+      badgeCount: badgeCount,
       selected: _currentIndex == index,
       legacyPadding: 12,
       onTap: () {

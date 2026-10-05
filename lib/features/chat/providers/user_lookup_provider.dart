@@ -33,8 +33,9 @@ final userLookupProvider = FutureProvider.family<UserProfile?, String>((
   return null;
 });
 
-/// Display name for a user, with a friendly fallback when unknown
+/// Display name for a user; "Unknown user" (not a made-up name) when the
+/// profile could not be loaded or has no name.
 String displayNameFor(UserProfile? user) {
   final name = user?.name.trim() ?? '';
-  return name.isNotEmpty ? name : 'KaamMilega User';
+  return name.isNotEmpty ? name : 'Unknown user';
 }

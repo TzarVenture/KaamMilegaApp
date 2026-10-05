@@ -7,7 +7,7 @@ import '../../../../app/theme/app_colors.dart';
 import '../../../../core/constants/api_constants.dart';
 import '../../../auth/providers/auth_provider.dart';
 import '../../../experts/providers/expert_dashboard_provider.dart';
-import '../../../notifications/providers/notification_provider.dart';
+import '../../../../shared/widgets/notification_bell_button.dart';
 
 /// Unified Application Navigation Drawer matching the Home Screen design (Screenshot 1)
 /// Used consistently across Home, Jobs, Chats, Apply Expert, and Profile screens.
@@ -37,8 +37,6 @@ class ProfileDrawer extends ConsumerWidget {
         isAuth &&
         userAvatar.isNotEmpty &&
         (userAvatar.startsWith('http://') || userAvatar.startsWith('https://'));
-
-    final unreadCount = ref.watch(unreadNotificationsCountProvider);
 
     return Drawer(
       backgroundColor: Colors.white,
@@ -117,37 +115,15 @@ class ProfileDrawer extends ConsumerWidget {
                                 },
                               ),
                               const SizedBox(width: 4),
-                              GestureDetector(
-                                onTap: () {
+                              // Same bell button as the headers; closes the
+                              // drawer first.
+                              NotificationBellButton(
+                                color: const Color(0xFF334155),
+                                size: 22,
+                                onPressed: () {
                                   Navigator.pop(context);
                                   context.push('/notifications');
                                 },
-                                child: Stack(
-                                  clipBehavior: Clip.none,
-                                  children: [
-                                    const Padding(
-                                      padding: EdgeInsets.all(6),
-                                      child: Icon(
-                                        Icons.notifications_none_rounded,
-                                        size: 22,
-                                        color: Color(0xFF334155),
-                                      ),
-                                    ),
-                                    if (unreadCount > 0)
-                                      Positioned(
-                                        top: 4,
-                                        right: 4,
-                                        child: Container(
-                                          width: 8,
-                                          height: 8,
-                                          decoration: const BoxDecoration(
-                                            color: Color(0xFFEF4444),
-                                            shape: BoxShape.circle,
-                                          ),
-                                        ),
-                                      ),
-                                  ],
-                                ),
                               ),
                               const SizedBox(width: 4),
                               IconButton(

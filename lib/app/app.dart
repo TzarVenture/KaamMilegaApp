@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../core/network/offline_banner.dart';
+import '../features/notifications/presentation/in_app_notification_host.dart';
 import 'router.dart';
 import 'theme/app_theme.dart';
 import 'theme/mobile_design_spec.dart';
@@ -12,14 +13,19 @@ class KaamMilegaApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final router = ref.watch(routerProvider);
     return MaterialApp.router(
       title: 'KaamMilega',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.appTheme,
-      routerConfig: ref.watch(routerProvider),
+      routerConfig: router,
       builder: (context, child) {
         final app = OfflineBannerOverlay(
-          child: child ?? const SizedBox.shrink(),
+          // Live notifications: connection, unread badge and top banner.
+          child: InAppNotificationHost(
+            router: router,
+            child: child ?? const SizedBox.shrink(),
+          ),
         );
         if (!kMobileDesignSpec) return app;
         // Mobile spec 3.4: light screens have dark status bar icons and a

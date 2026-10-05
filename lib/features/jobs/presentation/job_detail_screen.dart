@@ -9,7 +9,7 @@ import '../../applications/presentation/apply_modal.dart';
 import '../../applications/repositories/application_repository.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../chat/presentation/open_chat.dart';
-import '../../notifications/providers/notification_provider.dart';
+import '../../../shared/widgets/notification_bell_button.dart';
 import '../../profile/presentation/widgets/profile_drawer.dart';
 import '../models/job.dart';
 import '../providers/jobs_provider.dart';
@@ -284,8 +284,6 @@ class _JobDetailScreenState extends ConsumerState<JobDetailScreen> {
     final savedJobIds = ref.watch(jobsProvider).savedJobIds;
     final isSaved = savedJobIds.contains(widget.jobId);
 
-    final unreadNotifs = ref.watch(unreadNotificationsCountProvider);
-
     return Scaffold(
       key: _scaffoldKey,
       backgroundColor: AppColors.background,
@@ -338,35 +336,8 @@ class _JobDetailScreenState extends ConsumerState<JobDetailScreen> {
             },
           ),
 
-          // 2. Notification Bell with Badge
-          IconButton(
-            icon: Stack(
-              clipBehavior: Clip.none,
-              children: [
-                const Icon(
-                  Icons.notifications_none_rounded,
-                  color: Color(0xFF1E293B),
-                  size: 24,
-                ),
-                if (unreadNotifs > 0)
-                  Positioned(
-                    top: -1,
-                    right: -1,
-                    child: Container(
-                      width: 8,
-                      height: 8,
-                      decoration: const BoxDecoration(
-                        color: Color(0xFFEF4444),
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                  ),
-              ],
-            ),
-            splashRadius: 20,
-            tooltip: 'Notifications',
-            onPressed: () => context.push('/notifications'),
-          ),
+          // 2. Notification bell (shared button)
+          const NotificationBellButton(color: Color(0xFF1E293B)),
 
           // 3. Hamburger Menu (Drawer)
           IconButton(

@@ -9,6 +9,7 @@ import '../../../auth/models/user_profile.dart';
 import '../../../network/presentation/widgets/connect_button.dart';
 import '../../../network/providers/network_provider.dart';
 import '../../../network/services/impression_tracker.dart';
+import 'home_section_header.dart';
 
 /// Home: "Connect Just Like You", the same people as the website home page
 /// (GET /community/users). Connect sends POST /network/connect; the button
@@ -22,6 +23,7 @@ class ConnectLikeYouSection extends StatelessWidget {
       provider: communityUsersProvider,
       highlight: 'Connect',
       after: ' Just Like You',
+      subtitle: 'People on KaamMilega you may know',
       errorText: 'Could not load people right now.',
       onSeeAll: () => AuthGuard.openProtected(
         context,
@@ -43,6 +45,7 @@ class ConnectExpertsSection extends StatelessWidget {
       provider: featuredExpertsProvider,
       before: 'Connect With Our ',
       highlight: 'Experts',
+      subtitle: 'Get advice from people with experience',
       errorText: 'Could not load experts right now.',
       isExperts: true,
       onSeeAll: () => context.push('/experts'),
@@ -61,6 +64,7 @@ class PeopleRowSection extends ConsumerWidget {
     required this.onSeeAll,
     this.before = '',
     this.after = '',
+    this.subtitle = '',
     this.isExperts = false,
   });
 
@@ -68,6 +72,7 @@ class PeopleRowSection extends ConsumerWidget {
   final String before;
   final String highlight;
   final String after;
+  final String subtitle;
   final String errorText;
   final VoidCallback onSeeAll;
   final bool isExperts;
@@ -87,6 +92,7 @@ class PeopleRowSection extends ConsumerWidget {
     final height = rowHeight(context);
 
     Widget section(Widget child) => _Section(
+      subtitle: subtitle,
       before: before,
       highlight: highlight,
       after: after,
@@ -156,6 +162,7 @@ class _Section extends StatelessWidget {
     required this.before,
     required this.highlight,
     required this.after,
+    required this.subtitle,
     required this.onSeeAll,
     required this.child,
   });
@@ -163,6 +170,7 @@ class _Section extends StatelessWidget {
   final String before;
   final String highlight;
   final String after;
+  final String subtitle;
   final VoidCallback onSeeAll;
   final Widget child;
 
@@ -171,44 +179,12 @@ class _Section extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Row(
-            children: [
-              Expanded(
-                child: Text.rich(
-                  TextSpan(
-                    children: [
-                      if (before.isNotEmpty) TextSpan(text: before),
-                      TextSpan(
-                        text: highlight,
-                        style: const TextStyle(color: AppColors.primary),
-                      ),
-                      if (after.isNotEmpty) TextSpan(text: after),
-                    ],
-                  ),
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w900,
-                    color: AppColors.textPrimary,
-                  ),
-                ),
-              ),
-              GestureDetector(
-                onTap: onSeeAll,
-                child: const Text(
-                  'See All',
-                  style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.blue,
-                  ),
-                ),
-              ),
-            ],
-          ),
+        HomeSectionHeader(
+          title: '$before$highlight$after',
+          subtitle: subtitle,
+          onSeeAll: onSeeAll,
         ),
-        const SizedBox(height: 10),
+        const SizedBox(height: HomeSectionHeader.gap),
         child,
       ],
     );

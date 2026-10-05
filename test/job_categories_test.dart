@@ -40,7 +40,7 @@ void main() {
     await tester.tap(find.text('Bike Courier'));
     expect(picked?.query, 'Delivery');
 
-    await tester.tap(find.text('View All'));
+    await tester.tap(find.text('See All'));
     expect(viewAll, isTrue);
   });
 }

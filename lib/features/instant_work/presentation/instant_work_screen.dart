@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../applications/presentation/apply_modal.dart';
 import '../../profile/presentation/widgets/profile_drawer.dart';
+import '../../../shared/widgets/banner_image.dart';
 import '../../../shared/widgets/category_top_header.dart';
 import '../../../shared/widgets/shimmer_loading.dart';
 import '../../../shared/widgets/themed_category_bottom_nav.dart';
@@ -30,6 +31,7 @@ class InstantWorkScreen extends ConsumerStatefulWidget {
 class _InstantWorkScreenState extends ConsumerState<InstantWorkScreen> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final TextEditingController _searchController = TextEditingController();
+  final _workStartKey = GlobalKey();
 
   final List<String> _filters = [
     'All',
@@ -109,6 +111,11 @@ class _InstantWorkScreenState extends ConsumerState<InstantWorkScreen> {
                     vertical: 14,
                   ),
                   children: [
+                    // Hero banner image, right below the search bar
+                    _buildHeroBanner(),
+
+                    const SizedBox(height: 14),
+
                     // Location status (needed for gigs; no map)
                     const InstantLocationBar(),
 
@@ -137,11 +144,6 @@ class _InstantWorkScreenState extends ConsumerState<InstantWorkScreen> {
                     const NearbyProfessionalsSection(),
 
                     const SizedBox(height: 18),
-
-                    // 1. Orange InstantMilega Hero Banner (IMAGE 2)
-                    _buildHeroBanner(context),
-
-                    const SizedBox(height: 14),
 
                     // 2. Quick Filter Chips
                     SizedBox(
@@ -195,6 +197,7 @@ class _InstantWorkScreenState extends ConsumerState<InstantWorkScreen> {
 
                     // 4. Section Header
                     Row(
+                      key: _workStartKey,
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         const Flexible(
@@ -239,63 +242,26 @@ class _InstantWorkScreenState extends ConsumerState<InstantWorkScreen> {
     );
   }
 
-  Widget _buildHeroBanner(BuildContext context) {
+  Widget _buildHeroBanner() {
     return FadeSlideIn(
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(18),
-        decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            colors: [AppColors.accent, AppColors.accentBright],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-          borderRadius: BorderRadius.circular(18),
-          boxShadow: [
-            BoxShadow(
-              color: AppColors.moduleInstantWork.withValues(alpha: 0.3),
-              blurRadius: 12,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.2),
-                borderRadius: BorderRadius.circular(6),
-              ),
-              child: const Text(
-                'INSTANTMILEGA™ HOURLY DISPATCH',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 10,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: 0.5,
-                ),
-              ),
-            ),
-            const SizedBox(height: 10),
-            const Text(
-              'Get work.\nGet paid, in minutes.',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 20,
-                fontWeight: FontWeight.w900,
-                height: 1.2,
-              ),
-            ),
-            const SizedBox(height: 6),
-            const Text(
-              'Same-day payout directly to your KaamMilega Wallet.',
-              style: TextStyle(color: Colors.white70, fontSize: 12),
-            ),
-          ],
-        ),
+      child: BannerImage(
+        asset: 'assets/images/instant_work_hero.webp',
+        pixelWidth: 1080,
+        pixelHeight: 657,
+        semanticLabel: 'Get work. Get paid. In minutes. Find work now',
+        onTap: _scrollToWork,
       ),
+    );
+  }
+
+  /// "Find Work Now" on the banner scrolls to the work near you.
+  void _scrollToWork() {
+    final target = _workStartKey.currentContext;
+    if (target == null) return;
+    Scrollable.ensureVisible(
+      target,
+      duration: const Duration(milliseconds: 350),
+      curve: Curves.easeOutCubic,
     );
   }
 

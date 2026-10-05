@@ -150,7 +150,12 @@ void main() {
 
         expect(find.byType(CategoryTopHeader), findsOneWidget);
         expect(find.byType(ThemedCategoryBottomNav), findsOneWidget);
-        expect(find.text('ON-DEMAND LOCAL EXPERTISE'), findsOneWidget);
+        expect(
+          find.bySemanticsLabel(
+            'Find trusted services, 100% reliable. Explore services',
+          ),
+          findsOneWidget,
+        );
         // "Not live yet" notice (user-friendly wording since 23 Sep)
         expect(
           find.text('Services Marketplace is coming soon'),

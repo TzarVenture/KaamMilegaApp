@@ -6,6 +6,7 @@ import '../../../../app/theme/app_colors.dart';
 import '../../../../shared/widgets/shimmer_loading.dart';
 import '../../../company/models/top_company.dart';
 import '../../../company/providers/company_provider.dart';
+import 'home_section_header.dart';
 
 /// Home: "Featured Companies Actively Hiring" from GET /companies/top.
 /// Only real employers are shown (no invented brands, counts or badges);
@@ -91,36 +92,11 @@ class _Section extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text.rich(
-                TextSpan(
-                  children: [
-                    TextSpan(text: 'Featured Companies '),
-                    TextSpan(
-                      text: 'Actively Hiring',
-                      style: TextStyle(color: AppColors.primary),
-                    ),
-                  ],
-                ),
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w900,
-                  color: AppColors.textPrimary,
-                ),
-              ),
-              SizedBox(height: 2),
-              Text(
-                'Employers hiring on KaamMilega',
-                style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
-              ),
-            ],
-          ),
+        const HomeSectionHeader(
+          title: 'Featured Companies Actively Hiring',
+          subtitle: 'Employers hiring on KaamMilega',
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: HomeSectionHeader.gap),
         child,
       ],
     );

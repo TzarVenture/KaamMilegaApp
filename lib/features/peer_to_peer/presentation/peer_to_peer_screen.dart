@@ -9,6 +9,7 @@ import '../../../core/network/api_client.dart';
 import '../../../core/network/app_exception.dart';
 import '../../../core/network/response_list.dart';
 import '../../profile/presentation/widgets/profile_drawer.dart';
+import '../../../shared/widgets/banner_image.dart';
 import '../../../shared/widgets/category_top_header.dart';
 import '../../../shared/widgets/shimmer_loading.dart';
 import '../../../shared/widgets/themed_category_bottom_nav.dart';
@@ -41,6 +42,9 @@ class _PeerToPeerScreenState extends ConsumerState<PeerToPeerScreen>
   bool _isSearching = false;
   String? _searchError;
   Timer? _searchDebounce;
+
+  /// People You May Know heading (the banner scrolls here).
+  final _peopleKey = GlobalKey();
   int _searchSeq = 0;
 
   @override
@@ -208,7 +212,7 @@ class _PeerToPeerScreenState extends ConsumerState<PeerToPeerScreen>
     return ListView(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       children: [
-        // Purple Hero Banner (IMAGE 2)
+        // Peer-to-peer banner image (responsive)
         _buildHeroBanner(),
 
         const SizedBox(height: 16),
@@ -250,9 +254,10 @@ class _PeerToPeerScreenState extends ConsumerState<PeerToPeerScreen>
 
         const SizedBox(height: 18),
 
-        const Text(
+        Text(
           'People You May Know',
-          style: TextStyle(
+          key: _peopleKey,
+          style: const TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w800,
             color: AppColors.textPrimary,
@@ -383,66 +388,28 @@ class _PeerToPeerScreenState extends ConsumerState<PeerToPeerScreen>
   }
 
   Widget _buildHeroBanner() {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [AppColors.brandNavy, AppColors.moduleP2P],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(18),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.moduleP2P.withValues(alpha: 0.3),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.2),
-              borderRadius: BorderRadius.circular(6),
-            ),
-            child: const Text(
-              'PEER-TO-PEER COLLABORATION',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 10,
-                fontWeight: FontWeight.w800,
-                letterSpacing: 0.5,
-              ),
-            ),
-          ),
-          const SizedBox(height: 10),
-          const Text(
-            'Connect, share & grow\ntogether.',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 20,
-              fontWeight: FontWeight.w900,
-              height: 1.2,
-            ),
-          ),
-          const SizedBox(height: 6),
-          const Text(
-            'Expand your network with peers, verified workers & colleagues.',
-            style: TextStyle(color: Colors.white70, fontSize: 12),
-          ),
-        ],
-      ),
+    // Brand banner image (its "Connect Now" button is part of the
+    // picture): tapping it scrolls to People You May Know.
+    return BannerImage(
+      asset: 'assets/images/p2p_hero.webp',
+      pixelWidth: 1080,
+      pixelHeight: 721,
+      semanticLabel: 'Connect. Share. Collaborate. Grow together. Connect now',
+      onTap: _scrollToPeople,
     );
   }
 
-  /// Tapping the card opens the person's profile (which also has Connect
-  /// and Message). Connect shows the server's state (Connect, Pending or
-  /// Connected); the chat button opens a conversation with them.
+  /// Scrolls to People You May Know.
+  void _scrollToPeople() {
+    final target = _peopleKey.currentContext;
+    if (target == null) return;
+    Scrollable.ensureVisible(
+      target,
+      duration: const Duration(milliseconds: 350),
+      curve: Curves.easeOutCubic,
+    );
+  }
+
   Widget _buildConnectionsTab(AsyncValue<List<String>> connectionsAsync) {
     return connectionsAsync.when(
       data: (connections) {

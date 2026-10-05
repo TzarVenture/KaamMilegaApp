@@ -64,6 +64,7 @@ class AppBottomNavItem extends StatelessWidget {
     this.activeIcon,
     this.legacyActiveColor = AppColors.primary,
     this.legacyPadding = 10,
+    this.badgeCount = 0,
   });
 
   final IconData icon;
@@ -79,6 +80,19 @@ class AppBottomNavItem extends StatelessWidget {
   /// Side padding of a tab when the trial is off.
   final double legacyPadding;
 
+  /// Unread count shown on the icon (hidden at 0).
+  final int badgeCount;
+
+  Widget _withBadge(Widget icon) {
+    if (badgeCount <= 0) return icon;
+    return Badge(
+      label: Text(badgeCount > 99 ? '99+' : '$badgeCount'),
+      backgroundColor: AppColors.error,
+      textColor: AppColors.white,
+      child: icon,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     if (!kMobileDesignSpec) return _legacy();
@@ -89,7 +103,7 @@ class AppBottomNavItem extends StatelessWidget {
       child: Semantics(
         selected: selected,
         button: true,
-        label: label,
+        label: badgeCount > 0 ? '$label, $badgeCount unread' : label,
         excludeSemantics: true,
         child: InkWell(
           onTap: onTap,
@@ -106,10 +120,12 @@ class AppBottomNavItem extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 6),
-              Icon(
-                selected ? (activeIcon ?? icon) : icon,
-                size: 24,
-                color: selected ? active : inactive,
+              _withBadge(
+                Icon(
+                  selected ? (activeIcon ?? icon) : icon,
+                  size: 24,
+                  color: selected ? active : inactive,
+                ),
               ),
               const SizedBox(height: 4),
               Text(
@@ -142,10 +158,12 @@ class AppBottomNavItem extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              selected ? (activeIcon ?? icon) : icon,
-              color: color,
-              size: 24,
+            _withBadge(
+              Icon(
+                selected ? (activeIcon ?? icon) : icon,
+                color: color,
+                size: 24,
+              ),
             ),
             const SizedBox(height: 3),
             Text(

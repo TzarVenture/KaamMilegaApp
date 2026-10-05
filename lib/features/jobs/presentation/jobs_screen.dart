@@ -11,8 +11,8 @@ import '../../applications/presentation/apply_modal.dart';
 import '../../applications/repositories/application_repository.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../chat/presentation/open_chat.dart';
-import '../../cities/presentation/city_selector_sheet.dart';
-import '../../notifications/providers/notification_provider.dart';
+import '../../cities/presentation/city_dropdown.dart';
+import '../../../shared/widgets/notification_bell_button.dart';
 import '../../profile/presentation/widgets/profile_drawer.dart';
 import '../models/job.dart';
 import '../providers/jobs_provider.dart';
@@ -69,9 +69,10 @@ class _JobsScreenState extends ConsumerState<JobsScreen> {
     });
   }
 
-  void _openCitySelector(String currentCity) {
-    CitySelectorSheet.show(
-      context,
+  /// City dropdown under the tapped widget ([anchor]).
+  void _openCitySelector(BuildContext anchor, String currentCity) {
+    showCityDropdown(
+      anchor,
       currentCity: currentCity,
       onSelected: (selectedCity) {
         ref.read(jobsProvider.notifier).setCity(selectedCity);
@@ -171,7 +172,6 @@ class _JobsScreenState extends ConsumerState<JobsScreen> {
     final myApplicationsAsync = ref.watch(myApplicationsProvider);
     final appliedJobIds =
         myApplicationsAsync.value?.map((a) => a.jobId).toSet() ?? {};
-    final unreadNotifs = ref.watch(unreadNotificationsCountProvider);
 
     // Apply sorting and saved filter if requested
     var displayedJobs = List.of(jobsState.jobs);
@@ -250,35 +250,8 @@ class _JobsScreenState extends ConsumerState<JobsScreen> {
             },
           ),
 
-          // 2. Notification Bell with Badge
-          IconButton(
-            icon: Stack(
-              clipBehavior: Clip.none,
-              children: [
-                const Icon(
-                  Icons.notifications_none_rounded,
-                  color: Color(0xFF1E293B),
-                  size: 24,
-                ),
-                if (unreadNotifs > 0)
-                  Positioned(
-                    top: -1,
-                    right: -1,
-                    child: Container(
-                      width: 8,
-                      height: 8,
-                      decoration: const BoxDecoration(
-                        color: Color(0xFFEF4444),
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                  ),
-              ],
-            ),
-            splashRadius: 20,
-            tooltip: 'Notifications',
-            onPressed: () => context.push('/notifications'),
-          ),
+          // 2. Notification bell (shared button)
+          const NotificationBellButton(color: Color(0xFF1E293B)),
 
           // 3. Hamburger Menu (Drawer)
           IconButton(
@@ -430,14 +403,16 @@ class _JobsScreenState extends ConsumerState<JobsScreen> {
                         ),
                       ),
                       if (filter.city != 'All')
-                        GestureDetector(
-                          onTap: () => _openCitySelector(filter.city),
-                          child: const Text(
-                            '(Change City)',
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w800,
-                              color: AppColors.primary,
+                        Builder(
+                          builder: (anchor) => GestureDetector(
+                            onTap: () => _openCitySelector(anchor, filter.city),
+                            child: const Text(
+                              '(Change City)',
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w800,
+                                color: AppColors.primary,
+                              ),
                             ),
                           ),
                         ),

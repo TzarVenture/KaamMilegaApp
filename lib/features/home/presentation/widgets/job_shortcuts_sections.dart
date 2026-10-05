@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../app/theme/app_colors.dart';
 import '../../../jobs/models/job_filter.dart';
+import 'home_section_header.dart';
 
 /// A Home shortcut that opens the Jobs tab with one filter applied.
 ///
@@ -111,41 +112,6 @@ const jobTypeShortcuts = <JobShortcut>[
   ),
 ];
 
-class _SectionHeader extends StatelessWidget {
-  const _SectionHeader({required this.title, required this.subtitle});
-
-  final String title;
-  final String subtitle;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            title,
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w900,
-              color: AppColors.textPrimary,
-            ),
-          ),
-          const SizedBox(height: 2),
-          Text(
-            subtitle,
-            style: const TextStyle(
-              fontSize: 12,
-              color: AppColors.textSecondary,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
 /// One sideways row of qualification tiles.
 class QualificationShortcutsSection extends StatelessWidget {
   const QualificationShortcutsSection({super.key, required this.onSelected});
@@ -160,11 +126,11 @@ class QualificationShortcutsSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const _SectionHeader(
+        const HomeSectionHeader(
           title: 'Search Jobs by Qualification',
           subtitle: 'Roles that match your education',
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: HomeSectionHeader.gap),
         SizedBox(
           height: rowHeight,
           child: ListView.separated(
@@ -256,11 +222,11 @@ class JobTypeShortcutsSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const _SectionHeader(
+        const HomeSectionHeader(
           title: 'What Type of Job Do You Want?',
           subtitle: 'Pick one to see matching jobs',
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: HomeSectionHeader.gap),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: LayoutBuilder(

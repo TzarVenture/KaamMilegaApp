@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../jobs/providers/jobs_provider.dart';
 import '../../profile/presentation/widgets/profile_drawer.dart';
+import '../../../shared/widgets/banner_image.dart';
 import '../../../shared/widgets/category_top_header.dart';
 import '../../../shared/widgets/shimmer_loading.dart';
 import '../../../shared/widgets/themed_category_bottom_nav.dart';
@@ -23,6 +24,9 @@ class _SkillsMarketplaceScreenState
     extends ConsumerState<SkillsMarketplaceScreen> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final TextEditingController _searchController = TextEditingController();
+
+  /// Where the skills start (the banner scrolls here).
+  final _skillsStartKey = GlobalKey();
 
   @override
   void dispose() {
@@ -75,10 +79,10 @@ class _SkillsMarketplaceScreenState
                     vertical: 14,
                   ),
                   children: [
-                    // 1. Green Hero Banner (IMAGE 2)
+                    // 1. Skills banner image (responsive)
                     _buildHeroBanner(),
 
-                    const SizedBox(height: 14),
+                    SizedBox(key: _skillsStartKey, height: 14),
 
                     // 2. Category Horizontal Scroll
                     if (state.categories.isNotEmpty) ...[
@@ -393,64 +397,25 @@ class _SkillsMarketplaceScreenState
   }
 
   Widget _buildHeroBanner() {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [
-            Color(0xFF065F46),
-            Color(0xFF059669),
-            AppColors.moduleSkills,
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(18),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.moduleSkills.withValues(alpha: 0.3),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.2),
-              borderRadius: BorderRadius.circular(6),
-            ),
-            child: const Text(
-              'SKILLS & COMPETENCY CATALOG',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 10,
-                fontWeight: FontWeight.w800,
-                letterSpacing: 0.5,
-              ),
-            ),
-          ),
-          const SizedBox(height: 10),
-          const Text(
-            'Show your skills.\nGet hired faster.',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 20,
-              fontWeight: FontWeight.w900,
-              height: 1.2,
-            ),
-          ),
-          const SizedBox(height: 6),
-          const Text(
-            'Explore certified skills mapped to thousands of active employer listings.',
-            style: TextStyle(color: Colors.white70, fontSize: 12),
-          ),
-        ],
-      ),
+    // Brand banner image (its "Explore Skills" button is part of the
+    // picture): tapping it scrolls to the skills.
+    return BannerImage(
+      asset: 'assets/images/skills_hero.webp',
+      pixelWidth: 1080,
+      pixelHeight: 727,
+      semanticLabel: 'Show your skills. Get hired. Get noticed. Explore skills',
+      onTap: _scrollToSkills,
+    );
+  }
+
+  /// Scrolls to the skills (just below the banner).
+  void _scrollToSkills() {
+    final target = _skillsStartKey.currentContext;
+    if (target == null) return;
+    Scrollable.ensureVisible(
+      target,
+      duration: const Duration(milliseconds: 350),
+      curve: Curves.easeOutCubic,
     );
   }
 

@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../features/cities/presentation/city_selector_sheet.dart';
+import '../../features/cities/presentation/city_dropdown.dart';
 import '../../features/jobs/providers/jobs_provider.dart';
-import '../../features/notifications/providers/notification_provider.dart';
+import 'notification_bell_button.dart';
 import '../../app/theme/app_colors.dart';
 
 /// Reusable top header for category screens matching KaamMilega design:
@@ -45,7 +45,6 @@ class CategoryTopHeader extends ConsumerWidget {
     final currentCity = jobsState.filter.city.isNotEmpty
         ? jobsState.filter.city
         : 'Delhi, India';
-    final unreadCount = ref.watch(unreadNotificationsCountProvider);
 
     return Container(
       color: Colors.white,
@@ -151,36 +150,8 @@ class CategoryTopHeader extends ConsumerWidget {
                     const SizedBox(width: 8),
                   ],
 
-                  // Notification Bell with dynamic unread indicator dot
-                  GestureDetector(
-                    onTap: () => context.push('/notifications'),
-                    child: Stack(
-                      clipBehavior: Clip.none,
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(6),
-                          child: const Icon(
-                            Icons.notifications_none_rounded,
-                            color: Color(0xFF1E293B),
-                            size: 24,
-                          ),
-                        ),
-                        if (unreadCount > 0)
-                          Positioned(
-                            top: 4,
-                            right: 4,
-                            child: Container(
-                              width: 8,
-                              height: 8,
-                              decoration: const BoxDecoration(
-                                color: Color(0xFFEF4444),
-                                shape: BoxShape.circle,
-                              ),
-                            ),
-                          ),
-                      ],
-                    ),
-                  ),
+                  // Notification bell (shared button: ripple, tap area, badge).
+                  const NotificationBellButton(color: Color(0xFF1E293B)),
                   const SizedBox(width: 8),
 
                   // Three-line Hamburger Drawer Button
@@ -204,39 +175,14 @@ class CategoryTopHeader extends ConsumerWidget {
 
           const SizedBox(height: 6),
 
-          // 2. LOCATION SELECTOR
-          GestureDetector(
-            onTap: () {
-              CitySelectorSheet.show(
-                context,
-                currentCity: currentCity,
-                onSelected: (selectedCity) {
-                  ref.read(jobsProvider.notifier).setCity(selectedCity);
-                },
-              );
-            },
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.location_on_rounded, color: themeColor, size: 16),
-                const SizedBox(width: 4),
-                Flexible(
-                  child: Text(
-                    currentCity,
-                    style: const TextStyle(
-                      fontSize: 13.5,
-                      fontWeight: FontWeight.w800,
-                      color: AppColors.textPrimary,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 2),
-                const Icon(
-                  Icons.keyboard_arrow_down_rounded,
-                  color: AppColors.textPrimary,
-                  size: 18,
-                ),
-              ],
+          // 2. LOCATION SELECTOR: dropdown with search under the button
+          Align(
+            alignment: Alignment.centerLeft,
+            child: CityPickerButton(
+              currentCity: currentCity,
+              iconColor: themeColor,
+              onSelected: (city) =>
+                  ref.read(jobsProvider.notifier).setCity(city),
             ),
           ),
 

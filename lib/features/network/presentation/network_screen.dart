@@ -11,7 +11,11 @@ import '../../../shared/widgets/network_state_view.dart';
 
 /// Screen displaying Candidate Connections and Pending Invitations
 class NetworkScreen extends ConsumerStatefulWidget {
-  const NetworkScreen({super.key});
+  const NetworkScreen({super.key, this.initialTab = 0});
+
+  /// 0: Connections, 1: Pending Requests (`/network?tab=pending`, opened
+  /// from a connection request notification).
+  final int initialTab;
 
   @override
   ConsumerState<NetworkScreen> createState() => _NetworkScreenState();
@@ -24,7 +28,11 @@ class _NetworkScreenState extends ConsumerState<NetworkScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
+    _tabController = TabController(
+      length: 2,
+      vsync: this,
+      initialIndex: widget.initialTab.clamp(0, 1),
+    );
   }
 
   @override
@@ -123,7 +131,9 @@ class _NetworkScreenState extends ConsumerState<NetworkScreen>
               color: AppColors.primary,
             ),
             tooltip: 'Messages',
-            onPressed: () => context.push('/chats'),
+            // Switch to the Chats tab instead of opening a second copy of
+            // the main screen on top of this one.
+            onPressed: () => context.go('/chats'),
           ),
         ],
         bottom: TabBar(

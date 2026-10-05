@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../app/auth_guard.dart';
 import '../../profile/presentation/widgets/profile_drawer.dart';
+import '../../../shared/widgets/banner_image.dart';
 import '../../../shared/widgets/category_top_header.dart';
 import '../../../shared/widgets/shimmer_loading.dart';
 import '../../../shared/widgets/themed_category_bottom_nav.dart';
@@ -24,6 +25,7 @@ class ExpertsScreen extends ConsumerStatefulWidget {
 class _ExpertsScreenState extends ConsumerState<ExpertsScreen> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final TextEditingController _searchController = TextEditingController();
+  final _expertsStartKey = GlobalKey();
 
   final List<String> _categories = [
     'All',
@@ -89,10 +91,10 @@ class _ExpertsScreenState extends ConsumerState<ExpertsScreen> {
                     // 0. The user's next booked call (hidden when none)
                     const UpcomingSessionBanner(),
 
-                    // 1. Indigo Hero Banner (IMAGE 2)
-                    _buildHeroBanner(context),
+                    // 1. Hero banner image
+                    _buildHeroBanner(),
 
-                    const SizedBox(height: 14),
+                    SizedBox(key: _expertsStartKey, height: 14),
 
                     // 2. Category Filter Chips Horizontal Filter
                     SizedBox(
@@ -247,63 +249,27 @@ class _ExpertsScreenState extends ConsumerState<ExpertsScreen> {
     );
   }
 
-  Widget _buildHeroBanner(BuildContext context) {
+  Widget _buildHeroBanner() {
     return FadeSlideIn(
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(18),
-        decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            colors: [AppColors.brandNavy, AppColors.moduleExperts],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-          borderRadius: BorderRadius.circular(18),
-          boxShadow: [
-            BoxShadow(
-              color: AppColors.moduleExperts.withValues(alpha: 0.3),
-              blurRadius: 12,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.2),
-                borderRadius: BorderRadius.circular(6),
-              ),
-              child: const Text(
-                '1-ON-1 INDUSTRY GUIDANCE',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 10,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: 0.5,
-                ),
-              ),
-            ),
-            const SizedBox(height: 10),
-            const Text(
-              'Learn, grow & succeed\nwith top mentors.',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 20,
-                fontWeight: FontWeight.w900,
-                height: 1.2,
-              ),
-            ),
-            const SizedBox(height: 6),
-            const Text(
-              'Book 1-on-1 sessions for interview prep, portfolio review & career transitions.',
-              style: TextStyle(color: Colors.white70, fontSize: 12),
-            ),
-          ],
-        ),
+      child: BannerImage(
+        asset: 'assets/images/experts_hero.webp',
+        pixelWidth: 1080,
+        pixelHeight: 740,
+        semanticLabel:
+            'Learn. Grow. Succeed with the right mentor. Find an expert',
+        onTap: _scrollToExperts,
       ),
+    );
+  }
+
+  /// "Find an Expert" on the banner scrolls to the filters and experts.
+  void _scrollToExperts() {
+    final target = _expertsStartKey.currentContext;
+    if (target == null) return;
+    Scrollable.ensureVisible(
+      target,
+      duration: const Duration(milliseconds: 350),
+      curve: Curves.easeOutCubic,
     );
   }
 

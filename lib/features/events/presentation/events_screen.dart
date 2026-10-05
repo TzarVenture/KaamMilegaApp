@@ -15,6 +15,7 @@ import '../providers/event_provider.dart';
 import 'event_detail_screen.dart';
 import 'widgets/event_attendees.dart';
 import 'widgets/event_pricing_filter.dart';
+import '../../../shared/widgets/banner_image.dart';
 import '../../../shared/widgets/fade_slide_in.dart';
 import '../../../shared/widgets/pressable_scale.dart';
 
@@ -32,6 +33,9 @@ class _EventsScreenState extends ConsumerState<EventsScreen> {
   EventPricingFilter _pricing = EventPricingFilter.all;
   final Set<String> _registeringEventIds = {};
   Timer? _searchDebounce;
+
+  /// Where the events start in the list (the banner scrolls here).
+  final _eventsStartKey = GlobalKey();
 
   @override
   void dispose() {
@@ -223,6 +227,7 @@ class _EventsScreenState extends ConsumerState<EventsScreen> {
                         children: [
                           _buildHeroBanner(),
                           _buildMyTicketsLink(),
+                          SizedBox(key: _eventsStartKey),
                           const SizedBox(height: 48),
                           FadeSlideIn(
                             child: Center(
@@ -273,6 +278,7 @@ class _EventsScreenState extends ConsumerState<EventsScreen> {
                       children: [
                         _buildHeroBanner(),
                         _buildMyTicketsLink(),
+                        SizedBox(key: _eventsStartKey),
                         const SizedBox(height: 16),
                         ...filteredEvents.map((event) {
                           final isRegistering = _registeringEventIds.contains(
@@ -620,62 +626,29 @@ class _EventsScreenState extends ConsumerState<EventsScreen> {
   }
 
   Widget _buildHeroBanner() {
+    // Brand banner image (its "Explore Events" button is part of the
+    // picture): tapping it scrolls to the events.
     return FadeSlideIn(
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(18),
-        decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            colors: [Color(0xFF9A3412), Color(0xFFB45309), Color(0xFFD97706)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-          borderRadius: BorderRadius.circular(18),
-          boxShadow: [
-            BoxShadow(
-              color: const Color(0xFFD97706).withValues(alpha: 0.3),
-              blurRadius: 12,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.2),
-                borderRadius: BorderRadius.circular(6),
-              ),
-              child: const Text(
-                'COMMUNITY WEBINARS & JOB EXPOS',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 10,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: 0.5,
-                ),
-              ),
-            ),
-            const SizedBox(height: 10),
-            const Text(
-              'Join events.\nBuild your network.',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 20,
-                fontWeight: FontWeight.w900,
-                height: 1.2,
-              ),
-            ),
-            const SizedBox(height: 6),
-            const Text(
-              'Attend live webinars, interactive career sessions & employer fairs.',
-              style: TextStyle(color: Colors.white70, fontSize: 12),
-            ),
-          ],
-        ),
+      child: BannerImage(
+        asset: 'assets/images/events_hero.webp',
+        pixelWidth: 1080,
+        pixelHeight: 754,
+        semanticLabel:
+            'Join events. Build network. Be a part of community. '
+            'Explore events',
+        onTap: _scrollToEvents,
       ),
+    );
+  }
+
+  /// Scrolls the list to the first event (below the banner).
+  void _scrollToEvents() {
+    final target = _eventsStartKey.currentContext;
+    if (target == null) return;
+    Scrollable.ensureVisible(
+      target,
+      duration: const Duration(milliseconds: 350),
+      curve: Curves.easeOutCubic,
     );
   }
 

@@ -31,9 +31,18 @@ class ApiConstants {
       trimmed = trimmed.substring(7);
     }
 
-    if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
+    if (trimmed.startsWith('http://')) {
+      // Android (9+) blocks plain http, and the app does not allow it, so
+      // links to KaamMilega's own server always use https.
+      final uri = Uri.tryParse(trimmed);
+      final host = uri?.host ?? '';
+      if (uri != null &&
+          (host == 'kaammilega.com' || host.endsWith('.kaammilega.com'))) {
+        return uri.replace(scheme: 'https').toString();
+      }
       return trimmed;
     }
+    if (trimmed.startsWith('https://')) return trimmed;
     if (trimmed.startsWith('assets/') ||
         trimmed.startsWith('data:') ||
         trimmed.startsWith('blob:')) {
@@ -159,6 +168,8 @@ class ApiConstants {
   static const String chats = '/chats';
   static const String chatMessages = '/chats/messages';
   static const String chatMessagesList = '/chats/';
+  static String chatRead(String conversationId) =>
+      '/chats/$conversationId/read'; // PUT ?other_id=
   static const String wsChats = '/ws/chats';
 
   // --- Feed & Posts Endpoints ---
@@ -169,7 +180,14 @@ class ApiConstants {
   static const String faqQuestions = '/questions'; // GET (public FAQ)
 
   // --- Notifications Endpoints ---
+  // GET ?category=&limit=&offset=
   static const String notifications = '/notifications';
+  static const String notificationsUnreadCount =
+      '/notifications/unread-count'; // GET
+  static const String notificationsReadAll = '/notifications/read-all'; // PUT
+  static String notificationRead(String id) => '/notifications/$id/read'; // PUT
+  static String notification(String id) => '/notifications/$id'; // DELETE
+  static const String wsNotifications = '/ws/notifications'; // live socket
 
   // --- Events & Mentorship Endpoints ---
   static const String events = '/events';

@@ -234,7 +234,10 @@ class AppRouter {
     GoRoute(
       path: '/network',
       name: 'network',
-      builder: (context, state) => const NetworkScreen(),
+      // ?tab=pending opens Pending Requests (connection request alerts).
+      builder: (context, state) => NetworkScreen(
+        initialTab: state.uri.queryParameters['tab'] == 'pending' ? 1 : 0,
+      ),
     ),
     GoRoute(
       path: '/chats',

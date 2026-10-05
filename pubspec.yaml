@@ -30,6 +30,8 @@ dependencies:
   geolocator: ^13.0.0
   # Entry QR code on event tickets
   qr_flutter: ^4.1.0
+  # Live chat & notification sockets (works on Android, iOS and web)
+  web_socket_channel: ^3.0.3
 
 dev_dependencies:
   flutter_test:

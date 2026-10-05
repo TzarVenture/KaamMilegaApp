@@ -40,6 +40,34 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   final ImagePicker _picker = ImagePicker();
   bool _showCompletenessDetails = false;
 
+  /// Photo / banner links that failed to download (the profile has a link
+  /// but the image does not load). Shown as such instead of a silent blank.
+  String? _failedAvatarUrl;
+  String? _failedCoverUrl;
+
+  void _imageFailed({
+    required bool avatar,
+    required String url,
+    required Object error,
+  }) {
+    // The exact link and reason, for finding the cause in the logs.
+    debugPrint(
+      '[Profile] ${avatar ? 'Profile photo' : 'Banner'} could not load: '
+      '$url ($error)',
+    );
+    if ((avatar ? _failedAvatarUrl : _failedCoverUrl) == url) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      setState(() {
+        if (avatar) {
+          _failedAvatarUrl = url;
+        } else {
+          _failedCoverUrl = url;
+        }
+      });
+    });
+  }
+
   // -------------------------------------------------------------------
   // PHOTO UPLOAD & BACKGROUND / PROFILE MODALS
   // -------------------------------------------------------------------
@@ -3932,6 +3960,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     final isAuth = ref.watch(authProvider).isAuthenticated;
     // Signed-in users only (guests see More greyed out).
     final canOpenMore = AuthGuard.isSignedIn(ref.watch(authProvider));
+    final avatarFailed = hasAvatar && _failedAvatarUrl == profileImage;
+    final coverFailed = hasCover && _failedCoverUrl == coverImage;
 
     return Container(
       width: double.infinity,
@@ -3962,11 +3992,15 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     width: double.infinity,
                     decoration: BoxDecoration(
                       color: AppColors.heroBg,
-                      image: hasCover
+                      image: hasCover && !coverFailed
                           ? DecorationImage(
                               image: NetworkImage(coverImage),
                               fit: BoxFit.cover,
-                              onError: (_, _) {},
+                              onError: (e, _) => _imageFailed(
+                                avatar: false,
+                                url: coverImage,
+                                error: e,
+                              ),
                             )
                           : null,
                     ),
@@ -3981,6 +4015,58 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                         : null,
                   ),
                 ),
+
+                // A saved photo or banner that does not load: say so
+                if (avatarFailed || coverFailed)
+                  Positioned(
+                    top: 12,
+                    left: 12,
+                    right: 60,
+                    child: GestureDetector(
+                      onTap: coverFailed
+                          ? _showAddBackgroundPhotoModal
+                          : _showAddProfilePhotoModal,
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 6,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.95),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(
+                                Icons.error_outline_rounded,
+                                size: 16,
+                                color: AppColors.error,
+                              ),
+                              const SizedBox(width: 6),
+                              Flexible(
+                                child: Text(
+                                  avatarFailed && coverFailed
+                                      ? "Photos couldn't load. Tap to upload again."
+                                      : avatarFailed
+                                      ? "Profile photo couldn't load. Tap to upload again."
+                                      : "Banner couldn't load. Tap to upload again.",
+                                  maxLines: 2,
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                    color: AppColors.textPrimary,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
 
                 // Camera button for Cover Photo
                 Positioned(
@@ -4016,11 +4102,15 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                           child: CircleAvatar(
                             radius: 42,
                             backgroundColor: AppColors.heroBg,
-                            foregroundImage: hasAvatar
+                            foregroundImage: hasAvatar && !avatarFailed
                                 ? NetworkImage(profileImage)
                                 : null,
-                            onForegroundImageError: hasAvatar
-                                ? (_, _) {}
+                            onForegroundImageError: hasAvatar && !avatarFailed
+                                ? (e, _) => _imageFailed(
+                                    avatar: true,
+                                    url: profileImage,
+                                    error: e,
+                                  )
                                 : null,
                             child: const Icon(
                               Icons.person_rounded,
@@ -4876,7 +4966,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     if (user == null) return const SizedBox.shrink();
 
     bool hasExp = user.experience.isNotEmpty;
-    bool hasPhoto = user.profileImage.isNotEmpty;
+    // A saved photo that does not load is not counted as done.
+    final photoUrl = ApiConstants.resolveImageUrl(user.profileImage);
+    bool hasPhoto = photoUrl.isNotEmpty && _failedAvatarUrl != photoUrl;
     bool hasEdu = user.education.isNotEmpty;
     bool hasSkills = user.skills.length >= 3;
     bool hasAbout = user.about.isNotEmpty;

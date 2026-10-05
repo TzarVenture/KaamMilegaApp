@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../app/auth_guard.dart';
 import '../../profile/presentation/widgets/profile_drawer.dart';
+import '../../../shared/widgets/banner_image.dart';
 import '../../../shared/widgets/category_top_header.dart';
 import '../../../shared/widgets/themed_category_bottom_nav.dart';
 import '../../../shared/widgets/fade_slide_in.dart';
@@ -18,6 +19,7 @@ class ServicesMarketplaceScreen extends StatefulWidget {
 class _ServicesMarketplaceScreenState extends State<ServicesMarketplaceScreen> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final TextEditingController _searchController = TextEditingController();
+  final _servicesStartKey = GlobalKey();
   String _selectedCategory = 'All';
 
   final List<String> _categories = [
@@ -69,10 +71,10 @@ class _ServicesMarketplaceScreenState extends State<ServicesMarketplaceScreen> {
                   vertical: 14,
                 ),
                 children: [
-                  // 1. Rose Hero Banner (IMAGE 2)
+                  // 1. Hero banner image
                   _buildHeroBanner(),
 
-                  const SizedBox(height: 14),
+                  SizedBox(key: _servicesStartKey, height: 14),
 
                   // 2. Category Horizontal Scroll
                   SizedBox(
@@ -317,65 +319,24 @@ class _ServicesMarketplaceScreenState extends State<ServicesMarketplaceScreen> {
 
   Widget _buildHeroBanner() {
     return FadeSlideIn(
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(18),
-        decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            colors: [
-              AppColors.brandNavy,
-              Color(0xFFBE123C),
-              AppColors.moduleServices,
-            ],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-          borderRadius: BorderRadius.circular(18),
-          boxShadow: [
-            BoxShadow(
-              color: AppColors.moduleServices.withValues(alpha: 0.3),
-              blurRadius: 12,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.2),
-                borderRadius: BorderRadius.circular(6),
-              ),
-              child: const Text(
-                'ON-DEMAND LOCAL EXPERTISE',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 10,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: 0.5,
-                ),
-              ),
-            ),
-            const SizedBox(height: 10),
-            const Text(
-              'Find trusted services,\n100% on-demand.',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 20,
-                fontWeight: FontWeight.w900,
-                height: 1.2,
-              ),
-            ),
-            const SizedBox(height: 6),
-            const Text(
-              'Verified electricians, plumbers, repair technicians & verified gig workers.',
-              style: TextStyle(color: Colors.white70, fontSize: 12),
-            ),
-          ],
-        ),
+      child: BannerImage(
+        asset: 'assets/images/services_hero.webp',
+        pixelWidth: 1080,
+        pixelHeight: 690,
+        semanticLabel: 'Find trusted services, 100% reliable. Explore services',
+        onTap: _scrollToServices,
       ),
+    );
+  }
+
+  /// "Explore Services" on the banner scrolls to the categories below it.
+  void _scrollToServices() {
+    final target = _servicesStartKey.currentContext;
+    if (target == null) return;
+    Scrollable.ensureVisible(
+      target,
+      duration: const Duration(milliseconds: 350),
+      curve: Curves.easeOutCubic,
     );
   }
 
