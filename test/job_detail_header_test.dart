@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:kaam_milega/app/theme/app_colors.dart';
 import 'package:kaam_milega/app/theme/app_theme.dart';
 import 'package:kaam_milega/core/network/api_client.dart';
 import 'package:kaam_milega/core/network/provider_retry.dart';
@@ -89,7 +90,14 @@ void main() {
     expect(find.textContaining('₹40,000 - ₹50,000'), findsOneWidget);
     expect(find.text('5-8 Yrs'), findsWidgets);
     expect(find.text('1 opening'), findsOneWidget);
-    expect(find.text('Apply now'), findsOneWidget);
+    expect(find.text('Apply for Position'), findsOneWidget);
+    final apply = tester.widget<ElevatedButton>(
+      find.widgetWithText(ElevatedButton, 'Apply for Position'),
+    );
+    expect(
+      apply.style!.backgroundColor!.resolve(<WidgetState>{}),
+      AppColors.accent,
+    );
 
     // Nothing invented: no fixed badges, no made-up applicant count
     expect(find.text('HOT LISTING'), findsNothing);

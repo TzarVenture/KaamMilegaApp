@@ -9,19 +9,21 @@ import '../../../network/services/impression_tracker.dart';
 
 /// "People You May Know" as a two-column grid of profile cards (three on
 /// tablets): cover strip, round photo, name, what they do, city, then
-/// Connect and Message. Cards in a row share the same height so the grid
+/// one Connect / Pending / Message button. Cards in a row share the same height so the grid
 /// stays even with long names or large text sizes.
 class PeopleSuggestionGrid extends StatelessWidget {
   const PeopleSuggestionGrid({
     super.key,
     required this.users,
     required this.onOpen,
-    required this.onMessage,
+    this.onDismiss,
   });
 
   final List<UserProfile> users;
   final ValueChanged<UserProfile> onOpen;
-  final ValueChanged<UserProfile> onMessage;
+
+  /// Shows an X on each card that hides it (null: no X).
+  final ValueChanged<UserProfile>? onDismiss;
 
   static const double _gap = 12;
 
@@ -40,7 +42,9 @@ class PeopleSuggestionGrid extends StatelessWidget {
                 ? PeopleSuggestionCard(
                     user: users[index],
                     onOpen: () => onOpen(users[index]),
-                    onMessage: () => onMessage(users[index]),
+                    onDismiss: onDismiss == null
+                        ? null
+                        : () => onDismiss!(users[index]),
                   )
                 : const SizedBox.shrink(),
           ),
@@ -67,12 +71,12 @@ class PeopleSuggestionCard extends StatelessWidget {
     super.key,
     required this.user,
     required this.onOpen,
-    required this.onMessage,
+    this.onDismiss,
   });
 
   final UserProfile user;
   final VoidCallback onOpen;
-  final VoidCallback onMessage;
+  final VoidCallback? onDismiss;
 
   static const double _coverHeight = 54;
   static const double _avatarSize = 68;
@@ -122,6 +126,29 @@ class PeopleSuggestionCard extends StatelessWidget {
                     const SizedBox(height: _avatarSize / 2 + _ring + 2),
                   ],
                 ),
+                if (onDismiss != null)
+                  Positioned(
+                    top: 4,
+                    right: 4,
+                    child: Material(
+                      color: AppColors.white.withValues(alpha: 0.9),
+                      shape: const CircleBorder(),
+                      child: IconButton(
+                        tooltip: 'Hide $name',
+                        onPressed: onDismiss,
+                        constraints: const BoxConstraints(
+                          minWidth: 36,
+                          minHeight: 36,
+                        ),
+                        padding: EdgeInsets.zero,
+                        icon: const Icon(
+                          Icons.close_rounded,
+                          size: 18,
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                    ),
+                  ),
                 Positioned(
                   top: avatarTop,
                   left: 0,
@@ -199,43 +226,20 @@ class PeopleSuggestionCard extends StatelessWidget {
               ),
             ),
             const Spacer(),
+            // One action: Connect, then Pending, then Message once the
+            // request is accepted (GET /network/status/:id).
             Padding(
               padding: const EdgeInsets.fromLTRB(10, 12, 10, 12),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: ConnectButton(
-                      userId: user.id,
-                      name: name,
-                      height: 36,
-                      fontSize: 12.5,
-                    ),
-                  ),
-                  const SizedBox(width: 6),
-                  SizedBox(
-                    width: 36,
-                    height: 36,
-                    child: Tooltip(
-                      message: 'Message $name',
-                      child: OutlinedButton(
-                        onPressed: onMessage,
-                        style: OutlinedButton.styleFrom(
-                          padding: EdgeInsets.zero,
-                          foregroundColor: AppColors.moduleP2P,
-                          side: const BorderSide(color: AppColors.border),
-                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                        ),
-                        child: const Icon(
-                          Icons.chat_bubble_outline_rounded,
-                          size: 17,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
+              child: SizedBox(
+                width: double.infinity,
+                child: ConnectButton(
+                  userId: user.id,
+                  name: name,
+                  height: 38,
+                  fontSize: 13,
+                  messageWhenConnected: true,
+                  showIcon: true,
+                ),
               ),
             ),
           ],

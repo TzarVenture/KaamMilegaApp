@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import '../../../app/theme/app_colors.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../chat/presentation/active_chat.dart';
+import '../../network/providers/network_provider.dart';
 import '../models/notification_item.dart';
 import '../models/notification_target.dart';
 import '../providers/notification_provider.dart';
@@ -62,7 +63,8 @@ class _InAppNotificationHostState extends ConsumerState<InAppNotificationHost>
       (_, next) {
         final event = next.value;
         if (event?.type == NotificationEventType.created) {
-          _maybeShow(event!.notification!);
+          _refreshConnection(event!.notification!);
+          _maybeShow(event.notification!);
         }
       },
     );
@@ -87,6 +89,22 @@ class _InAppNotificationHostState extends ConsumerState<InAppNotificationHost>
     if (!_inForeground || ref.read(sessionUserIdProvider) == null) return;
     ref.read(notificationSocketServiceProvider).retryNow();
     ref.read(unreadCountsProvider.notifier).refreshFromServer();
+  }
+
+  /// A connection request or acceptance from someone changes their
+  /// Connect / Pending / Message button, wherever it is on screen.
+  void _refreshConnection(NotificationItem item) {
+    if (item.type != 'connection_request' &&
+        item.type != 'connection_accepted') {
+      return;
+    }
+    final ids = {item.actorId, item.meta('sender_id'), item.meta('accepted_by')}
+      ..remove('');
+    for (final id in ids) {
+      ref.invalidate(connectionStatusProvider(id));
+    }
+    ref.invalidate(pendingInvitationsProvider);
+    ref.invalidate(connectionsProvider);
   }
 
   void _maybeShow(NotificationItem item) {

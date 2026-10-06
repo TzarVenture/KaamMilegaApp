@@ -4228,7 +4228,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       style: TextStyle(color: AppColors.textLight),
                     ),
                     GestureDetector(
-                      onTap: () => AuthGuard.openProtected(context, '/network'),
+                      onTap: () => AuthGuard.openProtected(
+                        context,
+                        '/network?tab=connections',
+                      ),
                       child: Text(
                         '$connectionsCount Connections',
                         style: const TextStyle(

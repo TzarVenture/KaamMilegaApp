@@ -7,7 +7,6 @@ import 'package:go_router/go_router.dart';
 import '../../../app/theme/app_colors.dart';
 import '../../../shared/widgets/auth_prompt_dialog.dart';
 import '../../../shared/widgets/shimmer_loading.dart';
-import '../../applications/presentation/apply_modal.dart';
 import '../../applications/repositories/application_repository.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../chat/presentation/open_chat.dart';
@@ -39,7 +38,6 @@ class _JobsScreenState extends ConsumerState<JobsScreen> {
   final TextEditingController _searchController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   Timer? _debounceTimer;
-  String? _applyingJobId;
   bool _isSearchVisible = false;
   String _selectedSort = 'Newest First';
   bool _filterSavedOnly = false;
@@ -87,27 +85,6 @@ class _JobsScreenState extends ConsumerState<JobsScreen> {
       initialFilter: currentFilter,
       onApply: (updatedFilter) {
         ref.read(jobsProvider.notifier).applyFilter(updatedFilter);
-      },
-    );
-  }
-
-  void _handleApply(String jobId) {
-    if (!ref.read(authProvider).isAuthenticated) {
-      showAuthPromptDialog(
-        context,
-        title: 'Sign In to Apply',
-        message: 'Please sign in or register to apply for jobs and connect with recruiters.',
-      );
-      return;
-    }
-    final jobs = ref.read(jobsProvider).jobs;
-    final job = jobs.firstWhere((j) => j.id == jobId);
-
-    ApplyModalSheet.show(
-      context,
-      job: job,
-      onSuccess: () {
-        setState(() => _applyingJobId = null);
       },
     );
   }
@@ -636,13 +613,15 @@ class _JobsScreenState extends ConsumerState<JobsScreen> {
                     index: index,
                     child: JobCard(
                       job: job,
-                      isApplying: _applyingJobId == job.id,
                       isApplied: appliedJobIds.contains(job.id),
                       isSaved: jobsState.savedJobIds.contains(job.id),
                       onBookmarkToggle: () =>
                           ref.read(jobsProvider.notifier).toggleSaveJob(job.id),
                       onTap: () => context.push('/jobs/${job.id}', extra: job),
-                      onApply: () => _handleApply(job.id),
+                      // "View & Apply" opens the job page, where the user
+                      // reads the details and taps Apply for Position.
+                      onApply: () =>
+                          context.push('/jobs/${job.id}', extra: job),
                       onChat: () => _handleChat(job),
                       onCall: _handleCall,
                     ),

@@ -35,6 +35,10 @@ void chatWithMember(
 /// Connect button with the server's state for [userId]:
 /// Connect (POST /network/connect), Pending or Connected
 /// (GET /network/status/:id). Guests are asked to log in.
+///
+/// With [messageWhenConnected] the button becomes "Message" (opens the
+/// chat) once the connection is accepted, so a card needs one button only.
+/// [showIcon] adds a small icon for each state.
 class ConnectButton extends ConsumerStatefulWidget {
   const ConnectButton({
     super.key,
@@ -42,12 +46,16 @@ class ConnectButton extends ConsumerStatefulWidget {
     required this.name,
     this.height = 40,
     this.fontSize = 12,
+    this.messageWhenConnected = false,
+    this.showIcon = false,
   });
 
   final String userId;
   final String name;
   final double height;
   final double fontSize;
+  final bool messageWhenConnected;
+  final bool showIcon;
 
   @override
   ConsumerState<ConnectButton> createState() => _ConnectButtonState();
@@ -92,20 +100,39 @@ class _ConnectButtonState extends ConsumerState<ConnectButton> {
     final value = status.asData?.value ?? '';
 
     final String label;
+    IconData icon = Icons.person_add_alt_1_rounded;
     VoidCallback? onPressed;
     if (_sending) {
       label = 'Sending...';
     } else if (status.isLoading) {
       label = 'Connect';
     } else if (value == 'accepted') {
-      label = 'Connected';
+      if (widget.messageWhenConnected) {
+        label = 'Message';
+        icon = Icons.chat_bubble_outline_rounded;
+        onPressed = () => chatWithMember(
+          context,
+          ref,
+          userId: widget.userId,
+          name: widget.name,
+        );
+      } else {
+        label = 'Connected';
+        icon = Icons.how_to_reg_rounded;
+      }
     } else if (value == 'pending' || value == 'ignored') {
       // The server refuses a second request while one exists.
       label = 'Pending';
+      icon = Icons.check_circle_outline_rounded;
     } else {
       label = 'Connect';
       onPressed = _connect;
     }
+    final text = Text(
+      label,
+      maxLines: 1,
+      style: TextStyle(fontSize: widget.fontSize, fontWeight: FontWeight.w700),
+    );
 
     return ElevatedButton(
       onPressed: onPressed,
@@ -134,13 +161,20 @@ class _ConnectButtonState extends ConsumerState<ConnectButton> {
           ),
       child: FittedBox(
         fit: BoxFit.scaleDown,
-        child: Text(
-          label,
-          style: TextStyle(
-            fontSize: widget.fontSize,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
+        child: widget.showIcon
+            ? Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    icon,
+                    size: widget.fontSize + 4,
+                    color: label == 'Pending' ? AppColors.success : null,
+                  ),
+                  const SizedBox(width: 6),
+                  text,
+                ],
+              )
+            : text,
       ),
     );
   }

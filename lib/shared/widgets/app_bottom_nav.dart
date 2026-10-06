@@ -33,7 +33,11 @@ class AppBottomNav {
 
   /// Wraps the row of tabs: fixed height under the spec, the old padding
   /// otherwise.
-  static Widget frame({required List<Widget> children}) {
+  ///
+  /// With [activeIndex] (the position of the selected child; every child
+  /// takes an equal share of the width) one orange bar slides smoothly to
+  /// the selected tab. Its tabs use `indicatorInBar: true`.
+  static Widget frame({required List<Widget> children, int? activeIndex}) {
     final row = Row(
       mainAxisAlignment: MainAxisAlignment.spaceAround,
       children: children,
@@ -43,7 +47,20 @@ class AppBottomNav {
       child: SafeArea(
         top: false,
         child: kMobileDesignSpec
-            ? SizedBox(height: height, child: row)
+            ? SizedBox(
+                height: height,
+                child: activeIndex == null
+                    ? row
+                    : Stack(
+                        children: [
+                          row,
+                          _SlidingIndicator(
+                            index: activeIndex,
+                            count: children.length,
+                          ),
+                        ],
+                      ),
+              )
             : Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
                 child: row,
@@ -65,6 +82,7 @@ class AppBottomNavItem extends StatelessWidget {
     this.legacyActiveColor = AppColors.primary,
     this.legacyPadding = 10,
     this.badgeCount = 0,
+    this.indicatorInBar = false,
   });
 
   final IconData icon;
@@ -82,6 +100,10 @@ class AppBottomNavItem extends StatelessWidget {
 
   /// Unread count shown on the icon (hidden at 0).
   final int badgeCount;
+
+  /// The bar draws one sliding orange indicator ([AppBottomNav.frame]
+  /// with `activeIndex`); this tab only keeps its space.
+  final bool indicatorInBar;
 
   Widget _withBadge(Widget icon) {
     if (badgeCount <= 0) return icon;
@@ -115,7 +137,9 @@ class AppBottomNavItem extends StatelessWidget {
                 width: 24,
                 height: 3,
                 decoration: BoxDecoration(
-                  color: selected ? AppColors.accent : Colors.transparent,
+                  color: selected && !indicatorInBar
+                      ? AppColors.accent
+                      : Colors.transparent,
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -177,6 +201,58 @@ class AppBottomNavItem extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+/// The orange bar above the active tab, sliding to the new tab when the
+/// selection changes. Sits where [AppBottomNavItem] keeps its space: the
+/// tab's column (indicator 3, gap 6, icon 24, gap 4, label) is centred in
+/// the bar.
+class _SlidingIndicator extends StatelessWidget {
+  const _SlidingIndicator({required this.index, required this.count});
+
+  final int index;
+  final int count;
+
+  static const double _width = 24;
+  static const double _height = 3;
+
+  @override
+  Widget build(BuildContext context) {
+    final label = MediaQuery.textScalerOf(context).scale(11) * 1.2;
+    final column = _height + 6 + 24 + 4 + label;
+    final top = ((AppBottomNav.height - column) / 2).clamp(
+      0.0,
+      AppBottomNav.height,
+    );
+    final instant = MediaQuery.of(context).disableAnimations;
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final slot = constraints.maxWidth / count;
+        return Stack(
+          children: [
+            AnimatedPositioned(
+              duration: instant
+                  ? Duration.zero
+                  : const Duration(milliseconds: 300),
+              curve: Curves.easeOutCubic,
+              left: slot * index + (slot - _width) / 2,
+              top: top,
+              width: _width,
+              height: _height,
+              child: IgnorePointer(
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: AppColors.accent,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 }

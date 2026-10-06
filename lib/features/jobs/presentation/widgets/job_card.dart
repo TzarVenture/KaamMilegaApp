@@ -195,7 +195,7 @@ class JobCard extends StatelessWidget {
                                         ),
                                       )
                                     : const Text(
-                                        'Apply now',
+                                        'View & Apply',
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
                                         style: TextStyle(

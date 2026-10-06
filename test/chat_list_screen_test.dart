@@ -50,8 +50,13 @@ class _Chats extends ChatRepository {
     conversations.removeWhere((c) => c.id == conversationId);
   }
 
+  int loads = 0;
+
   @override
-  Future<List<ConversationItem>> getConversations() async => conversations;
+  Future<List<ConversationItem>> getConversations() async {
+    loads++;
+    return conversations;
+  }
 
   @override
   Future<List<UserProfile>> searchPeople(String query) async {
@@ -327,6 +332,31 @@ void main() {
       await tester.pump(const Duration(milliseconds: 500));
       expect(chats.deleted, ['c1']);
       expect(find.text('Anwar Khan'), findsNothing);
+    });
+
+    testWidgets('Refresh turns while the list reloads, then stops', (
+      tester,
+    ) async {
+      final chats = _Chats(conversations);
+      await _pump(tester, chats);
+      final before = chats.loads;
+      RotationTransition spinner() => tester.widget<RotationTransition>(
+        find.descendant(
+          of: find.byTooltip('Refresh'),
+          matching: find.byType(RotationTransition),
+        ),
+      );
+      expect(spinner().turns.value, 0);
+
+      await tester.tap(find.byTooltip('Refresh'));
+      // First frame starts the animation clock; the next one moves it.
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 200));
+      expect(spinner().turns.value, greaterThan(0));
+
+      await tester.pumpAndSettle();
+      expect(spinner().turns.value, 0);
+      expect(chats.loads, before + 1);
     });
 
     testWidgets('no chats: friendly empty state', (tester) async {

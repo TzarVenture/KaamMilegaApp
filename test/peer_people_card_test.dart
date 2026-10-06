@@ -107,7 +107,9 @@ void main() {
 
     expect(find.text('Priya Sharma'), findsOneWidget);
     expect(find.widgetWithText(ElevatedButton, 'Connect'), findsOneWidget);
-    expect(find.byTooltip('Message Priya Sharma'), findsOneWidget);
+    // Not connected yet: Connect only, no message button.
+    expect(find.byTooltip('Message Priya Sharma'), findsNothing);
+    expect(find.widgetWithText(ElevatedButton, 'Message'), findsNothing);
 
     await tester.tap(find.text('Priya Sharma'));
     await tester.pumpAndSettle();

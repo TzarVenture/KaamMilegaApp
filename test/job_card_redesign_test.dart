@@ -108,7 +108,7 @@ void main() {
       expect(find.textContaining('₹25K – ₹35K'), findsOneWidget);
       expect(find.text('Internship'), findsOneWidget);
       expect(find.text('1 opening'), findsOneWidget);
-      expect(find.text('Apply now'), findsOneWidget);
+      expect(find.text('View & Apply'), findsOneWidget);
       // Labels that were not based on data are gone
       expect(find.text('HOT'), findsNothing);
       expect(find.text('KM VERIFIED'), findsNothing);
@@ -119,7 +119,7 @@ void main() {
     testWidgets('applied state replaces the Apply button', (tester) async {
       await pump(tester, _job({}), applied: true);
       expect(find.text('Applied'), findsOneWidget);
-      expect(find.text('Apply now'), findsNothing);
+      expect(find.text('View & Apply'), findsNothing);
     });
 
     testWidgets('small phone with large text does not overflow', (

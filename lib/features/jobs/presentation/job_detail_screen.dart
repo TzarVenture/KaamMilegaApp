@@ -14,7 +14,6 @@ import '../../profile/presentation/widgets/profile_drawer.dart';
 import '../models/job.dart';
 import '../providers/jobs_provider.dart';
 import '../repositories/job_repository.dart';
-import 'widgets/people_like_you_card.dart';
 import '../../../shared/widgets/fade_slide_in.dart';
 import '../../../shared/widgets/pressable_scale.dart';
 
@@ -631,11 +630,6 @@ class _JobDetailScreenState extends ConsumerState<JobDetailScreen> {
                     ),
                   ),
 
-                  const SizedBox(height: 16),
-
-                  // 6. People Like You (real members, GET /community/users)
-                  FadeSlideIn(index: 1, child: PeopleLikeYouCard(job: job)),
-
                   const SizedBox(height: 80), // Padding for sticky bottom bar
                 ]),
               ),
@@ -717,9 +711,10 @@ class _JobDetailScreenState extends ConsumerState<JobDetailScreen> {
                                 message:
                                     'Please sign in to your KaamMilega account to apply for ${job.title} at ${job.company}.',
                               ),
+                        // Orange: the app's main action colour (accent).
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primary,
-                          foregroundColor: Colors.white,
+                          backgroundColor: AppColors.accent,
+                          foregroundColor: AppColors.white,
                           elevation: 0,
                           minimumSize: const Size(0, 48),
                           shape: RoundedRectangleBorder(
@@ -727,7 +722,7 @@ class _JobDetailScreenState extends ConsumerState<JobDetailScreen> {
                           ),
                         ),
                         child: const Text(
-                          'Apply now',
+                          'Apply for Position',
                           style: TextStyle(
                             fontSize: 15,
                             fontWeight: FontWeight.w700,

@@ -131,5 +131,65 @@ void main() {
         );
       }
     });
+
+    testWidgets('orange bar slides smoothly to the tapped tab', (tester) async {
+      if (!kMobileDesignSpec) return;
+      tester.view.physicalSize = const Size(400, 800);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      var active = 0;
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: AppTheme.appTheme,
+          home: StatefulBuilder(
+            builder: (context, setState) {
+              Widget item(int i, String label) => AppBottomNavItem(
+                icon: Icons.home_outlined,
+                label: label,
+                selected: active == i,
+                indicatorInBar: true,
+                onTap: () => setState(() => active = i),
+              );
+              return Scaffold(
+                bottomNavigationBar: AppBottomNav.frame(
+                  activeIndex: active,
+                  children: [
+                    item(0, 'Home'),
+                    item(1, 'Jobs'),
+                    AppNavCenterButton(onTap: () {}, legacy: const SizedBox()),
+                    item(3, 'Chats'),
+                    item(4, 'Profile'),
+                  ],
+                ),
+              );
+            },
+          ),
+        ),
+      );
+      double left() => tester
+          .widget<AnimatedPositioned>(find.byType(AnimatedPositioned))
+          .left!;
+      double barX() => tester
+          .getTopLeft(
+            find.descendant(
+              of: find.byType(AnimatedPositioned),
+              matching: find.byType(DecoratedBox),
+            ),
+          )
+          .dx;
+      // 5 equal slots of 80px: the 24px bar is centred in slot 0.
+      expect(left(), 28);
+
+      await tester.tap(find.text('Chats'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
+      // Part of the way there: moving, not jumping.
+      expect(barX(), greaterThan(28));
+      expect(barX(), lessThan(3 * 80 + 28));
+
+      await tester.pumpAndSettle();
+      expect(barX(), 3 * 80 + 28);
+      expect(tester.takeException(), isNull);
+    });
   });
 }

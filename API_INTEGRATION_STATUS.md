@@ -1,6 +1,6 @@
 # KaamMilega — Flutter App & Backend API Integration Status
 
-> **Last verified:** **30 September 2026**, against the `KaamMilega` monorepo `main` @ **`5e57311`** (`km-backend/`, read-only; the backend is developed separately and is not edited from this repository). App: branch `feat/map-location-integration` @ `0fa522f` + uncommitted work.
+> **Last verified:** **6 October 2026**, against the `KaamMilega` monorepo `main` @ **`807fe02`** (`km-backend/`, read-only; the backend is developed separately and is not edited from this repository). App: branch `main` @ `6824103`.
 > Field-level details: [API_CONTRACT.md](API_CONTRACT.md). Backend bugs with IDs: [KNOWN_ISSUES.md § API/Backend Issues](KNOWN_ISSUES.md#apibackend-issues).
 >
 > The Flutter app talks to the Go backend (`km-backend`) at `ApiConstants.baseUrl` (`https://api.kaammilega.com/api`). All paths below are relative to `/api`. Every path used by the app is declared in `lib/core/constants/api_constants.dart`.
@@ -45,7 +45,7 @@
 | Saved jobs | toggle `POST /user/bookmark/:jobId`; each saved job `GET /jobs/:id` | Jobs, Saved Jobs |
 | Other user's profile | `GET /user/:id` | Member profile, chat names & photos |
 | Search people / suggestions | `GET /user/search?q=`, `GET /community/users`, `GET /experts` | Peer-to-Peer, People You May Know, Home |
-| File upload | `POST /files/upload` | Profile photo, cover, resume |
+| File upload | `POST /files/upload` | Profile photo, cover, resume, apply-sheet resume, chat attachments |
 | Jobs list / detail | `GET /jobs`, `GET /jobs/:id` | Home, Jobs, Job Detail |
 | Top companies | `GET /companies/top` | Home → featured companies |
 | Cities | `GET /cities` | City selector, filters |
@@ -53,7 +53,10 @@
 | Already applied? | `GET /applications/check/:jobId` | Job Detail |
 | My applications / interviews | `GET /applications/my`, `GET /interviews/my` | My Applications, Interviews |
 | Network | `POST /network/connect`, `/accept`, `/ignore`; `GET /network/pending`, `/connections`, `/status/:id`; `DELETE /network/connections/:id` | Network, Peer-to-Peer, member profile |
-| Chat | `GET /chats`, `GET /chats/:id/messages?limit&offset` (paged — oldest first), `POST /chats/messages`, WebSocket `/ws/chats?token=` (`NEW_MESSAGE` events) | Chats |
+| Chat | `GET /chats` (`otherUser`, `unread_count`), `GET /chats/:id/messages?limit&offset` (paged — oldest first), `POST /chats/messages` (text and/or `attachment_*`), `PUT /chats/:id/read?other_id=`, `DELETE /chats/messages/:id`, `DELETE /chats/:id/messages`, `DELETE /chats/:id`, WebSocket `/ws/chats?token=` (new message, read, typing, delete events; app sends `TYPING`) | Chats tab, chat screen |
+| Who can be messaged | `GET /network/status/:id` + roles from `GET /chats` / `GET /user/:id` | Chat screen (recruiters directly, others after an accepted connection) |
+| Notifications | `GET /notifications`, `GET /notifications/unread-count`, `PUT /notifications/:id/read`, `PUT /notifications/read-all`, `DELETE /notifications/:id`, WebSocket `/ws/notifications?token=` | Notifications page, bell in every header, top banner |
+| Expert ratings & reviews | `GET /mentorships/expert/:expert_id/reviews` | Expert page |
 | Events | `GET /events`, `POST /events/:id/register` | Events |
 | Paid event tickets | `POST /events/:id/create-order` → Razorpay → `POST /events/:id/verify-payment`; `POST /events/:id/wallet-checkout`; `GET /events/my/tickets` | Event detail, My Tickets |
 | Experts / mentorship | `GET /mentorships`, `GET /mentorships/:id`, `POST /mentorships/book` | Experts |
@@ -77,7 +80,8 @@
 
 | Path | Note |
 | :--- | :--- |
-| `GET /events/:id`, `GET /events/:id/ticket` | Single event / single ticket (the app uses the list and My Tickets). |
+| `GET /events/:id/ticket` | Single ticket (the app uses My Tickets). |
+| `GET /network/sent`, `GET /mentorships/:id/reviews` | Sent requests list; reviews per offering. |
 | `POST /instant-work/pass/order`, `POST /instant-work/pass/verify` | InstantPass by Razorpay — app flow built 30 Sep, switched off (`InstantPassTerms.onlinePaymentLive`) until the backend double debit B-12 is fixed. |
 | `POST/GET /auth/logout` | Clears the website cookie; app logout is local. |
 | `GET /settings/me`, `GET /platform/stats`, `GET /platform/live-activity` | Not needed by the app so far. |
@@ -95,7 +99,11 @@
 | `POST /wallet/topup/verify` credits the client-sent `amount` (B-02) | App sends the server order amount. |
 | `POST /mentorships/book-wallet` charges ₹100 when price is ₹0 (B-03) | ₹0 sessions booked with `POST /mentorships/book`. |
 | `/community/users`, `/experts`, `/user/viewers` return private fields (B-04, B-08) | App shows public fields only; backend should strip the rest. |
-| Chat hub keeps one socket per user; history is oldest-first (B-11) | One socket, ping, reconnect, history paging. |
+| Chat history is oldest-first (B-11; the hub now allows several sockets per user) | One socket, ping, reconnect, history paging. |
+| Messaging is not limited to connections on the server (B-24) | App allows sending only to recruiters or accepted connections. |
+| Any chat participant can delete any message (B-22) | "Delete for everyone" only on the user's own messages. |
+| Pro Expert verify does not tie the plan to the paid order (B-25); other plan gaps (B-26) | App sends the plan it ordered; backend fix needed. |
+| No notification for mentorship payer, Pro Expert purchase, refunds (B-27) | Nothing to show until the backend sends them. |
 | InstantPass / spot-gig money bugs (B-12) | Wallet-only pass purchase. |
 | `POST /wallet/withdraw` has no idempotency key and no automatic payout (B-06, B-16) | Timeout/5xx shown as "outcome unknown, check transactions first". |
 | Uploaded files lost when the server container is rebuilt (B-15) | Initials / gradient fallback when an image fails. |
@@ -107,14 +115,13 @@
 
 | Feature | Planned path | App behaviour today |
 | :--- | :--- | :--- |
-| In-app notifications | `GET /notifications` (404) | "Notifications are coming soon" with Retry (backend only sends e-mails) |
 | Wallet transfer | `/wallet/transfer` | "Coming soon, nothing sent" |
 | Home ₹99 Access banner | — | "Coming soon, you have not been charged" (InstantPass itself is live, see §2) |
 | Nearby professionals (Instant Milega) | — | "Coming soon" section |
 | Services marketplace | `/services` | "Services Marketplace is coming soon" |
 | Feed / resources | `/posts`, `/feed` | "Career resources are coming soon" |
-| Chat unread counts | — | Badge not shown |
-| Push notifications (FCM) | — | Not implemented |
+| Push notifications (FCM) | — | Not implemented (in-app notifications only) |
+| Chat block / report | — | Not implemented |
 | Bank verification / automatic payouts | — | Withdrawals are requests processed by the team |
 
 ---

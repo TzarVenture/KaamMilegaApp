@@ -1,10 +1,11 @@
 # KaamMilega Flutter — API Contract
 
-> **Last updated:** 30 September 2026 (see "Re-checked 30 September" below) · **first audit:** 25 September 2026
+> **Last updated:** 6 October 2026 (see "Re-checked 6 October" below) · **first audit:** 25 September 2026
 > **Verified against:** Flutter code (branch `feat/ui-ux-polish` @ `eaf5dc8` + uncommitted changes) and `km-backend` `main` @ `b5a2956` (`internal/features/<name>/{api,controller,domain,service}.go`), read-only.
 > **Updated:** 25 September 2026 after fix Batches 1–7 — new/changed calls re-verified on `KaamMilega` monorepo `main` @ `51c8e10` (`km-backend/`).
 > **Re-checked:** 26 September 2026 — backend `main` still @ `51c8e10`. Changes since `b5a2956` (aa366a7, c829a60): booking review endpoint (integrated), expert subscription (§9b, not integrated), wallet category `subscription`.
 > **Re-checked 30 September 2026** against monorepo `main` @ **`5e57311`** (changes since `51c8e10`: paid event tickets + attendees, wallet disputes, Instant Milega `/instant-work/*`, profile analytics/viewers, cookie auth + `/auth/logout`, Brevo e-mails). New sections: §8 tickets, §9b (now integrated), §11b disputes, §15 Instant Milega. App: `feat/map-location-integration` @ `0fa522f` + uncommitted.
+> **Re-checked 6 October 2026** against monorepo `main` @ **`807fe02`** (changes since `5e57311`: notifications API + socket, chat read/typing/delete/attachments/`otherUser`/`unread_count`, chat hub with several sockets per user, `GET /network/sent`, expert reviews, notifications created by applications/events/instant work/interviews/mentorship/network/wallet). App: `main` @ `6824103`. Updated: §3, §6, §7, §9, §12, §14.
 > **Base URL:** `https://api.kaammilega.com/api` (`ApiConstants.baseUrl`). Paths below omit `/api`.
 > **Rule:** Only verified fields are listed. Anything else: **"Not verified — do not assume."** Re-check `domain.go` + `api.go` before adding or changing a call; the backend changes often.
 
@@ -135,7 +136,7 @@ Most profile mutations return the **full updated `User`**; the app parses it wit
 ### POST `/files/upload`
 - **Auth:** registered without `AuthMiddleware` in `file/api.go` (comment says "Authenticated routes"; whether the controller checks auth is **not verified**); app sends the token.
 - **Request:** multipart, field `file` · **Response:** 201 file record `{id, original_filename, url, path, size, mime_type, uploaded_by, created_at}`
-- **Flutter:** `AuthRepository.uploadFile` (reads `url` or `file_url`, prefixes host for relative URLs) ← profile photo, cover, resume · **Status:** Active
+- **Flutter:** `AuthRepository.uploadFile` (reads `url` or `file_url`, prefixes host for relative URLs) ← profile photo, cover, resume, apply-sheet resume; `ChatRepository.uploadAttachment` (multipart `file` with its content type; reads `url` (relative `/uploads/…`), `mime_type`, `original_filename`, `size`) ← chat attachments (app limit 10 MB, as the website) · **Status:** Active
 
 ## 4. Jobs & Cities
 
@@ -183,30 +184,38 @@ Most profile mutations return the **full updated `User`**; the app parses it wit
 | POST `/network/ignore` | `{sender_id}` | not verified | `ignoreInvitation` ← `network_screen.dart` |
 | GET `/network/pending` | — | `[ConnectionRequest {id, sender_id, receiver_id, status, created_at, updated_at}]` | `getPendingInvitations` → `pendingInvitationsProvider` |
 | GET `/network/connections` | — | `[userId]` | `getConnections` → `connectionsProvider` |
-| GET `/network/status/:id` | — | `{status}` (values not verified) | `getConnectionStatus` → `connectionStatusProvider` |
+| GET `/network/status/:id` | — | `{status}`: `""` (none), `pending`, `accepted`, `ignored` (`network/domain.go`, repository returns `""` when no request exists) | `getConnectionStatus` → `connectionStatusProvider` ← `ConnectButton`, `chatAccessProvider` (messaging allowed only when `accepted`, or for recruiters) |
+| GET `/network/sent` | — | sent pending requests (added after `5e57311`) | not used |
 | DELETE `/network/connections/:id` | — | not verified | `deleteConnection` ← `network_screen.dart` |
 
 Errors: 401, 500 with `error`. GET errors are rethrown (Batch 5). **Status:** Active.
 
-## 7. Chat (`chat/api.go`, Required)
+## 7. Chat (`chat/api.go`, Required) — re-checked `807fe02`
 
 ### GET `/chats`
-- **Response:** `[Conversation {id, participants[], last_message_id, last_message, updated_at, created_at}]` (no unread counts, no names)
-- **Flutter:** `ChatRepository.getConversations` (rethrows) ← `conversationsProvider` ← `chat_list_screen.dart` (guests see a login prompt, no call), `open_chat.dart` · **Status:** Active
+- **Response:** `[ConversationResponse {id, participants[], last_message_id?, last_message?, updated_at, created_at, otherUser? {id, name, profile_image?, headline?, roles[], is_online}, unread_count}]`, newest first. Note the camelCase key `otherUser`.
+- **Flutter:** `ChatRepository.getConversations` (rethrows) ← `conversationsProvider` ← `chat_list_screen.dart` (guests: login prompt, no call), `open_chat.dart`, `unreadChatMessagesProvider` (Chats tab badge), `chatAccessProvider` (roles) · **Status:** Active
 
 ### GET `/chats/:id/messages?limit=50&offset=0`
-- **Response:** `[Message {id, conversation_id, sender_id, content, is_read, created_at}]`, sorted **oldest first** (`repository.go` `created_at: 1`), so `offset=0` returns the *oldest* 50; 400 on invalid id; a non-participant gets 200 `[]` (B-11).
-- **Flutter:** `ChatRepository.getMessages` (rethrows) ← `ChatMessagesNotifier._loadHistory` reads pages of 50 until a short page (max 20 pages = 1000 messages); error + `retryHistory`; silent refresh after a socket reconnect · **Status:** Active (29 Sep)
+- **Response:** `[Message {id, conversation_id, sender_id, content, attachment_url?, attachment_type?, attachment_name?, attachment_size?, is_read, created_at}]`, sorted **oldest first** (`created_at: 1`), so `offset=0` returns the *oldest* 50; a non-participant gets 200 `[]` (B-11).
+- **Flutter:** `ChatRepository.getMessages` ← `ChatMessagesNotifier._loadHistory` (pages of 50, max 20 pages) · **Status:** Active
 
 ### POST `/chats/messages`
-- **Request:** `{receiver_id, content}` · **Response:** 201 `Message` (creates the conversation if needed); also pushed over WebSocket to sender and receiver
-- **Errors:** 400 `"Receiver ID is required"`, `"Message content is required"` · **Flutter:** `ChatRepository.sendMessage` ← `ChatMessagesNotifier.sendMessage` · **Status:** Active
+- **Request:** `{receiver_id, content, attachment_url?, attachment_type?, attachment_name?, attachment_size?}` — content **or** an attachment is required · **Response:** 201 `Message`; also pushed over the socket to both people. No connection check on the server (B-24).
+- **Flutter:** `ChatRepository.sendMessage({receiverId, content, attachment})` ← `ChatMessagesNotifier.sendMessage`; attachments are uploaded first with `POST /files/upload`; the app sends the file's MIME type as `attachment_type` (backend previews "Photo" only for `image` — B-28) · **Status:** Active
+
+### PUT `/chats/:id/read?other_id=`
+- Marks the other person's messages read and sends them `MESSAGES_READ` · **Flutter:** `ChatRepository.markConversationRead` ← chat screen on open and on new messages · **Status:** Active
+
+### DELETE `/chats/messages/:id` · DELETE `/chats/:id/messages` · DELETE `/chats/:id`
+- Delete one message for everyone / clear all messages / delete the conversation (shared records — removed for **both** people, B-23). Server sends `MESSAGE_DELETED`, `CHAT_CLEARED`, `CONVERSATION_DELETED`. Any participant can delete any message (B-22).
+- **Flutter:** `ChatRepository.deleteMessage` (own messages only, optimistic, restored on failure), `clearChat`, `deleteConversation` ← chat screen menu and long-press; `deleteConversation` also from the Messages list (swipe left / long-press) · **Status:** Active
 
 ### WebSocket `GET /api/ws/chats?token=JWT`
-- **Auth:** JWT in query string (`controller.go` `ctx.Query("token")`), or cookie `km_auth_token` (website). Claim `sub` = user id. Invalid token: upgrade succeeds, then the server closes with no reason.
-- **Server → client:** `{"type":"NEW_MESSAGE","message": Message}` sent to receiver **and** sender. Client → server messages: none used. Server never pings; the app pings every 20 s (`WebSocket.pingInterval`).
-- **Hub:** one socket per user id (`hub.go`) — a second socket from the same account replaces the first; `Unregister` removes by user id (B-11). The app keeps exactly one socket.
-- **Flutter:** `ChatWebSocketService` (`chat/services/chat_websocket_service.dart`), status via `webSocketStatusStreamProvider`. Details in [architecture.md §12](architecture.md#12-websocket-architecture). · **Status:** Active
+- **Auth:** JWT in the query string (or website cookie). Invalid token: the server closes with no reason.
+- **Server → client:** `NEW_MESSAGE {message}`, `MESSAGES_READ {conversation_id, reader_id}`, `USER_TYPING {conversation_id, sender_id, is_typing}`, `MESSAGE_DELETED`, `CHAT_CLEARED`, `CONVERSATION_DELETED`. **Client → server:** `TYPING {conversation_id, receiver_id, is_typing}` (app sends at most every 3 s, stops after 3 s idle).
+- **Hub (`807fe02`):** several sockets per user are kept (web + phone both receive). The app still keeps one per account.
+- **Flutter:** `ChatWebSocketService` (subclass of `LiveSocket`), `chatEventsProvider`, `webSocketStatusStreamProvider`. Details in [architecture.md §12](architecture.md#12-websocket-architecture). · **Status:** Active
 
 ## 8. Events (`event/api.go`)
 
@@ -217,7 +226,7 @@ Errors: 401, 500 with `error`. GET errors are rethrown (Batch 5). **Status:** Ac
 ### POST `/events/:id/register`
 - **Auth:** Required · **Response:** `{"message":"Successfully registered for event"}`; 500 text on failure
 - **Flutter:** `EventRepository.registerForEvent` ← `EventsNotifier.registerForEvent` (optimistic) ← `event_detail_screen.dart` · **Status:** Active
-- `GET /events/:id` (Public) — available, not integrated.
+- `GET /events/:id` (Public) — used by `EventRepository.getEvent` ← `eventDetailProvider`.
 
 ### Paid tickets (Required) — `event/domain.go`, backend `1beaa8f`
 - **POST `/events/:id/create-order`** `{attendee_name, attendee_email, attendee_phone?}` → `{order_id, amount, amount_paise, currency, key_id, event_title}` → Razorpay → **POST `/events/:id/verify-payment`** `{razorpay_order_id, razorpay_payment_id, razorpay_signature, attendee_name, attendee_email, attendee_phone?}`.
@@ -269,12 +278,16 @@ For users with the `expert` role (drawer "Expert Dashboard", route `/expert-dash
 - `GET /mentorships/availability` and public `GET /mentorships/expert/:expert_id/availability` → `[{id, expert_id, day_of_week (0 = Sunday), start_time "HH:mm", end_time, is_active}]`; `PUT /mentorships/availability` with a JSON **list** of `{day_of_week, start_time, end_time}` replaces all days.
 - Flutter: `ExpertRepository` (`getExpertBookings`, `updateBookingStatus`, `updateMeetingLink`, `getMyOfferings`, `saveOffering`, `deleteOffering`, `getMyAvailability`, `getExpertAvailability`, `saveAvailability`) ← `expert_dashboard_provider.dart` ← `expert_dashboard_screen.dart`.
 
+### GET `/mentorships/expert/:expert_id/reviews` (Public) — **Active since 3 Oct**
+- Average, count per star and reviews (`ReviewItem`, newest first). Flutter: `ExpertRepository` ← `expert_reviews_section.dart` (404 = not available yet, 5xx = Retry). `GET /mentorships/:id/reviews` (per offering) is not used.
+
 ## 9b. Expert Subscription (`subscription/api.go`) — **Active since 29 Sep**
 
 Added in backend `c829a60` (F75 "Pro Expert"). **Integrated** (`0fa522f`): `ExpertRepository` plans / my / create-order / verify / wallet-checkout ← `expert_plan_provider.dart` (`ExpertPlanCheckout`) ← `apply_expert_screen.dart` (Pro Expert plans). Razorpay TEST mode not verified.
 - `GET /subscriptions/expert/plans` (Public) → plans `{plan_type:"monthly"|"yearly", name, price (499 / 4499), duration_days, savings_percent, description, perks[]}`.
 - Required: `GET /subscriptions/expert/my` → `{is_active, subscription?, days_remaining, plan_type?, expires_at?}`; `POST /subscriptions/expert/create-order` `{plan_type}` → `{order_id, amount, amount_paise, currency, key_id, plan_type, plan_name}`; `POST /subscriptions/expert/verify-payment` `{plan_type, razorpay_order_id, razorpay_payment_id, razorpay_signature}`; `POST /subscriptions/expert/wallet-checkout` `{plan_type}`.
 - Response shapes of verify-payment / wallet-checkout **not verified — do not assume.**
+- **Backend problems (6 Oct, `807fe02`):** verify-payment takes `plan_type` from the request and does not check it against the paid order, and does not stop the same payment being verified twice (B-25); wallet-checkout saves the subscription before the debit; the role is never removed on expiry; perks are not built (B-26). The app sends the plan it created the order for.
 
 ## 10. Skills Marketplace (`skill/api.go`, Public)
 
@@ -310,10 +323,13 @@ Added in backend `c829a60` (F75 "Pro Expert"). **Integrated** (`0fa522f`): `Expe
 ### POST `/wallet/transfer`
 - No backend route → 404 → `WalletApiException(isBackendPending)` → "coming soon". · **Status:** Backend unavailable
 
-## 12. Notifications
+## 12. Notifications (`notification/api.go`, Required) — **Active since 5 Oct**
 
-### GET `/notifications`
-- No backend route (no notification feature in `km-backend/internal/features`) → 404 → `notificationsProvider` "Notifications are coming soon". App parses `{notifications:[…]}` or `[…]` — **response shape not verified — do not assume.** · **Status:** Backend unavailable
+- `GET /notifications?category=&unread_only=&limit=&offset=` → `{notifications: [Notification {id, user_id, actor_id?, actor_name?, actor_avatar?, type, category, title, message, link?, metadata?, is_read, created_at, updated_at}], total, limit, offset}` (defaults: category `all`, limit 20). Categories: `all`, `messages`, `jobs`, `network`, `system`.
+- `GET /notifications/unread-count` · `PUT /notifications/:id/read` · `PUT /notifications/read-all` (POST also accepted) · `DELETE /notifications/:id`.
+- WebSocket `GET /api/ws/notifications?token=JWT`: `INIT`, `NEW_NOTIFICATION`, `NOTIFICATION_READ`, `ALL_READ`, `NOTIFICATION_DELETED`. Several chat messages from one person within 15 minutes update one notification.
+- Created by the backend for: applications, interviews, events (incl. ticket confirmed), Instant Milega (pass activated, gig claimed / completed / payout), mentorship (expert gets "booked"; status changes), network (request / accepted), wallet (top-up credited, withdrawal requested), chat messages. `link` is a website path; the app maps it in `notification_target.dart`.
+- **Flutter:** `NotificationRepository` ← `notificationsProvider` (+ `notificationCategoryProvider`, `notificationUnreadOnlyProvider`), `unreadCountsProvider` / `unreadNotificationsCountProvider` ← `notifications_screen.dart`, `NotificationBellButton`; socket `NotificationSocketService` (`LiveSocket`) ← `InAppNotificationHost`. In-app only — no push (FCM) on either side. · **Status:** Active
 
 ## 13. Declared in `ApiConstants` but not used
 
@@ -321,7 +337,7 @@ Added in backend `c829a60` (F75 "Pro Expert"). **Integrated** (`0fa522f`): `Expe
 
 ## 14. Backend endpoints relevant to mobile, not integrated
 
-`GET /settings/me`, `PUT /settings/me`, `GET /events/:id`, `GET /events/:id/ticket`, `GET /events/:id/attendees` (§8), `POST /instant-work/pass/order` + `/pass/verify` (§15), `POST/GET /auth/logout`, `GET /companies`, `GET /questions`, `GET /platform/stats`, `GET /platform/live-activity`, `GET /files/download/:id`. Response shapes of these were **not verified** in this audit unless stated above.
+`GET /settings/me`, `PUT /settings/me`, `GET /events/:id/ticket`, `POST /instant-work/pass/order` + `/pass/verify` (§15, built but switched off), `POST/GET /auth/logout`, `GET /companies`, `GET /network/sent`, `GET /mentorships/:id/reviews`, `GET /platform/stats`, `GET /platform/live-activity`, `GET /files/download/:id`. Response shapes of these were **not verified** in this audit unless stated above.
 
 Out of mobile scope (do not integrate without an explicit request): `/admin/*`, `POST/PATCH/DELETE /jobs`, `/jobs/my`, `/applications/job/:jobId`, `/applications/recruiter/all`, `PATCH /applications/:id/status`, `POST /interviews`, mentorship expert management routes, `/cities` mutations, `/skills` mutations, `/sms/send`, `POST /settings/:key`.
 

@@ -199,10 +199,14 @@ void main() {
     // The signed-in member never sees their own card
     expect(find.text('Me Myself'), findsNothing);
 
-    final connected = tester.widget<ElevatedButton>(
-      find.widgetWithText(ElevatedButton, 'Connected'),
+    // One button per card: an accepted connection shows Message (opens the
+    // chat), never a second chat button.
+    final message = tester.widget<ElevatedButton>(
+      find.widgetWithText(ElevatedButton, 'Message'),
     );
-    expect(connected.onPressed, isNull);
+    expect(message.onPressed, isNotNull);
+    expect(find.text('Connected'), findsNothing);
+    expect(find.byType(OutlinedButton), findsNothing);
 
     await tester.tap(find.widgetWithText(ElevatedButton, 'Connect'));
     await tester.pumpAndSettle();
@@ -210,7 +214,11 @@ void main() {
     final connect = sent.singleWhere((o) => o.path == '/network/connect');
     expect(connect.data, {'receiver_id': 'u3'});
     expect(find.text('Connection request sent to Ravi Kumar.'), findsOneWidget);
-    expect(find.widgetWithText(ElevatedButton, 'Pending'), findsOneWidget);
+    final pending = tester.widget<ElevatedButton>(
+      find.widgetWithText(ElevatedButton, 'Pending'),
+    );
+    expect(pending.onPressed, isNull);
+    expect(find.byIcon(Icons.check_circle_outline_rounded), findsOneWidget);
   });
 
   group('Member profile', () {

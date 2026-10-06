@@ -3,7 +3,7 @@
 Applies to Claude, Cursor, Antigravity and any other agent working in this repo.
 Start with [AI_QUICK_START.md](AI_QUICK_START.md). Details: [architecture.md](architecture.md) · [FEATURE_STATUS.md](FEATURE_STATUS.md) · [API_CONTRACT.md](API_CONTRACT.md) · [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
 **Source code wins over every doc.** Verify before acting.
-Docs updated **30 Sep 2026** (branch `feat/map-location-integration` @ `0fa522f` + uncommitted work; backend `5e57311`). What changed since 25 Sep: [KNOWN_ISSUES.md § Work 26–30 Sep](KNOWN_ISSUES.md#work-2630-sep-2026). Done / pending at a glance: [AI_QUICK_START.md](AI_QUICK_START.md#status-at-a-glance-30-sep-2026).
+Docs updated **6 Oct 2026** (branch `main` @ `6824103`; backend `807fe02`). What changed since 30 Sep: [KNOWN_ISSUES.md § Work 1–6 Oct](KNOWN_ISSUES.md#work-16-oct-2026). Done / pending at a glance: [AI_QUICK_START.md](AI_QUICK_START.md#status-at-a-glance-6-oct-2026).
 
 ## Project
 KaamMilega Flutter mobile application (`kaam_milega`, app id `com.kaammilega.app`). Backend: separate Go repo `km-backend` at `https://api.kaammilega.com/api`.
@@ -45,7 +45,10 @@ Future agents must:
 - **Payments:** never mark money as added/paid unless the backend verify endpoint confirmed it (`core/payments/razorpay_checkout.dart` pattern).
 - **Avoid unrelated refactoring**, renames and file moves. Report unrelated problems under "DISCOVERED BUT NOT CHANGED".
 - **UI / brand (spec 25 Sep 2026):** use `AppColors` tokens only, never new inline hex values. Navy `#071A4D` (`brandNavy`/`primary`), Orange `#FF6B00` (`brandOrange`/`accent`), Blue `#0B5ED7` (`blue`: links, focus, Jobs), service colours `module*` (+ `module*Light`). Wordmark: "Kaammi" navy · "lega" orange · "™" navy. Fonts (`AppFonts`): Poppins (400 body, 500 labels, 600 buttons / H3, 700 headings, 800 hero); Inter for form fields, captions / meta, transaction ledgers and analytics; Noto Sans Devanagari for Hindi (fallback) and the Hindi tagline (`AppTextStyles.taglineHindi`). Type scale in `AppTextStyles`. Buttons: primary navy (hover / pressed `#0B1F52`), accent orange (`AppButton(accent: true)`, hover `#FF8A00`), outline navy (hover blue). Prohibited: emojis (UI text, messages, code comments), sparkle icons (`Icons.auto_awesome*`) as decoration, pulsing / blinking status dots, AI buzzword copy; do not cap text scaling — make layouts flexible; handle small screens, keyboard, long text, loading/empty/error states; mobile bottom sheets over desktop-style dropdowns.
-- **Chat socket:** keep exactly one socket per account through `ChatWebSocketService` (the backend hub drops a second one — B-11); never open sockets from widgets.
+- **Live sockets:** chat (`ChatWebSocketService`) and notifications (`NotificationSocketService`) both extend `LiveSocket` (`core/network/live_socket.dart`, `web_socket_channel`). Keep exactly one socket of each kind per account; never open sockets from widgets (screens call `connect()` on the provider's service).
+- **Messaging rule:** users can message recruiters directly and anyone else only after an accepted connection (`chatAccessProvider`). The backend does not enforce it (B-24) — do not remove the app check.
+- **Notification bell:** use `NotificationBellButton` (`shared/widgets`) everywhere; do not build another bell.
+- **Home sections:** use `HomeSectionHeader` and the same `_sectionGap`; the section order was agreed with the owner on 5 Oct (do not reorder without asking).
 - **Keep files' line endings** (repo uses CRLF on Windows, `core.autocrlf=true`).
 - **Test changes.**
 
@@ -79,7 +82,7 @@ Stop and report (do not guess) if:
 - required backend functionality does not exist;
 - destructive changes are required (deleting data/files, git history);
 - authentication/security behaviour would change unexpectedly;
-- payment/financial behaviour is unclear (see KNOWN_ISSUES B-02, B-03, B-06); never trigger a real withdrawal or payment in testing;
+- payment/financial behaviour is unclear (see KNOWN_ISSUES B-02, B-03, B-06, B-12, B-25); never trigger a real withdrawal or payment in testing;
 - existing behaviour would intentionally be broken.
 
 ## After significant changes

@@ -83,7 +83,8 @@ class PeopleRowSection extends ConsumerWidget {
   static double rowHeight(BuildContext context) {
     final t = MediaQuery.textScalerOf(context).scale(1).clamp(1.0, 1.6);
     // A few pixels of spare room for fonts with taller line heights
-    return 124 + 56 * t.toDouble();
+    // Card: photo, name, one line of details, divider, one 38px button.
+    return 136 + 56 * t.toDouble();
   }
 
   @override
@@ -263,45 +264,19 @@ class PersonConnectCard extends ConsumerWidget {
                         ),
                       ),
                       const Spacer(),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: ConnectButton(
-                              userId: user.id,
-                              name: _name,
-                              height: 34,
-                              fontSize: 12.5,
-                            ),
-                          ),
-                          const SizedBox(width: 6),
-                          SizedBox(
-                            width: 34,
-                            height: 34,
-                            child: OutlinedButton(
-                              onPressed: () => chatWithMember(
-                                context,
-                                ref,
-                                userId: user.id,
-                                name: _name,
-                              ),
-                              style: OutlinedButton.styleFrom(
-                                padding: EdgeInsets.zero,
-                                foregroundColor: AppColors.primary,
-                                side: const BorderSide(color: AppColors.border),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                              ),
-                              child: Tooltip(
-                                message: 'Chat with $_name',
-                                child: const Icon(
-                                  Icons.chat_bubble_outline_rounded,
-                                  size: 17,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
+                      const Divider(height: 14, color: AppColors.border),
+                      // One action: Connect, then Pending, then Message
+                      // once the request is accepted (as on the website).
+                      SizedBox(
+                        width: double.infinity,
+                        child: ConnectButton(
+                          userId: user.id,
+                          name: _name,
+                          height: 38,
+                          fontSize: 13,
+                          messageWhenConnected: true,
+                          showIcon: true,
+                        ),
                       ),
                     ],
                   ),

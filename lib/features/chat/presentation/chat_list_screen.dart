@@ -33,7 +33,15 @@ class ChatListScreen extends ConsumerStatefulWidget {
   ConsumerState<ChatListScreen> createState() => _ChatListScreenState();
 }
 
-class _ChatListScreenState extends ConsumerState<ChatListScreen> {
+class _ChatListScreenState extends ConsumerState<ChatListScreen>
+    with SingleTickerProviderStateMixin {
+  /// Turns the refresh icon while the list reloads.
+  late final AnimationController _spin = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 700),
+  );
+  bool _refreshing = false;
+
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final TextEditingController _searchController = TextEditingController();
   final FocusNode _searchFocusNode = FocusNode();
@@ -65,6 +73,7 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
 
   @override
   void dispose() {
+    _spin.dispose();
     _searchDebounce?.cancel();
     _searchController.dispose();
     _searchFocusNode.dispose();
@@ -125,6 +134,23 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
     } catch (_) {
       // Shown by the error state.
     }
+  }
+
+  /// Refresh button: the icon keeps turning until the list has reloaded,
+  /// then finishes its turn (no spin when the phone's animations are off).
+  Future<void> _refreshFromButton() async {
+    if (_refreshing) return;
+    setState(() => _refreshing = true);
+    final animate = !MediaQuery.of(context).disableAnimations;
+    if (animate) _spin.repeat();
+    await _refresh();
+    if (!mounted) return;
+    if (animate) {
+      await _spin.forward();
+      if (!mounted) return;
+      _spin.reset();
+    }
+    setState(() => _refreshing = false);
   }
 
   Future<void> _openConversation(
@@ -349,10 +375,17 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
               ),
               IconButton(
                 tooltip: 'Refresh',
-                onPressed: conversations.isLoading ? null : _refresh,
-                icon: const Icon(
-                  Icons.sync_rounded,
-                  color: AppColors.textSecondary,
+                onPressed: _refreshing || conversations.isLoading
+                    ? null
+                    : _refreshFromButton,
+                icon: RotationTransition(
+                  turns: _spin,
+                  child: Icon(
+                    Icons.sync_rounded,
+                    color: _refreshing
+                        ? AppColors.primary
+                        : AppColors.textSecondary,
+                  ),
                 ),
               ),
             ],

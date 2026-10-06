@@ -234,9 +234,14 @@ class AppRouter {
     GoRoute(
       path: '/network',
       name: 'network',
-      // ?tab=pending opens Pending Requests (connection request alerts).
+      // ?tab=connections / ?tab=pending (connection request alerts) open
+      // that tab; otherwise Grow Network.
       builder: (context, state) => NetworkScreen(
-        initialTab: state.uri.queryParameters['tab'] == 'pending' ? 1 : 0,
+        initialTab: switch (state.uri.queryParameters['tab']) {
+          'pending' => NetworkScreen.invitationsTab,
+          'connections' => NetworkScreen.connectionsTab,
+          _ => NetworkScreen.growTab,
+        },
       ),
     ),
     GoRoute(

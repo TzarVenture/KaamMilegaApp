@@ -276,13 +276,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       key: _scaffoldKey,
       backgroundColor: Colors.white,
       endDrawer: ProfileDrawer(onNavigateTab: widget.onNavigateTab),
+      // 1. TOP APP BAR — same AppBar (height, padding, icons) as the Jobs
+      // tab, so switching tabs does not move it. Stays while scrolling.
+      appBar: _buildTopBar(),
       body: SafeArea(
         child: Column(
           children: [
-            // 1. TOP APP BAR — pinned outside the scroll view so it stays
-            // visible while scrolling (Logo, Search, Notification Bell, Menu)
-            _buildTopBar(),
-
             Expanded(
               child: SingleChildScrollView(
                 controller: _scrollController,
@@ -390,87 +389,71 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   // 1. TOP APP BAR (pinned: stays visible while the page scrolls,
   //    same behaviour as the Jobs tab app bar)
   // ==========================================
-  Widget _buildTopBar() {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(16, 10, 16, 8),
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        border: Border(bottom: BorderSide(color: Color(0xFFF1F5F9))),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          // Logo: clickable navigating to home & scrolling to top
-          Expanded(
-            child: GestureDetector(
-              onTap: () {
-                if (_scrollController.hasClients) {
-                  _scrollController.animateTo(
-                    0,
-                    duration: const Duration(milliseconds: 300),
-                    curve: Curves.easeOut,
-                  );
-                }
-                if (widget.onNavigateTab != null) {
-                  widget.onNavigateTab!(0);
-                } else {
-                  try {
-                    context.go('/home');
-                  } catch (_) {}
-                }
-              },
-              child: FittedBox(
-                fit: BoxFit.scaleDown,
-                alignment: Alignment.centerLeft,
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Image.asset(
-                      'assets/images/logo.png',
-                      height: 30,
-                      fit: BoxFit.contain,
-                    ),
-                    const SizedBox(width: 8),
-                    Image.asset(
-                      'assets/images/logo_text.png',
-                      height: 18,
-                      fit: BoxFit.contain,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(width: 8),
-
-          // Right Action Icons Row: Notification Bell + Three-line Hamburger
-          // (search is the search box below the city selector)
-          Row(
+  PreferredSizeWidget _buildTopBar() {
+    return AppBar(
+      backgroundColor: Colors.white,
+      elevation: 0.5,
+      automaticallyImplyLeading: false,
+      titleSpacing: 16,
+      // Logo: scrolls Home back to the top
+      title: GestureDetector(
+        onTap: () {
+          if (_scrollController.hasClients) {
+            _scrollController.animateTo(
+              0,
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeOut,
+            );
+          }
+          if (widget.onNavigateTab != null) {
+            widget.onNavigateTab!(0);
+          } else {
+            try {
+              context.go('/home');
+            } catch (_) {}
+          }
+        },
+        child: FittedBox(
+          fit: BoxFit.scaleDown,
+          alignment: Alignment.centerLeft,
+          child: Row(
             mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              // Notification bell (shared button: ripple, tap area, badge).
-              const NotificationBellButton(color: Color(0xFF1E293B)),
+              Image.asset(
+                'assets/images/logo.png',
+                height: 30,
+                fit: BoxFit.contain,
+              ),
               const SizedBox(width: 8),
-
-              // Three-line Hamburger Option Button (Right of Notification Bell)
-              IconButton(
-                onPressed: () {
-                  _scaffoldKey.currentState?.openEndDrawer();
-                },
-                icon: const Icon(
-                  Icons.menu_rounded,
-                  color: Color(0xFF1E293B),
-                  size: 24,
-                ),
-                splashRadius: 22,
-                padding: const EdgeInsets.all(6),
-                constraints: const BoxConstraints(),
+              Image.asset(
+                'assets/images/logo_text.png',
+                height: 18,
+                fit: BoxFit.contain,
               ),
             ],
           ),
-        ],
+        ),
       ),
+      actions: [
+        // Notification bell (shared button: ripple, tap area, badge).
+        const NotificationBellButton(color: Color(0xFF1E293B)),
+
+        // Menu (opens the profile drawer)
+        IconButton(
+          icon: const Icon(
+            Icons.menu_rounded,
+            color: Color(0xFF1E293B),
+            size: 24,
+          ),
+          splashRadius: 20,
+          tooltip: 'Menu',
+          onPressed: () {
+            _scaffoldKey.currentState?.openEndDrawer();
+          },
+        ),
+        const SizedBox(width: 6),
+      ],
     );
   }
 

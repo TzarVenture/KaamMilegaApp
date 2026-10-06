@@ -17,7 +17,6 @@ import '../../auth/models/user_profile.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../chat/presentation/open_chat.dart';
 import '../../network/models/connection_request.dart';
-import '../../network/presentation/widgets/connect_button.dart';
 import '../../network/providers/network_provider.dart';
 import '../../network/repositories/network_repository.dart';
 import '../../../shared/widgets/fade_slide_in.dart';
@@ -374,12 +373,6 @@ class _PeerToPeerScreenState extends ConsumerState<PeerToPeerScreen>
           PeopleSuggestionGrid(
             users: _discoveredUsers,
             onOpen: (u) => context.push('/members/${u.id}'),
-            onMessage: (u) => chatWithMember(
-              context,
-              ref,
-              userId: u.id,
-              name: u.name.trim().isNotEmpty ? u.name.trim() : 'Member',
-            ),
           ),
 
         const SizedBox(height: 24),

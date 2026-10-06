@@ -200,6 +200,8 @@ class _MainNavigationShellState extends ConsumerState<MainNavigationShell> {
         children: screens,
       ),
       bottomNavigationBar: AppBottomNav.frame(
+        // One orange bar slides between the tabs (not the centre button).
+        activeIndex: _currentIndex == 2 ? null : _currentIndex,
         children: [
           _buildNavItem(
             index: 0,
@@ -273,6 +275,7 @@ class _MainNavigationShellState extends ConsumerState<MainNavigationShell> {
       label: label,
       badgeCount: badgeCount,
       selected: _currentIndex == index,
+      indicatorInBar: true,
       legacyPadding: 12,
       onTap: () {
         // Jobs from the bottom bar: a clean list (filters from an earlier

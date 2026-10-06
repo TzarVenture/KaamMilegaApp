@@ -14,7 +14,6 @@ void main() {
     addTearDown(tester.view.reset);
 
     final opened = <String>[];
-    final messaged = <String>[];
     const users = [
       UserProfile(
         id: 'a',
@@ -43,7 +42,6 @@ void main() {
               child: PeopleSuggestionGrid(
                 users: users,
                 onOpen: (u) => opened.add(u.id),
-                onMessage: (u) => messaged.add(u.id),
               ),
             ),
           ),
@@ -66,8 +64,9 @@ void main() {
     expect(find.text('Plumbing · Painting'), findsOneWidget);
 
     await tester.tap(find.text('Anwar'));
-    await tester.tap(find.byTooltip('Message Test'));
     expect(opened, ['b']);
-    expect(messaged, ['c']);
+    // One action per card; no separate message button before connecting.
+    expect(find.widgetWithText(ElevatedButton, 'Connect'), findsNWidgets(3));
+    expect(find.byType(OutlinedButton), findsNothing);
   });
 }

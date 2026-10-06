@@ -24,6 +24,17 @@ final communityUsersProvider = FutureProvider<List<UserProfile>>((ref) async {
   return users.where((u) => u.id.isNotEmpty && u.id != me).take(8).toList();
 });
 
+/// My Network "People You May Know": every public member
+/// (GET /community/users), never the signed-in user.
+final networkSuggestionsProvider =
+    FutureProvider.autoDispose<List<UserProfile>>((ref) async {
+      final me = ref.watch(sessionUserIdProvider);
+      final users = await ref
+          .watch(networkRepositoryProvider)
+          .getCommunityUsers();
+      return users.where((u) => u.id.isNotEmpty && u.id != me).toList();
+    });
+
 /// Another member's profile for the member profile screen. Loaded fresh
 /// each time the screen opens; rebuilt on login / logout.
 final memberProfileProvider = FutureProvider.autoDispose

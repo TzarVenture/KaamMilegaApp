@@ -1,6 +1,7 @@
 # KaamMilega Flutter — Known Issues
 
-> **Last updated:** **30 September 2026** · app branch `feat/map-location-integration` @ `0fa522f` + uncommitted 29–30 Sep work · backend `KaamMilega` monorepo `main` @ `5e57311` (read-only). New since 25 Sep: [§ Work 26–30 Sep](#work-2630-sep-2026), backend issues **B-11 … B-16**, updates on M-08, B-04, B-08.
+> **Last updated:** **6 October 2026** · app branch `main` @ `6824103` (5 Oct; all work up to the Home layout change is committed) · backend `KaamMilega` monorepo `main` @ `807fe02` (read-only). New since 30 Sep: [§ Work 1–6 Oct](#work-16-oct-2026), backend issues **B-22 … B-28**, updates on M-08, B-05, B-11, B-12.
+> Previous update: 30 September 2026 · `feat/map-location-integration` @ `0fa522f` · backend `5e57311`.
 > Previous audit: 25 September 2026 · `feat/ui-ux-polish` @ `eaf5dc8` · backend `b5a2956`.
 > **History:** 25 September 2026 fix Batches 1–7 (Flutter only; backend read-only, re-checked on `KaamMilega` monorepo `main` @ `51c8e10`). Each issue below carries an **Update** line with its current state. Fix summary: [§ Fix batches](#fix-batches-25-sep-2026).
 > Status values: **Open** (confirmed in code) · **Fixed (Batch N)** · **Partly fixed** · **Backend** (needs backend developer) · **Blocked** · **Needs verification** (evidence strong, runtime not tested).
@@ -128,11 +129,12 @@
 - **Evidence:** every successful response calls `updateStatus(online)`, which sets `_isOverridden = true`; while overridden, `connectivity_plus` changes are ignored (`if (!_isOverridden)`). Only `probeInternet()`/`clearOverride()` reset it. After the first API response, turning on airplane mode is not detected until an API call fails. **Status:** Needs verification on device.
 
 ### M-08 — Chat robustness gaps
-- `main_navigation_shell.dart`: unread chat count hard-coded `0`.
+- ~~`main_navigation_shell.dart`: unread chat count hard-coded `0`.~~ Fixed 5 Oct: Chats tab badge = sum of `unread_count` from `GET /chats` (`unreadChatMessagesProvider`).
 - `chat_provider.dart`: `chatMessagesProvider` family is not autoDispose (stream subscriptions and message lists kept per conversation); history load failure → empty conversation (no error state).
 - `chat_websocket_service.dart`: reconnect gives up after 5 attempts (linear 2/4/6/8/10 s, comment says exponential); `_processedMessageIds` grows without limit. **Status:** Partly fixed — socket issues fixed 29 Sep (see updates below); unread badge still open.
 - **Update:** `chatMessagesProvider` is now autoDispose and has an error state + Retry (Batch 5).
-- **Update (29 Sep, uncommitted): WebSocket fixed.** Users saw "Reconnecting live chat..." forever. Causes: reconnect gave up after 5 tries while the banner stayed; two sockets could open at once and the backend's one-socket-per-user hub dropped the newer one; no keep-alive; the status stream only reported changes. Now: one socket at a time, stale-socket callbacks ignored, 20 s ping, endless backoff (1 s → 30 s), reconnect on network back / app resume / Retry, status starts with the current value, missed messages fetched after a reconnect, full history read page by page (backend returns the **oldest** 50 first), `_processedMessageIds` capped at 1000. Chat shows small profile photos. Test: `chat_live_socket_test.dart` (local fake hub, real sockets). **Still open:** unread badge (backend has no counts); backend-side problems in B-11.
+- **Update (29 Sep): WebSocket fixed.** Users saw "Reconnecting live chat..." forever. Causes: reconnect gave up after 5 tries while the banner stayed; two sockets could open at once and the backend's one-socket-per-user hub dropped the newer one; no keep-alive; the status stream only reported changes. Now: one socket at a time, stale-socket callbacks ignored, 20 s ping, endless backoff (1 s → 30 s), reconnect on network back / app resume / Retry, status starts with the current value, missed messages fetched after a reconnect, full history read page by page (backend returns the **oldest** 50 first), `_processedMessageIds` capped at 1000. Chat shows small profile photos. Test: `chat_live_socket_test.dart` (local fake hub, real sockets). **Still open:** unread badge (backend has no counts); backend-side problems in B-11.
+- **Update (1–5 Oct): rebuilt on a shared `LiveSocket`** (`core/network/live_socket.dart`, `web_socket_channel`, so it also works in Chrome/web). Chat socket adds typing, read receipts and delete events; unread badge, read ticks, typing indicator, delete message / clear chat / delete conversation, attachments, connection-only messaging. **Status: Fixed** (phone test pending). Remaining backend items: B-11, B-22…B-25.
 
 ### M-09 — Jobs offline cache is not tied to the filter
 - `jobs_provider.dart` `fetchJobs`: on any error it shows the last cached list (single key `km_cache_jobs`) even when the current search/filter/page differs, labelled only by timestamp; 404/500 are also replaced by cache. **Status:** Open.
@@ -174,9 +176,9 @@ Backend-side issues (report to backend developer; **do not fix from this repo**)
 | B-08 | `GET /user/viewers` returns private fields of viewers (mobile, email) | `user/controller.go` `GetProfileViewers` returns full `[]*User` records | **since 26–30 Sep** the app shows Profile Viewers (`profile_viewers_screen.dart`) with public fields only; the private fields still travel over the network — backend should strip them |
 | B-09 | `open_to_work.visibility` "recruiters" is not enforced | only used as a default in `service.go` `UpdateOpenToWork`; website shows it publicly | app says "Saved as your preference. KaamMilega does not yet limit who can see this status." |
 | B-10 | Open To / Providing Services values are not validated | `UpdateOpenToWork` / `UpdateProvidingServices` accept any strings | app offers only the website's job types, `all`/`recruiters`, and `INR` |
-| B-05 | No `/notifications` (404), `/wallet/transfer`, feed/posts, services, resume field, push/FCM, nearby-professionals API, chat unread counts | route list @ `5e57311` | coming-soon states. (InstantPass and spot gigs now exist under `/instant-work/*` — see B-12.) |
-| B-11 | Chat hub: one socket per user; stale unregister; oldest-first history | `chat/hub.go` keeps `map[userID]*Conn` (web + phone → only the last one gets live messages); `Unregister(userID)` deletes whatever is registered, so an old socket closing removes the new one; `repository.go` sorts messages `created_at: 1` with limit/offset; non-participant gets 200 `[]`; invalid WS token closes with no reason; server never pings; no read receipts | app keeps one socket, pings, reconnects, and pages through history (M-08). Reverse-proxy config for `api.kaammilega.com` is not in the repo, so WebSocket upgrade / idle timeout could not be verified |
-| B-12 | InstantPass & spot gigs (`instant_work/*`, `fb1c62e`) | pass `verify` online also debits the wallet (double charge); `ActivatePass` does not check the user; mock-order path gives a free pass; pass created before the debit; `UpsertWorker` wipes worker fields; default rating 4.9 / 12 gigs are invented; closing a job pays workers without charging the recruiter and a double close pays twice; feed exposes `recruiter_mobile`; one worker can claim many gigs | app buys the pass with the wallet only and does not read the worker rating / gig-count fields; the recruiter's number is used only for the Call button on the worker's own claimed gig (`ActiveGigCard`), never in the open feed |
+| B-05 | No `/wallet/transfer`, feed/posts, services, resume field, push/FCM, nearby-professionals API | route list @ `807fe02` | coming-soon states. **Update 5 Oct:** in-app notifications (`/notifications`, `/ws/notifications`) and chat unread counts now exist and are integrated. (InstantPass and spot gigs exist under `/instant-work/*` — see B-12.) |
+| B-11 | Chat hub: one socket per user; stale unregister; oldest-first history | `chat/hub.go` keeps `map[userID]*Conn` (web + phone → only the last one gets live messages); `Unregister(userID)` deletes whatever is registered, so an old socket closing removes the new one; `repository.go` sorts messages `created_at: 1` with limit/offset; non-participant gets 200 `[]`; invalid WS token closes with no reason; server never pings; no read receipts | app keeps one socket, pings, reconnects, and pages through history (M-08). Reverse-proxy config for `api.kaammilega.com` is not in the repo, so WebSocket upgrade / idle timeout could not be verified. **Update `807fe02`:** the hub now keeps several sockets per user (web + phone both get live messages); history is still oldest-first |
+| B-12 | InstantPass & spot gigs (`instant_work/*`, `fb1c62e`) | pass `verify` online also debits the wallet (double charge); `ActivatePass` does not check the user; mock-order path gives a free pass; pass created before the debit; `UpsertWorker` wipes worker fields; default rating 4.9 / 12 gigs are invented; closing a job pays workers without charging the recruiter and a double close pays twice; feed exposes `recruiter_mobile`; one worker can claim many gigs | app buys the pass with the wallet only and does not read the worker rating / gig-count fields; the recruiter's number is used only for the Call button on the worker's own claimed gig (`ActiveGigCard`), never in the open feed. **Re-checked `807fe02`:** `VerifyPassPayment` still debits the wallet after a Razorpay payment (double charge) |
 | B-13 | Profile analytics counting | profile-view debounce is not 24 h; `UpdateUser` writes the whole document, so parallel counters race | app only reads the numbers |
 | B-14 | **Secrets committed** | `km-backend/docker-compose.yml` contains the Mongo password and `JWT_SECRET` | none possible in the app — backend owner should rotate both and move them out of git |
 | B-15 | Uploaded files disappear | uploads saved to a container folder (`FS_PATH=./static/uploads`); lost when the container is rebuilt | app shows initials / gradient when an image fails to load (`onForegroundImageError`, `errorBuilder`) |
@@ -186,6 +188,13 @@ Backend-side issues (report to backend developer; **do not fix from this repo**)
 | B-19 | A mentee cannot cancel their own booking | no user-side cancel endpoint in `mentorship/api.go` | none — needs a backend endpoint |
 | B-20 | **Anyone can change any interview's status** | `PATCH /interviews/:id/status` → `InterviewService.UpdateInterviewStatus` has no ownership or role check | app does not call it |
 | B-21 | Public attendee list shows ticket numbers and payment type | `GET /events/:id/attendees` (no login) returns `ticket_number`, `payment_type` per attendee | app shows only name, headline, city and photo |
+| B-22 | Any chat participant can delete any message | `DELETE /chats/messages/:id` (`chat/service.go` `DeleteMessage`) checks only that the user is in the conversation, not that they sent the message | app offers "Delete for everyone" only on the user's own messages |
+| B-23 | Clear chat / delete conversation remove it for both people | `DELETE /chats/:id/messages` and `DELETE /chats/:id` delete the shared records | app says so in the confirmation ("deleted for both of you") |
+| B-24 | Messaging is not limited to connections | `POST /chats/messages` sends to anyone; no connection or recruiter check | app allows sending only to recruiters or accepted connections (`chatAccessProvider`); the website or a direct API call can still message anyone |
+| B-25 | **Pro Expert payment: plan not tied to the order** | `subscription/service.go` `VerifyPayment` takes `plan_type` from the request and only checks the Razorpay signature (`order_id|payment_id`): paying for Monthly (₹499) and sending `yearly` gives 365 days; the same payment can be verified again (no duplicate check) | app sends the plan it created the order for; needs a backend fix |
+| B-26 | Pro Expert: other gaps | wallet checkout saves the active subscription **before** the debit (a failed debit leaves a free active plan); the `expert` role is never removed when the plan expires; no renewal/reminder; perks (Pro badge, featured placement, priority ranking, WhatsApp support, certificate) are not used anywhere in the backend | app shows only what `GET /subscriptions/expert/my` returns |
+| B-27 | Missing payment notifications | no notification for the payer of a mentorship session (only the expert gets "New Mentorship Session Booked"), for Pro Expert purchases, or for refund requests / decisions | none; the app shows whatever the backend sends |
+| B-28 | Chat photo preview text | `chat/service.go` uses "Photo" as the last-message preview only when `attachment_type == "image"`; the app sends the file's MIME type (`image/jpeg`), so photos preview as the file name | cosmetic; align on one value with the backend developer |
 
 ## Authentication Issues
 - M-10 (token storage) — open. C-01, H-03, H-04, H-05 fixed.
@@ -210,7 +219,7 @@ Backend-side issues (report to backend developer; **do not fix from this repo**)
 | 7 | M-06: 7a edit/delete education & experience, 7b remove skill, 7c My Sessions, 7d Open To sheets, 7e profile viewers | 7a–7c fixed ·  7d implemented, awaiting verification · 7e blocked (B-08), implemented 26–30 Sep |
 | — | Test-run fixes | App-wide provider retry policy (M-12) |
 
-Not addressed yet (Flutter): M-01, M-02, M-03, M-05, M-07, M-09, M-10, M-11, L-01…L-07. Backend-owned: B-01…B-21.
+Not addressed yet (Flutter): M-01, M-02, M-03, M-05, M-07, M-09, M-10, M-11, L-01…L-07. Backend-owned: B-01…B-28.
 
 ## Work 26–30 Sep 2026
 
@@ -225,13 +234,31 @@ Not addressed yet (Flutter): M-01, M-02, M-03, M-05, M-07, M-09, M-10, M-11, L-0
 | 29 Sep | Wallet | Website-style transaction tile; Dispute / Refund sheet | `0fa522f` |
 | 29 Sep | Profile / Network | Analytics card, impression tracking, Profile Viewers, People You May Know → profile + Message | `0fa522f` |
 | 29 Sep | Jobs | Blue hero card, duplicate bookmark removed | `0fa522f` |
-| 29 Sep | Experts | Upcoming-call banner, My Booked Sessions redesign | uncommitted |
-| 29 Sep | Home / Jobs | Quick actions + Popular Categories scroll horizontally; Jobs filters reset when returning to Home | uncommitted |
-| 29 Sep | Chat | Live-chat reconnect fix, avatars, full history (M-08, B-11) | uncommitted |
-| 30 Sep | Network | People You May Know as LinkedIn-style card grid | uncommitted |
-| 30 Sep | Docs | All `.md` files refreshed | uncommitted |
+| 29 Sep | Experts | Upcoming-call banner, My Booked Sessions redesign | `45bf1dd` (30 Sep) |
+| 29 Sep | Home / Jobs | Quick actions + Popular Categories scroll horizontally; Jobs filters reset when returning to Home | `45bf1dd` (30 Sep) |
+| 29 Sep | Chat | Live-chat reconnect fix, avatars, full history (M-08, B-11) | `45bf1dd` (30 Sep) |
+| 30 Sep | Network | People You May Know as LinkedIn-style card grid | `45bf1dd` (30 Sep) |
+| 30 Sep | Docs | All `.md` files refreshed | committed later |
 
 **Pending decisions:** rename "Instant UPI" → "UPI" on the withdraw screen (offered, not confirmed); whether the Home ₹99 Access banner should sell InstantPass.
+
+## Work 1–6 Oct 2026
+
+All committed on `main` (`166242e` 1 Oct, `3caaca2` 3 Oct, `6824103` 5 Oct) unless marked.
+
+| Date | Area | What was done | Where |
+|---|---|---|---|
+| 1 Oct | Experts | Expert Dashboard (bookings with me, my session offers, weekly hours, earnings), booking only inside the Expert's hours | `166242e` |
+| 1 Oct | Events / Help | Event attendee list ("N attending" + searchable list); Help & FAQ (`GET /questions`) | `166242e` |
+| 3 Oct | Design | Mobile Design Specification theme behind `kMobileDesignSpec` (on): type scale, 48 px targets, pill chips, `AppBottomNav` with orange active bar | `3caaca2` |
+| 3 Oct | Experts / Jobs / Profile | Ratings & Reviews on the Expert page (`GET /mentorships/expert/:id/reviews`); "People Like You" on the job page; Open To status cards; event page layout | `3caaca2` |
+| 3–5 Oct | Home / modules | Hero banners (`BannerImage`) on Events, Experts, Instant Milega, Peer-to-Peer, Services, Skills; city dropdown (`CityPickerButton`); apply sheet uploads a resume per application | `6824103` |
+| 4–5 Oct | Notifications | In-app notifications from the backend: list with website categories, unread-only, search, Today/Yesterday/Earlier, mark read / all read, swipe delete, live socket `/ws/notifications`, top banner (`InAppNotificationHost`), tap opens the right screen; one `NotificationBellButton` in every header and the drawer | `6824103` |
+| 4–5 Oct | Chat | Shared `LiveSocket` (`web_socket_channel`, works on web); Messages list like the website (All/Unread, search people, online dot, unread count, typing); read ticks; typing indicator; delete own message for everyone, clear chat, delete conversation; Chats tab badge | `6824103` |
+| 5 Oct | Chat | Photo / camera / document attachments (`POST /files/upload`, 10 MB, PDF/DOC/DOCX/TXT/images); composer as one bar with attach + emoji sheet; delete a chat from the list (swipe left or long-press); messaging only to recruiters or accepted connections (`chatAccessProvider`) | `6824103` |
+| 5 Oct | Home | One section header style (`HomeSectionHeader`), equal gaps, new order (search → InstantMilega banner → quick actions → Explore Popular Job Categories → Recommended → Top Picks → job type → qualification → ₹99 banner → companies → people); icon-row "Popular Categories" removed (photo section kept) | `6824103` |
+| 6 Oct | Analysis only | Payment notifications (B-27) and Pro Expert subscription (B-25, B-26) checked against backend `807fe02`; no code changed | — |
+| 6 Oct | Docs | All `.md` files refreshed | uncommitted |
 
 ## Verification log
 | When | `dart format` | `flutter analyze` | `flutter test` | Phone |
@@ -242,11 +269,14 @@ Not addressed yet (Flutter): M-01, M-02, M-03, M-05, M-07, M-09, M-10, M-11, L-0
 | After test fix (25 Sep, 16:04) | 0 files changed | **No issues found** | **+172, all passed** | **pending** |
 | After chat fix (29 Sep) | 2 files formatted | **No issues found** | +309 −1 (`chat_live_socket_test.dart`: test missing `sessionUserIdProvider` override — fixed in the test; re-run pending) | **pending** |
 | After People You May Know grid (30 Sep) | not run | not run | not run (new `people_suggestion_grid_test.dart`) | **pending** |
+| After chat attachments (5 Oct, 16:26) | 4 files formatted | **No issues found** | +130 −1 shown (`received photo and file show in the bubbles`; test rewritten) | Chrome run by owner |
+| After connection-only messaging (5 Oct, 17:10) | 3 files formatted | **No issues found** | **+498 −1** (`chat_access_test` found two "Retry" texts; fixed in the test) | — |
+| After Home layout (5 Oct) | not reported | not reported | not reported | owner checked screenshots |
 
 ## Build/Environment Issues
 - **Release signing:** `android/app/build.gradle.kts` release build uses `signingConfigs.getByName("debug")`. iOS signing team not configured (per project notes; not re-verified in Xcode).
 - **Base URL is a compile-time constant** (`ApiConstants.baseUrl`), no dev/staging flavour.
-- **Working tree (30 Sep):** branch `feat/map-location-integration` @ `0fa522f`; uncommitted: chat fix, upcoming-call banner, My Sessions, Home strips, Jobs filter reset, People You May Know grid, docs (the owner commits and pushes).
+- **Working tree (6 Oct):** branch `main` @ `6824103`, clean except these doc updates (the owner commits and pushes).
 - **Verification:** `dart format` / `flutter analyze` / `flutter test` are run by the owner on Windows (see Verification log). Not verified yet: Android/iOS release builds, Razorpay TEST mode, phone testing of Batches 1–7.
 - Platform folders `web/`, `windows/`, `macos/`, `linux/` exist, but `razorpay_flutter` supports Android/iOS only; other platforms are untested.
 
@@ -259,3 +289,4 @@ Not addressed yet (Flutter): M-01, M-02, M-03, M-05, M-07, M-09, M-10, M-11, L-0
 - **D-02 — `flutter_app_feature_tracker.md`** + `.csv` refreshed 30 Sep; FEATURE_STATUS.md stays the detailed source.
 - **D-03 — Fixed 30 Sep** (`README.md` now describes the project and links the docs).
 - Fixed 29 Sep: `chat_websocket_service.dart` backoff comment (service rewritten).
+- **D-04 — Fixed 6 Oct:** all `.md` files refreshed for 1–6 Oct work and backend `807fe02`. `flutter_app_feature_tracker.csv` (Google Sheets import) was not regenerated; the `.md` tracker is current.
