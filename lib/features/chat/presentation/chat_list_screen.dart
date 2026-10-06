@@ -190,16 +190,17 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen>
     if (delete == true && mounted) await _deleteConversation(conv, name);
   }
 
-  /// DELETE /chats/:id after a confirmation. The server removes the
-  /// conversation and all its messages for both people. True when deleted.
+  /// DELETE /chats/:id after a confirmation. The server hides the
+  /// conversation for this user only (it comes back with a new message).
+  /// True when deleted.
   Future<bool> _deleteConversation(ConversationItem conv, String name) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Delete chat?'),
         content: Text(
-          'Your chat with $name and all its messages will be deleted for '
-          'both of you.',
+          'Your chat with $name will be removed from your inbox only. '
+          '$name keeps it, and it comes back if a new message arrives.',
         ),
         actions: [
           TextButton(
@@ -266,6 +267,12 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen>
             event!.notification!.isMessage) {
           ref.invalidate(conversationsProvider);
         }
+      });
+      // Deleted chats are hidden only until the server list reloads: the
+      // server leaves them out itself, and brings one back when a new
+      // message arrives in it.
+      ref.listen(conversationsProvider, (_, next) {
+        if (next.hasValue && !next.isLoading) _deletedIds.clear();
       });
       // A message deleted, a chat cleared or a conversation deleted
       // (by either person): refresh the list.

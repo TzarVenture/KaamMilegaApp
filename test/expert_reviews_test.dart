@@ -171,8 +171,11 @@ void main() {
     ) async {
       await _pump(tester, (o) => _ok(o, _reviews));
       expect(tester.takeException(), isNull);
-      expect(find.text('Ratings & Reviews'), findsOneWidget);
-      expect(find.text('4.3'), findsOneWidget);
+      expect(find.text('Candidate Ratings & Reviews'), findsOneWidget);
+      // Header badge and summary both show the average.
+      expect(find.text('4.3'), findsNWidgets(2));
+      expect(find.text('50%'), findsOneWidget); // 2 of 4 are five stars
+      expect(find.text('Verified Candidate Feedback'), findsOneWidget);
       expect(find.text('4 reviews'), findsOneWidget);
       expect(find.text('Mentee r1'), findsOneWidget);
       expect(find.text('Mentee r3'), findsOneWidget);
@@ -201,13 +204,14 @@ void main() {
           'reviews': <dynamic>[],
         }),
       );
-      expect(find.textContaining('No reviews yet'), findsOneWidget);
+      expect(find.text('No Reviews Yet'), findsOneWidget);
+      expect(find.text('Verified Candidate Feedback'), findsOneWidget);
     });
 
     testWidgets('server error: Retry, not "no reviews"', (tester) async {
       final sent = await _pump(tester, (o) => _fail(o, 500));
       expect(find.text('Could not load reviews right now.'), findsOneWidget);
-      expect(find.textContaining('No reviews yet'), findsNothing);
+      expect(find.text('No Reviews Yet'), findsNothing);
       await tester.tap(find.text('Retry'));
       await tester.pumpAndSettle();
       expect(sent, hasLength(2));
@@ -218,7 +222,7 @@ void main() {
     ) async {
       await _pump(tester, (o) => _fail(o, 404));
       expect(find.text('Reviews are not available yet.'), findsOneWidget);
-      expect(find.textContaining('No reviews yet'), findsNothing);
+      expect(find.text('No Reviews Yet'), findsNothing);
     });
   });
 }

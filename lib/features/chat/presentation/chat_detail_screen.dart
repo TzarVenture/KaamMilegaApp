@@ -12,7 +12,9 @@ import '../../home/presentation/widgets/connect_like_you_section.dart'
 import '../models/chat_message.dart';
 import '../../network/presentation/widgets/connect_button.dart';
 import '../../network/providers/network_provider.dart';
+import '../models/chat_block_status.dart';
 import '../providers/chat_access_provider.dart';
+import '../providers/chat_block_provider.dart';
 import '../providers/chat_provider.dart';
 import '../providers/user_lookup_provider.dart';
 import '../repositories/chat_repository.dart';
@@ -20,6 +22,7 @@ import '../services/chat_websocket_service.dart';
 import 'active_chat.dart';
 import 'widgets/chat_attachments.dart';
 import 'widgets/chat_emoji_sheet.dart';
+import 'widgets/chat_report_sheet.dart';
 import '../../../shared/widgets/fade_slide_in.dart';
 import '../../../shared/widgets/pressable_scale.dart';
 import '../../../shared/widgets/shimmer_loading.dart';
@@ -80,6 +83,7 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
   @override
   void initState() {
     super.initState();
+    _scrollController.addListener(_onScroll);
     _socket = ref.read(chatWebSocketServiceProvider);
     _lifecycle = AppLifecycleListener(
       onResume: () => ref.read(chatWebSocketServiceProvider).retryNow(),
@@ -96,6 +100,30 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
 
   /// Last message from the other person that was marked read.
   String _lastReadIncomingId = '';
+
+  /// Near the top of the list: read the older messages.
+  void _onScroll() {
+    if (!_scrollController.hasClients) return;
+    if (_scrollController.position.pixels > 120) return;
+    final chat = ref.read(chatMessagesProvider(widget.conversationId));
+    if (chat.hasOlder && !chat.loadingOlder && chat.olderError == null) {
+      chat.loadOlder();
+    }
+  }
+
+  /// Older messages were added above: keep the same messages on screen
+  /// instead of jumping.
+  void _keepPositionAfterPrepend() {
+    if (!_scrollController.hasClients) return;
+    final position = _scrollController.position;
+    final oldMax = position.maxScrollExtent;
+    final oldPixels = position.pixels;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || !_scrollController.hasClients) return;
+      final grown = _scrollController.position.maxScrollExtent - oldMax;
+      if (grown > 0) _scrollController.jumpTo(oldPixels + grown);
+    });
+  }
 
   /// Typing signal: "typing" is sent at most every 3 s while the user
   /// types, "stopped" 3 s after the last key or when the message is sent.
@@ -186,7 +214,7 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
             color: AppColors.error,
           ),
           title: const Text(
-            'Delete for everyone',
+            'Delete message',
             style: TextStyle(color: AppColors.error),
           ),
           onTap: () => Navigator.pop(context, true),
@@ -196,7 +224,9 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
     if (delete != true || !mounted) return;
     final ok = await _confirm(
       title: 'Delete message?',
-      message: 'This message will be deleted for both of you.',
+      message:
+          'The message will be removed for both of you. You will both see '
+          '"This message was deleted" in its place.',
       action: 'Delete',
     );
     if (!ok || !mounted) return;
@@ -211,7 +241,9 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
   Future<void> _clearChat() async {
     final ok = await _confirm(
       title: 'Clear chat?',
-      message: 'All messages will be deleted for both of you.',
+      message:
+          'All messages will be cleared for you only. The other person '
+          'keeps their copy, and new messages will still arrive here.',
       action: 'Clear',
     );
     if (!ok || !mounted) return;
@@ -230,8 +262,8 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
     final ok = await _confirm(
       title: 'Delete conversation?',
       message:
-          'The conversation and all its messages will be deleted for both '
-          'of you.',
+          'This conversation will be removed from your inbox only. The other '
+          'person keeps it, and it comes back if a new message arrives.',
       action: 'Delete',
     );
     if (!ok || !mounted) return;
@@ -245,6 +277,67 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
       );
     }
     // On success the screen closes (see conversationDeleted in build).
+  }
+
+  Future<void> _block(String name) async {
+    final who = name.isNotEmpty ? name : 'this user';
+    final ok = await _confirm(
+      title: 'Block $who?',
+      message:
+          'They will not be able to send you messages on KaamMilega, and you '
+          'will not be able to message them. You can unblock them at any '
+          'time.',
+      action: 'Block',
+    );
+    if (!ok || !mounted) return;
+    try {
+      await ref.read(chatRepositoryProvider).blockUser(widget.receiverId);
+      if (!mounted) return;
+      ref.invalidate(chatBlockStatusProvider(widget.receiverId));
+      _snack('$who blocked.');
+    } catch (_) {
+      if (mounted) _snack('Could not block. Please try again.', error: true);
+    }
+  }
+
+  Future<void> _unblock(String name) async {
+    final who = name.isNotEmpty ? name : 'this user';
+    final ok = await _confirm(
+      title: 'Unblock $who?',
+      message:
+          'You will be able to send each other messages on KaamMilega again.',
+      action: 'Unblock',
+    );
+    if (!ok || !mounted) return;
+    try {
+      await ref.read(chatRepositoryProvider).unblockUser(widget.receiverId);
+      if (!mounted) return;
+      ref.invalidate(chatBlockStatusProvider(widget.receiverId));
+      _snack('$who unblocked.');
+    } catch (_) {
+      if (mounted) _snack('Could not unblock. Please try again.', error: true);
+    }
+  }
+
+  Future<void> _report(String name) async {
+    final conversationId = ref
+        .read(chatMessagesProvider(widget.conversationId))
+        .conversationId;
+    if (conversationId.isEmpty) return;
+    final result = await showChatReportSheet(
+      context,
+      conversationId: conversationId,
+      name: name,
+    );
+    if (result == null || !mounted) return;
+    if (result.blocked) {
+      ref.invalidate(chatBlockStatusProvider(widget.receiverId));
+    }
+    _snack(
+      result.reportNumber.isNotEmpty
+          ? 'Report ${result.reportNumber} sent. Our team will review it.'
+          : 'Report sent. Our team will review it.',
+    );
   }
 
   /// PUT /chats/:id/read: clears this chat's unread count (Chats badge) and
@@ -276,7 +369,9 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
     ActiveChat.leave(widget.receiverId);
     _lifecycle.dispose();
     _messageController.dispose();
-    _scrollController.dispose();
+    _scrollController
+      ..removeListener(_onScroll)
+      ..dispose();
     super.dispose();
   }
 
@@ -297,6 +392,11 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
     // Recruiters directly; anyone else only once connected.
     if (ref.read(chatAccessProvider(widget.receiverId)).value !=
         ChatAccess.allowed) {
+      return;
+    }
+    // Blocked either way: the server refuses, so do not try.
+    if (ref.read(chatBlockStatusProvider(widget.receiverId)).value?.isBlocked ??
+        false) {
       return;
     }
 
@@ -339,6 +439,8 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
       if (success) {
         Future.delayed(const Duration(milliseconds: 100), _scrollToBottom);
       } else {
+        // A block the socket did not report yet shows up here.
+        ref.invalidate(chatBlockStatusProvider(widget.receiverId));
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             backgroundColor: AppColors.error,
@@ -398,7 +500,12 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
     // Previous answer is kept while it reloads (no flicker).
     final accessAsync = ref.watch(chatAccessProvider(widget.receiverId));
     final access = accessAsync.value;
-    final canSend = access == ChatAccess.allowed;
+    // Unknown while loading or after an error: not shown as blocked (the
+    // server still refuses a blocked message).
+    final block =
+        ref.watch(chatBlockStatusProvider(widget.receiverId)).value ??
+        ChatBlockStatus.none;
+    final canSend = access == ChatAccess.allowed && !block.isBlocked;
 
     // Deleted (here or by the other person): close the chat.
     ref.listen<ChatMessagesNotifier>(
@@ -420,7 +527,17 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
     ref.listen<ChatMessagesNotifier>(
       chatMessagesProvider(widget.conversationId),
       (previous, next) {
-        if (next.messages.length != (previous?.messages.length ?? 0)) {
+        final before = previous?.messages ?? const <ChatMessage>[];
+        final after = next.messages;
+        String lastId(List<ChatMessage> list) =>
+            list.isEmpty ? '' : '${list.length}:${list.last.id}';
+        if (after.length > before.length &&
+            before.isNotEmpty &&
+            after.isNotEmpty &&
+            after.last.id == before.last.id) {
+          // Older messages were added above.
+          _keepPositionAfterPrepend();
+        } else if (lastId(after) != lastId(before)) {
           Future.delayed(const Duration(milliseconds: 100), _scrollToBottom);
         }
         // A new message from the other person while this chat is open is
@@ -443,24 +560,62 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
         elevation: 0.5,
         titleSpacing: 0,
         actions: [
-          if (hasServerChat)
+          if (widget.receiverId.isNotEmpty)
             PopupMenuButton<String>(
               tooltip: 'Chat options',
               icon: const Icon(
                 Icons.more_vert_rounded,
                 color: AppColors.textPrimary,
               ),
-              onSelected: (value) =>
-                  value == 'clear' ? _clearChat() : _deleteConversation(),
-              itemBuilder: (context) => const [
-                PopupMenuItem(value: 'clear', child: Text('Clear chat')),
-                PopupMenuItem(
-                  value: 'delete',
-                  child: Text(
-                    'Delete conversation',
-                    style: TextStyle(color: AppColors.error),
+              onSelected: (value) => switch (value) {
+                'block' => _block(name),
+                'unblock' => _unblock(name),
+                'report' => _report(name),
+                'clear' => _clearChat(),
+                _ => _deleteConversation(),
+              },
+              itemBuilder: (context) => [
+                if (block.blockedByMe)
+                  const PopupMenuItem(
+                    value: 'unblock',
+                    child: _MenuRow(
+                      icon: Icons.lock_open_rounded,
+                      text: 'Unblock user',
+                    ),
+                  )
+                else
+                  const PopupMenuItem(
+                    value: 'block',
+                    child: _MenuRow(
+                      icon: Icons.block_rounded,
+                      text: 'Block user',
+                    ),
                   ),
-                ),
+                if (hasServerChat) ...[
+                  const PopupMenuItem(
+                    value: 'report',
+                    child: _MenuRow(
+                      icon: Icons.flag_outlined,
+                      text: 'Report conversation',
+                    ),
+                  ),
+                  const PopupMenuDivider(),
+                  const PopupMenuItem(
+                    value: 'clear',
+                    child: _MenuRow(
+                      icon: Icons.cleaning_services_outlined,
+                      text: 'Clear chat',
+                    ),
+                  ),
+                  const PopupMenuItem(
+                    value: 'delete',
+                    child: _MenuRow(
+                      icon: Icons.delete_outline_rounded,
+                      text: 'Delete conversation',
+                      color: AppColors.error,
+                    ),
+                  ),
+                ],
               ],
             ),
         ],
@@ -589,8 +744,17 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
                   : ListView.builder(
                       controller: _scrollController,
                       padding: const EdgeInsets.all(16),
-                      itemCount: messages.length,
-                      itemBuilder: (context, index) {
+                      itemCount:
+                          messages.length + (chatNotifier.hasOlder ? 1 : 0),
+                      itemBuilder: (context, i) {
+                        if (chatNotifier.hasOlder && i == 0) {
+                          return _OlderMessagesHeader(
+                            loading: chatNotifier.loadingOlder,
+                            failed: chatNotifier.olderError != null,
+                            onLoad: chatNotifier.loadOlder,
+                          );
+                        }
+                        final index = chatNotifier.hasOlder ? i - 1 : i;
                         final msg = messages[index];
                         final isMe = msg.senderId == currentUserId;
                         // One photo per run of messages from the same
@@ -611,8 +775,9 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
                             isMe: isMe,
                             author: isMe ? me : other,
                             showAvatar: showAvatar,
-                            // Only the user's own messages can be deleted.
-                            onLongPress: isMe && msg.id.isNotEmpty
+                            // Only the sender can delete a message.
+                            onLongPress:
+                                isMe && msg.id.isNotEmpty && !msg.isDeleted
                                 ? () => _onMessageLongPress(msg)
                                 : null,
                           ),
@@ -621,7 +786,19 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
                     ),
             ),
 
-            if (access != null && !canSend)
+            if (block.blockedByMe)
+              _BlockedBar(
+                text:
+                    'You blocked ${name.isNotEmpty ? name : 'this user'}. '
+                    'Unblock to send messages.',
+                onUnblock: () => _unblock(name),
+              )
+            else if (block.blockedByOther)
+              const _BlockedBar(
+                text:
+                    'You cannot send messages to this conversation right now.',
+              )
+            else if (access != null && access != ChatAccess.allowed)
               _ConnectFirstBar(
                 userId: widget.receiverId,
                 name: name,
@@ -793,7 +970,13 @@ class _MessageRow extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
           decoration: BoxDecoration(
-            color: isMe ? AppColors.primary : AppColors.white,
+            color: message.isDeleted
+                ? (isMe
+                      ? AppColors.primary.withValues(alpha: 0.55)
+                      : AppColors.borderLight)
+                : isMe
+                ? AppColors.primary
+                : AppColors.white,
             borderRadius: BorderRadius.only(
               topLeft: const Radius.circular(18),
               topRight: const Radius.circular(18),
@@ -813,7 +996,33 @@ class _MessageRow extends StatelessWidget {
                 ? CrossAxisAlignment.end
                 : CrossAxisAlignment.start,
             children: [
-              if (message.attachment != null)
+              if (message.isDeleted)
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.block_rounded,
+                      size: 14,
+                      color: isMe
+                          ? AppColors.white.withValues(alpha: 0.75)
+                          : AppColors.textSecondary,
+                    ),
+                    const SizedBox(width: 6),
+                    Flexible(
+                      child: Text(
+                        'This message was deleted',
+                        style: TextStyle(
+                          fontSize: 13.5,
+                          fontStyle: FontStyle.italic,
+                          color: isMe
+                              ? AppColors.white.withValues(alpha: 0.85)
+                              : AppColors.textSecondary,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              if (message.attachment != null && !message.isDeleted)
                 Padding(
                   padding: EdgeInsets.only(
                     bottom: message.content.isNotEmpty ? 6 : 0,
@@ -823,7 +1032,7 @@ class _MessageRow extends StatelessWidget {
                     isMe: isMe,
                   ),
                 ),
-              if (message.content.isNotEmpty)
+              if (message.content.isNotEmpty && !message.isDeleted)
                 Text(
                   message.content,
                   style: TextStyle(
@@ -980,6 +1189,116 @@ class _ComposerIcon extends StatelessWidget {
 
 /// Shown instead of the message box when the other person is not a
 /// recruiter and not a connection yet.
+/// Icon and label in the chat options menu.
+class _MenuRow extends StatelessWidget {
+  const _MenuRow({required this.icon, required this.text, this.color});
+
+  final IconData icon;
+  final String text;
+  final Color? color;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = color ?? AppColors.textPrimary;
+    return Row(
+      children: [
+        Icon(icon, size: 20, color: c),
+        const SizedBox(width: 12),
+        Flexible(
+          child: Text(text, style: TextStyle(color: c)),
+        ),
+      ],
+    );
+  }
+}
+
+/// Top of the list when older messages exist: loading, Retry after a
+/// failure, or a button (scrolling to the top also loads them).
+class _OlderMessagesHeader extends StatelessWidget {
+  const _OlderMessagesHeader({
+    required this.loading,
+    required this.failed,
+    required this.onLoad,
+  });
+
+  final bool loading;
+  final bool failed;
+  final VoidCallback onLoad;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Center(
+        child: loading
+            ? const SizedBox(
+                width: 22,
+                height: 22,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              )
+            : TextButton.icon(
+                onPressed: onLoad,
+                icon: Icon(
+                  failed ? Icons.refresh_rounded : Icons.history_rounded,
+                  size: 18,
+                ),
+                label: Text(
+                  failed
+                      ? 'Could not load earlier messages. Retry'
+                      : 'Load earlier messages',
+                ),
+              ),
+      ),
+    );
+  }
+}
+
+/// Composer replaced while either person blocked the other.
+class _BlockedBar extends StatelessWidget {
+  const _BlockedBar({required this.text, this.onUnblock});
+
+  final String text;
+  final VoidCallback? onUnblock;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(16, 10, 8, 10),
+      decoration: const BoxDecoration(
+        color: AppColors.white,
+        border: Border(top: BorderSide(color: AppColors.border)),
+      ),
+      child: SafeArea(
+        top: false,
+        child: Row(
+          children: [
+            const Icon(
+              Icons.block_rounded,
+              color: AppColors.textSecondary,
+              size: 20,
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                text,
+                style: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.textSecondary,
+                ),
+              ),
+            ),
+            if (onUnblock != null)
+              TextButton(onPressed: onUnblock, child: const Text('Unblock'))
+            else
+              const SizedBox(width: 8),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class _ConnectFirstBar extends StatelessWidget {
   const _ConnectFirstBar({
     required this.userId,

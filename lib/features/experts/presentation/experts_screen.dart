@@ -480,15 +480,17 @@ class _ExpertsScreenState extends ConsumerState<ExpertsScreen> {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 2),
-                    Text(
-                      expert.expertHeadline,
-                      style: const TextStyle(
-                        fontSize: 12,
-                        color: AppColors.textSecondary,
-                        fontWeight: FontWeight.w500,
+                    if (expert.expertHeadline.isNotEmpty) ...[
+                      const SizedBox(height: 2),
+                      Text(
+                        expert.expertHeadline,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: AppColors.textSecondary,
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
-                    ),
+                    ],
                     const SizedBox(height: 4),
                     Container(
                       padding: const EdgeInsets.symmetric(

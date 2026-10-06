@@ -9,6 +9,7 @@ import 'package:kaam_milega/core/network/api_client.dart';
 import 'package:kaam_milega/core/storage/local_storage.dart';
 import 'package:kaam_milega/features/auth/models/user_profile.dart';
 import 'package:kaam_milega/features/auth/providers/auth_provider.dart';
+import 'package:kaam_milega/features/chat/models/chat_block_status.dart';
 import 'package:kaam_milega/features/chat/models/chat_message.dart';
 import 'package:kaam_milega/features/chat/models/conversation.dart';
 import 'package:kaam_milega/features/chat/presentation/chat_detail_screen.dart';
@@ -75,8 +76,16 @@ class _Chats extends ChatRepository {
   Future<List<ChatMessage>> getMessages(
     String conversationId, {
     int limit = 50,
-    int offset = 0,
-  }) async => history.skip(offset).take(limit).toList();
+    String? before,
+  }) async => before == null
+      ? history
+            .skip(history.length > limit ? history.length - limit : 0)
+            .toList()
+      : const <ChatMessage>[];
+
+  @override
+  Future<ChatBlockStatus> getBlockStatus(String otherUserId) async =>
+      ChatBlockStatus.none;
 
   @override
   Future<List<ConversationItem>> getConversations() async => const [];
@@ -206,24 +215,27 @@ void main() {
       expect(find.byIcon(Icons.done_rounded), findsOneWidget); // m3
     });
 
-    testWidgets('long-press my message: delete for everyone', (tester) async {
+    testWidgets('long-press my message: deleted for both, shown as deleted', (
+      tester,
+    ) async {
       await pump(tester);
       await tester.longPress(find.text('text m3'));
       await tester.pumpAndSettle();
-      await tester.tap(find.text('Delete for everyone'));
+      await tester.tap(find.text('Delete message'));
       await tester.pumpAndSettle();
       expect(find.text('Delete message?'), findsOneWidget);
       await tester.tap(find.text('Delete'));
       await tester.pumpAndSettle();
       expect(chats.calls, ['delete message m3']);
       expect(find.text('text m3'), findsNothing);
+      expect(find.text('This message was deleted'), findsOneWidget);
     });
 
     testWidgets("the other person's message cannot be deleted", (tester) async {
       await pump(tester);
       await tester.longPress(find.text('text m2'));
       await tester.pumpAndSettle();
-      expect(find.text('Delete for everyone'), findsNothing);
+      expect(find.text('Delete message'), findsNothing);
     });
 
     testWidgets('delete conversation closes the chat', (tester) async {
@@ -316,20 +328,44 @@ void main() {
       expect(notifier.messages.map((m) => m.isRead), [true, false, true]);
     });
 
-    test('deleted / cleared / conversation deleted arrive live', () async {
-      final notifier = await openChat();
-      hub.push({
-        'type': 'MESSAGE_DELETED',
-        'conversation_id': 'c1',
-        'message_id': 'm2',
+    test(
+      'deleted message stays as "deleted"; clear empties the chat',
+      () async {
+        final notifier = await openChat();
+        hub.push({
+          'type': 'MESSAGE_DELETED',
+          'conversation_id': 'c1',
+          'message_id': 'm2',
+        });
+        await _until(() => notifier.messages[1].isDeleted);
+        expect(notifier.messages, hasLength(3));
+        expect(notifier.messages[1].content, isEmpty);
+
+        hub.push({'type': 'CHAT_CLEARED', 'conversation_id': 'c1'});
+        await _until(() => notifier.messages.isEmpty);
+      },
+    );
+
+    test(
+      'CONVERSATION_DELETED (sent only to me) empties, does not close',
+      () async {
+        final notifier = await openChat();
+        hub.push({'type': 'CONVERSATION_DELETED', 'conversation_id': 'c1'});
+        await _until(() => notifier.messages.isEmpty);
+        expect(notifier.conversationDeleted, isFalse);
+      },
+    );
+
+    test('a deleted message from the server has no text or file', () {
+      final m = ChatMessage.fromJson({
+        ..._msg('m7'),
+        'is_deleted': true,
+        'content': 'should not show',
+        'attachment_url': '/uploads/x.png',
       });
-      await _until(() => notifier.messages.length == 2);
-
-      hub.push({'type': 'CHAT_CLEARED', 'conversation_id': 'c1'});
-      await _until(() => notifier.messages.isEmpty);
-
-      hub.push({'type': 'CONVERSATION_DELETED', 'conversation_id': 'c1'});
-      await _until(() => notifier.conversationDeleted);
+      expect(m.isDeleted, isTrue);
+      expect(m.content, isEmpty);
+      expect(m.attachment, isNull);
     });
 
     test('events for another conversation are ignored', () async {
@@ -390,15 +426,19 @@ void main() {
       });
     });
 
-    test('delete message: removed; a refusal puts it back', () async {
+    test('delete message: shown as deleted; a refusal puts it back', () async {
       final notifier = await openChat();
       chats.fail = true;
       expect(await notifier.deleteMessage('m1'), isFalse);
-      expect(notifier.messages.map((m) => m.id), ['m1', 'm2', 'm3']);
+      expect(notifier.messages.first.isDeleted, isFalse);
+      expect(notifier.messages.first.content, 'text m1');
       chats.fail = false;
       expect(await notifier.deleteMessage('m1'), isTrue);
-      expect(notifier.messages.map((m) => m.id), ['m2', 'm3']);
+      expect(notifier.messages.map((m) => m.id), ['m1', 'm2', 'm3']);
+      expect(notifier.messages.first.isDeleted, isTrue);
       expect(chats.calls.last, 'delete message m1');
+      // Already deleted: not sent again.
+      expect(await notifier.deleteMessage('m1'), isFalse);
     });
 
     test('clear chat and delete conversation call the backend', () async {

@@ -10,6 +10,7 @@ import 'package:kaam_milega/core/network/network_status.dart';
 import 'package:kaam_milega/core/network/response_list.dart';
 import 'package:kaam_milega/core/storage/local_storage.dart';
 import 'package:kaam_milega/features/applications/repositories/application_repository.dart';
+import 'package:kaam_milega/features/chat/models/chat_block_status.dart';
 import 'package:kaam_milega/features/chat/models/chat_message.dart';
 import 'package:kaam_milega/features/chat/models/conversation.dart';
 import 'package:kaam_milega/features/chat/providers/chat_provider.dart';
@@ -62,11 +63,15 @@ class _FailingChats extends ChatRepository {
   Future<List<ChatMessage>> getMessages(
     String conversationId, {
     int limit = 50,
-    int offset = 0,
+    String? before,
   }) async {
     historyCalls++;
     throw const AppServerException();
   }
+
+  @override
+  Future<ChatBlockStatus> getBlockStatus(String otherUserId) async =>
+      ChatBlockStatus.none;
 
   @override
   Future<List<ConversationItem>> getConversations() async => const [];

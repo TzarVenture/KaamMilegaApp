@@ -7,6 +7,7 @@ import 'package:kaam_milega/core/network/api_client.dart';
 import 'package:kaam_milega/core/storage/local_storage.dart';
 import 'package:kaam_milega/features/auth/models/user_profile.dart';
 import 'package:kaam_milega/features/auth/providers/auth_provider.dart';
+import 'package:kaam_milega/features/chat/models/chat_block_status.dart';
 import 'package:kaam_milega/features/chat/models/chat_message.dart';
 import 'package:kaam_milega/features/chat/models/conversation.dart';
 import 'package:kaam_milega/features/chat/presentation/chat_detail_screen.dart';
@@ -42,8 +43,16 @@ class _Chats extends ChatRepository {
   Future<List<ChatMessage>> getMessages(
     String conversationId, {
     int limit = 50,
-    int offset = 0,
-  }) async => history.skip(offset).take(limit).toList();
+    String? before,
+  }) async => before == null
+      ? history
+            .skip(history.length > limit ? history.length - limit : 0)
+            .toList()
+      : const <ChatMessage>[];
+
+  @override
+  Future<ChatBlockStatus> getBlockStatus(String otherUserId) async =>
+      ChatBlockStatus.none;
 
   @override
   Future<List<ConversationItem>> getConversations() async => const [];

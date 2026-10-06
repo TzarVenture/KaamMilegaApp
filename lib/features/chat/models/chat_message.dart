@@ -55,6 +55,10 @@ class ChatMessage {
   /// Image or file sent with the message (null when none).
   final ChatAttachment? attachment;
 
+  /// Deleted by its sender (`is_deleted`): the server keeps the message
+  /// with no text or file and both people see "This message was deleted".
+  final bool isDeleted;
+
   const ChatMessage({
     required this.id,
     required this.conversationId,
@@ -63,6 +67,7 @@ class ChatMessage {
     this.isRead = false,
     this.createdAt,
     this.attachment,
+    this.isDeleted = false,
   });
 
   factory ChatMessage.fromJson(Map<String, dynamic> json) {
@@ -71,13 +76,14 @@ class ChatMessage {
       return DateTime.tryParse(val.toString());
     }
 
-    final url = json['attachment_url']?.toString().trim() ?? '';
+    final deleted = json['is_deleted'] == true;
+    final url = deleted ? '' : json['attachment_url']?.toString().trim() ?? '';
     final size = json['attachment_size'];
     return ChatMessage(
       id: json['id']?.toString() ?? json['_id']?.toString() ?? '',
       conversationId: json['conversation_id']?.toString() ?? '',
       senderId: json['sender_id']?.toString() ?? '',
-      content: json['content']?.toString() ?? '',
+      content: deleted ? '' : json['content']?.toString() ?? '',
       isRead: json['is_read'] == true,
       createdAt: parseDate(json['created_at']),
       attachment: url.isEmpty
@@ -88,6 +94,7 @@ class ChatMessage {
               name: json['attachment_name']?.toString() ?? '',
               size: size is num ? size.toInt() : 0,
             ),
+      isDeleted: deleted,
     );
   }
 
@@ -100,6 +107,19 @@ class ChatMessage {
     isRead: isRead ?? this.isRead,
     createdAt: createdAt,
     attachment: attachment,
+    isDeleted: isDeleted,
+  );
+
+  /// The same message after its sender deleted it (no text, no file),
+  /// as the server stores it.
+  ChatMessage asDeleted() => ChatMessage(
+    id: id,
+    conversationId: conversationId,
+    senderId: senderId,
+    content: '',
+    isRead: isRead,
+    createdAt: createdAt,
+    isDeleted: true,
   );
 
   /// Formatted message timestamp

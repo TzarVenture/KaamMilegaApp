@@ -5,6 +5,7 @@ import '../../../core/constants/api_constants.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/network/app_exception.dart';
 import '../../auth/models/user_profile.dart';
+import '../models/chat_block_status.dart';
 import '../models/chat_message.dart';
 import '../models/conversation.dart';
 import '../../../core/network/response_list.dart';
@@ -47,16 +48,22 @@ class ChatRepository {
     return ChatMessage.fromJson(response.data as Map<String, dynamic>);
   }
 
-  /// Fetch message history for a specific conversation ID
-  /// Throws on failure so the chat can show an error, not an empty chat.
+  /// GET /chats/:id/messages?limit=&before= — the newest [limit] messages
+  /// (oldest first), or the [limit] messages just before the message
+  /// [before]. Messages from before the user cleared the chat are not
+  /// sent. Throws on failure so the chat can show an error, not an empty
+  /// chat.
   Future<List<ChatMessage>> getMessages(
     String conversationId, {
     int limit = 50,
-    int offset = 0,
+    String? before,
   }) async {
     final response = await _client.get(
       '${ApiConstants.chatMessagesList}$conversationId/messages',
-      queryParameters: {'limit': limit, 'offset': offset},
+      queryParameters: {
+        'limit': limit,
+        if (before != null && before.isNotEmpty) 'before': before,
+      },
     );
     return readListResponse(response.data).map(ChatMessage.fromJson).toList();
   }
@@ -132,21 +139,73 @@ class ChatRepository {
     };
   }
 
-  /// DELETE /chats/messages/:id — deletes the message for both people.
+  /// DELETE /chats/messages/:id — only the sender can delete; both people
+  /// then see "This message was deleted".
   Future<void> deleteMessage(String messageId) async {
     await _client.delete('${ApiConstants.chatMessagesList}messages/$messageId');
   }
 
-  /// DELETE /chats/:id/messages — deletes every message for both people.
+  /// DELETE /chats/:id/messages — clears the chat for the signed-in user
+  /// only (the other person keeps theirs). The chat also leaves the inbox
+  /// until a new message arrives.
   Future<void> clearChat(String conversationId) async {
     await _client.delete(
       '${ApiConstants.chatMessagesList}$conversationId/messages',
     );
   }
 
-  /// DELETE /chats/:id — deletes the conversation for both people.
+  /// DELETE /chats/:id — removes the conversation from the signed-in
+  /// user's inbox only; it comes back if a new message arrives.
   Future<void> deleteConversation(String conversationId) async {
     await _client.delete('${ApiConstants.chatMessagesList}$conversationId');
+  }
+
+  /// GET /chats/users/:id/block-status — who blocked whom.
+  Future<ChatBlockStatus> getBlockStatus(String otherUserId) async {
+    final response = await _client.get(
+      '${ApiConstants.chatMessagesList}users/$otherUserId/block-status',
+    );
+    final data = response.data;
+    if (data is! Map) {
+      throw const AppServerException('Unexpected block status response.');
+    }
+    return ChatBlockStatus.fromJson(Map<String, dynamic>.from(data));
+  }
+
+  /// POST /chats/users/:id/block — neither person can message the other
+  /// until it is undone.
+  Future<void> blockUser(String otherUserId) async {
+    await _client.post(
+      '${ApiConstants.chatMessagesList}users/$otherUserId/block',
+    );
+  }
+
+  /// POST /chats/users/:id/unblock
+  Future<void> unblockUser(String otherUserId) async {
+    await _client.post(
+      '${ApiConstants.chatMessagesList}users/$otherUserId/unblock',
+    );
+  }
+
+  /// POST /chats/:id/report — sends the conversation (with its recent
+  /// messages) to the KaamMilega team; optionally blocks the other person
+  /// too. Returns the report number ('' when the server sent none).
+  Future<String> reportConversation(
+    String conversationId, {
+    required String reason,
+    String description = '',
+    bool blockUser = false,
+  }) async {
+    final response = await _client.post(
+      '${ApiConstants.chatMessagesList}$conversationId/report',
+      data: {
+        'reason': reason,
+        'description': description,
+        'block_user': blockUser,
+      },
+    );
+    final data = response.data;
+    return data is Map ? data['report_number']?.toString() ?? '' : '';
   }
 
   /// GET /user/search?q= — people to start a new chat with.

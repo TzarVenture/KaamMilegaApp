@@ -284,8 +284,8 @@ void main() {
       expect(find.text('Delete chat?'), findsOneWidget);
       expect(
         find.text(
-          'Your chat with Priya Sharma and all its messages will be deleted '
-          'for both of you.',
+          'Your chat with Priya Sharma will be removed from your inbox only. '
+          'Priya Sharma keeps it, and it comes back if a new message arrives.',
         ),
         findsOneWidget,
       );
@@ -306,6 +306,19 @@ void main() {
       expect(find.text('Priya Sharma'), findsNothing);
       expect(find.text('Anwar Khan'), findsOneWidget);
       expect(find.text('Chat deleted.'), findsOneWidget);
+
+      // Deleted for this user only: a new message brings it back.
+      chats.conversations.add(
+        _conv(
+          'c2',
+          otherId: 'u3',
+          name: 'Priya Sharma',
+          last: 'Are you there?',
+        ),
+      );
+      await tester.tap(find.byTooltip('Refresh'));
+      await tester.pumpAndSettle();
+      expect(find.text('Priya Sharma'), findsOneWidget);
     });
 
     testWidgets('swipe left deletes; a server refusal keeps the chat', (

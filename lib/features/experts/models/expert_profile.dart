@@ -16,6 +16,14 @@ class ExpertItem {
   final String expertImage;
   final String expertBio;
 
+  /// Languages the session is given in. Not sent by the backend yet
+  /// (read from `languages` when it is); empty = hidden.
+  final List<String> languages;
+
+  /// What the mentee gets from the session. Not sent by the backend yet
+  /// (read from `key_takeaways` when it is); empty = hidden.
+  final List<String> takeaways;
+
   const ExpertItem({
     required this.id,
     required this.expertId,
@@ -31,7 +39,22 @@ class ExpertItem {
     this.expertHeadline = 'Career Advisor',
     this.expertImage = '',
     this.expertBio = '',
+    this.languages = const [],
+    this.takeaways = const [],
   });
+
+  /// A list of strings, or one comma-separated string.
+  static List<String> _strings(dynamic raw) {
+    final items = raw is List
+        ? raw.map((e) => e?.toString() ?? '')
+        : raw is String
+        ? raw.split(',')
+        : const <String>[];
+    return [
+      for (final s in items)
+        if (s.trim().isNotEmpty) s.trim(),
+    ];
+  }
 
   factory ExpertItem.fromJson(Map<String, dynamic> json) {
     // Handle both direct mentorship model or nested MentorshipDetail
@@ -66,11 +89,13 @@ class ExpertItem {
           (exp['headline'] != null &&
               exp['headline'].toString().trim().isNotEmpty)
           ? exp['headline'].toString().trim()
-          : (m['expert_headline']?.toString() ?? 'Senior Professional'),
+          : (m['expert_headline']?.toString().trim() ?? ''),
       expertImage: ApiConstants.resolveImageUrl(
         exp['profile_image']?.toString() ?? m['expert_image']?.toString(),
       ),
-      expertBio: exp['bio']?.toString() ?? '',
+      expertBio: exp['bio']?.toString().trim() ?? '',
+      languages: _strings(m['languages']),
+      takeaways: _strings(m['key_takeaways']),
     );
   }
 
@@ -98,6 +123,8 @@ class ExpertItem {
       'expert_headline': expertHeadline,
       'expert_image': expertImage,
       'expert_bio': expertBio,
+      'languages': languages,
+      'key_takeaways': takeaways,
     };
   }
 }

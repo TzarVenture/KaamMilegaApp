@@ -40,16 +40,31 @@ class ChatClearedEvent extends ChatEvent {
   const ChatClearedEvent(super.conversationId);
 }
 
-/// The conversation was deleted (CONVERSATION_DELETED).
+/// The signed-in user removed the conversation from their own inbox, or
+/// cleared it (CONVERSATION_DELETED; sent only to that user).
 class ConversationDeletedEvent extends ChatEvent {
   const ConversationDeletedEvent(super.conversationId);
+}
+
+/// The signed-in user and [otherUserId] were blocked or unblocked
+/// (USER_BLOCKED / USER_UNBLOCKED); [byMe] when the signed-in user did it.
+/// Not tied to one conversation ([conversationId] is empty).
+class BlockChangedEvent extends ChatEvent {
+  const BlockChangedEvent(
+    this.otherUserId, {
+    required this.blocked,
+    required this.byMe,
+  }) : super('');
+  final String otherUserId;
+  final bool blocked;
+  final bool byMe;
 }
 
 /// Live chat socket: GET /api/ws/chats?token=JWT (km-backend chat hub).
 ///
 /// The server pushes `NEW_MESSAGE` (as [messageStream]) and
 /// `MESSAGES_READ`, `USER_TYPING`, `MESSAGE_DELETED`, `CHAT_CLEARED`,
-/// `CONVERSATION_DELETED` (as [events]). Messages are sent over REST
+/// `CONVERSATION_DELETED`, `USER_BLOCKED`, `USER_UNBLOCKED` (as [events]). Messages are sent over REST
 /// (POST /chats/messages); only typing signals go over the socket
 /// ([sendTyping]). Connection, ping and reconnect rules are in [LiveSocket].
 class ChatWebSocketService extends LiveSocket {
@@ -107,6 +122,16 @@ class ChatWebSocketService extends LiveSocket {
       ),
       'CHAT_CLEARED' => ChatClearedEvent(conversationId),
       'CONVERSATION_DELETED' => ConversationDeletedEvent(conversationId),
+      'USER_BLOCKED' => BlockChangedEvent(
+        text('blocked_user_id'),
+        blocked: true,
+        byMe: data['blocked_by_me'] == true,
+      ),
+      'USER_UNBLOCKED' => BlockChangedEvent(
+        text('unblocked_user_id'),
+        blocked: false,
+        byMe: data['unblocked_by_me'] == true,
+      ),
       _ => null,
     };
     if (event != null) {

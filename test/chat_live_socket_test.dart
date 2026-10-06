@@ -65,16 +65,22 @@ Map<String, dynamic> _msg(String id, {String conv = 'c1'}) => {
 class _Chats extends ChatRepository {
   _Chats() : super(ApiClient());
   List<ChatMessage> history = [];
-  final List<int> offsets = [];
+  final List<String?> befores = [];
 
+  /// Like the server: the newest [limit] before [before] (or overall),
+  /// oldest first.
   @override
   Future<List<ChatMessage>> getMessages(
     String conversationId, {
     int limit = 50,
-    int offset = 0,
+    String? before,
   }) async {
-    offsets.add(offset);
-    return history.skip(offset).take(limit).toList();
+    befores.add(before);
+    final end = before == null
+        ? history.length
+        : history.indexWhere((m) => m.id == before);
+    final start = end - limit < 0 ? 0 : end - limit;
+    return history.sublist(start, end < 0 ? 0 : end);
   }
 }
 
@@ -183,10 +189,18 @@ void main() {
       addTearDown(sub.close);
       final notifier = container.read(chatMessagesProvider('c1'));
 
-      // 60 messages: two pages, so the newest ones are not cut off.
-      await _until(() => notifier.messages.length == 60);
-      expect(chats.offsets, [0, 50]);
+      // 60 messages: the newest 50 first, older ones on request with
+      // `before` (no repeats).
+      await _until(() => notifier.messages.length == 50);
+      expect(notifier.messages.first.id, 'h10');
       expect(notifier.messages.last.id, 'h59');
+      expect(notifier.hasOlder, isTrue);
+      await notifier.loadOlder();
+      expect(chats.befores, [null, 'h10']);
+      expect(notifier.messages, hasLength(60));
+      expect(notifier.messages.first.id, 'h0');
+      expect(notifier.messages.map((m) => m.id).toSet(), hasLength(60));
+      expect(notifier.hasOlder, isFalse);
 
       // Live message.
       await _until(() => hub.sockets.isNotEmpty);

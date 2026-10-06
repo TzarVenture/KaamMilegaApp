@@ -47,8 +47,8 @@ class ChatMessagesNotifier extends ChangeNotifier {
   StreamSubscription<void>? _reconnectSubscription;
   StreamSubscription<ChatEvent>? _eventSubscription;
 
-  /// True once the conversation was deleted (by either person); the chat
-  /// screen closes.
+  /// True once the user deleted the conversation from this screen; the
+  /// chat screen closes.
   bool get conversationDeleted => _conversationDeleted;
   bool _conversationDeleted = false;
 
@@ -56,11 +56,10 @@ class ChatMessagesNotifier extends ChangeNotifier {
   /// messages on the server yet).
   String get conversationId => _isNewChat ? '' : _activeConversationId;
 
-  /// GET /chats/:id/messages returns the OLDEST messages first, [_pageSize]
-  /// at a time, so the whole history is read page by page (up to
-  /// [_maxPages]) to make sure the newest messages are included.
-  static const int _pageSize = 50;
-  static const int _maxPages = 20;
+  /// GET /chats/:id/messages returns the newest [pageSize] messages; older
+  /// ones are read [pageSize] at a time with `before=<oldest id>` when the
+  /// user scrolls up ([loadOlder]).
+  static const int pageSize = 50;
 
   /// The real conversation ID. For a brand-new chat the screen is opened
   /// with a temporary ID; after the first message is sent the server
@@ -74,6 +73,18 @@ class ChatMessagesNotifier extends ChangeNotifier {
   bool _isLoading = false;
   Object? _error;
   bool _disposed = false;
+  bool _hasOlder = false;
+  bool _loadingOlder = false;
+  Object? _olderError;
+
+  /// More (older) messages are on the server.
+  bool get hasOlder => _hasOlder;
+
+  /// True while older messages are loading.
+  bool get loadingOlder => _loadingOlder;
+
+  /// Why loading older messages failed (null when it did not).
+  Object? get olderError => _olderError;
 
   /// True while the message history is loading.
   bool get isLoading => _isLoading;
@@ -126,9 +137,13 @@ class ChatMessagesNotifier extends ChangeNotifier {
     _error = null;
     notifyListeners();
     try {
-      final history = await _loadHistory();
+      final history = await _repository.getMessages(
+        _activeConversationId,
+        limit: pageSize,
+      );
       if (_disposed) return;
-      _mergeHistory(history);
+      _mergeNewest(history);
+      _hasOlder = history.length >= pageSize;
       _isLoading = false;
       notifyListeners();
     } catch (e) {
@@ -139,28 +154,60 @@ class ChatMessagesNotifier extends ChangeNotifier {
     }
   }
 
-  Future<List<ChatMessage>> _loadHistory() async {
-    final all = <ChatMessage>[];
-    for (var page = 0; page < _maxPages; page++) {
-      final batch = await _repository.getMessages(
-        _activeConversationId,
-        limit: _pageSize,
-        offset: page * _pageSize,
-      );
-      all.addAll(batch);
-      if (batch.length < _pageSize) break;
+  /// Puts the newest page (oldest to newest) in place: older messages
+  /// already loaded stay before it, live messages it does not contain yet
+  /// stay after it, and messages in both take the server's copy (read
+  /// ticks, deletions).
+  void _mergeNewest(List<ChatMessage> page) {
+    if (page.isEmpty) return;
+    final ids = {
+      for (final m in page)
+        if (m.id.isNotEmpty) m.id,
+    };
+    final overlap = _messages.indexWhere((m) => ids.contains(m.id));
+    final List<ChatMessage> before;
+    final List<ChatMessage> after;
+    if (overlap >= 0) {
+      before = _messages.sublist(0, overlap);
+      after = _messages.sublist(overlap);
+    } else {
+      // No message in common: older ones (by time) go before the page.
+      final start = page.first.createdAt;
+      bool older(ChatMessage m) =>
+          start != null && m.createdAt != null && m.createdAt!.isBefore(start);
+      before = _messages.where(older).toList();
+      after = _messages.where((m) => !older(m)).toList();
     }
-    return all;
+    bool keep(ChatMessage m) => m.id.isEmpty || !ids.contains(m.id);
+    _messages = [...before.where(keep), ...page, ...after.where(keep)];
   }
 
-  /// History first (oldest to newest), then live messages it does not
-  /// contain yet.
-  void _mergeHistory(List<ChatMessage> history) {
-    final ids = history.map((m) => m.id).toSet();
-    _messages = [
-      ...history,
-      ..._messages.where((m) => m.id.isEmpty || !ids.contains(m.id)),
-    ];
+  /// Reads the [pageSize] messages before the oldest one shown (when the
+  /// user scrolls to the top). On failure [olderError] is set and the
+  /// next call tries again.
+  Future<void> loadOlder() async {
+    if (_disposed || _isNewChat || !_hasOlder || _loadingOlder) return;
+    final oldest = _messages.where((m) => m.id.isNotEmpty).firstOrNull;
+    if (oldest == null) return;
+    _loadingOlder = true;
+    _olderError = null;
+    notifyListeners();
+    try {
+      final batch = await _repository.getMessages(
+        _activeConversationId,
+        limit: pageSize,
+        before: oldest.id,
+      );
+      if (_disposed) return;
+      final ids = _messages.map((m) => m.id).toSet();
+      _messages = [...batch.where((m) => !ids.contains(m.id)), ..._messages];
+      _hasOlder = batch.length >= pageSize;
+    } catch (e) {
+      if (_disposed) return;
+      _olderError = e;
+    }
+    _loadingOlder = false;
+    notifyListeners();
   }
 
   /// Catch up after a reconnect without showing a loader; on failure the
@@ -168,14 +215,15 @@ class ChatMessagesNotifier extends ChangeNotifier {
   Future<void> _refreshSilently() async {
     if (_disposed || _isNewChat || _isLoading) return;
     try {
-      final history = await _loadHistory();
+      final history = await _repository.getMessages(
+        _activeConversationId,
+        limit: pageSize,
+      );
       if (_disposed) return;
-      final before = _messages.length;
-      _mergeHistory(history);
-      if (_messages.length != before || _error != null) {
-        _error = null;
-        notifyListeners();
-      }
+      _mergeNewest(history);
+      if (_messages.isEmpty && history.isEmpty) _hasOlder = false;
+      _error = null;
+      notifyListeners();
     } catch (_) {
       // Keep what is shown; the next reconnect or Retry tries again.
     }
@@ -198,28 +246,38 @@ class ChatMessagesNotifier extends ChangeNotifier {
           notifyListeners();
         }
       case MessageDeletedEvent(:final messageId):
-        final before = _messages.length;
-        _messages = _messages.where((m) => m.id != messageId).toList();
-        if (_messages.length != before) notifyListeners();
+        // The sender deleted it: both people see "This message was deleted".
+        if (_messages.any((m) => m.id == messageId && !m.isDeleted)) {
+          _messages = [
+            for (final m in _messages) m.id == messageId ? m.asDeleted() : m,
+          ];
+          notifyListeners();
+        }
       case ChatClearedEvent():
         _messages = [];
+        _hasOlder = false;
         notifyListeners();
       case ConversationDeletedEvent():
+        // Cleared or removed by this user (here or on another device):
+        // older messages are hidden for them; the chat stays usable and a
+        // new message brings the conversation back.
         _messages = [];
-        _conversationDeleted = true;
+        _hasOlder = false;
         notifyListeners();
       case TypingEvent():
-        break; // see typingUsersProvider
+      case BlockChangedEvent():
+        break; // see typingUsersProvider / chatBlockStatusProvider
     }
   }
 
-  /// DELETE /chats/messages/:id — removes the message for both people.
-  /// False when the server refused (the message stays).
+  /// DELETE /chats/messages/:id — only the sender's own message; both
+  /// people then see "This message was deleted". False when the server
+  /// refused (the message comes back).
   Future<bool> deleteMessage(String messageId) async {
     final index = _messages.indexWhere((m) => m.id == messageId);
-    if (index < 0) return false;
-    final removed = _messages[index];
-    _messages = [..._messages]..removeAt(index);
+    if (index < 0 || _messages[index].isDeleted) return false;
+    final original = _messages[index];
+    _messages = [..._messages]..[index] = original.asDeleted();
     notifyListeners();
     try {
       await _repository.deleteMessage(messageId);
@@ -227,20 +285,21 @@ class ChatMessagesNotifier extends ChangeNotifier {
       return true;
     } catch (_) {
       if (_disposed) return false;
-      _messages = [..._messages]
-        ..insert(index.clamp(0, _messages.length), removed);
+      _messages = [for (final m in _messages) m.id == messageId ? original : m];
       notifyListeners();
       return false;
     }
   }
 
-  /// DELETE /chats/:id/messages — removes every message for both people.
+  /// DELETE /chats/:id/messages — clears the chat for this user only (the
+  /// other person keeps their messages).
   Future<bool> clearChat() async {
     if (_isNewChat) return false;
     try {
       await _repository.clearChat(_activeConversationId);
       if (_disposed) return true;
       _messages = [];
+      _hasOlder = false;
       notifyListeners();
       _ref.invalidate(conversationsProvider);
       return true;
@@ -249,7 +308,8 @@ class ChatMessagesNotifier extends ChangeNotifier {
     }
   }
 
-  /// DELETE /chats/:id — removes the conversation for both people.
+  /// DELETE /chats/:id — removes the conversation from this user's inbox
+  /// only (the other person keeps it).
   Future<bool> deleteConversation() async {
     if (_isNewChat) return false;
     try {
