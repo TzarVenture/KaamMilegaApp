@@ -71,7 +71,7 @@ class _SavedJobsScreenState extends ConsumerState<SavedJobsScreen> {
                         'Back to All Jobs',
                         style: TextStyle(
                           fontSize: 13,
-                          fontWeight: FontWeight.w700,
+                          fontWeight: FontWeight.w600,
                           color: AppColors.primary,
                         ),
                       ),
@@ -95,7 +95,7 @@ class _SavedJobsScreenState extends ConsumerState<SavedJobsScreen> {
                     'Saved Jobs',
                     style: TextStyle(
                       fontSize: 28,
-                      fontWeight: FontWeight.w900,
+                      fontWeight: FontWeight.w700,
                       color: AppColors.textPrimary,
                       letterSpacing: -0.5,
                     ),
@@ -340,7 +340,7 @@ class _SavedJobsScreenState extends ConsumerState<SavedJobsScreen> {
             'No Saved Jobs Found',
             style: TextStyle(
               fontSize: 22,
-              fontWeight: FontWeight.w900,
+              fontWeight: FontWeight.w700,
               color: AppColors.textPrimary,
             ),
           ),
@@ -381,7 +381,7 @@ class _SavedJobsScreenState extends ConsumerState<SavedJobsScreen> {
             ),
             child: const Text(
               'Browse Jobs',
-              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800),
+              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
             ),
           ),
         ],
@@ -410,7 +410,7 @@ class _SavedJobsScreenState extends ConsumerState<SavedJobsScreen> {
             'No matching saved jobs found',
             style: TextStyle(
               fontSize: 16,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w700,
               color: AppColors.textPrimary,
             ),
           ),

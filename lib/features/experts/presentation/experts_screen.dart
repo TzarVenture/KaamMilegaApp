@@ -140,7 +140,7 @@ class _ExpertsScreenState extends ConsumerState<ExpertsScreen> {
                                 cat,
                                 style: TextStyle(
                                   fontSize: 12,
-                                  fontWeight: FontWeight.w700,
+                                  fontWeight: FontWeight.w600,
                                   color: isSelected
                                       ? Colors.white
                                       : const Color(0xFF334155),
@@ -163,7 +163,7 @@ class _ExpertsScreenState extends ConsumerState<ExpertsScreen> {
                             'Verified Mentors & Coaches',
                             style: TextStyle(
                               fontSize: 16,
-                              fontWeight: FontWeight.w800,
+                              fontWeight: FontWeight.w700,
                               color: AppColors.textPrimary,
                             ),
                           ),
@@ -310,7 +310,7 @@ class _ExpertsScreenState extends ConsumerState<ExpertsScreen> {
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 15,
-                fontWeight: FontWeight.w800,
+                fontWeight: FontWeight.w700,
                 color: Color(0xFF1E293B),
               ),
             ),
@@ -337,7 +337,7 @@ class _ExpertsScreenState extends ConsumerState<ExpertsScreen> {
               ),
               child: const Text(
                 'Apply as Expert',
-                style: TextStyle(fontWeight: FontWeight.w700),
+                style: TextStyle(fontWeight: FontWeight.w600),
               ),
             ),
           ],
@@ -374,7 +374,7 @@ class _ExpertsScreenState extends ConsumerState<ExpertsScreen> {
               'Mentorship Catalog Unavailable',
               style: TextStyle(
                 fontSize: 15,
-                fontWeight: FontWeight.w800,
+                fontWeight: FontWeight.w700,
                 color: Color(0xFF1E293B),
               ),
             ),
@@ -405,7 +405,7 @@ class _ExpertsScreenState extends ConsumerState<ExpertsScreen> {
               icon: const Icon(Icons.refresh_rounded, size: 16),
               label: const Text(
                 'Retry',
-                style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
+                style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
               ),
             ),
           ],
@@ -450,7 +450,7 @@ class _ExpertsScreenState extends ConsumerState<ExpertsScreen> {
                       : 'E',
                   style: const TextStyle(
                     fontSize: 20,
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w700,
                     color: AppColors.moduleExperts,
                   ),
                 ),
@@ -467,7 +467,7 @@ class _ExpertsScreenState extends ConsumerState<ExpertsScreen> {
                             expert.expertName,
                             style: const TextStyle(
                               fontSize: 15,
-                              fontWeight: FontWeight.w800,
+                              fontWeight: FontWeight.w700,
                               color: AppColors.textPrimary,
                             ),
                           ),
@@ -482,7 +482,7 @@ class _ExpertsScreenState extends ConsumerState<ExpertsScreen> {
                           expert.ratingLabel,
                           style: const TextStyle(
                             fontSize: 12,
-                            fontWeight: FontWeight.w700,
+                            fontWeight: FontWeight.w600,
                             color: AppColors.textPrimary,
                           ),
                         ),
@@ -528,7 +528,7 @@ class _ExpertsScreenState extends ConsumerState<ExpertsScreen> {
             expert.title,
             style: const TextStyle(
               fontSize: 14,
-              fontWeight: FontWeight.w700,
+              fontWeight: FontWeight.w600,
               color: Color(0xFF1E293B),
             ),
           ),
@@ -562,7 +562,7 @@ class _ExpertsScreenState extends ConsumerState<ExpertsScreen> {
                         : 'Free Session',
                     style: const TextStyle(
                       fontSize: 16,
-                      fontWeight: FontWeight.w900,
+                      fontWeight: FontWeight.w700,
                       color: AppColors.textPrimary,
                     ),
                   ),
@@ -591,7 +591,7 @@ class _ExpertsScreenState extends ConsumerState<ExpertsScreen> {
                 ),
                 child: const Text(
                   'Book Session',
-                  style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
+                  style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
                 ),
               ),
             ],

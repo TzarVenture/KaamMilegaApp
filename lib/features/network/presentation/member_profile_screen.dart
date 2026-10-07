@@ -29,7 +29,7 @@ class MemberProfileScreen extends ConsumerWidget {
       appBar: AppBar(
         title: Text(
           title.isNotEmpty ? title : 'Profile',
-          style: const TextStyle(fontWeight: FontWeight.w800),
+          style: const TextStyle(fontWeight: FontWeight.w700),
         ),
         backgroundColor: Colors.white,
         elevation: 0.5,
@@ -339,7 +339,7 @@ class _Header extends StatelessWidget {
                       name[0].toUpperCase(),
                       style: const TextStyle(
                         fontSize: 30,
-                        fontWeight: FontWeight.w800,
+                        fontWeight: FontWeight.w700,
                         color: AppColors.primary,
                       ),
                     ),
@@ -357,7 +357,7 @@ class _Header extends StatelessWidget {
                   name,
                   style: const TextStyle(
                     fontSize: 20,
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w700,
                     color: AppColors.textPrimary,
                   ),
                 ),
@@ -420,7 +420,7 @@ class _Badge extends StatelessWidget {
         label,
         style: TextStyle(
           fontSize: 12,
-          fontWeight: FontWeight.w700,
+          fontWeight: FontWeight.w600,
           color: color,
         ),
       ),
@@ -451,7 +451,7 @@ class _SectionCard extends StatelessWidget {
             title,
             style: const TextStyle(
               fontSize: 15,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w700,
               color: AppColors.textPrimary,
             ),
           ),
@@ -523,7 +523,7 @@ class _EntryTile extends StatelessWidget {
                   title.trim().isNotEmpty ? title.trim() : 'Untitled',
                   style: const TextStyle(
                     fontSize: 14,
-                    fontWeight: FontWeight.w700,
+                    fontWeight: FontWeight.w600,
                     color: AppColors.textPrimary,
                   ),
                 ),

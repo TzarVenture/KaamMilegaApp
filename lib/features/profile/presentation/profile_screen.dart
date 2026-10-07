@@ -26,6 +26,7 @@ import '../../../shared/widgets/app_dialog.dart';
 import '../../../shared/widgets/sheet_drag_handle.dart';
 import '../../../shared/widgets/pressable_scale.dart';
 import '../../../shared/widgets/fade_slide_in.dart';
+import '../models/profile_strength.dart';
 
 /// Full-featured Candidate Profile & CV Screen
 /// Specialized exclusively for Job Seekers / Candidates
@@ -362,7 +363,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                         'Background Photo',
                         style: TextStyle(
                           fontSize: 20,
-                          fontWeight: FontWeight.w800,
+                          fontWeight: FontWeight.w700,
                           color: AppColors.textPrimary,
                         ),
                       ),
@@ -541,7 +542,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                         'Profile Photo',
                         style: TextStyle(
                           fontSize: 20,
-                          fontWeight: FontWeight.w800,
+                          fontWeight: FontWeight.w700,
                           color: AppColors.textPrimary,
                         ),
                       ),
@@ -727,7 +728,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                         'Edit Intro',
                         style: TextStyle(
                           fontSize: 20,
-                          fontWeight: FontWeight.w800,
+                          fontWeight: FontWeight.w700,
                           color: AppColors.textPrimary,
                         ),
                       ),
@@ -978,7 +979,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                 text: 'Learn More About Gender Pronouns.',
                                 style: TextStyle(
                                   color: AppColors.navy,
-                                  fontWeight: FontWeight.w700,
+                                  fontWeight: FontWeight.w600,
                                 ),
                               ),
                             ],
@@ -1101,7 +1102,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       'Save',
                       style: TextStyle(
                         fontSize: 15,
-                        fontWeight: FontWeight.w800,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
                   ),
@@ -1197,7 +1198,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                         'Edit Personal Info',
                         style: TextStyle(
                           fontSize: 20,
-                          fontWeight: FontWeight.w800,
+                          fontWeight: FontWeight.w700,
                           color: AppColors.textPrimary,
                         ),
                       ),
@@ -1462,7 +1463,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       'Save',
                       style: TextStyle(
                         fontSize: 15,
-                        fontWeight: FontWeight.w800,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
                   ),
@@ -1564,7 +1565,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                           'Edit About',
                           style: TextStyle(
                             fontSize: 18,
-                            fontWeight: FontWeight.w800,
+                            fontWeight: FontWeight.w700,
                             color: AppColors.textPrimary,
                           ),
                         ),
@@ -1586,7 +1587,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     'You Can Write About Your Years Of Experience, Industry, Or Skills. People Also Talk About Their Achievements Or Previous Job Experiences.',
                     style: TextStyle(
                       fontSize: 13,
-                      fontWeight: FontWeight.w700,
+                      fontWeight: FontWeight.w600,
                       color: AppColors.textPrimary,
                       height: 1.4,
                     ),
@@ -1735,7 +1736,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                         'Custom Portfolio Link',
                         style: TextStyle(
                           fontSize: 20,
-                          fontWeight: FontWeight.w800,
+                          fontWeight: FontWeight.w700,
                           color: AppColors.textPrimary,
                         ),
                       ),
@@ -1765,7 +1766,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   const TextSpan(
                     style: TextStyle(
                       fontSize: 13,
-                      fontWeight: FontWeight.w700,
+                      fontWeight: FontWeight.w600,
                       color: AppColors.textPrimary,
                     ),
                     children: [
@@ -1821,7 +1822,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   'Link Text (Optional)',
                   style: TextStyle(
                     fontSize: 13,
-                    fontWeight: FontWeight.w700,
+                    fontWeight: FontWeight.w600,
                     color: AppColors.textPrimary,
                   ),
                 ),
@@ -1903,7 +1904,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                           'Delete',
                           style: TextStyle(
                             color: AppColors.error,
-                            fontWeight: FontWeight.w700,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
                       ),
@@ -1924,7 +1925,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       ),
                       child: const Text(
                         'Cancel',
-                        style: TextStyle(fontWeight: FontWeight.w700),
+                        style: TextStyle(fontWeight: FontWeight.w600),
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -1974,7 +1975,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       ),
                       child: const Text(
                         'Save Link',
-                        style: TextStyle(fontWeight: FontWeight.w800),
+                        style: TextStyle(fontWeight: FontWeight.w700),
                       ),
                     ),
                   ],
@@ -2067,7 +2068,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     existingEdu == null ? 'Add Education' : 'Edit Education',
                     style: const TextStyle(
                       fontSize: 18,
-                      fontWeight: FontWeight.w800,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
                 ),
@@ -2300,7 +2301,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       'Cancel',
                       style: TextStyle(
                         color: Colors.black87,
-                        fontWeight: FontWeight.w700,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ),
@@ -2361,7 +2362,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     ),
                     child: const Text(
                       'Save',
-                      style: TextStyle(fontWeight: FontWeight.w700),
+                      style: TextStyle(fontWeight: FontWeight.w600),
                     ),
                   ),
                 ),
@@ -2509,7 +2510,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                             : 'Add Experience',
                         style: const TextStyle(
                           fontSize: 20,
-                          fontWeight: FontWeight.w800,
+                          fontWeight: FontWeight.w700,
                         ),
                       ),
                     ),
@@ -2655,7 +2656,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                 ),
                                 child: const Text(
                                   'Cancel',
-                                  style: TextStyle(fontWeight: FontWeight.w700),
+                                  style: TextStyle(fontWeight: FontWeight.w600),
                                 ),
                               ),
                             ),
@@ -2721,7 +2722,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                 ),
                                 child: const Text(
                                   'Save',
-                                  style: TextStyle(fontWeight: FontWeight.w800),
+                                  style: TextStyle(fontWeight: FontWeight.w700),
                                 ),
                               ),
                             ),
@@ -2856,7 +2857,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                           'Add Skill',
                           style: TextStyle(
                             fontSize: 18,
-                            fontWeight: FontWeight.w800,
+                            fontWeight: FontWeight.w700,
                             color: AppColors.textPrimary,
                           ),
                         ),
@@ -2998,7 +2999,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                               ),
                               labelStyle: const TextStyle(
                                 color: AppColors.primary,
-                                fontWeight: FontWeight.w700,
+                                fontWeight: FontWeight.w600,
                                 fontSize: 13,
                               ),
                               onPressed: () async {
@@ -3155,7 +3156,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                         'Verify Email Address',
                         style: TextStyle(
                           fontSize: 18,
-                          fontWeight: FontWeight.w800,
+                          fontWeight: FontWeight.w700,
                         ),
                       ),
                     ),
@@ -3228,7 +3229,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                           )
                         : const Text(
                             'Send Verification OTP',
-                            style: TextStyle(fontWeight: FontWeight.w800),
+                            style: TextStyle(fontWeight: FontWeight.w700),
                           ),
                   ),
                 ] else ...[
@@ -3239,7 +3240,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     textAlign: TextAlign.center,
                     style: const TextStyle(
                       fontSize: 22,
-                      fontWeight: FontWeight.w800,
+                      fontWeight: FontWeight.w700,
                       letterSpacing: 8,
                     ),
                     inputFormatters: [FilteringTextInputFormatter.digitsOnly],
@@ -3309,7 +3310,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                           )
                         : const Text(
                             'Verify OTP & Confirm',
-                            style: TextStyle(fontWeight: FontWeight.w800),
+                            style: TextStyle(fontWeight: FontWeight.w700),
                           ),
                   ),
                 ],
@@ -3480,7 +3481,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 const Flexible(
                   child: Text(
                     'Contact & Public Info',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
                   ),
                 ),
                 IconButton(
@@ -3785,7 +3786,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                             title,
                             style: const TextStyle(
                               fontSize: 18,
-                              fontWeight: FontWeight.w800,
+                              fontWeight: FontWeight.w700,
                               color: AppColors.textPrimary,
                             ),
                           ),
@@ -3833,7 +3834,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         text.toUpperCase(),
         style: const TextStyle(
           fontSize: 11,
-          fontWeight: FontWeight.w800,
+          fontWeight: FontWeight.w700,
           letterSpacing: 0.8,
           color: Color(0xFF94A3B8),
         ),
@@ -3887,7 +3888,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                           title,
                           style: const TextStyle(
                             fontSize: 15,
-                            fontWeight: FontWeight.w700,
+                            fontWeight: FontWeight.w600,
                             color: AppColors.textPrimary,
                           ),
                         ),
@@ -3922,7 +3923,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                         badge,
                         style: TextStyle(
                           fontSize: 11.5,
-                          fontWeight: FontWeight.w700,
+                          fontWeight: FontWeight.w600,
                           color: badgeHighlighted
                               ? AppColors.success
                               : const Color(0xFF475569),
@@ -4166,7 +4167,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                             : (isAuth ? 'Candidate Name' : 'Guest User'),
                         style: const TextStyle(
                           fontSize: 22,
-                          fontWeight: FontWeight.w900,
+                          fontWeight: FontWeight.w700,
                           color: AppColors.textPrimary,
                         ),
                       ),
@@ -4218,7 +4219,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                         'Contact Info',
                         style: TextStyle(
                           fontSize: 12,
-                          fontWeight: FontWeight.w700,
+                          fontWeight: FontWeight.w600,
                           color: AppColors.primary,
                         ),
                       ),
@@ -4236,7 +4237,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                         '$connectionsCount Connections',
                         style: const TextStyle(
                           fontSize: 12,
-                          fontWeight: FontWeight.w700,
+                          fontWeight: FontWeight.w600,
                           color: AppColors.primary,
                         ),
                       ),
@@ -4293,7 +4294,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                               : '+ Add Portfolio / Website Link',
                           style: const TextStyle(
                             fontSize: 12.5,
-                            fontWeight: FontWeight.w700,
+                            fontWeight: FontWeight.w600,
                             color: AppColors.blue,
                           ),
                         ),
@@ -4347,7 +4348,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                   : 'Email Unverified',
                               style: const TextStyle(
                                 fontSize: 11,
-                                fontWeight: FontWeight.w700,
+                                fontWeight: FontWeight.w600,
                                 color: AppColors.textPrimary,
                               ),
                             ),
@@ -4370,7 +4371,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                               'Verify Email Now',
                               style: TextStyle(
                                 fontSize: 10,
-                                fontWeight: FontWeight.w800,
+                                fontWeight: FontWeight.w700,
                               ),
                             ),
                           ),
@@ -4404,7 +4405,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                   : 'Email Verified',
                               style: const TextStyle(
                                 fontSize: 11,
-                                fontWeight: FontWeight.w700,
+                                fontWeight: FontWeight.w600,
                                 color: Color(0xFF15803D),
                               ),
                             ),
@@ -4439,7 +4440,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                         children: [
                           Text(
                             'Open To',
-                            style: TextStyle(fontWeight: FontWeight.w800),
+                            style: TextStyle(fontWeight: FontWeight.w700),
                           ),
                           SizedBox(width: 4),
                           Icon(Icons.keyboard_arrow_down_rounded, size: 18),
@@ -4467,7 +4468,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                         children: [
                           Text(
                             'Add Profile Section',
-                            style: TextStyle(fontWeight: FontWeight.w700),
+                            style: TextStyle(fontWeight: FontWeight.w600),
                           ),
                           SizedBox(width: 4),
                           Icon(Icons.add_rounded, size: 18),
@@ -4492,7 +4493,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       ),
                       child: const Text(
                         'More',
-                        style: TextStyle(fontWeight: FontWeight.w700),
+                        style: TextStyle(fontWeight: FontWeight.w600),
                       ),
                     ),
                   ],
@@ -4554,7 +4555,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 24,
-                      fontWeight: FontWeight.w900,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
                 ],
@@ -4590,7 +4591,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                         color: Color(
                           0xFFF97316,
                         ), // Brand Orange from screenshot
-                        fontWeight: FontWeight.w800,
+                        fontWeight: FontWeight.w700,
                         fontSize: 13,
                       ),
                     ),
@@ -4636,7 +4637,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     'Profile Language',
                     style: TextStyle(
                       fontSize: 15,
-                      fontWeight: FontWeight.w800,
+                      fontWeight: FontWeight.w700,
                       color: AppColors.textPrimary,
                     ),
                   ),
@@ -4704,7 +4705,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                         'Public Profile & URL',
                         style: TextStyle(
                           fontSize: 15,
-                          fontWeight: FontWeight.w800,
+                          fontWeight: FontWeight.w700,
                           color: AppColors.textPrimary,
                         ),
                       ),
@@ -4786,7 +4787,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       'Select Profile Language',
                       style: TextStyle(
                         fontSize: 18,
-                        fontWeight: FontWeight.w800,
+                        fontWeight: FontWeight.w700,
                         color: AppColors.textPrimary,
                       ),
                     ),
@@ -4805,7 +4806,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               ListTile(
                 title: const Text(
                   'English (Default)',
-                  style: TextStyle(fontWeight: FontWeight.w700),
+                  style: TextStyle(fontWeight: FontWeight.w600),
                 ),
                 trailing: const Icon(Icons.check, color: AppColors.primary),
                 onTap: () => Navigator.pop(ctx),
@@ -4856,7 +4857,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
                           fontSize: 13,
-                          fontWeight: FontWeight.w800,
+                          fontWeight: FontWeight.w700,
                           color: AppColors.primary,
                         ),
                       ),
@@ -4918,7 +4919,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
                           fontSize: 13,
-                          fontWeight: FontWeight.w800,
+                          fontWeight: FontWeight.w700,
                           color: AppColors.primary,
                         ),
                       ),
@@ -4968,24 +4969,17 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   Widget _buildProfileCompletenessCard(UserProfile? user) {
     if (user == null) return const SizedBox.shrink();
 
-    bool hasExp = user.experience.isNotEmpty;
-    // A saved photo that does not load is not counted as done.
-    final photoUrl = ApiConstants.resolveImageUrl(user.profileImage);
-    bool hasPhoto = photoUrl.isNotEmpty && _failedAvatarUrl != photoUrl;
-    bool hasEdu = user.education.isNotEmpty;
-    bool hasSkills = user.skills.length >= 3;
-    bool hasAbout = user.about.isNotEmpty;
-    bool hasHeadline = user.headline.isNotEmpty && user.city.isNotEmpty;
-    bool hasEmail = user.isEmailVerified;
-
-    int percentage = 0;
-    if (hasExp) percentage += 15;
-    if (hasPhoto) percentage += 15;
-    if (hasEdu) percentage += 15;
-    if (hasSkills) percentage += 15;
-    if (hasAbout) percentage += 15;
-    if (hasHeadline) percentage += 15;
-    if (hasEmail) percentage += 10;
+    // Same score as the Home card (a saved photo that does not load is
+    // not counted as done).
+    final strength = ProfileStrength.of(user, failedPhotoUrl: _failedAvatarUrl);
+    final hasExp = strength.has(ProfileStep.experience);
+    final hasPhoto = strength.has(ProfileStep.photo);
+    final hasEdu = strength.has(ProfileStep.education);
+    final hasSkills = strength.has(ProfileStep.skills);
+    final hasAbout = strength.has(ProfileStep.about);
+    final hasHeadline = strength.has(ProfileStep.headline);
+    final hasEmail = strength.has(ProfileStep.email);
+    final percentage = strength.percent;
 
     return Container(
       padding: const EdgeInsets.all(18),
@@ -5007,7 +5001,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     fontSize: 18,
-                    fontWeight: FontWeight.w900,
+                    fontWeight: FontWeight.w700,
                     color: AppColors.textPrimary,
                   ),
                 ),
@@ -5020,7 +5014,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       text: '$percentage% ',
                       style: const TextStyle(
                         fontSize: 20,
-                        fontWeight: FontWeight.w900,
+                        fontWeight: FontWeight.w700,
                         color: AppColors.blue,
                       ),
                     ),
@@ -5028,7 +5022,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       text: 'completed',
                       style: TextStyle(
                         fontSize: 12,
-                        fontWeight: FontWeight.w700,
+                        fontWeight: FontWeight.w600,
                         color: AppColors.textSecondary,
                       ),
                     ),
@@ -5067,7 +5061,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   'SUGGESTED STEPS TO REACH 100%:',
                   style: TextStyle(
                     fontSize: 11,
-                    fontWeight: FontWeight.w900,
+                    fontWeight: FontWeight.w700,
                     color: AppColors.textLight,
                     letterSpacing: 0.5,
                   ),
@@ -5085,7 +5079,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       : 'Show Details v',
                   style: const TextStyle(
                     fontSize: 11.5,
-                    fontWeight: FontWeight.w700,
+                    fontWeight: FontWeight.w600,
                     color: AppColors.blue,
                   ),
                 ),
@@ -5140,7 +5134,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               'COMPLETENESS BREAKDOWN:',
               style: TextStyle(
                 fontSize: 11,
-                fontWeight: FontWeight.w900,
+                fontWeight: FontWeight.w700,
                 color: AppColors.textLight,
                 letterSpacing: 0.5,
               ),
@@ -5224,7 +5218,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           style: const TextStyle(
             color: AppColors.blue,
             fontSize: 11.5,
-            fontWeight: FontWeight.w700,
+            fontWeight: FontWeight.w600,
           ),
         ),
       ),
@@ -5268,7 +5262,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 title,
                 style: const TextStyle(
                   fontSize: 11,
-                  fontWeight: FontWeight.w700,
+                  fontWeight: FontWeight.w600,
                   color: AppColors.textPrimary,
                 ),
                 maxLines: 1,
@@ -5288,7 +5282,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 isCompleted ? 'Completed' : 'Pending',
                 style: TextStyle(
                   fontSize: 8.5,
-                  fontWeight: FontWeight.w800,
+                  fontWeight: FontWeight.w700,
                   color: isCompleted
                       ? const Color(0xFF047857) // Dark emerald
                       : const Color(0xFFB45309), // Dark amber
@@ -5323,7 +5317,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               Flexible(
                 child: Text(
                   'Resume & CV Document',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
                 ),
               ),
               Icon(Icons.picture_as_pdf_rounded, color: AppColors.primary),
@@ -5348,7 +5342,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 label: Text(
                   hasResume ? 'Update Resume' : 'Upload Resume (PDF)',
                   style: const TextStyle(
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w700,
                     fontSize: 12,
                   ),
                 ),
@@ -5367,7 +5361,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   icon: const Icon(Icons.visibility_rounded, size: 16),
                   label: const Text(
                     'View Resume',
-                    style: TextStyle(fontWeight: FontWeight.w700, fontSize: 12),
+                    style: TextStyle(fontWeight: FontWeight.w600, fontSize: 12),
                   ),
                   style: OutlinedButton.styleFrom(
                     foregroundColor: AppColors.primary,
@@ -5410,14 +5404,14 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               const Flexible(
                 child: Text(
                   'People Who Viewed / Connect',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
                 ),
               ),
               TextButton(
                 onPressed: () => AuthGuard.openProtected(context, '/network'),
                 child: const Text(
                   'View All',
-                  style: TextStyle(fontWeight: FontWeight.w700),
+                  style: TextStyle(fontWeight: FontWeight.w600),
                 ),
               ),
             ],
@@ -5458,7 +5452,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               Flexible(
                 child: Text(
                   'Our Experts & Mentors',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
                 ),
               ),
               Icon(Icons.verified_rounded, color: AppColors.primary),
@@ -5484,7 +5478,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     Text(
                       'Career Mentorship',
                       style: TextStyle(
-                        fontWeight: FontWeight.w800,
+                        fontWeight: FontWeight.w700,
                         fontSize: 13,
                       ),
                     ),
@@ -5516,7 +5510,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 ),
                 child: const Text(
                   'Find Mentors',
-                  style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800),
+                  style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700),
                 ),
               ),
             ],
@@ -5639,7 +5633,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                             : 'Edit Project',
                         style: const TextStyle(
                           fontSize: 20,
-                          fontWeight: FontWeight.w800,
+                          fontWeight: FontWeight.w700,
                           color: AppColors.textPrimary,
                         ),
                       ),
@@ -5674,7 +5668,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                 text: '*',
                                 style: TextStyle(
                                   color: Colors.red,
-                                  fontWeight: FontWeight.w700,
+                                  fontWeight: FontWeight.w600,
                                 ),
                               ),
                             ],
@@ -6269,7 +6263,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                           'Delete',
                           style: TextStyle(
                             color: AppColors.error,
-                            fontWeight: FontWeight.w700,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
                       ),
@@ -6291,7 +6285,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                         'Cancel',
                         style: TextStyle(
                           color: Color(0xFF1E293B),
-                          fontWeight: FontWeight.w700,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                     ),
@@ -6374,7 +6368,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                             ? 'Save Project'
                             : 'Update Project',
                         style: const TextStyle(
-                          fontWeight: FontWeight.w800,
+                          fontWeight: FontWeight.w700,
                           fontSize: 14,
                         ),
                       ),
@@ -6411,7 +6405,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   'Projects',
                   style: TextStyle(
                     fontSize: 16,
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w700,
                     color: AppColors.textPrimary,
                   ),
                 ),
@@ -6421,7 +6415,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 icon: const Icon(Icons.add, size: 16),
                 label: const Text(
                   'Add Project',
-                  style: TextStyle(fontWeight: FontWeight.w700, fontSize: 12),
+                  style: TextStyle(fontWeight: FontWeight.w600, fontSize: 12),
                 ),
                 style: OutlinedButton.styleFrom(
                   foregroundColor: AppColors.blue,
@@ -6459,7 +6453,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     'Showcase your projects and assignments',
                     style: TextStyle(
                       fontSize: 14,
-                      fontWeight: FontWeight.w800,
+                      fontWeight: FontWeight.w700,
                       color: AppColors.textPrimary,
                     ),
                   ),
@@ -6491,7 +6485,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     child: const Text(
                       '+ Add Your First Project',
                       style: TextStyle(
-                        fontWeight: FontWeight.w800,
+                        fontWeight: FontWeight.w700,
                         fontSize: 13,
                       ),
                     ),
@@ -6542,7 +6536,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                         Text(
                                           p.title,
                                           style: const TextStyle(
-                                            fontWeight: FontWeight.w800,
+                                            fontWeight: FontWeight.w700,
                                             fontSize: 14,
                                             color: AppColors.textPrimary,
                                           ),
@@ -6654,7 +6648,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                           p.link,
                                           style: const TextStyle(
                                             fontSize: 11,
-                                            fontWeight: FontWeight.w700,
+                                            fontWeight: FontWeight.w600,
                                             color: AppColors.blue,
                                           ),
                                           maxLines: 1,
@@ -6708,7 +6702,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                         'Jobs Based On Your Profile',
                         style: TextStyle(
                           fontSize: 16,
-                          fontWeight: FontWeight.w800,
+                          fontWeight: FontWeight.w700,
                           color: AppColors.textPrimary,
                         ),
                       ),
@@ -6734,7 +6728,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     'See All',
                     style: TextStyle(
                       color: AppColors.primary,
-                      fontWeight: FontWeight.w800,
+                      fontWeight: FontWeight.w700,
                       fontSize: 13,
                     ),
                   ),
@@ -6825,7 +6819,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                         initial,
                         style: const TextStyle(
                           fontSize: 17,
-                          fontWeight: FontWeight.w800,
+                          fontWeight: FontWeight.w700,
                           color: AppColors.primary,
                         ),
                       ),
@@ -6841,7 +6835,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                             overflow: TextOverflow.ellipsis,
                             style: const TextStyle(
                               fontSize: 14,
-                              fontWeight: FontWeight.w800,
+                              fontWeight: FontWeight.w700,
                               color: AppColors.textPrimary,
                               height: 1.25,
                             ),
@@ -6891,7 +6885,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                             overflow: TextOverflow.ellipsis,
                             style: const TextStyle(
                               fontSize: 11,
-                              fontWeight: FontWeight.w700,
+                              fontWeight: FontWeight.w600,
                               color: AppColors.primary,
                             ),
                           ),
@@ -6902,7 +6896,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       'View',
                       style: TextStyle(
                         fontSize: 12.5,
-                        fontWeight: FontWeight.w800,
+                        fontWeight: FontWeight.w700,
                         color: AppColors.primary,
                       ),
                     ),
@@ -6975,7 +6969,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 actionLabel,
                 style: const TextStyle(
                   color: AppColors.primary,
-                  fontWeight: FontWeight.w800,
+                  fontWeight: FontWeight.w700,
                 ),
               ),
             ),
@@ -7010,7 +7004,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       appBar: AppBar(
         title: const Text(
           'Candidate Profile & CV',
-          style: TextStyle(fontWeight: FontWeight.w800),
+          style: TextStyle(fontWeight: FontWeight.w700),
         ),
         backgroundColor: Colors.white,
         elevation: 0.5,
@@ -7092,7 +7086,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                       'About',
                                       style: TextStyle(
                                         fontSize: 16,
-                                        fontWeight: FontWeight.w800,
+                                        fontWeight: FontWeight.w700,
                                         color: AppColors.textPrimary,
                                       ),
                                     ),
@@ -7153,7 +7147,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                       'Experience',
                                       style: TextStyle(
                                         fontSize: 16,
-                                        fontWeight: FontWeight.w800,
+                                        fontWeight: FontWeight.w700,
                                       ),
                                     ),
                                     Row(
@@ -7206,7 +7200,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                                     exp.title,
                                                     style: const TextStyle(
                                                       fontWeight:
-                                                          FontWeight.w800,
+                                                          FontWeight.w700,
                                                       fontSize: 14,
                                                     ),
                                                   ),
@@ -7278,7 +7272,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                       'Education',
                                       style: TextStyle(
                                         fontSize: 16,
-                                        fontWeight: FontWeight.w800,
+                                        fontWeight: FontWeight.w700,
                                       ),
                                     ),
                                     Row(
@@ -7332,7 +7326,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                                     edu.schoolName,
                                                     style: const TextStyle(
                                                       fontWeight:
-                                                          FontWeight.w800,
+                                                          FontWeight.w700,
                                                       fontSize: 14,
                                                     ),
                                                   ),
@@ -7412,7 +7406,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                       'My Skill Tags',
                                       style: TextStyle(
                                         fontSize: 16,
-                                        fontWeight: FontWeight.w800,
+                                        fontWeight: FontWeight.w700,
                                       ),
                                     ),
                                     IconButton(
@@ -7447,7 +7441,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                         backgroundColor: AppColors.primaryLight,
                                         labelStyle: const TextStyle(
                                           color: AppColors.primary,
-                                          fontWeight: FontWeight.w700,
+                                          fontWeight: FontWeight.w600,
                                           fontSize: 12,
                                         ),
                                       );
@@ -7492,7 +7486,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                       'Personal Info',
                                       style: TextStyle(
                                         fontSize: 16,
-                                        fontWeight: FontWeight.w800,
+                                        fontWeight: FontWeight.w700,
                                       ),
                                     ),
                                     if (user != null)
@@ -7577,7 +7571,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                               label: const Text(
                                 'Log Out',
                                 style: TextStyle(
-                                  fontWeight: FontWeight.w800,
+                                  fontWeight: FontWeight.w700,
                                   fontSize: 15,
                                   color: Color(0xFFDC2626),
                                 ),
@@ -7598,7 +7592,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                               icon: const Icon(Icons.login_rounded, size: 20),
                               label: const Text(
                                 'Sign In / Register',
-                                style: TextStyle(fontWeight: FontWeight.w700),
+                                style: TextStyle(fontWeight: FontWeight.w600),
                               ),
                             ),
                           ],
@@ -7635,7 +7629,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               textAlign: TextAlign.right,
               style: const TextStyle(
                 color: AppColors.textPrimary,
-                fontWeight: FontWeight.w700,
+                fontWeight: FontWeight.w600,
                 fontSize: 13,
               ),
             ),
@@ -7658,7 +7652,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               'Log Out',
               style: TextStyle(
                 fontSize: 18,
-                fontWeight: FontWeight.w800,
+                fontWeight: FontWeight.w700,
                 color: AppColors.textPrimary,
               ),
             ),
@@ -7674,7 +7668,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             child: const Text(
               'Cancel',
               style: TextStyle(
-                fontWeight: FontWeight.w700,
+                fontWeight: FontWeight.w600,
                 color: AppColors.textSecondary,
               ),
             ),
@@ -7702,7 +7696,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             ),
             child: const Text(
               'Log Out',
-              style: TextStyle(fontWeight: FontWeight.w800),
+              style: TextStyle(fontWeight: FontWeight.w700),
             ),
           ),
         ],

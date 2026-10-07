@@ -135,7 +135,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
           'Notifications',
           style: TextStyle(
             fontSize: 20,
-            fontWeight: FontWeight.w800,
+            fontWeight: FontWeight.w700,
             color: AppColors.textPrimary,
           ),
         ),
@@ -146,7 +146,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
               child: const Text(
                 'Mark all read',
                 style: TextStyle(
-                  fontWeight: FontWeight.w700,
+                  fontWeight: FontWeight.w600,
                   color: AppColors.blue,
                 ),
               ),
@@ -240,7 +240,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
                       fontSize: 17,
-                      fontWeight: FontWeight.w800,
+                      fontWeight: FontWeight.w700,
                       color: AppColors.textPrimary,
                     ),
                   ),
@@ -502,7 +502,7 @@ class _CategoryChip extends StatelessWidget {
                   label,
                   style: TextStyle(
                     fontSize: 13,
-                    fontWeight: FontWeight.w700,
+                    fontWeight: FontWeight.w600,
                     color: selected ? AppColors.white : AppColors.textPrimary,
                   ),
                 ),
@@ -528,7 +528,7 @@ class _SectionHeader extends StatelessWidget {
         label.toUpperCase(),
         style: const TextStyle(
           fontSize: 12,
-          fontWeight: FontWeight.w700,
+          fontWeight: FontWeight.w600,
           letterSpacing: 0.6,
           color: AppColors.textSecondary,
         ),
@@ -631,8 +631,8 @@ class _NotificationRow extends StatelessWidget {
                           text: '$name  ',
                           style: TextStyle(
                             fontWeight: unread
-                                ? FontWeight.w800
-                                : FontWeight.w700,
+                                ? FontWeight.w700
+                                : FontWeight.w600,
                             color: AppColors.textPrimary,
                           ),
                         ),
@@ -715,7 +715,7 @@ class _ActionPill extends StatelessWidget {
                 label,
                 style: const TextStyle(
                   fontSize: 13,
-                  fontWeight: FontWeight.w700,
+                  fontWeight: FontWeight.w600,
                   color: AppColors.brandNavy,
                 ),
               ),
@@ -768,7 +768,7 @@ class _EmptyState extends StatelessWidget {
           textAlign: TextAlign.center,
           style: const TextStyle(
             fontSize: 16,
-            fontWeight: FontWeight.w800,
+            fontWeight: FontWeight.w700,
             color: AppColors.textPrimary,
           ),
         ),

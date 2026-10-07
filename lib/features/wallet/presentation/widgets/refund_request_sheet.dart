@@ -148,7 +148,7 @@ class _RefundRequestSheetState extends ConsumerState<RefundRequestSheet> {
                             'Request Refund / Raise Dispute',
                             style: TextStyle(
                               fontSize: 17,
-                              fontWeight: FontWeight.w800,
+                              fontWeight: FontWeight.w700,
                               height: 1.25,
                               color: AppColors.textPrimary,
                             ),
@@ -202,7 +202,7 @@ class _RefundRequestSheetState extends ConsumerState<RefundRequestSheet> {
                         ).format(txn.amount),
                         valueStyle: const TextStyle(
                           fontSize: 15,
-                          fontWeight: FontWeight.w900,
+                          fontWeight: FontWeight.w700,
                           color: AppColors.textPrimary,
                         ),
                       ),
@@ -218,7 +218,7 @@ class _RefundRequestSheetState extends ConsumerState<RefundRequestSheet> {
                           txn.balanceLabel!,
                           valueStyle: const TextStyle(
                             fontSize: 13,
-                            fontWeight: FontWeight.w700,
+                            fontWeight: FontWeight.w600,
                             color: AppColors.moduleExperts,
                           ),
                         ),
@@ -357,7 +357,7 @@ class _RefundRequestSheetState extends ConsumerState<RefundRequestSheet> {
                               ),
                               TextSpan(
                                 text: '24 to 48 hours',
-                                style: TextStyle(fontWeight: FontWeight.w800),
+                                style: TextStyle(fontWeight: FontWeight.w700),
                               ),
                               TextSpan(
                                 text:
@@ -366,7 +366,7 @@ class _RefundRequestSheetState extends ConsumerState<RefundRequestSheet> {
                               ),
                               TextSpan(
                                 text: 'Main balance',
-                                style: TextStyle(fontWeight: FontWeight.w800),
+                                style: TextStyle(fontWeight: FontWeight.w700),
                               ),
                               TextSpan(text: '.'),
                             ],
@@ -413,7 +413,7 @@ class _RefundRequestSheetState extends ConsumerState<RefundRequestSheet> {
                           ),
                           child: const Text(
                             'Cancel',
-                            style: TextStyle(fontWeight: FontWeight.w700),
+                            style: TextStyle(fontWeight: FontWeight.w600),
                           ),
                         ),
                       ),
@@ -448,7 +448,7 @@ class _RefundRequestSheetState extends ConsumerState<RefundRequestSheet> {
                                   'Submit dispute',
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
-                                  style: TextStyle(fontWeight: FontWeight.w800),
+                                  style: TextStyle(fontWeight: FontWeight.w700),
                                 ),
                         ),
                       ),
@@ -542,7 +542,7 @@ class _FieldLabel extends StatelessWidget {
             text,
             style: const TextStyle(
               fontSize: 13.5,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w700,
               color: AppColors.textPrimary,
             ),
           ),

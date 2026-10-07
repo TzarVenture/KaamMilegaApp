@@ -30,6 +30,7 @@ class FeaturedCompaniesSection extends ConsumerWidget {
                 height: rowHeight,
                 child: ListView.separated(
                   scrollDirection: Axis.horizontal,
+                  clipBehavior: Clip.none,
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   itemCount: companies.length,
                   separatorBuilder: (_, _) => const SizedBox(width: 12),
@@ -119,97 +120,95 @@ class CompanyCard extends StatelessWidget {
       company.location,
     ].where((v) => v.isNotEmpty).join(' · ');
 
-    return Material(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(16),
-      child: InkWell(
+    return HomeCardShadow(
+      child: Material(
+        color: AppColors.white,
         borderRadius: BorderRadius.circular(16),
-        onTap: () => _open(context),
-        child: Container(
-          width: FeaturedCompaniesSection.cardWidth,
-          padding: const EdgeInsets.all(14),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: AppColors.border),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  CompanyLogo(company: company, size: 52),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Flexible(
-                              child: Text(
-                                company.name,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w800,
-                                  color: AppColors.textPrimary,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(16),
+          onTap: () => _open(context),
+          child: Container(
+            width: FeaturedCompaniesSection.cardWidth,
+            padding: const EdgeInsets.all(14),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    CompanyLogo(company: company, size: 52),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Flexible(
+                                child: Text(
+                                  company.name,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w700,
+                                    color: AppColors.textPrimary,
+                                  ),
                                 ),
                               ),
-                            ),
-                            if (company.verified) ...[
-                              const SizedBox(width: 4),
-                              const Icon(
-                                Icons.verified_rounded,
-                                size: 16,
-                                color: AppColors.blue,
-                                semanticLabel: 'Verified',
-                              ),
+                              if (company.verified) ...[
+                                const SizedBox(width: 4),
+                                const Icon(
+                                  Icons.verified_rounded,
+                                  size: 16,
+                                  color: AppColors.blue,
+                                  semanticLabel: 'Verified',
+                                ),
+                              ],
                             ],
-                          ],
-                        ),
-                        if (details.isNotEmpty) ...[
-                          const SizedBox(height: 2),
-                          Text(
-                            details,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                              fontSize: 12,
-                              color: AppColors.textSecondary,
-                            ),
                           ),
+                          if (details.isNotEmpty) ...[
+                            const SizedBox(height: 2),
+                            Text(
+                              details,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                fontSize: 12,
+                                color: AppColors.textSecondary,
+                              ),
+                            ),
+                          ],
+                          if (company.verified) ...[
+                            const SizedBox(height: 6),
+                            const VerifiedEmployerPill(),
+                          ],
                         ],
-                        if (company.verified) ...[
-                          const SizedBox(height: 6),
-                          const VerifiedEmployerPill(),
-                        ],
-                      ],
+                      ),
                     ),
-                  ),
-                ],
-              ),
-              const Spacer(),
-              SizedBox(
-                width: double.infinity,
-                child: OutlinedButton(
-                  onPressed: () => _open(context),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: AppColors.primary,
-                    backgroundColor: AppColors.background,
-                    side: const BorderSide(color: AppColors.border),
-                    minimumSize: const Size(0, 42),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                  ],
+                ),
+                const Spacer(),
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton(
+                    onPressed: () => _open(context),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: AppColors.brandNavy,
+                      backgroundColor: AppColors.primaryLight,
+                      side: BorderSide.none,
+                      minimumSize: const Size(0, 42),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                     ),
-                  ),
-                  child: const Text(
-                    'View Jobs →',
-                    style: TextStyle(fontWeight: FontWeight.w800),
+                    child: const Text(
+                      'View Jobs →',
+                      style: TextStyle(fontWeight: FontWeight.w700),
+                    ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -231,7 +230,7 @@ class CompanyLogo extends StatelessWidget {
         company.initials.isNotEmpty ? company.initials : '?',
         style: TextStyle(
           fontSize: size * 0.34,
-          fontWeight: FontWeight.w800,
+          fontWeight: FontWeight.w700,
           color: AppColors.primary,
         ),
       ),
@@ -272,7 +271,7 @@ class VerifiedEmployerPill extends StatelessWidget {
         'Verified Employer',
         style: TextStyle(
           fontSize: 11,
-          fontWeight: FontWeight.w700,
+          fontWeight: FontWeight.w600,
           color: AppColors.verifiedBlue,
         ),
       ),

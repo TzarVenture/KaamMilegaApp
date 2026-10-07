@@ -661,7 +661,7 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
                       fontSize: 16,
-                      fontWeight: FontWeight.w800,
+                      fontWeight: FontWeight.w700,
                       color: AppColors.textPrimary,
                     ),
                   ),
@@ -752,7 +752,7 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
                               'Say hello!',
                               style: TextStyle(
                                 fontSize: 16,
-                                fontWeight: FontWeight.w800,
+                                fontWeight: FontWeight.w700,
                                 color: AppColors.textPrimary,
                               ),
                             ),
@@ -1173,7 +1173,7 @@ class _LiveStatusBanner extends StatelessWidget {
               style: const TextStyle(
                 fontSize: 11,
                 color: AppColors.warning,
-                fontWeight: FontWeight.w700,
+                fontWeight: FontWeight.w600,
               ),
             ),
           ),
@@ -1187,7 +1187,7 @@ class _LiveStatusBanner extends StatelessWidget {
               ),
               child: const Text(
                 'Retry',
-                style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800),
+                style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
               ),
             ),
         ],
@@ -1371,7 +1371,7 @@ class _ConnectFirstBar extends StatelessWidget {
                     pending ? 'Connection request pending' : 'Connect to chat',
                     style: const TextStyle(
                       fontSize: 14,
-                      fontWeight: FontWeight.w700,
+                      fontWeight: FontWeight.w600,
                       color: AppColors.textPrimary,
                     ),
                   ),

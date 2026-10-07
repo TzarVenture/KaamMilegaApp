@@ -89,7 +89,7 @@ class _CityPickerButtonState extends State<CityPickerButton> {
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
                         fontSize: 14,
-                        fontWeight: FontWeight.w700,
+                        fontWeight: FontWeight.w600,
                         color: AppColors.textPrimary,
                       ),
                     ),
@@ -420,7 +420,7 @@ class _CityDropdownPanelState extends ConsumerState<_CityDropdownPanel> {
                             style: TextStyle(
                               fontSize: 15,
                               fontWeight: selected
-                                  ? FontWeight.w700
+                                  ? FontWeight.w600
                                   : FontWeight.w400,
                               color: selected
                                   ? AppColors.brandNavy

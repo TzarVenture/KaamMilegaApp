@@ -57,7 +57,7 @@ class _ExpertDashboardScreenState extends ConsumerState<ExpertDashboardScreen> {
             labelColor: AppColors.brandNavy,
             unselectedLabelColor: AppColors.textSecondary,
             indicatorColor: AppColors.brandNavy,
-            labelStyle: TextStyle(fontSize: 13.5, fontWeight: FontWeight.w800),
+            labelStyle: TextStyle(fontSize: 13.5, fontWeight: FontWeight.w700),
             tabs: [
               Tab(text: 'Bookings'),
               Tab(text: 'My Sessions'),
@@ -95,7 +95,7 @@ class _NotExpertYet extends StatelessWidget {
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 16,
-                fontWeight: FontWeight.w800,
+                fontWeight: FontWeight.w700,
                 color: AppColors.textPrimary,
               ),
             ),
@@ -266,7 +266,7 @@ class _Figure extends StatelessWidget {
             value,
             style: const TextStyle(
               fontSize: 20,
-              fontWeight: FontWeight.w900,
+              fontWeight: FontWeight.w700,
               color: Colors.white,
             ),
           ),
@@ -438,7 +438,7 @@ class _ExpertBookingCardState extends ConsumerState<_ExpertBookingCard> {
                 child: Text(
                   name[0].toUpperCase(),
                   style: const TextStyle(
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w700,
                     color: AppColors.moduleExperts,
                   ),
                 ),
@@ -454,7 +454,7 @@ class _ExpertBookingCardState extends ConsumerState<_ExpertBookingCard> {
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
                         fontSize: 14.5,
-                        fontWeight: FontWeight.w800,
+                        fontWeight: FontWeight.w700,
                         color: AppColors.textPrimary,
                       ),
                     ),
@@ -641,7 +641,7 @@ class _MeetingLinkSheetState extends State<_MeetingLinkSheet> {
             'Meeting link',
             style: TextStyle(
               fontSize: 17,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w700,
               color: AppColors.textPrimary,
             ),
           ),
@@ -800,7 +800,7 @@ class _OfferingCard extends ConsumerWidget {
                       o.category,
                       style: const TextStyle(
                         fontSize: 11,
-                        fontWeight: FontWeight.w800,
+                        fontWeight: FontWeight.w700,
                         color: AppColors.moduleExperts,
                       ),
                     ),
@@ -811,7 +811,7 @@ class _OfferingCard extends ConsumerWidget {
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
                     fontSize: 15,
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w700,
                     color: AppColors.textPrimary,
                   ),
                 ),
@@ -898,7 +898,7 @@ class _StatusBadge extends StatelessWidget {
         label,
         style: TextStyle(
           fontSize: 11,
-          fontWeight: FontWeight.w800,
+          fontWeight: FontWeight.w700,
           color: color,
         ),
       ),
@@ -956,7 +956,7 @@ class _InfoChip extends StatelessWidget {
             text,
             style: const TextStyle(
               fontSize: 12,
-              fontWeight: FontWeight.w700,
+              fontWeight: FontWeight.w600,
               color: AppColors.textSecondary,
             ),
           ),
@@ -979,7 +979,7 @@ class _SectionTitle extends StatelessWidget {
         text,
         style: const TextStyle(
           fontSize: 13,
-          fontWeight: FontWeight.w800,
+          fontWeight: FontWeight.w700,
           color: AppColors.textSecondary,
         ),
       ),
@@ -1011,7 +1011,7 @@ class _EmptyState extends StatelessWidget {
             textAlign: TextAlign.center,
             style: const TextStyle(
               fontSize: 15,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w700,
               color: AppColors.textPrimary,
             ),
           ),

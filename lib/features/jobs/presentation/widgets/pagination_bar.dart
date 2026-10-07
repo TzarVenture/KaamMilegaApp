@@ -75,7 +75,7 @@ class PaginationBar extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 13,
                           fontWeight: isSelected
-                              ? FontWeight.w800
+                              ? FontWeight.w700
                               : FontWeight.w600,
                         ),
                       ),

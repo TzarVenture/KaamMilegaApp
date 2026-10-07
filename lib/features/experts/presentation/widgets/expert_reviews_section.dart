@@ -101,7 +101,7 @@ class ExpertReviewsSection extends ConsumerWidget {
                   ),
                   child: Text(
                     'See all ${data.reviews.length} reviews',
-                    style: const TextStyle(fontWeight: FontWeight.w700),
+                    style: const TextStyle(fontWeight: FontWeight.w600),
                   ),
                 ),
               ],
@@ -148,7 +148,7 @@ class ExpertReviewsSection extends ConsumerWidget {
                       '${data.totalReviews == 1 ? 'review' : 'reviews'}',
                       style: const TextStyle(
                         fontSize: 18,
-                        fontWeight: FontWeight.w800,
+                        fontWeight: FontWeight.w700,
                         color: AppColors.textPrimary,
                       ),
                     ),
@@ -201,7 +201,7 @@ class _Card extends StatelessWidget {
                       'Candidate Ratings & Reviews',
                       style: TextStyle(
                         fontSize: 16,
-                        fontWeight: FontWeight.w800,
+                        fontWeight: FontWeight.w700,
                         color: AppColors.textPrimary,
                       ),
                     ),
@@ -258,7 +258,7 @@ class _ScoreBadge extends StatelessWidget {
             style: const TextStyle(
               fontSize: 18,
               height: 1.1,
-              fontWeight: FontWeight.w900,
+              fontWeight: FontWeight.w700,
               color: AppColors.accentText,
             ),
           ),
@@ -301,7 +301,7 @@ class _VerifiedNote extends StatelessWidget {
                   'Verified Candidate Feedback',
                   style: TextStyle(
                     fontSize: 13,
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w700,
                     color: AppColors.success,
                   ),
                 ),
@@ -356,7 +356,7 @@ class _EmptyReviews extends StatelessWidget {
             'No Reviews Yet',
             style: TextStyle(
               fontSize: 14,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w700,
               color: AppColors.textPrimary,
             ),
           ),
@@ -368,7 +368,7 @@ class _EmptyReviews extends StatelessWidget {
                 TextSpan(
                   text: name.isNotEmpty ? name : 'this mentor',
                   style: const TextStyle(
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w700,
                     color: AppColors.textPrimary,
                   ),
                 ),
@@ -430,7 +430,7 @@ class _Summary extends StatelessWidget {
                 style: const TextStyle(
                   fontSize: 34,
                   height: 1.1,
-                  fontWeight: FontWeight.w900,
+                  fontWeight: FontWeight.w700,
                   color: AppColors.textPrimary,
                 ),
               ),
@@ -461,7 +461,7 @@ class _Summary extends StatelessWidget {
                             '$s',
                             style: const TextStyle(
                               fontSize: 12,
-                              fontWeight: FontWeight.w700,
+                              fontWeight: FontWeight.w600,
                               color: AppColors.textSecondary,
                             ),
                           ),
@@ -578,7 +578,7 @@ class _ReviewTileState extends State<ReviewTile> {
               child: Text(
                 name[0].toUpperCase(),
                 style: const TextStyle(
-                  fontWeight: FontWeight.w800,
+                  fontWeight: FontWeight.w700,
                   color: AppColors.moduleExperts,
                 ),
               ),
@@ -594,7 +594,7 @@ class _ReviewTileState extends State<ReviewTile> {
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
                       fontSize: 14,
-                      fontWeight: FontWeight.w700,
+                      fontWeight: FontWeight.w600,
                       color: AppColors.textPrimary,
                     ),
                   ),
@@ -648,7 +648,7 @@ class _ReviewTileState extends State<ReviewTile> {
                       'Verified session',
                       style: TextStyle(
                         fontSize: 10.5,
-                        fontWeight: FontWeight.w700,
+                        fontWeight: FontWeight.w600,
                         color: AppColors.success,
                       ),
                     ),

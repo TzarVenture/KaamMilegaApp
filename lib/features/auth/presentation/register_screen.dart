@@ -203,7 +203,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                           text: 'Call Or ',
                           style: TextStyle(
                             fontSize: 22,
-                            fontWeight: FontWeight.w900,
+                            fontWeight: FontWeight.w700,
                             color: AppColors.primary,
                             letterSpacing: -0.3,
                           ),
@@ -212,7 +212,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                           text: 'Talk ',
                           style: TextStyle(
                             fontSize: 22,
-                            fontWeight: FontWeight.w900,
+                            fontWeight: FontWeight.w700,
                             color: AppColors.accentOnLight,
                             letterSpacing: -0.3,
                           ),
@@ -221,7 +221,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                           text: 'To HR & Get A Job!',
                           style: TextStyle(
                             fontSize: 22,
-                            fontWeight: FontWeight.w900,
+                            fontWeight: FontWeight.w700,
                             color: AppColors.primary,
                             letterSpacing: -0.3,
                           ),
@@ -235,7 +235,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 14,
-                      fontWeight: FontWeight.w700,
+                      fontWeight: FontWeight.w600,
                       color: Color(0xFF475569),
                     ),
                   ),
@@ -265,7 +265,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                           'Create New Account',
                           style: TextStyle(
                             fontSize: 22,
-                            fontWeight: FontWeight.w900,
+                            fontWeight: FontWeight.w700,
                             color: AppColors.textPrimary,
                             letterSpacing: -0.5,
                           ),
@@ -288,7 +288,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                           'FULL NAME *',
                           style: TextStyle(
                             fontSize: 11,
-                            fontWeight: FontWeight.w900,
+                            fontWeight: FontWeight.w700,
                             color: AppColors.textSecondary,
                             letterSpacing: 0.5,
                           ),
@@ -340,7 +340,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                           'EMAIL ADDRESS *',
                           style: TextStyle(
                             fontSize: 11,
-                            fontWeight: FontWeight.w900,
+                            fontWeight: FontWeight.w700,
                             color: AppColors.textSecondary,
                             letterSpacing: 0.5,
                           ),
@@ -392,7 +392,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                           'SET PASSWORD * (MIN. 6 CHARACTERS)',
                           style: TextStyle(
                             fontSize: 11,
-                            fontWeight: FontWeight.w900,
+                            fontWeight: FontWeight.w700,
                             color: AppColors.textSecondary,
                             letterSpacing: 0.5,
                           ),
@@ -486,7 +486,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                                       'Create Account & Continue',
                                       style: TextStyle(
                                         fontSize: 15,
-                                        fontWeight: FontWeight.w800,
+                                        fontWeight: FontWeight.w700,
                                         color: Colors.white,
                                       ),
                                     ),
@@ -521,7 +521,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                                   'Sign In',
                                   style: TextStyle(
                                     fontSize: 13,
-                                    fontWeight: FontWeight.w800,
+                                    fontWeight: FontWeight.w700,
                                     color: AppColors.primary,
                                   ),
                                 ),

@@ -115,7 +115,7 @@ class ApplicationDetailScreen extends ConsumerWidget {
           'Application Details',
           style: TextStyle(
             fontSize: 18,
-            fontWeight: FontWeight.w800,
+            fontWeight: FontWeight.w700,
             color: AppColors.textPrimary,
           ),
         ),
@@ -182,7 +182,7 @@ class ApplicationDetailScreen extends ConsumerWidget {
                   app.jobTitle,
                   style: const TextStyle(
                     fontSize: 26,
-                    fontWeight: FontWeight.w900,
+                    fontWeight: FontWeight.w700,
                     color: AppColors.textPrimary,
                     letterSpacing: -0.5,
                   ),
@@ -231,7 +231,7 @@ class ApplicationDetailScreen extends ConsumerWidget {
                           'View Similar Jobs',
                           style: TextStyle(
                             fontSize: 14,
-                            fontWeight: FontWeight.w800,
+                            fontWeight: FontWeight.w700,
                             color: AppColors.blue,
                           ),
                         ),
@@ -261,7 +261,7 @@ class ApplicationDetailScreen extends ConsumerWidget {
                   'Application Status',
                   style: TextStyle(
                     fontSize: 20,
-                    fontWeight: FontWeight.w900,
+                    fontWeight: FontWeight.w700,
                     color: AppColors.textPrimary,
                   ),
                 ),
@@ -285,7 +285,7 @@ class ApplicationDetailScreen extends ConsumerWidget {
                   'What may work for you?',
                   style: TextStyle(
                     fontSize: 20,
-                    fontWeight: FontWeight.w900,
+                    fontWeight: FontWeight.w700,
                     color: AppColors.textPrimary,
                   ),
                 ),
@@ -402,7 +402,7 @@ class ApplicationDetailScreen extends ConsumerWidget {
                               overflow: TextOverflow.ellipsis,
                               style: const TextStyle(
                                 fontSize: 13,
-                                fontWeight: FontWeight.w700,
+                                fontWeight: FontWeight.w600,
                                 color: AppColors.textSecondary,
                               ),
                             ),
@@ -470,7 +470,7 @@ class ApplicationDetailScreen extends ConsumerWidget {
                             'Chat With HR',
                             style: TextStyle(
                               fontSize: 12,
-                              fontWeight: FontWeight.w800,
+                              fontWeight: FontWeight.w700,
                             ),
                           ),
                         ),
@@ -496,7 +496,7 @@ class ApplicationDetailScreen extends ConsumerWidget {
                             'Connect',
                             style: TextStyle(
                               fontSize: 13,
-                              fontWeight: FontWeight.w800,
+                              fontWeight: FontWeight.w700,
                             ),
                           ),
                         ),
@@ -622,7 +622,7 @@ class _ApplicationStepper extends StatelessWidget {
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 9,
-                      fontWeight: FontWeight.w900,
+                      fontWeight: FontWeight.w700,
                       height: 1.2,
                       letterSpacing: 0.3,
                       color: isPassed
@@ -673,7 +673,7 @@ class _MatchCriteriaItem extends StatelessWidget {
             title,
             style: TextStyle(
               fontSize: 14,
-              fontWeight: isMatched ? FontWeight.w800 : FontWeight.w700,
+              fontWeight: isMatched ? FontWeight.w700 : FontWeight.w600,
               color: isMatched
                   ? AppColors.textPrimary
                   : const Color(0xFF90A4AE),

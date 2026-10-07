@@ -94,7 +94,7 @@ class CategoryTopHeader extends ConsumerWidget {
                                 const TextSpan(
                                   style: TextStyle(
                                     fontSize: 18,
-                                    fontWeight: FontWeight.w900,
+                                    fontWeight: FontWeight.w700,
                                     letterSpacing: -0.3,
                                   ),
                                   children: [

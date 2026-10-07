@@ -219,7 +219,7 @@ class _WalletWithdrawScreenState extends ConsumerState<WalletWithdrawScreen> {
                 'Confirm withdrawal',
                 style: TextStyle(
                   fontSize: 17,
-                  fontWeight: FontWeight.w800,
+                  fontWeight: FontWeight.w700,
                   color: AppColors.textPrimary,
                 ),
               ),
@@ -257,7 +257,7 @@ class _WalletWithdrawScreenState extends ConsumerState<WalletWithdrawScreen> {
                 ),
                 child: const Text(
                   'Confirm & Request Payout',
-                  style: TextStyle(fontWeight: FontWeight.w700),
+                  style: TextStyle(fontWeight: FontWeight.w600),
                 ),
               ),
               const SizedBox(height: 6),
@@ -350,7 +350,7 @@ class _WalletWithdrawScreenState extends ConsumerState<WalletWithdrawScreen> {
                         'Coming Soon',
                         style: TextStyle(
                           fontSize: 16,
-                          fontWeight: FontWeight.w800,
+                          fontWeight: FontWeight.w700,
                           color: AppColors.textPrimary,
                         ),
                       ),
@@ -419,7 +419,7 @@ class _WalletWithdrawScreenState extends ConsumerState<WalletWithdrawScreen> {
                 ),
                 child: const Text(
                   'Return to Wallet',
-                  style: TextStyle(fontWeight: FontWeight.w700),
+                  style: TextStyle(fontWeight: FontWeight.w600),
                 ),
               ),
             ),
@@ -498,7 +498,7 @@ class _WalletWithdrawScreenState extends ConsumerState<WalletWithdrawScreen> {
             textAlign: TextAlign.end,
             style: const TextStyle(
               fontSize: 12,
-              fontWeight: FontWeight.w700,
+              fontWeight: FontWeight.w600,
               color: AppColors.textPrimary,
             ),
           ),
@@ -538,7 +538,7 @@ class _WalletWithdrawScreenState extends ConsumerState<WalletWithdrawScreen> {
           style: TextStyle(
             color: AppColors.textPrimary,
             fontSize: 18,
-            fontWeight: FontWeight.w700,
+            fontWeight: FontWeight.w600,
           ),
         ),
       ),
@@ -570,7 +570,7 @@ class _WalletWithdrawScreenState extends ConsumerState<WalletWithdrawScreen> {
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 26,
-                          fontWeight: FontWeight.w900,
+                          fontWeight: FontWeight.w700,
                         ),
                       ),
                     ],
@@ -595,7 +595,7 @@ class _WalletWithdrawScreenState extends ConsumerState<WalletWithdrawScreen> {
                       'Withdraw All',
                       style: TextStyle(
                         fontSize: 12,
-                        fontWeight: FontWeight.w700,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ),
@@ -610,7 +610,7 @@ class _WalletWithdrawScreenState extends ConsumerState<WalletWithdrawScreen> {
               'Withdrawal Amount',
               style: TextStyle(
                 fontSize: 14,
-                fontWeight: FontWeight.w700,
+                fontWeight: FontWeight.w600,
                 color: AppColors.textPrimary,
               ),
             ),
@@ -628,7 +628,7 @@ class _WalletWithdrawScreenState extends ConsumerState<WalletWithdrawScreen> {
                     '₹',
                     style: TextStyle(
                       fontSize: 26,
-                      fontWeight: FontWeight.w800,
+                      fontWeight: FontWeight.w700,
                       color: AppColors.accentOnLight,
                     ),
                   ),
@@ -640,7 +640,7 @@ class _WalletWithdrawScreenState extends ConsumerState<WalletWithdrawScreen> {
                       inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                       style: const TextStyle(
                         fontSize: 26,
-                        fontWeight: FontWeight.w800,
+                        fontWeight: FontWeight.w700,
                         color: AppColors.textPrimary,
                       ),
                       decoration: const InputDecoration(
@@ -661,7 +661,7 @@ class _WalletWithdrawScreenState extends ConsumerState<WalletWithdrawScreen> {
               'Withdrawal Method',
               style: TextStyle(
                 fontSize: 14,
-                fontWeight: FontWeight.w700,
+                fontWeight: FontWeight.w600,
                 color: AppColors.textPrimary,
               ),
             ),
@@ -690,7 +690,7 @@ class _WalletWithdrawScreenState extends ConsumerState<WalletWithdrawScreen> {
                         'Instant UPI',
                         style: TextStyle(
                           fontSize: 13,
-                          fontWeight: FontWeight.w700,
+                          fontWeight: FontWeight.w600,
                           color: _destinationType == 'UPI'
                               ? Colors.white
                               : const Color(0xFF334155),
@@ -722,7 +722,7 @@ class _WalletWithdrawScreenState extends ConsumerState<WalletWithdrawScreen> {
                         'Bank Transfer',
                         style: TextStyle(
                           fontSize: 13,
-                          fontWeight: FontWeight.w700,
+                          fontWeight: FontWeight.w600,
                           color: _destinationType == 'BANK'
                               ? Colors.white
                               : const Color(0xFF334155),
@@ -923,7 +923,7 @@ class _WalletWithdrawScreenState extends ConsumerState<WalletWithdrawScreen> {
                         'Request Payout',
                         style: TextStyle(
                           fontSize: 15,
-                          fontWeight: FontWeight.w700,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
               ),

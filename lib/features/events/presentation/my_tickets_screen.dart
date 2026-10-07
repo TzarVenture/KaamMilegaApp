@@ -23,7 +23,7 @@ class MyTicketsScreen extends ConsumerWidget {
       appBar: AppBar(
         title: const Text(
           'My Tickets',
-          style: TextStyle(fontWeight: FontWeight.w800),
+          style: TextStyle(fontWeight: FontWeight.w700),
         ),
         backgroundColor: Colors.white,
         elevation: 0.5,
@@ -117,7 +117,7 @@ class _TicketTile extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
                         fontSize: 14,
-                        fontWeight: FontWeight.w700,
+                        fontWeight: FontWeight.w600,
                         color: AppColors.textPrimary,
                       ),
                     ),

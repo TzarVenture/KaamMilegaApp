@@ -282,7 +282,7 @@ class _CompleteProfileScreenState extends ConsumerState<CompleteProfileScreen> {
             'Complete your profile',
             style: TextStyle(
               fontSize: 17,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w700,
               color: AppColors.textPrimary,
             ),
           ),
@@ -418,7 +418,7 @@ class _SectionLabel extends StatelessWidget {
         text,
         style: const TextStyle(
           fontSize: 14,
-          fontWeight: FontWeight.w700,
+          fontWeight: FontWeight.w600,
           color: AppColors.textPrimary,
         ),
       ),

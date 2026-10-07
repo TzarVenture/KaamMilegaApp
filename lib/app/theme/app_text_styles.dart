@@ -4,10 +4,8 @@ import 'app_colors.dart';
 
 /// Brand font families (bundled in `assets/fonts`, see pubspec.yaml).
 ///
-/// - Poppins: primary consumer font (400 body, 500 labels, 600 buttons and
-///   H3, 700 headings, 800 hero).
-/// - Inter: secondary font for form fields, captions / meta text,
-///   transaction ledgers and analytics.
+/// - Inter: the app's text font (body, labels, buttons, cards, forms).
+/// - Poppins: large headings, app bar and dialog titles, and the wordmark.
 /// - Noto Sans Devanagari: Hindi text (fallback everywhere) and the Hindi
 ///   brand tagline.
 class AppFonts {
@@ -26,6 +24,7 @@ class AppTextStyles {
 
   /// Display Hero: Poppins 800, line height 1.15, -0.025em.
   static const TextStyle displayXl = TextStyle(
+    fontFamily: AppFonts.primary,
     fontSize: 48,
     fontWeight: FontWeight.w800,
     color: AppColors.textPrimary,
@@ -35,6 +34,7 @@ class AppTextStyles {
 
   /// Heading 1: Poppins 700, line height 1.25, -0.02em.
   static const TextStyle displayLg = TextStyle(
+    fontFamily: AppFonts.primary,
     fontSize: 32,
     fontWeight: FontWeight.w700,
     color: AppColors.textPrimary,
@@ -44,6 +44,7 @@ class AppTextStyles {
 
   /// Heading 2 (large): Poppins 700, line height 1.3, -0.015em.
   static const TextStyle headingXl = TextStyle(
+    fontFamily: AppFonts.primary,
     fontSize: 28,
     fontWeight: FontWeight.w700,
     color: AppColors.textPrimary,
@@ -53,6 +54,7 @@ class AppTextStyles {
 
   /// Heading 2: Poppins 700, line height 1.3, -0.015em.
   static const TextStyle headingLg = TextStyle(
+    fontFamily: AppFonts.primary,
     fontSize: 24,
     fontWeight: FontWeight.w700,
     color: AppColors.textPrimary,
@@ -62,6 +64,7 @@ class AppTextStyles {
 
   /// Heading 3: Poppins 600, line height 1.35, -0.01em.
   static const TextStyle headingMd = TextStyle(
+    fontFamily: AppFonts.primary,
     fontSize: 18,
     fontWeight: FontWeight.w600,
     color: AppColors.textPrimary,

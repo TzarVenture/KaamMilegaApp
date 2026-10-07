@@ -25,7 +25,7 @@ class WalletDisputesScreen extends ConsumerWidget {
       appBar: AppBar(
         title: const Text(
           'Refund Requests',
-          style: TextStyle(fontWeight: FontWeight.w800),
+          style: TextStyle(fontWeight: FontWeight.w700),
         ),
         backgroundColor: Colors.white,
         elevation: 0.5,
@@ -118,7 +118,7 @@ class DisputeCard extends StatelessWidget {
                   WalletTransaction.titleForCategory(dispute.category),
                   style: const TextStyle(
                     fontSize: 14,
-                    fontWeight: FontWeight.w700,
+                    fontWeight: FontWeight.w600,
                     color: AppColors.textPrimary,
                   ),
                 ),
@@ -128,7 +128,7 @@ class DisputeCard extends StatelessWidget {
                 '₹${dispute.amount.toStringAsFixed(2)}',
                 style: const TextStyle(
                   fontSize: 14,
-                  fontWeight: FontWeight.w800,
+                  fontWeight: FontWeight.w700,
                   color: AppColors.textPrimary,
                 ),
               ),
@@ -150,7 +150,7 @@ class DisputeCard extends StatelessWidget {
                   dispute.status.label,
                   style: TextStyle(
                     fontSize: 11,
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w700,
                     color: color,
                   ),
                 ),

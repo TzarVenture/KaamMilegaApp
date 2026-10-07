@@ -96,7 +96,7 @@ class PeopleLikeYouCard extends ConsumerWidget {
               style: TextStyle(
                 fontSize: 12.5,
                 letterSpacing: 0.6,
-                fontWeight: FontWeight.w800,
+                fontWeight: FontWeight.w700,
               ),
             ),
           ),
@@ -203,7 +203,7 @@ class _Frame extends StatelessWidget {
             ),
             style: TextStyle(
               fontSize: 18,
-              fontWeight: FontWeight.w900,
+              fontWeight: FontWeight.w700,
               color: AppColors.textPrimary,
             ),
           ),
@@ -261,7 +261,7 @@ class _PersonRow extends ConsumerWidget {
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
                           fontSize: 15,
-                          fontWeight: FontWeight.w800,
+                          fontWeight: FontWeight.w700,
                           color: AppColors.textPrimary,
                         ),
                       ),
@@ -274,7 +274,7 @@ class _PersonRow extends ConsumerWidget {
                           style: const TextStyle(
                             fontSize: 10.5,
                             letterSpacing: 0.4,
-                            fontWeight: FontWeight.w700,
+                            fontWeight: FontWeight.w600,
                             color: AppColors.textSecondary,
                           ),
                         ),
@@ -324,7 +324,7 @@ class _PersonRow extends ConsumerWidget {
                                   person.match,
                                   style: const TextStyle(
                                     fontSize: 10.5,
-                                    fontWeight: FontWeight.w700,
+                                    fontWeight: FontWeight.w600,
                                     color: AppColors.success,
                                   ),
                                 ),
@@ -353,7 +353,7 @@ class _PersonRow extends ConsumerWidget {
                     'Chat',
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: TextStyle(fontWeight: FontWeight.w700),
+                    style: TextStyle(fontWeight: FontWeight.w600),
                   ),
                   style: OutlinedButton.styleFrom(
                     foregroundColor: AppColors.primary,

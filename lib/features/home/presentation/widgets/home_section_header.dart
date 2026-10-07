@@ -40,7 +40,7 @@ class HomeSectionHeader extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
                       fontSize: 17,
-                      fontWeight: FontWeight.w800,
+                      fontWeight: FontWeight.w700,
                       height: 1.25,
                       color: AppColors.textPrimary,
                     ),
@@ -72,7 +72,7 @@ class HomeSectionHeader extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 8),
                 textStyle: const TextStyle(
                   fontSize: 13,
-                  fontWeight: FontWeight.w700,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
               child: const Text('See All'),
@@ -80,6 +80,50 @@ class HomeSectionHeader extends StatelessWidget {
           ],
         ],
       ),
+    );
+  }
+}
+
+/// The look shared by every Home card: white, rounded, a soft shadow and
+/// no outline (the Home page behind is the light brand background).
+abstract final class HomeCard {
+  static const double radius = 16;
+
+  static final List<BoxShadow> shadow = [
+    BoxShadow(
+      color: AppColors.brandNavy.withValues(alpha: 0.07),
+      blurRadius: 14,
+      offset: const Offset(0, 4),
+    ),
+  ];
+
+  static BoxDecoration decoration({double radius = radius}) => BoxDecoration(
+    color: AppColors.white,
+    borderRadius: BorderRadius.circular(radius),
+    boxShadow: shadow,
+  );
+}
+
+/// Puts the Home card shadow around a card built with [Material] + InkWell
+/// (so the tap ripple stays inside the card).
+class HomeCardShadow extends StatelessWidget {
+  const HomeCardShadow({
+    super.key,
+    required this.child,
+    this.radius = HomeCard.radius,
+  });
+
+  final Widget child;
+  final double radius;
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(radius),
+        boxShadow: HomeCard.shadow,
+      ),
+      child: child,
     );
   }
 }

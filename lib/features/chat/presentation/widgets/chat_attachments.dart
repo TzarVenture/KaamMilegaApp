@@ -81,7 +81,7 @@ Future<ChatPickSource?> showAttachmentOptions(BuildContext context) {
                 'Share',
                 style: TextStyle(
                   fontSize: 16,
-                  fontWeight: FontWeight.w800,
+                  fontWeight: FontWeight.w700,
                   color: AppColors.textPrimary,
                 ),
               ),
@@ -337,7 +337,7 @@ class MessageAttachmentView extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
                         fontSize: 13,
-                        fontWeight: FontWeight.w700,
+                        fontWeight: FontWeight.w600,
                         color: fg,
                       ),
                     ),

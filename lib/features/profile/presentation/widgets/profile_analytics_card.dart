@@ -42,7 +42,7 @@ class ProfileAnalyticsCard extends StatelessWidget {
                 'Analytics',
                 style: TextStyle(
                   fontSize: 16,
-                  fontWeight: FontWeight.w800,
+                  fontWeight: FontWeight.w700,
                   color: AppColors.textPrimary,
                 ),
               ),
@@ -126,7 +126,7 @@ class ProfileAnalyticsCard extends StatelessWidget {
                     "See who's viewed your profile",
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
                   ),
                 ),
                 SizedBox(width: 4),
@@ -157,7 +157,7 @@ class ProfileAnalyticsCard extends StatelessWidget {
                 title,
                 style: const TextStyle(
                   fontSize: 17,
-                  fontWeight: FontWeight.w800,
+                  fontWeight: FontWeight.w700,
                   color: AppColors.textPrimary,
                 ),
               ),
@@ -229,7 +229,7 @@ class _MetricTile extends StatelessWidget {
                     maxLines: 1,
                     style: const TextStyle(
                       fontSize: 22,
-                      fontWeight: FontWeight.w900,
+                      fontWeight: FontWeight.w700,
                       color: AppColors.textPrimary,
                       height: 1.1,
                     ),

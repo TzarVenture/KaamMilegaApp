@@ -106,6 +106,7 @@ class PeopleRowSection extends ConsumerWidget {
           height: height,
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
+            clipBehavior: Clip.none,
             padding: const EdgeInsets.symmetric(horizontal: 16),
             itemCount: count,
             separatorBuilder: (_, _) => const SizedBox(width: 10),
@@ -218,72 +219,74 @@ class PersonConnectCard extends ConsumerWidget {
     final subtitle = _subtitle;
     final card = SizedBox(
       width: PeopleRowSection.cardWidth,
-      child: Material(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        child: InkWell(
+      child: HomeCardShadow(
+        child: Material(
+          color: AppColors.white,
           borderRadius: BorderRadius.circular(16),
-          onTap: () => AuthGuard.openProtected(
-            context,
-            '/members/${user.id}',
-            message: 'Please log in to view member profiles.',
-          ),
-          child: Ink(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: AppColors.border),
+          child: InkWell(
+            borderRadius: BorderRadius.circular(16),
+            onTap: () => AuthGuard.openProtected(
+              context,
+              '/members/${user.id}',
+              message: 'Please log in to view member profiles.',
             ),
-            child: Stack(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(10, 14, 10, 10),
-                  child: Column(
-                    children: [
-                      PersonAvatar(user: user, size: 52),
-                      const SizedBox(height: 8),
-                      Text(
-                        _name,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.textPrimary,
+            child: Ink(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Stack(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(10, 14, 10, 10),
+                    child: Column(
+                      children: [
+                        PersonAvatar(user: user, size: 52),
+                        const SizedBox(height: 8),
+                        Text(
+                          _name,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.textPrimary,
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        subtitle,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(
-                          fontSize: 12,
-                          color: AppColors.textSecondary,
+                        const SizedBox(height: 2),
+                        Text(
+                          subtitle,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: AppColors.textSecondary,
+                          ),
                         ),
-                      ),
-                      const Spacer(),
-                      const Divider(height: 14, color: AppColors.border),
-                      // One action: Connect, then Pending, then Message
-                      // once the request is accepted (as on the website).
-                      SizedBox(
-                        width: double.infinity,
-                        child: ConnectButton(
-                          userId: user.id,
-                          name: _name,
-                          height: 38,
-                          fontSize: 13,
-                          messageWhenConnected: true,
-                          showIcon: true,
+                        const Spacer(),
+                        const SizedBox(height: 12),
+                        // One action: Connect, then Pending, then Message
+                        // once the request is accepted (as on the website).
+                        SizedBox(
+                          width: double.infinity,
+                          child: ConnectButton(
+                            userId: user.id,
+                            name: _name,
+                            height: 38,
+                            fontSize: 13,
+                            messageWhenConnected: true,
+                            showIcon: true,
+                            tonal: true,
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
-                if (isExpert)
-                  const Positioned(top: 8, right: 8, child: _ExpertTag()),
-              ],
+                  if (isExpert)
+                    const Positioned(top: 8, right: 8, child: _ExpertTag()),
+                ],
+              ),
             ),
           ),
         ),
@@ -328,7 +331,7 @@ class PersonAvatar extends StatelessWidget {
         name.isNotEmpty ? name[0].toUpperCase() : '?',
         style: TextStyle(
           fontSize: size * 0.4,
-          fontWeight: FontWeight.w800,
+          fontWeight: FontWeight.w700,
           color: color,
         ),
       ),
@@ -351,7 +354,7 @@ class _ExpertTag extends StatelessWidget {
         'Expert',
         style: TextStyle(
           fontSize: 10.5,
-          fontWeight: FontWeight.w700,
+          fontWeight: FontWeight.w600,
           color: AppColors.moduleExperts,
         ),
       ),

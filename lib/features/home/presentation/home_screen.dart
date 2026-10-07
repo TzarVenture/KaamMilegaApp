@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../app/theme/app_colors.dart';
+import '../../../app/theme/app_text_styles.dart';
 import '../../../shared/widgets/auth_prompt_dialog.dart';
 import '../../../shared/widgets/shimmer_loading.dart';
 import '../../../shared/widgets/voice_search_button.dart';
 import '../../applications/presentation/apply_modal.dart';
+import '../../../app/auth_guard.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../cities/presentation/city_dropdown.dart';
 import '../../jobs/models/job.dart';
@@ -16,6 +19,7 @@ import '../../../shared/widgets/notification_bell_button.dart';
 import '../../profile/presentation/widgets/profile_drawer.dart';
 import 'widgets/connect_like_you_section.dart';
 import 'widgets/home_section_header.dart';
+import 'widgets/home_welcome.dart';
 import 'widgets/featured_companies_section.dart';
 import 'widgets/job_categories_section.dart';
 import 'widgets/job_shortcuts_sections.dart';
@@ -112,7 +116,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     '₹99 One-Time Access',
                     style: TextStyle(
                       fontSize: 20,
-                      fontWeight: FontWeight.w900,
+                      fontWeight: FontWeight.w700,
                       color: AppColors.textPrimary,
                     ),
                   ),
@@ -130,7 +134,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     'LIFETIME UNLOCK',
                     style: TextStyle(
                       fontSize: 10,
-                      fontWeight: FontWeight.w900,
+                      fontWeight: FontWeight.w700,
                       color: Color(0xFF16A34A),
                     ),
                   ),
@@ -211,7 +215,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   'Get ₹99 Access Now →',
                   style: TextStyle(
                     fontSize: 15,
-                    fontWeight: FontWeight.w900,
+                    fontWeight: FontWeight.w700,
                     color: AppColors.onAccent,
                   ),
                 ),
@@ -275,7 +279,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
     return Scaffold(
       key: _scaffoldKey,
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.background,
       endDrawer: ProfileDrawer(onNavigateTab: widget.onNavigateTab),
       // 1. TOP APP BAR — same AppBar (height, padding, icons) as the Jobs
       // tab, so switching tabs does not move it. Stays while scrolling.
@@ -286,7 +290,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             Expanded(
               child: SingleChildScrollView(
                 controller: _scrollController,
-                physics: const BouncingScrollPhysics(),
+                // No bounce at the top: the navy header stays attached.
+                physics: const ClampingScrollPhysics(),
                 padding: const EdgeInsets.only(bottom: 24),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -295,13 +300,20 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     // then browse, then offers, then people. Every section
                     // uses HomeSectionHeader and the same gap between them.
 
-                    // Where and what: city, then search.
+                    // Navy header: greeting with the city, then search.
+                    _buildHeroHeader(currentCity),
+                    const SizedBox(height: 16),
+
+                    // Signed in: the user's numbers and profile progress
+                    // in one card.
                     FadeSlideIn(
-                      index: 0,
-                      child: _buildLocationSelector(currentCity),
+                      index: 1,
+                      child: HomeDashboardCard(
+                        onOpenProfile: () => widget.onNavigateTab?.call(4),
+                      ),
                     ),
-                    FadeSlideIn(index: 0, child: _buildSearchBox()),
-                    const SizedBox(height: 12),
+                    if (AuthGuard.isSignedIn(ref.watch(authProvider)))
+                      const SizedBox(height: 16),
 
                     // InstantMilega(TM) banner
                     FadeSlideIn(index: 1, child: _buildInstantMilegaBanner()),
@@ -392,8 +404,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   // ==========================================
   PreferredSizeWidget _buildTopBar() {
     return AppBar(
-      backgroundColor: Colors.white,
-      elevation: 0.5,
+      // Navy, flowing into the header below (no line between them).
+      backgroundColor: AppColors.brandNavy,
+      surfaceTintColor: AppColors.brandNavy,
+      elevation: 0,
+      scrolledUnderElevation: 0,
+      systemOverlayStyle: SystemUiOverlayStyle.light,
       automaticallyImplyLeading: false,
       titleSpacing: 16,
       // Logo: scrolls Home back to the top
@@ -421,16 +437,49 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Image.asset(
-                'assets/images/logo.png',
-                height: 30,
-                fit: BoxFit.contain,
+              // The K mark on a white tile (its dark parts would vanish
+              // on navy), then the name in white and brand orange.
+              Container(
+                width: 34,
+                height: 34,
+                padding: const EdgeInsets.all(4),
+                decoration: BoxDecoration(
+                  color: AppColors.white,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Image.asset(
+                  'assets/images/logo.png',
+                  fit: BoxFit.contain,
+                ),
               ),
-              const SizedBox(width: 8),
-              Image.asset(
-                'assets/images/logo_text.png',
-                height: 18,
-                fit: BoxFit.contain,
+              const SizedBox(width: 10),
+              Semantics(
+                label: 'KaamMilega',
+                excludeSemantics: true,
+                child: Text.rich(
+                  const TextSpan(
+                    children: [
+                      TextSpan(
+                        text: 'Kaammi',
+                        style: TextStyle(color: AppColors.white),
+                      ),
+                      TextSpan(
+                        text: 'lega',
+                        style: TextStyle(color: AppColors.accentBright),
+                      ),
+                      TextSpan(
+                        text: '™',
+                        style: TextStyle(color: AppColors.white, fontSize: 10),
+                      ),
+                    ],
+                  ),
+                  style: const TextStyle(
+                    fontFamily: AppFonts.primary,
+                    fontSize: 21,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: -0.3,
+                  ),
+                ),
               ),
             ],
           ),
@@ -438,13 +487,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       ),
       actions: [
         // Notification bell (shared button: ripple, tap area, badge).
-        const NotificationBellButton(color: Color(0xFF1E293B)),
+        const NotificationBellButton(color: AppColors.white),
 
         // Menu (opens the profile drawer)
         IconButton(
           icon: const Icon(
             Icons.menu_rounded,
-            color: Color(0xFF1E293B),
+            color: AppColors.white,
             size: 24,
           ),
           splashRadius: 20,
@@ -459,18 +508,50 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   // ==========================================
-  // 1b. CITY SELECTOR (scrolls with the page content)
+  // 1b. NAVY HEADER: greeting, city, search (scrolls with the page)
   // ==========================================
-  Widget _buildLocationSelector(String currentCity) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
-      // City filter: opens a dropdown with search right under the button
-      child: Align(
-        alignment: Alignment.centerLeft,
-        child: CityPickerButton(
-          currentCity: currentCity,
-          onSelected: (city) => ref.read(jobsProvider.notifier).setCity(city),
+  /// Navy panel under the app bar: greeting with the city picker, then
+  /// the search box. On narrow phones the city goes under the greeting.
+  Widget _buildHeroHeader(String currentCity) {
+    final city = CityPickerButton(
+      currentCity: currentCity,
+      onSelected: (c) => ref.read(jobsProvider.notifier).setCity(c),
+    );
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 20),
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [AppColors.brandNavy, AppColors.navy],
         ),
+        borderRadius: BorderRadius.vertical(bottom: Radius.circular(26)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          LayoutBuilder(
+            builder: (context, box) => box.maxWidth < 340
+                ? Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const HomeGreeting(),
+                      const SizedBox(height: 10),
+                      city,
+                    ],
+                  )
+                : Row(
+                    children: [
+                      const Expanded(child: HomeGreeting()),
+                      const SizedBox(width: 10),
+                      city,
+                    ],
+                  ),
+          ),
+          const SizedBox(height: 16),
+          _buildSearchBox(),
+        ],
       ),
     );
   }
@@ -498,8 +579,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   ];
 
   Widget _buildSearchBox() {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(14),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.black.withValues(alpha: 0.18),
+            blurRadius: 14,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
       child: TextField(
         controller: _searchController,
         textInputAction: TextInputAction.search,
@@ -514,10 +604,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           filled: true,
           fillColor: Colors.white,
           isDense: true,
-          contentPadding: const EdgeInsets.symmetric(vertical: 12),
+          contentPadding: const EdgeInsets.symmetric(vertical: 14),
           prefixIcon: const Icon(
             Icons.search_rounded,
-            color: AppColors.textSecondary,
+            color: AppColors.brandNavy,
           ),
           suffixIcon: VoiceSearchButton(
             color: AppColors.textSecondary,
@@ -531,15 +621,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           ),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(14),
-            borderSide: const BorderSide(color: AppColors.border),
+            borderSide: BorderSide.none,
           ),
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(14),
-            borderSide: const BorderSide(color: AppColors.border),
+            borderSide: BorderSide.none,
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(14),
-            borderSide: const BorderSide(color: AppColors.blue, width: 1.5),
+            borderSide: const BorderSide(color: AppColors.accent, width: 1.5),
           ),
         ),
       ),
@@ -608,7 +698,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     const TextSpan(
                       style: TextStyle(
                         fontSize: 16,
-                        fontWeight: FontWeight.w900,
+                        fontWeight: FontWeight.w700,
                         letterSpacing: -0.2,
                       ),
                       children: [
@@ -661,7 +751,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       'ONE TIME ACCESS',
                       style: TextStyle(
                         fontSize: 8.5,
-                        fontWeight: FontWeight.w900,
+                        fontWeight: FontWeight.w700,
                         color: AppColors.textPrimary,
                       ),
                     ),
@@ -677,7 +767,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               text: '₹99 ',
                               style: TextStyle(
                                 fontSize: 17,
-                                fontWeight: FontWeight.w900,
+                                fontWeight: FontWeight.w700,
                                 color: Colors.white,
                               ),
                             ),
@@ -685,7 +775,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               text: 'ONLY ',
                               style: TextStyle(
                                 fontSize: 8.5,
-                                fontWeight: FontWeight.w700,
+                                fontWeight: FontWeight.w600,
                                 color: Colors.white70,
                               ),
                             ),
@@ -792,7 +882,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   label,
                   style: const TextStyle(
                     fontSize: 11,
-                    fontWeight: FontWeight.w700,
+                    fontWeight: FontWeight.w600,
                     color: AppColors.textPrimary,
                   ),
                 ),
@@ -938,6 +1028,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             height: _recommendedRowHeight(context),
             child: ListView.separated(
               scrollDirection: Axis.horizontal,
+              clipBehavior: Clip.none,
               physics: const NeverScrollableScrollPhysics(),
               padding: const EdgeInsets.symmetric(horizontal: 16),
               itemCount: 3,
@@ -968,6 +1059,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           height: _recommendedRowHeight(context),
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
+            clipBehavior: Clip.none,
             physics: const BouncingScrollPhysics(),
             padding: const EdgeInsets.symmetric(horizontal: 16),
             itemCount: recommendedJobs.length,
@@ -991,18 +1083,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     return Container(
       width: 260,
       padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.border),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.02),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
+      decoration: HomeCard.decoration(),
       child: AppShimmer(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -1100,18 +1181,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         child: Container(
           width: 260,
           padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: AppColors.border),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.03),
-                blurRadius: 8,
-                offset: const Offset(0, 2),
-              ),
-            ],
-          ),
+          decoration: HomeCard.decoration(),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -1136,7 +1206,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           job.title,
                           style: const TextStyle(
                             fontSize: 13.5,
-                            fontWeight: FontWeight.w800,
+                            fontWeight: FontWeight.w700,
                             color: AppColors.textPrimary,
                           ),
                           maxLines: 1,
@@ -1167,7 +1237,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           text: job.formattedSalary,
                           style: const TextStyle(
                             fontSize: 12.5,
-                            fontWeight: FontWeight.w800,
+                            fontWeight: FontWeight.w700,
                             color: AppColors.textPrimary,
                           ),
                         ),
@@ -1211,7 +1281,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         job.jobType.isNotEmpty ? job.jobType : 'Job',
                         style: const TextStyle(
                           fontSize: 11.5,
-                          fontWeight: FontWeight.w800,
+                          fontWeight: FontWeight.w700,
                           color: AppColors.textPrimary,
                         ),
                       ),
@@ -1244,8 +1314,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       );
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primary,
-                      foregroundColor: Colors.white,
+                      backgroundColor: AppColors.primaryLight,
+                      foregroundColor: AppColors.brandNavy,
                       elevation: 0,
                       padding: const EdgeInsets.symmetric(
                         horizontal: 14,
@@ -1260,7 +1330,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       'Apply Now',
                       style: TextStyle(
                         fontSize: 11,
-                        fontWeight: FontWeight.w800,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
                   ),
@@ -1278,89 +1348,96 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   // ==========================================
   Widget _build99AccessBanner() {
     final benefits = [
-      {'icon': Icons.work_outline_rounded, 'label': 'Unlimited\nApplications'},
-      {'icon': Icons.search_rounded, 'label': 'Priority in\nSearch'},
-      {
-        'icon': Icons.people_outline_rounded,
-        'label': 'Connect with\nProviders',
-      },
-      {'icon': Icons.trending_up_rounded, 'label': 'Profile\nBoost'},
-      {'icon': Icons.security_outlined, 'label': 'InstantMilega™\nAccess'},
-      {'icon': Icons.timer_outlined, 'label': 'Earn More\nRewards'},
+      (Icons.work_outline_rounded, 'Unlimited applications'),
+      (Icons.search_rounded, 'Priority in search'),
+      (Icons.people_outline_rounded, 'Connect with providers'),
+      (Icons.trending_up_rounded, 'Profile boost'),
+      (Icons.bolt_rounded, 'InstantMilega™ access'),
+      (Icons.card_giftcard_rounded, 'Earn more rewards'),
     ];
+
+    Widget tile((IconData, String) b) => Expanded(
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 10),
+        decoration: BoxDecoration(
+          color: AppColors.white.withValues(alpha: 0.08),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Column(
+          children: [
+            Icon(b.$1, color: AppColors.topMatchGold, size: 20),
+            const SizedBox(height: 6),
+            Text(
+              b.$2,
+              textAlign: TextAlign.center,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: 10.5,
+                height: 1.25,
+                fontWeight: FontWeight.w500,
+                color: AppColors.white.withValues(alpha: 0.85),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    Widget tileRow(int from) => IntrinsicHeight(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          tile(benefits[from]),
+          const SizedBox(width: 8),
+          tile(benefits[from + 1]),
+          const SizedBox(width: 8),
+          tile(benefits[from + 2]),
+        ],
+      ),
+    );
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
-      padding: const EdgeInsets.all(18),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFF0F083B),
-        borderRadius: BorderRadius.circular(20),
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [AppColors.brandNavy, AppColors.navy],
+        ),
+        borderRadius: BorderRadius.circular(HomeCard.radius + 4),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF0F083B).withValues(alpha: 0.4),
-            blurRadius: 14,
-            offset: const Offset(0, 4),
+            color: AppColors.brandNavy.withValues(alpha: 0.25),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
           ),
         ],
       ),
       child: Column(
         children: [
-          // Title
           Text.rich(
             textAlign: TextAlign.center,
             const TextSpan(
               style: TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.w800,
-                color: Colors.white,
+                fontSize: 16,
+                fontWeight: FontWeight.w700,
+                color: AppColors.white,
               ),
               children: [
-                TextSpan(text: 'Unlock All Benefits with '),
+                TextSpan(text: 'Unlock all benefits with '),
                 TextSpan(
                   text: '₹99 Access',
-                  style: TextStyle(color: Color(0xFFFBBF24)),
+                  style: TextStyle(color: AppColors.topMatchGold),
                 ),
               ],
             ),
           ),
-          const SizedBox(height: 16),
-
-          // 6 Feature Items Row
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: benefits.map((b) {
-              final icon = b['icon'] as IconData;
-              final label = b['label'] as String;
-
-              return Expanded(
-                child: Column(
-                  children: [
-                    Container(
-                      width: 36,
-                      height: 36,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF281966),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Icon(icon, color: Colors.white, size: 18),
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      label,
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        fontSize: 8.5,
-                        color: Color(0xFFCBD5E1),
-                        fontWeight: FontWeight.w600,
-                        height: 1.15,
-                      ),
-                    ),
-                  ],
-                ),
-              );
-            }).toList(),
-          ),
+          const SizedBox(height: 14),
+          tileRow(0),
+          const SizedBox(height: 8),
+          tileRow(3),
           const SizedBox(height: 16),
 
           // CTA Gradient Button
@@ -1387,7 +1464,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   'Get ₹99 Access Now →',
                   style: TextStyle(
                     fontSize: 14.5,
-                    fontWeight: FontWeight.w900,
+                    fontWeight: FontWeight.w700,
                     color: AppColors.onAccent,
                   ),
                 ),
@@ -1422,153 +1499,133 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           onSeeAll: () => _goToJobsTabWithQuery(''),
         ),
         const SizedBox(height: HomeSectionHeader.gap),
-        ...topPicks.map((job) {
-          final isSaved = savedJobIds.contains(job.id);
-          final icon = _getJobCategoryIcon(job.title, job.jobType);
-          final iconColor = _getJobCategoryColor(job.title);
+        Container(
+          margin: const EdgeInsets.symmetric(horizontal: 16),
+          clipBehavior: Clip.antiAlias,
+          decoration: HomeCard.decoration(),
+          child: Material(
+            type: MaterialType.transparency,
+            child: Column(
+              children: [
+                for (final (i, job) in topPicks.indexed) ...[
+                  if (i > 0)
+                    const Divider(
+                      height: 1,
+                      indent: 76,
+                      color: AppColors.borderLight,
+                    ),
+                  _buildTopPickRow(job, savedJobIds.contains(job.id)),
+                ],
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
 
-          return Padding(
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-            child: PressableScale(
-              child: InkWell(
-                borderRadius: BorderRadius.circular(16),
-                onTap: () {
-                  if (job.id.isNotEmpty) {
-                    context.push('/jobs/${job.id}', extra: job);
-                  }
-                },
-                child: Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: AppColors.border),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.03),
-                        blurRadius: 8,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
+  Widget _buildTopPickRow(Job job, bool isSaved) {
+    final icon = _getJobCategoryIcon(job.title, job.jobType);
+    final iconColor = _getJobCategoryColor(job.title);
+    return InkWell(
+      onTap: () {
+        if (job.id.isNotEmpty) {
+          context.push('/jobs/${job.id}', extra: job);
+        }
+      },
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(12, 12, 4, 12),
+        child: Row(
+          children: [
+            Container(
+              width: 52,
+              height: 52,
+              decoration: BoxDecoration(
+                color: iconColor.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(icon, color: iconColor, size: 26),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    job.title,
+                    style: const TextStyle(
+                      fontSize: 14.5,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.textPrimary,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                  child: Row(
-                    children: [
-                      // Worker/Company Avatar
-                      Container(
-                        width: 58,
-                        height: 58,
-                        decoration: BoxDecoration(
-                          color: iconColor.withValues(alpha: 0.12),
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(
-                            color: iconColor.withValues(alpha: 0.2),
+                  // Company only when known (no empty line).
+                  if (job.company.trim().isNotEmpty) ...[
+                    const SizedBox(height: 2),
+                    Text(
+                      job.company,
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: AppColors.textSecondary,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                  const SizedBox(height: 4),
+                  Text.rich(
+                    TextSpan(
+                      children: [
+                        TextSpan(
+                          text: '${job.formattedSalary} /month',
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.textPrimary,
                           ),
                         ),
-                        child: Icon(icon, color: iconColor, size: 30),
-                      ),
-                      const SizedBox(width: 12),
-
-                      // Details
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              job.title,
-                              style: const TextStyle(
-                                fontSize: 14.5,
-                                fontWeight: FontWeight.w900,
-                                color: AppColors.textPrimary,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            // Company only when known (no empty line).
-                            if (job.company.trim().isNotEmpty) ...[
-                              const SizedBox(height: 2),
-                              Text(
-                                job.company,
-                                style: const TextStyle(
-                                  fontSize: 11.5,
-                                  color: AppColors.textSecondary,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ],
-                            const SizedBox(height: 4),
-                            Text(
-                              '${job.formattedSalary} /month',
-                              style: const TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w800,
-                                color: AppColors.textPrimary,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            const SizedBox(height: 2),
-                            Text(
-                              job.formattedLocation,
-                              style: const TextStyle(
-                                fontSize: 11,
-                                color: AppColors.textSecondary,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ],
-                        ),
-                      ),
-
-                      // Bookmark Button
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          IconButton(
-                            tooltip: isSaved ? 'Remove from saved' : 'Save job',
-                            icon: Icon(
-                              isSaved
-                                  ? Icons.bookmark_rounded
-                                  : Icons.bookmark_border_rounded,
-                              color: isSaved
-                                  ? AppColors.primary
-                                  : const Color(0xFF94A3B8),
-                              size: 24,
-                            ),
-                            constraints: const BoxConstraints(
-                              minWidth: 40,
-                              minHeight: 40,
-                            ),
-                            onPressed: () {
-                              ref
-                                  .read(jobsProvider.notifier)
-                                  .toggleSaveJob(job.id);
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                    isSaved
-                                        ? 'Job removed from saved jobs'
-                                        : 'Job saved successfully!',
-                                  ),
-                                  duration: const Duration(seconds: 2),
-                                ),
-                              );
-                            },
-                          ),
-                          // Hard-coded "4.7" rating removed: the backend has
-                          // no company ratings, so it was the same for every job.
-                        ],
-                      ),
-                    ],
+                        if (job.formattedLocation.isNotEmpty)
+                          TextSpan(text: '  ·  ${job.formattedLocation}'),
+                      ],
+                    ),
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: AppColors.textSecondary,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                ),
+                ],
               ),
             ),
-          );
-        }),
-      ],
+            IconButton(
+              tooltip: isSaved ? 'Remove from saved' : 'Save job',
+              icon: Icon(
+                isSaved
+                    ? Icons.bookmark_rounded
+                    : Icons.bookmark_border_rounded,
+                color: isSaved ? AppColors.primary : AppColors.textSecondary,
+                size: 22,
+              ),
+              constraints: const BoxConstraints(minWidth: 44, minHeight: 44),
+              onPressed: () {
+                ref.read(jobsProvider.notifier).toggleSaveJob(job.id);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      isSaved
+                          ? 'Job removed from saved jobs'
+                          : 'Job saved successfully!',
+                    ),
+                    duration: const Duration(seconds: 2),
+                  ),
+                );
+              },
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

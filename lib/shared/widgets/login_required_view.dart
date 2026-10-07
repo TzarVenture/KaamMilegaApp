@@ -44,7 +44,7 @@ class LoginRequiredView extends StatelessWidget {
               textAlign: TextAlign.center,
               style: const TextStyle(
                 fontSize: 18,
-                fontWeight: FontWeight.w800,
+                fontWeight: FontWeight.w700,
                 color: AppColors.textPrimary,
               ),
             ),
@@ -75,7 +75,7 @@ class LoginRequiredView extends StatelessWidget {
               ),
               child: const Text(
                 'Sign In',
-                style: TextStyle(fontWeight: FontWeight.w800, fontSize: 14),
+                style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
               ),
             ),
           ],

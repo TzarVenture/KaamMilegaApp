@@ -140,7 +140,7 @@ class _ChatReportSheetState extends ConsumerState<ChatReportSheet> {
                         'Report conversation',
                         style: TextStyle(
                           fontSize: 17,
-                          fontWeight: FontWeight.w800,
+                          fontWeight: FontWeight.w700,
                           color: AppColors.textPrimary,
                         ),
                       ),
@@ -163,7 +163,7 @@ class _ChatReportSheetState extends ConsumerState<ChatReportSheet> {
               'Why are you reporting this conversation?',
               style: TextStyle(
                 fontSize: 13,
-                fontWeight: FontWeight.w700,
+                fontWeight: FontWeight.w600,
                 color: AppColors.textPrimary,
               ),
             ),
@@ -212,7 +212,7 @@ class _ChatReportSheetState extends ConsumerState<ChatReportSheet> {
                 'Also block this user',
                 style: TextStyle(
                   fontSize: 14,
-                  fontWeight: FontWeight.w700,
+                  fontWeight: FontWeight.w600,
                   color: AppColors.textPrimary,
                 ),
               ),
@@ -271,7 +271,7 @@ class _ChatReportSheetState extends ConsumerState<ChatReportSheet> {
                             'Submit report',
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: TextStyle(fontWeight: FontWeight.w700),
+                            style: TextStyle(fontWeight: FontWeight.w600),
                           ),
                   ),
                 ),
@@ -336,7 +336,7 @@ class _ReasonTile extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 13.5,
                         fontWeight: selected
-                            ? FontWeight.w700
+                            ? FontWeight.w600
                             : FontWeight.w500,
                         color: AppColors.textPrimary,
                       ),

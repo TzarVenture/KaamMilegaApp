@@ -26,7 +26,7 @@ class PromoBanner extends StatelessWidget {
                   'Waiting To Get A Job?',
                   style: TextStyle(
                     fontSize: 17,
-                    fontWeight: FontWeight.w900,
+                    fontWeight: FontWeight.w700,
                     color: AppColors.textPrimary,
                   ),
                 ),

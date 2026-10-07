@@ -202,7 +202,7 @@ class _WalletAddMoneyScreenState extends ConsumerState<WalletAddMoneyScreen> {
                         'Coming Soon',
                         style: TextStyle(
                           fontSize: 16,
-                          fontWeight: FontWeight.w800,
+                          fontWeight: FontWeight.w700,
                           color: AppColors.textPrimary,
                         ),
                       ),
@@ -266,7 +266,7 @@ class _WalletAddMoneyScreenState extends ConsumerState<WalletAddMoneyScreen> {
                 ),
                 child: const Text(
                   'Return to Wallet',
-                  style: TextStyle(fontWeight: FontWeight.w700),
+                  style: TextStyle(fontWeight: FontWeight.w600),
                 ),
               ),
             ),
@@ -293,7 +293,7 @@ class _WalletAddMoneyScreenState extends ConsumerState<WalletAddMoneyScreen> {
           value,
           style: const TextStyle(
             fontSize: 12,
-            fontWeight: FontWeight.w700,
+            fontWeight: FontWeight.w600,
             color: AppColors.textPrimary,
           ),
         ),
@@ -331,7 +331,7 @@ class _WalletAddMoneyScreenState extends ConsumerState<WalletAddMoneyScreen> {
           style: TextStyle(
             color: AppColors.textPrimary,
             fontSize: 18,
-            fontWeight: FontWeight.w700,
+            fontWeight: FontWeight.w600,
           ),
         ),
       ),
@@ -369,7 +369,7 @@ class _WalletAddMoneyScreenState extends ConsumerState<WalletAddMoneyScreen> {
                     '₹${currentBalance.toStringAsFixed(currentBalance % 1 == 0 ? 0 : 2)}',
                     style: const TextStyle(
                       fontSize: 15,
-                      fontWeight: FontWeight.w800,
+                      fontWeight: FontWeight.w700,
                       color: AppColors.primary,
                     ),
                   ),
@@ -384,7 +384,7 @@ class _WalletAddMoneyScreenState extends ConsumerState<WalletAddMoneyScreen> {
               'Enter Amount',
               style: TextStyle(
                 fontSize: 14,
-                fontWeight: FontWeight.w700,
+                fontWeight: FontWeight.w600,
                 color: AppColors.textPrimary,
               ),
             ),
@@ -402,7 +402,7 @@ class _WalletAddMoneyScreenState extends ConsumerState<WalletAddMoneyScreen> {
                     '₹',
                     style: TextStyle(
                       fontSize: 28,
-                      fontWeight: FontWeight.w800,
+                      fontWeight: FontWeight.w700,
                       color: AppColors.primary,
                     ),
                   ),
@@ -414,7 +414,7 @@ class _WalletAddMoneyScreenState extends ConsumerState<WalletAddMoneyScreen> {
                       inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                       style: const TextStyle(
                         fontSize: 28,
-                        fontWeight: FontWeight.w800,
+                        fontWeight: FontWeight.w700,
                         color: AppColors.textPrimary,
                       ),
                       decoration: const InputDecoration(
@@ -456,7 +456,7 @@ class _WalletAddMoneyScreenState extends ConsumerState<WalletAddMoneyScreen> {
                           '+₹$amt',
                           style: TextStyle(
                             fontSize: 12,
-                            fontWeight: FontWeight.w700,
+                            fontWeight: FontWeight.w600,
                             color: isSelected
                                 ? Colors.white
                                 : const Color(0xFF334155),
@@ -476,7 +476,7 @@ class _WalletAddMoneyScreenState extends ConsumerState<WalletAddMoneyScreen> {
               'Select Payment Mode',
               style: TextStyle(
                 fontSize: 14,
-                fontWeight: FontWeight.w700,
+                fontWeight: FontWeight.w600,
                 color: AppColors.textPrimary,
               ),
             ),
@@ -561,7 +561,7 @@ class _WalletAddMoneyScreenState extends ConsumerState<WalletAddMoneyScreen> {
                         'Proceed to Pay',
                         style: TextStyle(
                           fontSize: 15,
-                          fontWeight: FontWeight.w700,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
               ),
@@ -621,7 +621,7 @@ class _WalletAddMoneyScreenState extends ConsumerState<WalletAddMoneyScreen> {
                     title,
                     style: TextStyle(
                       fontSize: 13,
-                      fontWeight: FontWeight.w700,
+                      fontWeight: FontWeight.w600,
                       color: isSelected
                           ? AppColors.textPrimary
                           : const Color(0xFF334155),

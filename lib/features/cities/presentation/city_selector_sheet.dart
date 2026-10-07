@@ -85,7 +85,7 @@ class _CitySelectorSheetState extends ConsumerState<CitySelectorSheet> {
                   'Select City',
                   style: TextStyle(
                     fontSize: 18,
-                    fontWeight: FontWeight.w700,
+                    fontWeight: FontWeight.w600,
                     color: AppColors.textPrimary,
                   ),
                 ),
@@ -238,7 +238,7 @@ class _CitySelectorSheetState extends ConsumerState<CitySelectorSheet> {
                           style: TextStyle(
                             fontSize: 14,
                             fontWeight: isSelected
-                                ? FontWeight.w700
+                                ? FontWeight.w600
                                 : FontWeight.w500,
                             color: isSelected
                                 ? AppColors.primary

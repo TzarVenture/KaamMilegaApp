@@ -180,7 +180,7 @@ class ProfileDrawer extends ConsumerWidget {
                                   userName,
                                   style: const TextStyle(
                                     fontSize: 16,
-                                    fontWeight: FontWeight.w800,
+                                    fontWeight: FontWeight.w700,
                                     color: AppColors.textPrimary,
                                   ),
                                   maxLines: 1,
@@ -233,7 +233,7 @@ class ProfileDrawer extends ConsumerWidget {
                               style: const TextStyle(
                                 color: AppColors.primary,
                                 fontSize: 13,
-                                fontWeight: FontWeight.w700,
+                                fontWeight: FontWeight.w600,
                               ),
                             ),
                           ),
@@ -576,7 +576,7 @@ class _ApplyExpertDrawerCard extends StatelessWidget {
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
                             fontSize: 14.5,
-                            fontWeight: FontWeight.w800,
+                            fontWeight: FontWeight.w700,
                             color: Colors.white,
                           ),
                         ),

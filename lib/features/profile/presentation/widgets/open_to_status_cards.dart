@@ -196,7 +196,7 @@ class _StatusCard extends StatelessWidget {
                           overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
                             fontSize: 15,
-                            fontWeight: FontWeight.w800,
+                            fontWeight: FontWeight.w700,
                             color: AppColors.textPrimary,
                           ),
                         ),
@@ -221,7 +221,7 @@ class _StatusCard extends StatelessWidget {
                               style: TextStyle(
                                 fontSize: 11,
                                 letterSpacing: 0.3,
-                                fontWeight: FontWeight.w800,
+                                fontWeight: FontWeight.w700,
                                 color: accent,
                               ),
                             ),
@@ -273,7 +273,7 @@ class _StatusCard extends StatelessWidget {
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
                               fontSize: 13.5,
-                              fontWeight: FontWeight.w800,
+                              fontWeight: FontWeight.w700,
                               color: accent,
                             ),
                           ),

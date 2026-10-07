@@ -249,7 +249,7 @@ class _EditPublicUrlDialogState extends ConsumerState<EditPublicUrlDialog> {
                       'PUBLIC PROFILE LINK',
                       style: TextStyle(
                         fontSize: 12,
-                        fontWeight: FontWeight.w800,
+                        fontWeight: FontWeight.w700,
                         letterSpacing: 0.6,
                         color: AppColors.textPrimary,
                       ),
@@ -357,7 +357,7 @@ class _Header extends StatelessWidget {
                   'Edit Custom URL',
                   style: TextStyle(
                     fontSize: 18,
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w700,
                     color: AppColors.textPrimary,
                   ),
                 ),
@@ -464,7 +464,7 @@ class _PreviewBox extends StatelessWidget {
                   'YOUR PUBLIC URL',
                   style: TextStyle(
                     fontSize: 11,
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w700,
                     letterSpacing: 0.6,
                     color: AppColors.blue,
                   ),
@@ -474,7 +474,7 @@ class _PreviewBox extends StatelessWidget {
                   preview,
                   style: const TextStyle(
                     fontSize: 13,
-                    fontWeight: FontWeight.w700,
+                    fontWeight: FontWeight.w600,
                     color: AppColors.textPrimary,
                   ),
                 ),
@@ -518,7 +518,7 @@ class _Guidelines extends StatelessWidget {
             'URL Guidelines:',
             style: TextStyle(
               fontSize: 13,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w700,
               color: AppColors.textPrimary,
             ),
           ),

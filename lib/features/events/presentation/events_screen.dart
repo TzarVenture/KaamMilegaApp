@@ -257,7 +257,7 @@ class _EventsScreenState extends ConsumerState<EventsScreen> {
                                       textAlign: TextAlign.center,
                                       style: const TextStyle(
                                         fontSize: 18,
-                                        fontWeight: FontWeight.w800,
+                                        fontWeight: FontWeight.w700,
                                         color: AppColors.textPrimary,
                                       ),
                                     ),
@@ -330,7 +330,7 @@ class _EventsScreenState extends ConsumerState<EventsScreen> {
                                   'Unable to load events',
                                   style: TextStyle(
                                     fontSize: 18,
-                                    fontWeight: FontWeight.w800,
+                                    fontWeight: FontWeight.w700,
                                     color: AppColors.textPrimary,
                                   ),
                                 ),
@@ -492,7 +492,7 @@ class _EventsScreenState extends ConsumerState<EventsScreen> {
                             event.dateString,
                             style: const TextStyle(
                               fontSize: 12,
-                              fontWeight: FontWeight.w800,
+                              fontWeight: FontWeight.w700,
                               color: AppColors.primary,
                             ),
                           ),
@@ -506,7 +506,7 @@ class _EventsScreenState extends ConsumerState<EventsScreen> {
                       event.title,
                       style: const TextStyle(
                         fontSize: 17,
-                        fontWeight: FontWeight.w800,
+                        fontWeight: FontWeight.w700,
                         color: AppColors.textPrimary,
                       ),
                     ),
@@ -571,7 +571,7 @@ class _EventsScreenState extends ConsumerState<EventsScreen> {
                                   '${event.attendeesCount} attending',
                                   style: TextStyle(
                                     fontSize: 12,
-                                    fontWeight: FontWeight.w700,
+                                    fontWeight: FontWeight.w600,
                                     color: event.attendeesCount > 0
                                         ? AppColors.blue
                                         : AppColors.textPrimary,
@@ -620,7 +620,7 @@ class _EventsScreenState extends ConsumerState<EventsScreen> {
                           : Text(
                               _cardLabel(event),
                               style: const TextStyle(
-                                fontWeight: FontWeight.w800,
+                                fontWeight: FontWeight.w700,
                               ),
                             ),
                     ),
@@ -691,7 +691,7 @@ class _PriceBadge extends StatelessWidget {
         event.priceLabel,
         style: TextStyle(
           fontSize: 11,
-          fontWeight: FontWeight.w800,
+          fontWeight: FontWeight.w700,
           color: paid ? AppColors.textPrimary : AppColors.success,
         ),
       ),

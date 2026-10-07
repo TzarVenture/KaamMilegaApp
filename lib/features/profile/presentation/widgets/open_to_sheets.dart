@@ -650,7 +650,7 @@ class _FormHeader extends StatelessWidget {
                       title,
                       style: const TextStyle(
                         fontSize: 18,
-                        fontWeight: FontWeight.w800,
+                        fontWeight: FontWeight.w700,
                         color: AppColors.textPrimary,
                       ),
                     ),
@@ -694,7 +694,7 @@ class _UpperLabel extends StatelessWidget {
         style: const TextStyle(
           fontSize: 12.5,
           letterSpacing: 0.6,
-          fontWeight: FontWeight.w800,
+          fontWeight: FontWeight.w700,
           color: AppColors.textPrimary,
         ),
       ),
@@ -827,7 +827,7 @@ class _TagFieldState extends State<_TagField> {
                           ),
                           labelStyle: TextStyle(
                             color: tone.foreground,
-                            fontWeight: FontWeight.w700,
+                            fontWeight: FontWeight.w600,
                             fontSize: 13,
                           ),
                           backgroundColor: tone.background,
@@ -894,7 +894,7 @@ class _TagFieldState extends State<_TagField> {
                       ),
                       child: const Text(
                         'Add',
-                        style: TextStyle(fontWeight: FontWeight.w800),
+                        style: TextStyle(fontWeight: FontWeight.w700),
                       ),
                     ),
                   ],
@@ -915,7 +915,7 @@ class _TagFieldState extends State<_TagField> {
                 style: TextStyle(
                   fontSize: 11,
                   letterSpacing: 0.6,
-                  fontWeight: FontWeight.w800,
+                  fontWeight: FontWeight.w700,
                   color: AppColors.textSecondary,
                 ),
               ),
@@ -967,7 +967,7 @@ class _JobTypeChip extends StatelessWidget {
       backgroundColor: Colors.white,
       labelStyle: TextStyle(
         color: selected ? Colors.white : AppColors.textPrimary,
-        fontWeight: FontWeight.w700,
+        fontWeight: FontWeight.w600,
         fontSize: 13,
       ),
       side: BorderSide(color: selected ? AppColors.primary : AppColors.border),
@@ -1054,7 +1054,7 @@ class _ChoiceTile extends StatelessWidget {
                         title,
                         style: const TextStyle(
                           fontSize: 14,
-                          fontWeight: FontWeight.w800,
+                          fontWeight: FontWeight.w700,
                           color: AppColors.textPrimary,
                         ),
                       ),
@@ -1185,7 +1185,7 @@ class _FormFooter extends StatelessWidget {
               saveLabel,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: const TextStyle(fontWeight: FontWeight.w800),
+              style: const TextStyle(fontWeight: FontWeight.w700),
             ),
     );
     final cancel = TextButton(
@@ -1198,7 +1198,7 @@ class _FormFooter extends StatelessWidget {
         'Cancel',
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
-        style: TextStyle(fontWeight: FontWeight.w700),
+        style: TextStyle(fontWeight: FontWeight.w600),
       ),
     );
     final remove = OutlinedButton.icon(
@@ -1208,7 +1208,7 @@ class _FormFooter extends StatelessWidget {
         removeLabel,
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
-        style: const TextStyle(fontWeight: FontWeight.w700),
+        style: const TextStyle(fontWeight: FontWeight.w600),
       ),
       style: OutlinedButton.styleFrom(
         foregroundColor: AppColors.error,

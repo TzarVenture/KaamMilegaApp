@@ -135,7 +135,7 @@ class _ExpertOfferingSheetState extends ConsumerState<ExpertOfferingSheet> {
               _e == null ? 'Create a session' : 'Edit session',
               style: const TextStyle(
                 fontSize: 18,
-                fontWeight: FontWeight.w800,
+                fontWeight: FontWeight.w700,
                 color: AppColors.textPrimary,
               ),
             ),
@@ -261,7 +261,7 @@ class _Label extends StatelessWidget {
         text,
         style: const TextStyle(
           fontSize: 13.5,
-          fontWeight: FontWeight.w800,
+          fontWeight: FontWeight.w700,
           color: AppColors.textPrimary,
         ),
       ),

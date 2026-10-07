@@ -95,7 +95,7 @@ class InstantAvailabilityCard extends ConsumerWidget {
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
                               fontSize: 15,
-                              fontWeight: FontWeight.w900,
+                              fontWeight: FontWeight.w700,
                               letterSpacing: 0.3,
                               color: online
                                   ? AppColors.success
@@ -170,7 +170,7 @@ class InstantAvailabilityCard extends ConsumerWidget {
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     textStyle: const TextStyle(
                       fontSize: 13.5,
-                      fontWeight: FontWeight.w800,
+                      fontWeight: FontWeight.w700,
                     ),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
@@ -417,7 +417,7 @@ class _TradeChip extends StatelessWidget {
                       TextSpan(
                         text: skill,
                         style: const TextStyle(
-                          fontWeight: FontWeight.w800,
+                          fontWeight: FontWeight.w700,
                           color: AppColors.brandNavy,
                         ),
                       ),
@@ -511,7 +511,7 @@ class _TradeSheet extends StatelessWidget {
                 'Your primary trade',
                 style: TextStyle(
                   fontSize: 17,
-                  fontWeight: FontWeight.w800,
+                  fontWeight: FontWeight.w700,
                   color: AppColors.textPrimary,
                 ),
               ),
@@ -701,7 +701,7 @@ class _InstantPassSheetState extends ConsumerState<InstantPassSheet> {
                                   'InstantMilega™ Candidate Pass',
                                   style: TextStyle(
                                     fontSize: 18,
-                                    fontWeight: FontWeight.w800,
+                                    fontWeight: FontWeight.w700,
                                     color: Colors.white,
                                   ),
                                 ),
@@ -740,7 +740,7 @@ class _InstantPassSheetState extends ConsumerState<InstantPassSheet> {
                             'Select payment method',
                             style: TextStyle(
                               fontSize: 13.5,
-                              fontWeight: FontWeight.w800,
+                              fontWeight: FontWeight.w700,
                               color: AppColors.textPrimary,
                             ),
                           ),
@@ -887,7 +887,7 @@ class _InstantPassSheetState extends ConsumerState<InstantPassSheet> {
                                       overflow: TextOverflow.ellipsis,
                                       style: const TextStyle(
                                         fontSize: 14.5,
-                                        fontWeight: FontWeight.w800,
+                                        fontWeight: FontWeight.w700,
                                       ),
                                     ),
                                   ),
@@ -972,7 +972,7 @@ class _PriceCard extends StatelessWidget {
                 'CANDIDATE ACCESS PASS',
                 style: TextStyle(
                   fontSize: 11,
-                  fontWeight: FontWeight.w800,
+                  fontWeight: FontWeight.w700,
                   letterSpacing: 0.8,
                   color: AppColors.textSecondary,
                 ),
@@ -983,7 +983,7 @@ class _PriceCard extends StatelessWidget {
                   text: InstantPassTerms.priceLabel,
                   style: const TextStyle(
                     fontSize: 30,
-                    fontWeight: FontWeight.w900,
+                    fontWeight: FontWeight.w700,
                     color: AppColors.brandNavy,
                   ),
                   children: const [
@@ -1017,7 +1017,7 @@ class _PriceCard extends StatelessWidget {
                   '${InstantPassTerms.perGigLabel} / gig',
                   style: const TextStyle(
                     fontSize: 12,
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w700,
                     color: Colors.white,
                   ),
                 ),
@@ -1110,7 +1110,7 @@ class _MethodTile extends StatelessWidget {
               title,
               style: const TextStyle(
                 fontSize: 13.5,
-                fontWeight: FontWeight.w800,
+                fontWeight: FontWeight.w700,
                 color: AppColors.textPrimary,
               ),
             ),
@@ -1162,7 +1162,7 @@ class _Perk extends StatelessWidget {
               TextSpan(
                 text: '$title: ',
                 style: const TextStyle(
-                  fontWeight: FontWeight.w800,
+                  fontWeight: FontWeight.w700,
                   color: AppColors.textPrimary,
                 ),
                 children: [
@@ -1198,7 +1198,7 @@ class _UspGrid extends StatelessWidget {
           'With KaamMilega you can',
           style: TextStyle(
             fontSize: 13.5,
-            fontWeight: FontWeight.w800,
+            fontWeight: FontWeight.w700,
             color: AppColors.textPrimary,
           ),
         ),
@@ -1272,7 +1272,7 @@ class _Usp extends StatelessWidget {
               style: const TextStyle(
                 fontSize: 12.5,
                 height: 1.25,
-                fontWeight: FontWeight.w700,
+                fontWeight: FontWeight.w600,
                 color: AppColors.textPrimary,
               ),
             ),
@@ -1340,7 +1340,7 @@ class _PendingActivation extends StatelessWidget {
                     )
                   : const Text(
                       'Retry activation',
-                      style: TextStyle(fontWeight: FontWeight.w800),
+                      style: TextStyle(fontWeight: FontWeight.w700),
                     ),
             ),
           ),

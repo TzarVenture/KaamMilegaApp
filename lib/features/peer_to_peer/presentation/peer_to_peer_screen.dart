@@ -183,7 +183,7 @@ class _PeerToPeerScreenState extends ConsumerState<PeerToPeerScreen>
                 indicatorColor: AppColors.moduleP2P,
                 indicatorWeight: 3,
                 labelStyle: const TextStyle(
-                  fontWeight: FontWeight.w700,
+                  fontWeight: FontWeight.w600,
                   fontSize: 13,
                 ),
                 tabs: const [
@@ -265,7 +265,7 @@ class _PeerToPeerScreenState extends ConsumerState<PeerToPeerScreen>
           key: _peopleKey,
           style: const TextStyle(
             fontSize: 16,
-            fontWeight: FontWeight.w800,
+            fontWeight: FontWeight.w700,
             color: AppColors.textPrimary,
           ),
         ),
@@ -304,7 +304,7 @@ class _PeerToPeerScreenState extends ConsumerState<PeerToPeerScreen>
                   'User Discovery Unavailable',
                   style: TextStyle(
                     fontSize: 15,
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w700,
                     color: Color(0xFF1E293B),
                   ),
                 ),
@@ -335,7 +335,7 @@ class _PeerToPeerScreenState extends ConsumerState<PeerToPeerScreen>
                   icon: const Icon(Icons.refresh_rounded, size: 16),
                   label: const Text(
                     'Retry',
-                    style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
+                    style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
                   ),
                 ),
               ],
@@ -360,7 +360,7 @@ class _PeerToPeerScreenState extends ConsumerState<PeerToPeerScreen>
                   'No users found',
                   style: TextStyle(
                     fontSize: 15,
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w700,
                     color: Color(0xFF1E293B),
                   ),
                 ),
@@ -430,7 +430,7 @@ class _PeerToPeerScreenState extends ConsumerState<PeerToPeerScreen>
                     'No connections yet',
                     style: TextStyle(
                       fontSize: 16,
-                      fontWeight: FontWeight.w800,
+                      fontWeight: FontWeight.w700,
                       color: Color(0xFF1E293B),
                     ),
                   ),
@@ -483,7 +483,7 @@ class _PeerToPeerScreenState extends ConsumerState<PeerToPeerScreen>
                             const Text(
                               'Connected Colleague',
                               style: TextStyle(
-                                fontWeight: FontWeight.w700,
+                                fontWeight: FontWeight.w600,
                                 fontSize: 14,
                               ),
                             ),
@@ -550,7 +550,7 @@ class _PeerToPeerScreenState extends ConsumerState<PeerToPeerScreen>
                     'No pending invitations',
                     style: TextStyle(
                       fontSize: 16,
-                      fontWeight: FontWeight.w800,
+                      fontWeight: FontWeight.w700,
                       color: Color(0xFF1E293B),
                     ),
                   ),
@@ -603,7 +603,7 @@ class _PeerToPeerScreenState extends ConsumerState<PeerToPeerScreen>
                             Text(
                               'User #${item.senderId.substring(0, item.senderId.length > 8 ? 8 : item.senderId.length)}',
                               style: const TextStyle(
-                                fontWeight: FontWeight.w700,
+                                fontWeight: FontWeight.w600,
                                 fontSize: 14,
                               ),
                             ),
@@ -634,7 +634,7 @@ class _PeerToPeerScreenState extends ConsumerState<PeerToPeerScreen>
                         child: const Text(
                           'Accept',
                           style: TextStyle(
-                            fontWeight: FontWeight.w700,
+                            fontWeight: FontWeight.w600,
                             fontSize: 12,
                           ),
                         ),

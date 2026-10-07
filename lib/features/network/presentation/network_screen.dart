@@ -134,7 +134,7 @@ class _NetworkScreenState extends ConsumerState<NetworkScreen>
           'My Network',
           style: TextStyle(
             fontSize: 18,
-            fontWeight: FontWeight.w800,
+            fontWeight: FontWeight.w700,
             color: AppColors.textPrimary,
           ),
         ),
@@ -159,7 +159,7 @@ class _NetworkScreenState extends ConsumerState<NetworkScreen>
           indicatorColor: AppColors.primary,
           indicatorWeight: 3,
           labelStyle: const TextStyle(
-            fontWeight: FontWeight.w800,
+            fontWeight: FontWeight.w700,
             fontSize: 14,
           ),
           tabs: [
@@ -387,7 +387,7 @@ class _NetworkScreenState extends ConsumerState<NetworkScreen>
                         ),
                         child: const Text(
                           'Ignore',
-                          style: TextStyle(fontWeight: FontWeight.w700),
+                          style: TextStyle(fontWeight: FontWeight.w600),
                         ),
                       ),
                     ),
@@ -406,7 +406,7 @@ class _NetworkScreenState extends ConsumerState<NetworkScreen>
                         ),
                         child: const Text(
                           'Accept',
-                          style: TextStyle(fontWeight: FontWeight.w700),
+                          style: TextStyle(fontWeight: FontWeight.w600),
                         ),
                       ),
                     ),
@@ -453,7 +453,7 @@ class _CountTab extends StatelessWidget {
                 '$n',
                 style: const TextStyle(
                   fontSize: 11.5,
-                  fontWeight: FontWeight.w800,
+                  fontWeight: FontWeight.w700,
                   color: AppColors.primary,
                 ),
               ),
@@ -535,7 +535,7 @@ class _LinkTile extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
                       fontSize: 13,
-                      fontWeight: FontWeight.w700,
+                      fontWeight: FontWeight.w600,
                       color: AppColors.textPrimary,
                     ),
                   ),
@@ -579,7 +579,7 @@ class _PeopleHeader extends StatelessWidget {
                   'People You May Know',
                   style: TextStyle(
                     fontSize: 18,
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w700,
                     color: AppColors.textPrimary,
                   ),
                 ),
@@ -596,7 +596,7 @@ class _PeopleHeader extends StatelessWidget {
                 'View Connections ($connectionCount)',
                 style: const TextStyle(
                   fontSize: 12.5,
-                  fontWeight: FontWeight.w700,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
             ),
@@ -649,7 +649,7 @@ class _MentorPromo extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 12,
                     letterSpacing: 0.6,
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w700,
                     color: AppColors.white,
                   ),
                 ),
@@ -661,7 +661,7 @@ class _MentorPromo extends StatelessWidget {
             'Become a Verified Mentor',
             style: TextStyle(
               fontSize: 18,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w700,
               color: AppColors.white,
             ),
           ),
@@ -693,7 +693,7 @@ class _MentorPromo extends StatelessWidget {
               children: [
                 Text(
                   'Apply Now',
-                  style: TextStyle(fontWeight: FontWeight.w800),
+                  style: TextStyle(fontWeight: FontWeight.w700),
                 ),
                 SizedBox(width: 6),
                 Icon(Icons.arrow_forward_rounded, size: 18),
@@ -760,7 +760,7 @@ class _MemberRow extends ConsumerWidget {
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
                     fontSize: 15,
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w700,
                     color: AppColors.textPrimary,
                   ),
                 ),
@@ -870,7 +870,7 @@ class _InlineMessage extends StatelessWidget {
             textAlign: TextAlign.center,
             style: const TextStyle(
               fontSize: 15,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w700,
               color: AppColors.textPrimary,
             ),
           ),
@@ -927,7 +927,7 @@ class _EmptyTab extends StatelessWidget {
           textAlign: TextAlign.center,
           style: const TextStyle(
             fontSize: 18,
-            fontWeight: FontWeight.w800,
+            fontWeight: FontWeight.w700,
             color: AppColors.textPrimary,
           ),
         ),

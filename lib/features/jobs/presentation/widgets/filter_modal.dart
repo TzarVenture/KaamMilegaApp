@@ -146,7 +146,7 @@ class _FilterModalSheetState extends State<FilterModalSheet> {
                   'Filters${_activeCount > 0 ? ' ($_activeCount)' : ''}',
                   style: const TextStyle(
                     fontSize: 18,
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w700,
                     color: AppColors.textPrimary,
                   ),
                 ),
@@ -157,7 +157,7 @@ class _FilterModalSheetState extends State<FilterModalSheet> {
                     'Reset',
                     style: TextStyle(
                       color: AppColors.primary,
-                      fontWeight: FontWeight.w700,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ),
@@ -207,7 +207,7 @@ class _FilterModalSheetState extends State<FilterModalSheet> {
                               style: TextStyle(
                                 fontSize: 14,
                                 fontWeight: isSelected
-                                    ? FontWeight.w700
+                                    ? FontWeight.w600
                                     : FontWeight.w500,
                                 color: isSelected
                                     ? AppColors.primary
@@ -252,7 +252,7 @@ class _FilterModalSheetState extends State<FilterModalSheet> {
                               style: TextStyle(
                                 fontSize: 14,
                                 fontWeight: isSelected
-                                    ? FontWeight.w700
+                                    ? FontWeight.w600
                                     : FontWeight.w500,
                                 color: isSelected
                                     ? AppColors.primary
@@ -278,7 +278,7 @@ class _FilterModalSheetState extends State<FilterModalSheet> {
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: isChecked
-                              ? FontWeight.w700
+                              ? FontWeight.w600
                               : FontWeight.w500,
                           color: isChecked
                               ? AppColors.primary
@@ -314,7 +314,7 @@ class _FilterModalSheetState extends State<FilterModalSheet> {
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: isChecked
-                              ? FontWeight.w700
+                              ? FontWeight.w600
                               : FontWeight.w500,
                           color: isChecked
                               ? AppColors.primary
@@ -350,7 +350,7 @@ class _FilterModalSheetState extends State<FilterModalSheet> {
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: isChecked
-                              ? FontWeight.w700
+                              ? FontWeight.w600
                               : FontWeight.w500,
                           color: isChecked
                               ? AppColors.primary
@@ -408,7 +408,7 @@ class _FilterModalSheetState extends State<FilterModalSheet> {
                     ),
                     child: const Text(
                       'Clear All',
-                      style: TextStyle(fontWeight: FontWeight.w700),
+                      style: TextStyle(fontWeight: FontWeight.w600),
                     ),
                   ),
                 ),
@@ -427,7 +427,7 @@ class _FilterModalSheetState extends State<FilterModalSheet> {
                     ),
                     child: const Text(
                       'Apply Filters',
-                      style: TextStyle(fontWeight: FontWeight.w800),
+                      style: TextStyle(fontWeight: FontWeight.w700),
                     ),
                   ),
                 ),
@@ -451,7 +451,7 @@ class _FilterModalSheetState extends State<FilterModalSheet> {
           title,
           style: const TextStyle(
             fontSize: 15,
-            fontWeight: FontWeight.w700,
+            fontWeight: FontWeight.w600,
             color: AppColors.textPrimary,
           ),
         ),

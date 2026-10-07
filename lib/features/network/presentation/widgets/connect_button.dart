@@ -48,6 +48,7 @@ class ConnectButton extends ConsumerStatefulWidget {
     this.fontSize = 12,
     this.messageWhenConnected = false,
     this.showIcon = false,
+    this.tonal = false,
   });
 
   final String userId;
@@ -56,6 +57,9 @@ class ConnectButton extends ConsumerStatefulWidget {
   final double fontSize;
   final bool messageWhenConnected;
   final bool showIcon;
+
+  /// Soft light-blue button with navy text (for cards on busy screens).
+  final bool tonal;
 
   @override
   ConsumerState<ConnectButton> createState() => _ConnectButtonState();
@@ -131,15 +135,19 @@ class _ConnectButtonState extends ConsumerState<ConnectButton> {
     final text = Text(
       label,
       maxLines: 1,
-      style: TextStyle(fontSize: widget.fontSize, fontWeight: FontWeight.w700),
+      style: TextStyle(fontSize: widget.fontSize, fontWeight: FontWeight.w600),
     );
 
     return ElevatedButton(
       onPressed: onPressed,
       style:
           ElevatedButton.styleFrom(
-            backgroundColor: AppColors.primary,
-            foregroundColor: Colors.white,
+            backgroundColor: widget.tonal
+                ? AppColors.primaryLight
+                : AppColors.primary,
+            foregroundColor: widget.tonal
+                ? AppColors.brandNavy
+                : AppColors.white,
             // Pending / Connected: a soft outlined label, not a grey block
             disabledBackgroundColor: AppColors.background,
             disabledForegroundColor: AppColors.textSecondary,

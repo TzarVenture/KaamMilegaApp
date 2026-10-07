@@ -199,7 +199,7 @@ class _StateMessage extends StatelessWidget {
                       textAlign: TextAlign.center,
                       style: const TextStyle(
                         fontSize: 18,
-                        fontWeight: FontWeight.w800,
+                        fontWeight: FontWeight.w700,
                         color: AppColors.textPrimary,
                         height: 1.3,
                       ),
@@ -253,7 +253,7 @@ class _RetryButton extends StatelessWidget {
       icon: const Icon(Icons.refresh_rounded, size: 18),
       label: const Text(
         'Retry',
-        style: TextStyle(fontWeight: FontWeight.w800, fontSize: 14),
+        style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
       ),
     );
   }
@@ -283,7 +283,7 @@ class CachedDataBadge extends StatelessWidget {
               'Showing saved data (Updated: $formatted)',
               style: const TextStyle(
                 fontSize: 11,
-                fontWeight: FontWeight.w700,
+                fontWeight: FontWeight.w600,
                 color: Color(0xFF92400E),
               ),
             ),

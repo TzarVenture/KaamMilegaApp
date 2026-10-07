@@ -146,7 +146,7 @@ class _OfflineBannerOverlayState extends ConsumerState<OfflineBannerOverlay>
                                         : 'No Internet Connection',
                                     style: const TextStyle(
                                       color: Colors.white,
-                                      fontWeight: FontWeight.w800,
+                                      fontWeight: FontWeight.w700,
                                       fontSize: 13,
                                       letterSpacing: -0.2,
                                     ),
@@ -185,7 +185,7 @@ class _OfflineBannerOverlayState extends ConsumerState<OfflineBannerOverlay>
                                     style: TextStyle(
                                       color: Colors.white,
                                       fontSize: 11,
-                                      fontWeight: FontWeight.w700,
+                                      fontWeight: FontWeight.w600,
                                     ),
                                   ),
                                 ),

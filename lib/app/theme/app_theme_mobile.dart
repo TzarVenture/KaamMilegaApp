@@ -26,11 +26,14 @@ class AppMobileTheme {
       );
 
   // -------------------------------------------------------------------
-  // Typography (spec 4.1). Poppins for UI, Inter for forms and captions.
+  // Typography. Inter (clean, compact, easy to read on phones) for all
+  // UI text; Poppins only for large headings, app bar and dialog titles
+  // and the wordmark, where the brand shows.
   // -------------------------------------------------------------------
   static const TextTheme _text = TextTheme(
     // Display: splash, onboarding hero, home greeting
     displaySmall: TextStyle(
+      fontFamily: AppFonts.primary,
       fontSize: 28,
       fontWeight: FontWeight.w800,
       height: 1.2,
@@ -39,6 +42,7 @@ class AppMobileTheme {
     ),
     // H1: screen titles
     headlineLarge: TextStyle(
+      fontFamily: AppFonts.primary,
       fontSize: 24,
       fontWeight: FontWeight.w700,
       height: 1.25,
@@ -47,6 +51,7 @@ class AppMobileTheme {
     ),
     // H2: section headings
     headlineMedium: TextStyle(
+      fontFamily: AppFonts.primary,
       fontSize: 20,
       fontWeight: FontWeight.w700,
       height: 1.3,
@@ -127,7 +132,7 @@ class AppMobileTheme {
 
   static final ThemeData theme = ThemeData(
     useMaterial3: true,
-    fontFamily: AppFonts.primary,
+    fontFamily: AppFonts.secondary,
     fontFamilyFallback: AppFonts.fallback,
     textTheme: _text,
     scaffoldBackgroundColor: AppColors.background, // Canvas #F4F7FB
@@ -280,7 +285,7 @@ class AppMobileTheme {
               borderRadius: BorderRadius.circular(12),
             ),
             textStyle: const TextStyle(
-              fontFamily: AppFonts.primary,
+              fontFamily: AppFonts.secondary,
               fontSize: 16,
               fontWeight: FontWeight.w600,
             ),
@@ -311,7 +316,7 @@ class AppMobileTheme {
         minimumSize: const Size(64, 48),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         textStyle: const TextStyle(
-          fontFamily: AppFonts.primary,
+          fontFamily: AppFonts.secondary,
           fontSize: 16,
           fontWeight: FontWeight.w600,
         ),
@@ -328,7 +333,7 @@ class AppMobileTheme {
               borderRadius: BorderRadius.circular(12),
             ),
             textStyle: const TextStyle(
-              fontFamily: AppFonts.primary,
+              fontFamily: AppFonts.secondary,
               fontSize: 16,
               fontWeight: FontWeight.w600,
             ),
@@ -367,7 +372,7 @@ class AppMobileTheme {
         minimumSize: const Size(48, 48),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         textStyle: const TextStyle(
-          fontFamily: AppFonts.primary,
+          fontFamily: AppFonts.secondary,
           fontSize: 15,
           fontWeight: FontWeight.w600,
         ),
@@ -405,7 +410,7 @@ class AppMobileTheme {
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       labelStyle: WidgetStateTextStyle.resolveWith(
         (states) => TextStyle(
-          fontFamily: AppFonts.primary,
+          fontFamily: AppFonts.secondary,
           fontSize: 14,
           fontWeight: FontWeight.w500,
           color: states.contains(WidgetState.selected)
@@ -414,7 +419,7 @@ class AppMobileTheme {
         ),
       ),
       secondaryLabelStyle: const TextStyle(
-        fontFamily: AppFonts.primary,
+        fontFamily: AppFonts.secondary,
         fontSize: 14,
         fontWeight: FontWeight.w500,
         color: AppColors.white,
@@ -467,7 +472,7 @@ class AppMobileTheme {
         height: 1.3,
       ),
       contentTextStyle: const TextStyle(
-        fontFamily: AppFonts.primary,
+        fontFamily: AppFonts.secondary,
         fontSize: 15,
         color: AppColors.textSecondary,
         height: 1.5,
@@ -503,12 +508,12 @@ class AppMobileTheme {
         borderSide: BorderSide(color: AppColors.accent, width: 2),
       ),
       labelStyle: TextStyle(
-        fontFamily: AppFonts.primary,
+        fontFamily: AppFonts.secondary,
         fontSize: 14,
         fontWeight: FontWeight.w600,
       ),
       unselectedLabelStyle: TextStyle(
-        fontFamily: AppFonts.primary,
+        fontFamily: AppFonts.secondary,
         fontSize: 14,
         fontWeight: FontWeight.w600,
       ),
@@ -519,7 +524,7 @@ class AppMobileTheme {
       minTileHeight: 56,
       iconColor: AppColors.textSecondary,
       titleTextStyle: TextStyle(
-        fontFamily: AppFonts.primary,
+        fontFamily: AppFonts.secondary,
         fontSize: 15,
         fontWeight: FontWeight.w500,
         color: AppColors.textPrimary,

@@ -175,7 +175,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
                                 '7 Major Product Ecosystems',
                                 style: TextStyle(
                                   fontSize: 15,
-                                  fontWeight: FontWeight.w800,
+                                  fontWeight: FontWeight.w700,
                                   color: AppColors.textPrimary,
                                 ),
                               ),
@@ -213,7 +213,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
                           Text(
                             'No matching product area found',
                             style: TextStyle(
-                              fontWeight: FontWeight.w700,
+                              fontWeight: FontWeight.w600,
                               color: Color(0xFF475569),
                             ),
                           ),
@@ -302,7 +302,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
                               title,
                               style: const TextStyle(
                                 fontSize: 15,
-                                fontWeight: FontWeight.w800,
+                                fontWeight: FontWeight.w700,
                                 color: AppColors.textPrimary,
                               ),
                             ),
@@ -320,7 +320,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
                               badge,
                               style: TextStyle(
                                 fontSize: 10,
-                                fontWeight: FontWeight.w700,
+                                fontWeight: FontWeight.w600,
                                 color: color,
                               ),
                             ),

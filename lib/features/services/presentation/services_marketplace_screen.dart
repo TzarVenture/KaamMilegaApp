@@ -117,7 +117,7 @@ class _ServicesMarketplaceScreenState extends State<ServicesMarketplaceScreen> {
                               cat,
                               style: TextStyle(
                                 fontSize: 12,
-                                fontWeight: FontWeight.w700,
+                                fontWeight: FontWeight.w600,
                                 color: isSelected
                                     ? Colors.white
                                     : const Color(0xFF334155),
@@ -167,7 +167,7 @@ class _ServicesMarketplaceScreenState extends State<ServicesMarketplaceScreen> {
                                     'Services Marketplace is coming soon',
                                     style: TextStyle(
                                       fontSize: 14,
-                                      fontWeight: FontWeight.w800,
+                                      fontWeight: FontWeight.w700,
                                       color: AppColors.brandNavy,
                                     ),
                                   ),
@@ -204,7 +204,7 @@ class _ServicesMarketplaceScreenState extends State<ServicesMarketplaceScreen> {
                     'Explore Service Categories',
                     style: TextStyle(
                       fontSize: 16,
-                      fontWeight: FontWeight.w800,
+                      fontWeight: FontWeight.w700,
                       color: AppColors.textPrimary,
                     ),
                   ),
@@ -274,7 +274,7 @@ class _ServicesMarketplaceScreenState extends State<ServicesMarketplaceScreen> {
                           'Offer Services in Your City',
                           style: TextStyle(
                             fontSize: 15,
-                            fontWeight: FontWeight.w800,
+                            fontWeight: FontWeight.w700,
                             color: AppColors.textPrimary,
                           ),
                         ),
@@ -306,7 +306,7 @@ class _ServicesMarketplaceScreenState extends State<ServicesMarketplaceScreen> {
                             ),
                             child: const Text(
                               'Register as Service Provider',
-                              style: TextStyle(fontWeight: FontWeight.w700),
+                              style: TextStyle(fontWeight: FontWeight.w600),
                             ),
                           ),
                         ),
@@ -387,7 +387,7 @@ class _ServicesMarketplaceScreenState extends State<ServicesMarketplaceScreen> {
               overflow: TextOverflow.ellipsis,
               style: const TextStyle(
                 fontSize: 13,
-                fontWeight: FontWeight.w700,
+                fontWeight: FontWeight.w600,
                 color: AppColors.textPrimary,
               ),
             ),

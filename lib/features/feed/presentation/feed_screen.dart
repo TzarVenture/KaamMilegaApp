@@ -33,7 +33,7 @@ class FeedScreen extends ConsumerWidget {
           'Resources',
           style: TextStyle(
             fontSize: 18,
-            fontWeight: FontWeight.w800,
+            fontWeight: FontWeight.w700,
             color: AppColors.textPrimary,
           ),
         ),
@@ -60,7 +60,7 @@ class FeedScreen extends ConsumerWidget {
               'Resources',
               style: TextStyle(
                 fontSize: 18,
-                fontWeight: FontWeight.w800,
+                fontWeight: FontWeight.w700,
                 color: AppColors.textPrimary,
               ),
             ),

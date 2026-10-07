@@ -192,7 +192,7 @@ class _InstantWorkScreenState extends ConsumerState<InstantWorkScreen> {
                                 f,
                                 style: TextStyle(
                                   fontSize: 12,
-                                  fontWeight: FontWeight.w700,
+                                  fontWeight: FontWeight.w600,
                                   color: isSelected
                                       ? Colors.white
                                       : const Color(0xFF334155),
@@ -216,7 +216,7 @@ class _InstantWorkScreenState extends ConsumerState<InstantWorkScreen> {
                             'Available Work Near You',
                             style: TextStyle(
                               fontSize: 16,
-                              fontWeight: FontWeight.w800,
+                              fontWeight: FontWeight.w700,
                               color: AppColors.textPrimary,
                             ),
                           ),
@@ -305,7 +305,7 @@ class _InstantWorkScreenState extends ConsumerState<InstantWorkScreen> {
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 15,
-                fontWeight: FontWeight.w800,
+                fontWeight: FontWeight.w700,
                 color: Color(0xFF1E293B),
               ),
             ),
@@ -335,7 +335,7 @@ class _InstantWorkScreenState extends ConsumerState<InstantWorkScreen> {
               ),
               child: const Text(
                 'Browse All Jobs',
-                style: TextStyle(fontWeight: FontWeight.w700),
+                style: TextStyle(fontWeight: FontWeight.w600),
               ),
             ),
           ],
@@ -382,7 +382,7 @@ class _InstantWorkScreenState extends ConsumerState<InstantWorkScreen> {
                     style: const TextStyle(
                       color: AppColors.moduleInstantWorkText,
                       fontSize: 11,
-                      fontWeight: FontWeight.w700,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ),
@@ -392,7 +392,7 @@ class _InstantWorkScreenState extends ConsumerState<InstantWorkScreen> {
                     style: const TextStyle(
                       color: AppColors.textPrimary,
                       fontSize: 15,
-                      fontWeight: FontWeight.w900,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
                 ),
@@ -403,7 +403,7 @@ class _InstantWorkScreenState extends ConsumerState<InstantWorkScreen> {
               job.title,
               style: const TextStyle(
                 fontSize: 16,
-                fontWeight: FontWeight.w800,
+                fontWeight: FontWeight.w700,
                 color: AppColors.textPrimary,
               ),
             ),
@@ -495,7 +495,7 @@ class _InstantWorkScreenState extends ConsumerState<InstantWorkScreen> {
                     child: const Text(
                       'Details',
                       style: TextStyle(
-                        fontWeight: FontWeight.w700,
+                        fontWeight: FontWeight.w600,
                         fontSize: 13,
                       ),
                     ),
@@ -525,7 +525,7 @@ class _InstantWorkScreenState extends ConsumerState<InstantWorkScreen> {
                     child: const Text(
                       'Instant Apply',
                       style: TextStyle(
-                        fontWeight: FontWeight.w700,
+                        fontWeight: FontWeight.w600,
                         fontSize: 13,
                       ),
                     ),

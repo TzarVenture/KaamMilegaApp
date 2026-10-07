@@ -58,7 +58,7 @@ class ThemedCategoryBottomNav extends ConsumerWidget {
                 'Quick Actions • $categoryName',
                 style: const TextStyle(
                   fontSize: 18,
-                  fontWeight: FontWeight.w800,
+                  fontWeight: FontWeight.w700,
                   color: AppColors.textPrimary,
                 ),
               ),
@@ -74,7 +74,7 @@ class ThemedCategoryBottomNav extends ConsumerWidget {
                 ),
                 title: Text(
                   'Post or Request $categoryName',
-                  style: const TextStyle(fontWeight: FontWeight.w700),
+                  style: const TextStyle(fontWeight: FontWeight.w600),
                 ),
                 subtitle: Text('Instant listing in $categoryName module'),
                 trailing: const Icon(Icons.chevron_right_rounded),
@@ -103,7 +103,7 @@ class ThemedCategoryBottomNav extends ConsumerWidget {
                 ),
                 title: const Text(
                   'Explore All Modules',
-                  style: TextStyle(fontWeight: FontWeight.w700),
+                  style: TextStyle(fontWeight: FontWeight.w600),
                 ),
                 subtitle: const Text('View all 7 KaamMilega ecosystems'),
                 trailing: const Icon(Icons.chevron_right_rounded),
@@ -127,7 +127,7 @@ class ThemedCategoryBottomNav extends ConsumerWidget {
                 ),
                 title: const Text(
                   'Upcoming Events',
-                  style: TextStyle(fontWeight: FontWeight.w700),
+                  style: TextStyle(fontWeight: FontWeight.w600),
                 ),
                 subtitle: const Text('Join career webinars & hiring fairs'),
                 trailing: const Icon(Icons.chevron_right_rounded),

@@ -95,7 +95,7 @@ class JobsHeroCard extends StatelessWidget {
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
                               fontSize: 11.5,
-                              fontWeight: FontWeight.w700,
+                              fontWeight: FontWeight.w600,
                               color: Colors.white,
                             ),
                           ),
@@ -108,7 +108,7 @@ class JobsHeroCard extends StatelessWidget {
                     'Find Jobs & Connect Direct',
                     style: TextStyle(
                       fontSize: 23,
-                      fontWeight: FontWeight.w900,
+                      fontWeight: FontWeight.w700,
                       color: Colors.white,
                       height: 1.2,
                     ),
@@ -182,7 +182,7 @@ class JobsHeroCard extends StatelessWidget {
                                 overflow: TextOverflow.ellipsis,
                                 style: const TextStyle(
                                   fontSize: 14,
-                                  fontWeight: FontWeight.w700,
+                                  fontWeight: FontWeight.w600,
                                   color: Colors.white,
                                 ),
                               ),

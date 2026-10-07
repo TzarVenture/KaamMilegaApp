@@ -104,7 +104,7 @@ class EventAttendeesRow extends ConsumerWidget {
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
                       fontSize: 13,
-                      fontWeight: FontWeight.w700,
+                      fontWeight: FontWeight.w600,
                       color: AppColors.textPrimary,
                     ),
                   ),
@@ -114,7 +114,7 @@ class EventAttendeesRow extends ConsumerWidget {
                     'See all',
                     style: TextStyle(
                       fontSize: 13,
-                      fontWeight: FontWeight.w800,
+                      fontWeight: FontWeight.w700,
                       color: AppColors.blue,
                     ),
                   ),
@@ -261,7 +261,7 @@ class _EventAttendeesSheetState extends ConsumerState<EventAttendeesSheet> {
               '${widget.attendees.total} attending',
               style: const TextStyle(
                 fontSize: 17,
-                fontWeight: FontWeight.w800,
+                fontWeight: FontWeight.w700,
                 color: AppColors.textPrimary,
               ),
             ),
@@ -298,7 +298,7 @@ class _EventAttendeesSheetState extends ConsumerState<EventAttendeesSheet> {
                           isMe ? '${p.displayName} (you)' : p.displayName,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(fontWeight: FontWeight.w700),
+                          style: const TextStyle(fontWeight: FontWeight.w600),
                         ),
                         subtitle: p.subtitle.isEmpty
                             ? null

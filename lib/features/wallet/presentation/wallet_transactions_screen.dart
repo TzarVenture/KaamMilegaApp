@@ -62,7 +62,7 @@ class _WalletTransactionsScreenState
           style: TextStyle(
             color: AppColors.textPrimary,
             fontSize: 18,
-            fontWeight: FontWeight.w700,
+            fontWeight: FontWeight.w600,
           ),
         ),
         actions: [
@@ -82,7 +82,7 @@ class _WalletTransactionsScreenState
           indicatorColor: AppColors.primary,
           indicatorWeight: 3,
           labelStyle: const TextStyle(
-            fontWeight: FontWeight.w700,
+            fontWeight: FontWeight.w600,
             fontSize: 13,
           ),
           tabs: const [
@@ -165,7 +165,7 @@ class _WalletTransactionsScreenState
                     : 'No transactions yet',
                 style: const TextStyle(
                   fontSize: 16,
-                  fontWeight: FontWeight.w700,
+                  fontWeight: FontWeight.w600,
                   color: Color(0xFF1E293B),
                 ),
               ),

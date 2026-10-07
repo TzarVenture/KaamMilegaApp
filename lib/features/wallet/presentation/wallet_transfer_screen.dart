@@ -180,7 +180,7 @@ class _WalletTransferScreenState extends ConsumerState<WalletTransferScreen> {
                         'Coming Soon',
                         style: TextStyle(
                           fontSize: 16,
-                          fontWeight: FontWeight.w800,
+                          fontWeight: FontWeight.w700,
                           color: AppColors.textPrimary,
                         ),
                       ),
@@ -244,7 +244,7 @@ class _WalletTransferScreenState extends ConsumerState<WalletTransferScreen> {
                 ),
                 child: const Text(
                   'Return to Wallet',
-                  style: TextStyle(fontWeight: FontWeight.w700),
+                  style: TextStyle(fontWeight: FontWeight.w600),
                 ),
               ),
             ),
@@ -271,7 +271,7 @@ class _WalletTransferScreenState extends ConsumerState<WalletTransferScreen> {
           value,
           style: const TextStyle(
             fontSize: 12,
-            fontWeight: FontWeight.w700,
+            fontWeight: FontWeight.w600,
             color: AppColors.textPrimary,
           ),
         ),
@@ -309,7 +309,7 @@ class _WalletTransferScreenState extends ConsumerState<WalletTransferScreen> {
           style: TextStyle(
             color: AppColors.textPrimary,
             fontSize: 18,
-            fontWeight: FontWeight.w700,
+            fontWeight: FontWeight.w600,
           ),
         ),
       ),
@@ -347,7 +347,7 @@ class _WalletTransferScreenState extends ConsumerState<WalletTransferScreen> {
                     '₹$currentBalance',
                     style: const TextStyle(
                       fontSize: 15,
-                      fontWeight: FontWeight.w800,
+                      fontWeight: FontWeight.w700,
                       color: AppColors.primary,
                     ),
                   ),
@@ -362,7 +362,7 @@ class _WalletTransferScreenState extends ConsumerState<WalletTransferScreen> {
               'Recipient Mobile / KaamMilega ID',
               style: TextStyle(
                 fontSize: 14,
-                fontWeight: FontWeight.w700,
+                fontWeight: FontWeight.w600,
                 color: AppColors.textPrimary,
               ),
             ),
@@ -395,7 +395,7 @@ class _WalletTransferScreenState extends ConsumerState<WalletTransferScreen> {
               'Transfer Amount',
               style: TextStyle(
                 fontSize: 14,
-                fontWeight: FontWeight.w700,
+                fontWeight: FontWeight.w600,
                 color: AppColors.textPrimary,
               ),
             ),
@@ -413,7 +413,7 @@ class _WalletTransferScreenState extends ConsumerState<WalletTransferScreen> {
                     '₹',
                     style: TextStyle(
                       fontSize: 26,
-                      fontWeight: FontWeight.w800,
+                      fontWeight: FontWeight.w700,
                       color: Color(0xFF10B981),
                     ),
                   ),
@@ -425,7 +425,7 @@ class _WalletTransferScreenState extends ConsumerState<WalletTransferScreen> {
                       inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                       style: const TextStyle(
                         fontSize: 26,
-                        fontWeight: FontWeight.w800,
+                        fontWeight: FontWeight.w700,
                         color: AppColors.textPrimary,
                       ),
                       decoration: const InputDecoration(
@@ -446,7 +446,7 @@ class _WalletTransferScreenState extends ConsumerState<WalletTransferScreen> {
               'Add a Note (Optional)',
               style: TextStyle(
                 fontSize: 14,
-                fontWeight: FontWeight.w700,
+                fontWeight: FontWeight.w600,
                 color: AppColors.textPrimary,
               ),
             ),
@@ -522,7 +522,7 @@ class _WalletTransferScreenState extends ConsumerState<WalletTransferScreen> {
                         'Transfer Now',
                         style: TextStyle(
                           fontSize: 15,
-                          fontWeight: FontWeight.w700,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
               ),

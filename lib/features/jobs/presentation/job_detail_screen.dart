@@ -189,7 +189,7 @@ class _JobDetailScreenState extends ConsumerState<JobDetailScreen> {
             'Job Details',
             style: TextStyle(
               fontSize: 18,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w700,
               color: AppColors.textPrimary,
             ),
           ),
@@ -212,7 +212,7 @@ class _JobDetailScreenState extends ConsumerState<JobDetailScreen> {
             'Job Details',
             style: TextStyle(
               fontSize: 18,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w700,
               color: AppColors.textPrimary,
             ),
           ),
@@ -233,7 +233,7 @@ class _JobDetailScreenState extends ConsumerState<JobDetailScreen> {
                   'Job Details Unavailable',
                   style: TextStyle(
                     fontSize: 18,
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w700,
                     color: AppColors.textPrimary,
                   ),
                 ),
@@ -263,7 +263,7 @@ class _JobDetailScreenState extends ConsumerState<JobDetailScreen> {
                   icon: const Icon(Icons.refresh_rounded, size: 18),
                   label: const Text(
                     'Retry',
-                    style: TextStyle(fontWeight: FontWeight.w800),
+                    style: TextStyle(fontWeight: FontWeight.w700),
                   ),
                 ),
               ],
@@ -475,7 +475,7 @@ class _JobDetailScreenState extends ConsumerState<JobDetailScreen> {
                                     skill,
                                     style: const TextStyle(
                                       fontSize: 12,
-                                      fontWeight: FontWeight.w700,
+                                      fontWeight: FontWeight.w600,
                                       color: AppColors.primaryDark,
                                     ),
                                   ),
@@ -525,7 +525,7 @@ class _JobDetailScreenState extends ConsumerState<JobDetailScreen> {
                                   'Candidates can contact HR directly for immediate joining.',
                                   style: TextStyle(
                                     fontSize: 11,
-                                    fontWeight: FontWeight.w700,
+                                    fontWeight: FontWeight.w600,
                                     color: AppColors.textSecondary,
                                     fontStyle: FontStyle.italic,
                                   ),
@@ -567,7 +567,7 @@ class _JobDetailScreenState extends ConsumerState<JobDetailScreen> {
                                 '${job.company} HR Desk',
                                 style: const TextStyle(
                                   fontSize: 15,
-                                  fontWeight: FontWeight.w800,
+                                  fontWeight: FontWeight.w700,
                                   color: AppColors.textPrimary,
                                 ),
                               ),
@@ -576,7 +576,7 @@ class _JobDetailScreenState extends ConsumerState<JobDetailScreen> {
                                 'HIRING MANAGER • DIRECT RECRUITER',
                                 style: TextStyle(
                                   fontSize: 10,
-                                  fontWeight: FontWeight.w800,
+                                  fontWeight: FontWeight.w700,
                                   color: AppColors.textLight,
                                   letterSpacing: 0.5,
                                 ),
@@ -605,7 +605,7 @@ class _JobDetailScreenState extends ConsumerState<JobDetailScreen> {
                           'Just 3 Steps To Get Hired',
                           style: TextStyle(
                             fontSize: 17,
-                            fontWeight: FontWeight.w900,
+                            fontWeight: FontWeight.w700,
                             color: AppColors.textPrimary,
                           ),
                         ),
@@ -692,7 +692,7 @@ class _JobDetailScreenState extends ConsumerState<JobDetailScreen> {
                                     overflow: TextOverflow.ellipsis,
                                     style: TextStyle(
                                       fontSize: 14,
-                                      fontWeight: FontWeight.w700,
+                                      fontWeight: FontWeight.w600,
                                       color: AppColors.success,
                                     ),
                                   ),
@@ -725,7 +725,7 @@ class _JobDetailScreenState extends ConsumerState<JobDetailScreen> {
                           'Apply for Position',
                           style: TextStyle(
                             fontSize: 15,
-                            fontWeight: FontWeight.w700,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
                       ),
@@ -782,7 +782,7 @@ class _SectionCard extends StatelessWidget {
                     title,
                     style: const TextStyle(
                       fontSize: 16,
-                      fontWeight: FontWeight.w800,
+                      fontWeight: FontWeight.w700,
                       color: AppColors.textPrimary,
                     ),
                   ),
@@ -840,7 +840,7 @@ class _HighlightRow extends StatelessWidget {
                 value,
                 style: const TextStyle(
                   fontSize: 13,
-                  fontWeight: FontWeight.w800,
+                  fontWeight: FontWeight.w700,
                   color: AppColors.textPrimary,
                 ),
               ),
@@ -884,7 +884,7 @@ class _StepItem extends StatelessWidget {
                   number,
                   style: const TextStyle(
                     color: Colors.white,
-                    fontWeight: FontWeight.w900,
+                    fontWeight: FontWeight.w700,
                     fontSize: 12,
                   ),
                 ),
@@ -907,7 +907,7 @@ class _StepItem extends StatelessWidget {
                 title,
                 style: const TextStyle(
                   fontSize: 14,
-                  fontWeight: FontWeight.w800,
+                  fontWeight: FontWeight.w700,
                   color: AppColors.textPrimary,
                 ),
               ),
@@ -978,7 +978,7 @@ class _JobHeader extends StatelessWidget {
                   foregroundColor: Colors.white,
                   textStyle: const TextStyle(
                     fontSize: 14,
-                    fontWeight: FontWeight.w700,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ),
@@ -1024,7 +1024,7 @@ class _JobHeader extends StatelessWidget {
                               company[0].toUpperCase(),
                               style: const TextStyle(
                                 fontSize: 21,
-                                fontWeight: FontWeight.w800,
+                                fontWeight: FontWeight.w700,
                                 color: AppColors.onAccent,
                               ),
                             ),
@@ -1038,7 +1038,7 @@ class _JobHeader extends StatelessWidget {
                             job.displayTitle,
                             style: const TextStyle(
                               fontSize: 19,
-                              fontWeight: FontWeight.w800,
+                              fontWeight: FontWeight.w700,
                               color: Colors.white,
                               height: 1.25,
                             ),
@@ -1091,7 +1091,7 @@ class _JobHeader extends StatelessWidget {
                               style: TextStyle(
                                 fontSize: job.hasSalary ? 16 : 14,
                                 fontWeight: job.hasSalary
-                                    ? FontWeight.w800
+                                    ? FontWeight.w700
                                     : FontWeight.w600,
                                 color: job.hasSalary
                                     ? Colors.white

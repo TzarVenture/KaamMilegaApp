@@ -382,7 +382,7 @@ class _ExpertDetailScreenState extends ConsumerState<ExpertDetailScreen> {
             onPressed: () => Navigator.pop(ctx),
             child: const Text(
               'OK',
-              style: TextStyle(fontWeight: FontWeight.w700),
+              style: TextStyle(fontWeight: FontWeight.w600),
             ),
           ),
         ],
@@ -431,7 +431,7 @@ class _ExpertDetailScreenState extends ConsumerState<ExpertDetailScreen> {
           style: TextStyle(
             color: AppColors.textPrimary,
             fontSize: 18,
-            fontWeight: FontWeight.w800,
+            fontWeight: FontWeight.w700,
           ),
         ),
       ),
@@ -467,7 +467,7 @@ class _ExpertDetailScreenState extends ConsumerState<ExpertDetailScreen> {
                       padding: const EdgeInsets.symmetric(horizontal: 8),
                       textStyle: const TextStyle(
                         fontSize: 12.5,
-                        fontWeight: FontWeight.w700,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                     child: const Text('More dates'),
@@ -641,7 +641,7 @@ class _Label extends StatelessWidget {
             style: const TextStyle(
               fontSize: 12,
               letterSpacing: 0.3,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w700,
               color: AppColors.textPrimary,
             ),
           ),
@@ -709,7 +709,7 @@ class _HeaderCard extends StatelessWidget {
             style: const TextStyle(
               fontSize: 22,
               height: 1.25,
-              fontWeight: FontWeight.w900,
+              fontWeight: FontWeight.w700,
               color: AppColors.textPrimary,
             ),
           ),
@@ -790,7 +790,7 @@ class _Chip extends StatelessWidget {
               style: TextStyle(
                 fontSize: 11.5,
                 letterSpacing: 0.2,
-                fontWeight: FontWeight.w800,
+                fontWeight: FontWeight.w700,
                 color: color,
               ),
             ),
@@ -840,7 +840,7 @@ class _InfoItem extends StatelessWidget {
                 style: const TextStyle(
                   fontSize: 10,
                   letterSpacing: 0.3,
-                  fontWeight: FontWeight.w700,
+                  fontWeight: FontWeight.w600,
                   color: AppColors.textMuted,
                 ),
               ),
@@ -848,7 +848,7 @@ class _InfoItem extends StatelessWidget {
                 value,
                 style: const TextStyle(
                   fontSize: 13,
-                  fontWeight: FontWeight.w800,
+                  fontWeight: FontWeight.w700,
                   color: AppColors.textPrimary,
                 ),
               ),
@@ -875,7 +875,7 @@ class _FeeRow extends StatelessWidget {
           style: TextStyle(
             fontSize: 11,
             letterSpacing: 0.4,
-            fontWeight: FontWeight.w700,
+            fontWeight: FontWeight.w600,
             color: AppColors.textMuted,
           ),
         ),
@@ -885,7 +885,7 @@ class _FeeRow extends StatelessWidget {
             text: price > 0 ? _rupees(price) : 'Free',
             style: const TextStyle(
               fontSize: 28,
-              fontWeight: FontWeight.w900,
+              fontWeight: FontWeight.w700,
               color: AppColors.textPrimary,
             ),
             children: const [
@@ -1025,7 +1025,7 @@ class _DayCell extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 10,
                     letterSpacing: 0.3,
-                    fontWeight: FontWeight.w700,
+                    fontWeight: FontWeight.w600,
                     color: selected
                         ? AppColors.white.withValues(alpha: 0.85)
                         : AppColors.textSecondary.withValues(
@@ -1040,7 +1040,7 @@ class _DayCell extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     fontSize: 17,
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w700,
                     color: fg,
                   ),
                 ),
@@ -1049,7 +1049,7 @@ class _DayCell extends StatelessWidget {
                     'Off',
                     style: TextStyle(
                       fontSize: 9.5,
-                      fontWeight: FontWeight.w700,
+                      fontWeight: FontWeight.w600,
                       color: AppColors.error,
                     ),
                   ),
@@ -1113,7 +1113,7 @@ class _TimeWithHours extends StatelessWidget {
                       '${w.end.format(context)}',
                       style: const TextStyle(
                         fontSize: 13,
-                        fontWeight: FontWeight.w800,
+                        fontWeight: FontWeight.w700,
                         color: AppColors.brandNavy,
                       ),
                     ),
@@ -1128,7 +1128,7 @@ class _TimeWithHours extends StatelessWidget {
             'Available times',
             style: TextStyle(
               fontSize: 12.5,
-              fontWeight: FontWeight.w700,
+              fontWeight: FontWeight.w600,
               color: AppColors.textSecondary,
             ),
           ),
@@ -1153,7 +1153,7 @@ class _TimeWithHours extends StatelessWidget {
                 ),
                 labelStyle: TextStyle(
                   fontSize: 13,
-                  fontWeight: FontWeight.w700,
+                  fontWeight: FontWeight.w600,
                   color: t == selected
                       ? AppColors.white
                       : AppColors.textPrimary,
@@ -1224,7 +1224,7 @@ class _TimeWithoutHours extends StatelessWidget {
                       time.format(context),
                       style: const TextStyle(
                         fontSize: 14,
-                        fontWeight: FontWeight.w800,
+                        fontWeight: FontWeight.w700,
                         color: AppColors.textPrimary,
                       ),
                     ),
@@ -1233,7 +1233,7 @@ class _TimeWithoutHours extends StatelessWidget {
                     'Change',
                     style: TextStyle(
                       fontSize: 12.5,
-                      fontWeight: FontWeight.w700,
+                      fontWeight: FontWeight.w600,
                       color: AppColors.blue,
                     ),
                   ),
@@ -1305,7 +1305,7 @@ class _AboutCard extends StatelessWidget {
                   'About this Mentorship Session',
                   style: TextStyle(
                     fontSize: 16,
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w700,
                     color: AppColors.textPrimary,
                   ),
                 ),
@@ -1329,7 +1329,7 @@ class _AboutCard extends StatelessWidget {
               'Key Takeaways from this session:',
               style: TextStyle(
                 fontSize: 14,
-                fontWeight: FontWeight.w800,
+                fontWeight: FontWeight.w700,
                 color: AppColors.textPrimary,
               ),
             ),
@@ -1423,7 +1423,7 @@ class _MentorCard extends StatelessWidget {
                   'Meet Your Mentor',
                   style: TextStyle(
                     fontSize: 16,
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w700,
                     color: AppColors.white,
                   ),
                 ),
@@ -1465,7 +1465,7 @@ class _MentorCard extends StatelessWidget {
                       name.isNotEmpty ? name : 'Mentor',
                       style: const TextStyle(
                         fontSize: 18,
-                        fontWeight: FontWeight.w900,
+                        fontWeight: FontWeight.w700,
                         color: AppColors.white,
                       ),
                     ),
@@ -1475,7 +1475,7 @@ class _MentorCard extends StatelessWidget {
                         expert.expertHeadline.trim(),
                         style: TextStyle(
                           fontSize: 13,
-                          fontWeight: FontWeight.w700,
+                          fontWeight: FontWeight.w600,
                           color: AppColors.primaryLightBorder.withValues(
                             alpha: 0.95,
                           ),
@@ -1510,7 +1510,7 @@ class _MentorCard extends StatelessWidget {
                                 'Top Rated Mentor',
                                 style: TextStyle(
                                   fontSize: 11.5,
-                                  fontWeight: FontWeight.w700,
+                                  fontWeight: FontWeight.w600,
                                   color: AppColors.topMatchGold,
                                 ),
                               ),
@@ -1552,7 +1552,7 @@ class _MentorCard extends StatelessWidget {
                 ),
                 textStyle: const TextStyle(
                   fontSize: 13,
-                  fontWeight: FontWeight.w700,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
             ),
@@ -1574,7 +1574,7 @@ class _Initial extends StatelessWidget {
       letter,
       style: const TextStyle(
         fontSize: 24,
-        fontWeight: FontWeight.w900,
+        fontWeight: FontWeight.w700,
         color: AppColors.white,
       ),
     );
@@ -1619,7 +1619,7 @@ class _BookBar extends StatelessWidget {
                           _rupees(price),
                           style: const TextStyle(
                             fontSize: 20,
-                            fontWeight: FontWeight.w900,
+                            fontWeight: FontWeight.w700,
                             color: AppColors.textPrimary,
                           ),
                         ),
@@ -1668,7 +1668,7 @@ class _BookBar extends StatelessWidget {
                                     overflow: TextOverflow.ellipsis,
                                     style: const TextStyle(
                                       fontSize: 15,
-                                      fontWeight: FontWeight.w800,
+                                      fontWeight: FontWeight.w700,
                                     ),
                                   ),
                                 ),

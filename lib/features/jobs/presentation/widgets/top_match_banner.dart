@@ -41,7 +41,7 @@ class TopMatchBanner extends StatelessWidget {
                   'Top Match Jobs For You',
                   style: TextStyle(
                     fontSize: 15,
-                    fontWeight: FontWeight.w700,
+                    fontWeight: FontWeight.w600,
                     color: AppColors.textPrimary,
                   ),
                 ),

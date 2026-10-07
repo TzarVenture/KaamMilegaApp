@@ -27,7 +27,7 @@ class MyApplicationsScreen extends ConsumerWidget {
           'My Applications',
           style: TextStyle(
             fontSize: 18,
-            fontWeight: FontWeight.w800,
+            fontWeight: FontWeight.w700,
             color: AppColors.textPrimary,
           ),
         ),
@@ -80,7 +80,7 @@ class MyApplicationsScreen extends ConsumerWidget {
                               'No applications yet',
                               style: TextStyle(
                                 fontSize: 18,
-                                fontWeight: FontWeight.w800,
+                                fontWeight: FontWeight.w700,
                                 color: AppColors.textPrimary,
                               ),
                             ),
@@ -178,7 +178,7 @@ class MyApplicationsScreen extends ConsumerWidget {
                                       style: TextStyle(
                                         color: Colors.white,
                                         fontSize: 14,
-                                        fontWeight: FontWeight.w800,
+                                        fontWeight: FontWeight.w700,
                                       ),
                                     ),
                                     SizedBox(height: 2),
@@ -284,7 +284,7 @@ class _ApplicationCard extends StatelessWidget {
                     application.jobTitle,
                     style: const TextStyle(
                       fontSize: 18,
-                      fontWeight: FontWeight.w900,
+                      fontWeight: FontWeight.w700,
                       color: AppColors.textPrimary,
                       letterSpacing: -0.3,
                     ),
@@ -355,7 +355,7 @@ class _ApplicationCard extends StatelessWidget {
                               appliedBadgeStr,
                               style: const TextStyle(
                                 fontSize: 11,
-                                fontWeight: FontWeight.w800,
+                                fontWeight: FontWeight.w700,
                                 color: Color(0xFF2E7D32),
                               ),
                             ),
@@ -428,7 +428,7 @@ class _StatusPill extends StatelessWidget {
             label,
             style: TextStyle(
               fontSize: 11,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w700,
               color: fg,
             ),
           ),

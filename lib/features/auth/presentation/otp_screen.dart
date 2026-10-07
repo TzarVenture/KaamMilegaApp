@@ -269,7 +269,7 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
                                   cursorColor: AppColors.primary,
                                   style: const TextStyle(
                                     fontSize: 24,
-                                    fontWeight: FontWeight.w700,
+                                    fontWeight: FontWeight.w600,
                                     color: AppColors.textPrimary,
                                   ),
                                   inputFormatters: [
@@ -371,7 +371,7 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
                                 'Resend',
                                 style: TextStyle(
                                   color: AppColors.primary,
-                                  fontWeight: FontWeight.w700,
+                                  fontWeight: FontWeight.w600,
                                 ),
                               ),
                       ),

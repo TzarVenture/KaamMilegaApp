@@ -128,7 +128,7 @@ class _SkillsMarketplaceScreenState
                                   cat,
                                   style: TextStyle(
                                     fontSize: 12,
-                                    fontWeight: FontWeight.w700,
+                                    fontWeight: FontWeight.w600,
                                     color: isSelected
                                         ? Colors.white
                                         : const Color(0xFF334155),
@@ -169,7 +169,7 @@ class _SkillsMarketplaceScreenState
                                       'My Profile Skills',
                                       style: TextStyle(
                                         fontSize: 14,
-                                        fontWeight: FontWeight.w800,
+                                        fontWeight: FontWeight.w700,
                                         color: AppColors.textPrimary,
                                       ),
                                     ),
@@ -187,7 +187,7 @@ class _SkillsMarketplaceScreenState
                                     'Edit in Profile',
                                     style: TextStyle(
                                       fontSize: 12,
-                                      fontWeight: FontWeight.w700,
+                                      fontWeight: FontWeight.w600,
                                     ),
                                   ),
                                 ),
@@ -227,7 +227,7 @@ class _SkillsMarketplaceScreenState
                             'Browse Skills Catalog',
                             style: TextStyle(
                               fontSize: 16,
-                              fontWeight: FontWeight.w800,
+                              fontWeight: FontWeight.w700,
                               color: AppColors.textPrimary,
                             ),
                           ),
@@ -346,7 +346,7 @@ class _SkillsMarketplaceScreenState
                                     overflow: TextOverflow.ellipsis,
                                     style: const TextStyle(
                                       fontSize: 13,
-                                      fontWeight: FontWeight.w700,
+                                      fontWeight: FontWeight.w600,
                                       color: AppColors.textPrimary,
                                     ),
                                   ),
@@ -446,7 +446,7 @@ class _SkillsMarketplaceScreenState
             'No matching skills found',
             style: TextStyle(
               fontSize: 15,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w700,
               color: Color(0xFF1E293B),
             ),
           ),
@@ -488,7 +488,7 @@ class _SkillsMarketplaceScreenState
             'Skills Catalog Unavailable',
             style: TextStyle(
               fontSize: 15,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w700,
               color: Color(0xFF1E293B),
             ),
           ),
@@ -516,7 +516,7 @@ class _SkillsMarketplaceScreenState
             icon: const Icon(Icons.refresh_rounded, size: 16),
             label: const Text(
               'Retry',
-              style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
+              style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
             ),
           ),
         ],

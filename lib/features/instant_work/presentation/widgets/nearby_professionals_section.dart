@@ -27,7 +27,7 @@ class NearbyProfessionalsSection extends ConsumerWidget {
           'Nearby Professionals',
           style: TextStyle(
             fontSize: 16,
-            fontWeight: FontWeight.w700,
+            fontWeight: FontWeight.w600,
             color: AppColors.textPrimary,
           ),
         ),
@@ -268,7 +268,7 @@ class ProfessionalCard extends StatelessWidget {
                     child: Text(
                       initial.toUpperCase(),
                       style: const TextStyle(
-                        fontWeight: FontWeight.w700,
+                        fontWeight: FontWeight.w600,
                         color: AppColors.moduleInstantWorkText,
                       ),
                     ),
@@ -284,7 +284,7 @@ class ProfessionalCard extends StatelessWidget {
                           overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
                             fontSize: 14.5,
-                            fontWeight: FontWeight.w700,
+                            fontWeight: FontWeight.w600,
                             color: AppColors.textPrimary,
                           ),
                         ),

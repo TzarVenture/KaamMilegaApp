@@ -221,7 +221,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           'Settings',
           style: TextStyle(
             fontSize: 18,
-            fontWeight: FontWeight.w800,
+            fontWeight: FontWeight.w700,
             color: AppColors.textPrimary,
           ),
         ),
@@ -257,7 +257,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         'Account & Preference Settings',
                         style: TextStyle(
                           fontSize: 22,
-                          fontWeight: FontWeight.w900,
+                          fontWeight: FontWeight.w700,
                           color: AppColors.textPrimary,
                           letterSpacing: -0.4,
                         ),
@@ -365,7 +365,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               label,
               style: TextStyle(
                 fontSize: 13,
-                fontWeight: FontWeight.w800,
+                fontWeight: FontWeight.w700,
                 color: isSelected ? Colors.white : AppColors.textPrimary,
               ),
             ),
@@ -416,7 +416,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             'Notification Channels & Alerts',
             style: TextStyle(
               fontSize: 18,
-              fontWeight: FontWeight.w900,
+              fontWeight: FontWeight.w700,
               color: AppColors.textPrimary,
             ),
           ),
@@ -500,7 +500,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             'Privacy & Profile Visibility',
             style: TextStyle(
               fontSize: 18,
-              fontWeight: FontWeight.w900,
+              fontWeight: FontWeight.w700,
               color: AppColors.textPrimary,
             ),
           ),
@@ -519,7 +519,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             'PROFILE VISIBILITY MODE',
             style: TextStyle(
               fontSize: 10,
-              fontWeight: FontWeight.w900,
+              fontWeight: FontWeight.w700,
               color: Color(0xFF94A3B8),
               letterSpacing: 1,
             ),
@@ -603,7 +603,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     title,
                     style: TextStyle(
                       fontSize: 14,
-                      fontWeight: FontWeight.w800,
+                      fontWeight: FontWeight.w700,
                       color: isSelected
                           ? AppColors.blue
                           : AppColors.textPrimary,
@@ -684,7 +684,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 'Security Credentials & Verification',
                 style: TextStyle(
                   fontSize: 18,
-                  fontWeight: FontWeight.w900,
+                  fontWeight: FontWeight.w700,
                   color: AppColors.textPrimary,
                 ),
               ),
@@ -763,7 +763,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         'Change Password',
                         style: TextStyle(
                           fontSize: 17,
-                          fontWeight: FontWeight.w900,
+                          fontWeight: FontWeight.w700,
                           color: AppColors.textPrimary,
                         ),
                       ),
@@ -787,7 +787,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 'Current Password',
                 style: TextStyle(
                   fontSize: 12,
-                  fontWeight: FontWeight.w800,
+                  fontWeight: FontWeight.w700,
                   color: AppColors.textPrimary,
                 ),
               ),
@@ -831,7 +831,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                           'New Password',
                           style: TextStyle(
                             fontSize: 12,
-                            fontWeight: FontWeight.w800,
+                            fontWeight: FontWeight.w700,
                             color: AppColors.textPrimary,
                           ),
                         ),
@@ -877,7 +877,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                           'Confirm New Password',
                           style: TextStyle(
                             fontSize: 12,
-                            fontWeight: FontWeight.w800,
+                            fontWeight: FontWeight.w700,
                             color: AppColors.textPrimary,
                           ),
                         ),
@@ -946,7 +946,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                           'Update Password',
                           style: TextStyle(
                             fontSize: 14,
-                            fontWeight: FontWeight.w800,
+                            fontWeight: FontWeight.w700,
                           ),
                         ),
                 ),
@@ -992,7 +992,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   title,
                   style: const TextStyle(
                     fontSize: 10,
-                    fontWeight: FontWeight.w900,
+                    fontWeight: FontWeight.w700,
                     color: Color(0xFF94A3B8),
                     letterSpacing: 0.8,
                   ),
@@ -1004,7 +1004,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
                     fontSize: 14,
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w700,
                     color: AppColors.textPrimary,
                   ),
                 ),
@@ -1037,7 +1037,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   statusText,
                   style: TextStyle(
                     fontSize: 11,
-                    fontWeight: FontWeight.w900,
+                    fontWeight: FontWeight.w700,
                     color: isVerified
                         ? const Color(0xFF16A34A)
                         : const Color(0xFFD97706),
@@ -1085,7 +1085,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             'App Regional Preferences',
             style: TextStyle(
               fontSize: 18,
-              fontWeight: FontWeight.w900,
+              fontWeight: FontWeight.w700,
               color: AppColors.textPrimary,
             ),
           ),
@@ -1104,7 +1104,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             'Display Language',
             style: TextStyle(
               fontSize: 13,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w700,
               color: AppColors.textPrimary,
             ),
           ),
@@ -1130,7 +1130,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 ),
                 style: const TextStyle(
                   fontSize: 14,
-                  fontWeight: FontWeight.w700,
+                  fontWeight: FontWeight.w600,
                   color: AppColors.textPrimary,
                 ),
                 onChanged: (val) {
@@ -1173,7 +1173,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         'Color Theme Canvas',
                         style: TextStyle(
                           fontSize: 14,
-                          fontWeight: FontWeight.w800,
+                          fontWeight: FontWeight.w700,
                           color: AppColors.textPrimary,
                         ),
                       ),
@@ -1202,7 +1202,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     'Light Mode',
                     style: TextStyle(
                       fontSize: 12,
-                      fontWeight: FontWeight.w900,
+                      fontWeight: FontWeight.w700,
                       color: AppColors.blue,
                     ),
                   ),
@@ -1232,7 +1232,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 title,
                 style: const TextStyle(
                   fontSize: 15,
-                  fontWeight: FontWeight.w800,
+                  fontWeight: FontWeight.w700,
                   color: AppColors.textPrimary,
                 ),
               ),
@@ -1282,7 +1282,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       title,
                       style: const TextStyle(
                         fontSize: 15,
-                        fontWeight: FontWeight.w800,
+                        fontWeight: FontWeight.w700,
                         color: AppColors.textPrimary,
                       ),
                     ),

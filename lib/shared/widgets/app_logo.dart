@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../app/theme/app_colors.dart';
+import '../../app/theme/app_text_styles.dart';
 
 /// Official KaamMilega™ Logo Widget
 class AppLogo extends StatelessWidget {
@@ -48,7 +49,7 @@ class AppLogo extends StatelessWidget {
                       'KM',
                       style: TextStyle(
                         color: Colors.white,
-                        fontWeight: FontWeight.w900,
+                        fontWeight: FontWeight.w700,
                         fontSize: size * 0.4,
                       ),
                     ),
@@ -67,8 +68,9 @@ class AppLogo extends StatelessWidget {
             errorBuilder: (context, error, stackTrace) => Text.rich(
               const TextSpan(
                 style: TextStyle(
+                  fontFamily: AppFonts.primary,
                   fontSize: 18,
-                  fontWeight: FontWeight.w900,
+                  fontWeight: FontWeight.w700,
                   letterSpacing: -0.5,
                 ),
                 children: [
@@ -128,8 +130,9 @@ class AppBrandBarLogo extends StatelessWidget {
           errorBuilder: (context, error, stackTrace) => Text.rich(
             const TextSpan(
               style: TextStyle(
+                fontFamily: AppFonts.primary,
                 fontSize: 16,
-                fontWeight: FontWeight.w900,
+                fontWeight: FontWeight.w700,
                 letterSpacing: -0.5,
               ),
               children: [

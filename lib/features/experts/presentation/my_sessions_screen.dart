@@ -84,7 +84,7 @@ class _MySessionsScreenState extends ConsumerState<MySessionsScreen> {
           'My Booked Sessions',
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
-          style: TextStyle(fontWeight: FontWeight.w800),
+          style: TextStyle(fontWeight: FontWeight.w700),
         ),
         backgroundColor: Colors.white,
         elevation: 0.5,
@@ -195,7 +195,7 @@ class _Header extends StatelessWidget {
                 '$count ${count == 1 ? 'Booking' : 'Bookings'}',
                 style: const TextStyle(
                   fontSize: 12,
-                  fontWeight: FontWeight.w800,
+                  fontWeight: FontWeight.w700,
                   color: AppColors.accentOnLight,
                 ),
               ),
@@ -275,7 +275,7 @@ class _EscrowCard extends StatelessWidget {
                   'Escrow-Protected Payments',
                   style: TextStyle(
                     fontSize: 14.5,
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w700,
                     color: AppColors.textPrimary,
                   ),
                 ),
@@ -332,7 +332,7 @@ class _FilterChips extends StatelessWidget {
               ),
               labelStyle: TextStyle(
                 fontSize: 12.5,
-                fontWeight: FontWeight.w700,
+                fontWeight: FontWeight.w600,
                 color: f == selected ? Colors.white : AppColors.textPrimary,
               ),
             ),
@@ -471,7 +471,7 @@ class _SessionCard extends StatelessWidget {
                           statusText.toUpperCase(),
                           style: TextStyle(
                             fontSize: 10.5,
-                            fontWeight: FontWeight.w800,
+                            fontWeight: FontWeight.w700,
                             letterSpacing: 0.4,
                             color: statusColor,
                           ),
@@ -501,7 +501,7 @@ class _SessionCard extends StatelessWidget {
                         title,
                         style: const TextStyle(
                           fontSize: 16,
-                          fontWeight: FontWeight.w800,
+                          fontWeight: FontWeight.w700,
                           height: 1.3,
                           color: AppColors.textPrimary,
                         ),
@@ -515,7 +515,7 @@ class _SessionCard extends StatelessWidget {
                               TextSpan(
                                 text: name,
                                 style: const TextStyle(
-                                  fontWeight: FontWeight.w700,
+                                  fontWeight: FontWeight.w600,
                                   color: AppColors.textPrimary,
                                 ),
                               ),
@@ -551,7 +551,7 @@ class _SessionCard extends StatelessWidget {
                               '₹${NumberFormat.decimalPattern('en_IN').format(booking.amount.round())}',
                               style: const TextStyle(
                                 fontSize: 14,
-                                fontWeight: FontWeight.w800,
+                                fontWeight: FontWeight.w700,
                                 color: AppColors.textPrimary,
                               ),
                             ),
@@ -560,7 +560,7 @@ class _SessionCard extends StatelessWidget {
                               payment,
                               style: const TextStyle(
                                 fontSize: 10.5,
-                                fontWeight: FontWeight.w700,
+                                fontWeight: FontWeight.w600,
                                 letterSpacing: 0.5,
                                 color: AppColors.textLight,
                               ),
@@ -673,7 +673,7 @@ class _DateBit extends StatelessWidget {
           text,
           style: const TextStyle(
             fontSize: 13,
-            fontWeight: FontWeight.w700,
+            fontWeight: FontWeight.w600,
             color: AppColors.textPrimary,
           ),
         ),
@@ -708,7 +708,7 @@ class _MentorAvatar extends StatelessWidget {
               name.isNotEmpty ? name[0].toUpperCase() : 'M',
               style: const TextStyle(
                 fontSize: 18,
-                fontWeight: FontWeight.w800,
+                fontWeight: FontWeight.w700,
                 color: AppColors.brandNavy,
               ),
             ),
@@ -897,7 +897,7 @@ class _RateSessionSheetState extends ConsumerState<RateSessionSheet> {
                 const SheetDragHandle(),
                 const Text(
                   'Rate your session',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
                 ),
                 const SizedBox(height: 4),
                 Text(

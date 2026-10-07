@@ -230,7 +230,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                   : 'Sign In With OTP',
                               style: const TextStyle(
                                 fontSize: 22,
-                                fontWeight: FontWeight.w900,
+                                fontWeight: FontWeight.w700,
                                 color: AppColors.textPrimary,
                                 letterSpacing: -0.5,
                               ),
@@ -327,7 +327,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         style: TextStyle(
                           fontSize: 13,
                           fontWeight: _activeTab == LoginTab.otp
-                              ? FontWeight.w800
+                              ? FontWeight.w700
                               : FontWeight.w600,
                           color: _activeTab == LoginTab.otp
                               ? AppColors.blue
@@ -383,7 +383,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         style: TextStyle(
                           fontSize: 13,
                           fontWeight: _activeTab == LoginTab.password
-                              ? FontWeight.w800
+                              ? FontWeight.w700
                               : FontWeight.w600,
                           color: _activeTab == LoginTab.password
                               ? AppColors.blue
@@ -413,7 +413,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           'EMAIL ADDRESS',
           style: TextStyle(
             fontSize: 11,
-            fontWeight: FontWeight.w900,
+            fontWeight: FontWeight.w700,
             color: AppColors.textSecondary,
             letterSpacing: 0.5,
           ),
@@ -457,7 +457,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
                   fontSize: 11,
-                  fontWeight: FontWeight.w900,
+                  fontWeight: FontWeight.w700,
                   color: AppColors.textSecondary,
                   letterSpacing: 0.5,
                 ),
@@ -470,7 +470,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 'Forgot Password?',
                 style: TextStyle(
                   fontSize: 12,
-                  fontWeight: FontWeight.w700,
+                  fontWeight: FontWeight.w600,
                   color: AppColors.blue,
                 ),
               ),
@@ -548,7 +548,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       'Sign In',
                       style: TextStyle(
                         fontSize: 15,
-                        fontWeight: FontWeight.w800,
+                        fontWeight: FontWeight.w700,
                         color: Colors.white,
                       ),
                     ),
@@ -571,7 +571,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           'MOBILE NUMBER',
           style: TextStyle(
             fontSize: 11,
-            fontWeight: FontWeight.w900,
+            fontWeight: FontWeight.w700,
             color: AppColors.textSecondary,
             letterSpacing: 0.5,
           ),
@@ -592,7 +592,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 '+91',
                 style: TextStyle(
                   fontSize: 14,
-                  fontWeight: FontWeight.w800,
+                  fontWeight: FontWeight.w700,
                   color: AppColors.textPrimary,
                 ),
               ),
@@ -650,7 +650,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       'Send OTP & Sign In',
                       style: TextStyle(
                         fontSize: 15,
-                        fontWeight: FontWeight.w800,
+                        fontWeight: FontWeight.w700,
                         color: Colors.white,
                       ),
                     ),
@@ -686,7 +686,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   'Create Account',
                   style: TextStyle(
                     fontSize: 12.5,
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w700,
                     color: AppColors.blue,
                   ),
                 ),
@@ -724,7 +724,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       : 'Login with Password',
                   style: const TextStyle(
                     fontSize: 12.5,
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w700,
                     color: AppColors.blue,
                   ),
                 ),
@@ -748,7 +748,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               style: TextStyle(
                 fontSize: 12,
                 color: AppColors.textSecondary,
-                fontWeight: FontWeight.w700,
+                fontWeight: FontWeight.w600,
               ),
             ),
           ),

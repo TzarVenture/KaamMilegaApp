@@ -160,7 +160,7 @@ class AppBottomNavItem extends StatelessWidget {
                   fontSize: 11,
                   height: 1.2,
                   letterSpacing: 0.11,
-                  fontWeight: selected ? FontWeight.w700 : FontWeight.w600,
+                  fontWeight: selected ? FontWeight.w600 : FontWeight.w600,
                   color: selected ? active : inactive,
                 ),
               ),
@@ -194,7 +194,7 @@ class AppBottomNavItem extends StatelessWidget {
               label,
               style: TextStyle(
                 fontSize: 11,
-                fontWeight: selected ? FontWeight.w800 : FontWeight.w600,
+                fontWeight: selected ? FontWeight.w700 : FontWeight.w600,
                 color: color,
               ),
             ),

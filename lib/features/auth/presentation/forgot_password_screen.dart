@@ -259,7 +259,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                           text: 'Call Or ',
                           style: TextStyle(
                             fontSize: 22,
-                            fontWeight: FontWeight.w900,
+                            fontWeight: FontWeight.w700,
                             color: AppColors.primary,
                             letterSpacing: -0.3,
                           ),
@@ -268,7 +268,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                           text: 'Talk ',
                           style: TextStyle(
                             fontSize: 22,
-                            fontWeight: FontWeight.w900,
+                            fontWeight: FontWeight.w700,
                             color: AppColors.accentOnLight,
                             letterSpacing: -0.3,
                           ),
@@ -277,7 +277,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                           text: 'To HR & Get A Job!',
                           style: TextStyle(
                             fontSize: 22,
-                            fontWeight: FontWeight.w900,
+                            fontWeight: FontWeight.w700,
                             color: AppColors.primary,
                             letterSpacing: -0.3,
                           ),
@@ -291,7 +291,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 14,
-                      fontWeight: FontWeight.w700,
+                      fontWeight: FontWeight.w600,
                       color: Color(0xFF475569),
                     ),
                   ),
@@ -350,7 +350,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
           'Reset Password',
           style: TextStyle(
             fontSize: 22,
-            fontWeight: FontWeight.w900,
+            fontWeight: FontWeight.w700,
             color: AppColors.textPrimary,
             letterSpacing: -0.5,
           ),
@@ -371,7 +371,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
           'EMAIL ADDRESS',
           style: TextStyle(
             fontSize: 11,
-            fontWeight: FontWeight.w900,
+            fontWeight: FontWeight.w700,
             color: AppColors.textSecondary,
             letterSpacing: 0.5,
           ),
@@ -433,7 +433,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                     'Send Reset Code',
                     style: TextStyle(
                       fontSize: 15,
-                      fontWeight: FontWeight.w800,
+                      fontWeight: FontWeight.w700,
                       color: Colors.white,
                     ),
                   ),
@@ -456,7 +456,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
               '← Back to Sign In',
               style: TextStyle(
                 fontSize: 13,
-                fontWeight: FontWeight.w700,
+                fontWeight: FontWeight.w600,
                 color: AppColors.textSecondary,
               ),
             ),
@@ -477,7 +477,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
           'Enter Reset Code',
           style: TextStyle(
             fontSize: 22,
-            fontWeight: FontWeight.w900,
+            fontWeight: FontWeight.w700,
             color: AppColors.textPrimary,
             letterSpacing: -0.5,
           ),
@@ -494,7 +494,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
               TextSpan(
                 text: _emailController.text.trim(),
                 style: const TextStyle(
-                  fontWeight: FontWeight.w700,
+                  fontWeight: FontWeight.w600,
                   color: AppColors.textPrimary,
                 ),
               ),
@@ -508,7 +508,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
           '4-DIGIT RESET CODE *',
           style: TextStyle(
             fontSize: 11,
-            fontWeight: FontWeight.w900,
+            fontWeight: FontWeight.w700,
             color: AppColors.textSecondary,
             letterSpacing: 0.5,
           ),
@@ -520,7 +520,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
           maxLength: 4,
           style: const TextStyle(
             fontSize: 20,
-            fontWeight: FontWeight.w800,
+            fontWeight: FontWeight.w700,
             letterSpacing: 8,
             color: AppColors.primary,
           ),
@@ -559,7 +559,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
           'NEW PASSWORD * (MIN. 6 CHARACTERS)',
           style: TextStyle(
             fontSize: 11,
-            fontWeight: FontWeight.w900,
+            fontWeight: FontWeight.w700,
             color: AppColors.textSecondary,
             letterSpacing: 0.5,
           ),
@@ -608,7 +608,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
           'CONFIRM NEW PASSWORD *',
           style: TextStyle(
             fontSize: 11,
-            fontWeight: FontWeight.w900,
+            fontWeight: FontWeight.w700,
             color: AppColors.textSecondary,
             letterSpacing: 0.5,
           ),
@@ -684,7 +684,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                     'Reset Password & Sign In',
                     style: TextStyle(
                       fontSize: 15,
-                      fontWeight: FontWeight.w800,
+                      fontWeight: FontWeight.w700,
                       color: Colors.white,
                     ),
                   ),
@@ -703,7 +703,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                 'Change Email',
                 style: TextStyle(
                   fontSize: 12.5,
-                  fontWeight: FontWeight.w700,
+                  fontWeight: FontWeight.w600,
                   color: AppColors.textSecondary,
                 ),
               ),
@@ -714,7 +714,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                 'Resend Code',
                 style: TextStyle(
                   fontSize: 12.5,
-                  fontWeight: FontWeight.w800,
+                  fontWeight: FontWeight.w700,
                   color: AppColors.primary,
                 ),
               ),
@@ -810,7 +810,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
                           fontSize: 13,
-                          fontWeight: FontWeight.w800,
+                          fontWeight: FontWeight.w700,
                           color: AppColors.primary,
                         ),
                       ),

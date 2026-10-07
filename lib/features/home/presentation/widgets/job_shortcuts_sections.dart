@@ -135,6 +135,8 @@ class QualificationShortcutsSection extends StatelessWidget {
           height: rowHeight,
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
+            // Let the card shadows show past the row's edges.
+            clipBehavior: Clip.none,
             padding: const EdgeInsets.symmetric(horizontal: 16),
             itemCount: qualificationShortcuts.length,
             separatorBuilder: (_, _) => const SizedBox(width: 10),
@@ -160,49 +162,49 @@ class _QualificationTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Semantics(
-      button: true,
-      label: 'Jobs for ${item.label}',
-      excludeSemantics: true,
-      child: Material(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        child: InkWell(
-          onTap: onTap,
+    return HomeCardShadow(
+      radius: 16,
+      child: Semantics(
+        button: true,
+        label: 'Jobs for ${item.label}',
+        excludeSemantics: true,
+        child: Material(
+          color: AppColors.white,
           borderRadius: BorderRadius.circular(16),
-          child: Container(
-            width: QualificationShortcutsSection.tileWidth,
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: AppColors.border),
-            ),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Container(
-                  width: 44,
-                  height: 44,
-                  decoration: BoxDecoration(
-                    color: item.tint,
-                    borderRadius: BorderRadius.circular(12),
+          child: InkWell(
+            onTap: onTap,
+            borderRadius: BorderRadius.circular(16),
+            child: Container(
+              width: QualificationShortcutsSection.tileWidth,
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
+
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      color: item.tint,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Icon(item.icon, color: item.color, size: 22),
                   ),
-                  child: Icon(item.icon, color: item.color, size: 22),
-                ),
-                const SizedBox(height: 10),
-                Text(
-                  item.label,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    fontSize: 12.5,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.textPrimary,
-                    height: 1.2,
+                  const SizedBox(height: 10),
+                  Text(
+                    item.label,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.textPrimary,
+                      height: 1.2,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
@@ -263,53 +265,53 @@ class _JobTypeCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Semantics(
-      button: true,
-      label: item.label,
-      excludeSemantics: true,
-      child: Material(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        child: InkWell(
-          onTap: onTap,
+    return HomeCardShadow(
+      radius: 14,
+      child: Semantics(
+        button: true,
+        label: item.label,
+        excludeSemantics: true,
+        child: Material(
+          color: AppColors.white,
           borderRadius: BorderRadius.circular(14),
-          child: Container(
-            constraints: const BoxConstraints(minHeight: 64),
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: AppColors.border),
-            ),
-            child: Row(
-              children: [
-                Container(
-                  width: 38,
-                  height: 38,
-                  decoration: BoxDecoration(
-                    color: item.tint,
-                    shape: BoxShape.circle,
+          child: InkWell(
+            onTap: onTap,
+            borderRadius: BorderRadius.circular(14),
+            child: Container(
+              constraints: const BoxConstraints(minHeight: 64),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+
+              child: Row(
+                children: [
+                  Container(
+                    width: 38,
+                    height: 38,
+                    decoration: BoxDecoration(
+                      color: item.tint,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(item.icon, color: item.color, size: 20),
                   ),
-                  child: Icon(item.icon, color: item.color, size: 20),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Text(
-                    item.label,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      fontSize: 13.5,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.textPrimary,
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      item.label,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontSize: 13.5,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.textPrimary,
+                      ),
                     ),
                   ),
-                ),
-                const Icon(
-                  Icons.chevron_right_rounded,
-                  size: 20,
-                  color: AppColors.textLight,
-                ),
-              ],
+                  const Icon(
+                    Icons.chevron_right_rounded,
+                    size: 20,
+                    color: AppColors.textLight,
+                  ),
+                ],
+              ),
             ),
           ),
         ),

@@ -77,7 +77,7 @@ class JobCard extends StatelessWidget {
                               overflow: TextOverflow.ellipsis,
                               style: const TextStyle(
                                 fontSize: 15.5,
-                                fontWeight: FontWeight.w800,
+                                fontWeight: FontWeight.w700,
                                 color: AppColors.textPrimary,
                                 height: 1.25,
                               ),
@@ -200,7 +200,7 @@ class JobCard extends StatelessWidget {
                                         overflow: TextOverflow.ellipsis,
                                         style: TextStyle(
                                           fontSize: 14,
-                                          fontWeight: FontWeight.w700,
+                                          fontWeight: FontWeight.w600,
                                         ),
                                       ),
                               ),
@@ -244,7 +244,7 @@ class _CompanyAvatar extends StatelessWidget {
               name[0].toUpperCase(),
               style: const TextStyle(
                 fontSize: 18,
-                fontWeight: FontWeight.w800,
+                fontWeight: FontWeight.w700,
                 color: AppColors.primary,
               ),
             ),
@@ -276,7 +276,7 @@ class _SalaryLine extends StatelessWidget {
                   text: job.compactSalary,
                   style: TextStyle(
                     fontSize: disclosed ? 14.5 : 13,
-                    fontWeight: disclosed ? FontWeight.w800 : FontWeight.w600,
+                    fontWeight: disclosed ? FontWeight.w700 : FontWeight.w600,
                     color: disclosed
                         ? AppColors.textPrimary
                         : AppColors.textSecondary,
@@ -382,7 +382,7 @@ class _AppliedBadge extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
                 fontSize: 14,
-                fontWeight: FontWeight.w700,
+                fontWeight: FontWeight.w600,
                 color: AppColors.success,
               ),
             ),

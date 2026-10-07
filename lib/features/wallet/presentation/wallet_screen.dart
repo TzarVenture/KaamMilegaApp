@@ -53,7 +53,7 @@ class WalletScreen extends ConsumerWidget {
               style: TextStyle(
                 color: AppColors.textPrimary,
                 fontSize: 18,
-                fontWeight: FontWeight.w700,
+                fontWeight: FontWeight.w600,
                 letterSpacing: -0.3,
               ),
             ),
@@ -248,7 +248,7 @@ class WalletScreen extends ConsumerWidget {
                         style: TextStyle(
                           color: Colors.white,
                           fontSize: 11,
-                          fontWeight: FontWeight.w700,
+                          fontWeight: FontWeight.w600,
                           letterSpacing: 0.8,
                         ),
                       ),
@@ -305,7 +305,7 @@ class WalletScreen extends ConsumerWidget {
               style: const TextStyle(
                 color: Colors.white,
                 fontSize: 36,
-                fontWeight: FontWeight.w900,
+                fontWeight: FontWeight.w700,
                 letterSpacing: -1,
               ),
             ),
@@ -337,7 +337,7 @@ class WalletScreen extends ConsumerWidget {
                         style: TextStyle(
                           color: Colors.white.withValues(alpha: 0.95),
                           fontSize: 14,
-                          fontWeight: FontWeight.w700,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                     ],
@@ -359,7 +359,7 @@ class WalletScreen extends ConsumerWidget {
                         style: TextStyle(
                           color: Colors.white.withValues(alpha: 0.95),
                           fontSize: 14,
-                          fontWeight: FontWeight.w700,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                     ],
@@ -493,7 +493,7 @@ class WalletScreen extends ConsumerWidget {
               style: TextStyle(
                 color: AppColors.textPrimary,
                 fontSize: 15,
-                fontWeight: FontWeight.w700,
+                fontWeight: FontWeight.w600,
               ),
             ),
             const SizedBox(height: 12),
@@ -580,7 +580,7 @@ class WalletScreen extends ConsumerWidget {
           style: const TextStyle(
             color: AppColors.textPrimary,
             fontSize: 14,
-            fontWeight: FontWeight.w700,
+            fontWeight: FontWeight.w600,
           ),
         ),
       ],
@@ -617,7 +617,7 @@ class WalletScreen extends ConsumerWidget {
                       style: TextStyle(
                         color: AppColors.textPrimary,
                         fontSize: 14,
-                        fontWeight: FontWeight.w700,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ],
@@ -705,7 +705,7 @@ class WalletScreen extends ConsumerWidget {
             style: TextStyle(
               color: AppColors.textPrimary,
               fontSize: 17,
-              fontWeight: FontWeight.w700,
+              fontWeight: FontWeight.w600,
             ),
           ),
         ),
@@ -720,7 +720,7 @@ class WalletScreen extends ConsumerWidget {
             'View All',
             style: TextStyle(
               color: AppColors.primary,
-              fontWeight: FontWeight.w700,
+              fontWeight: FontWeight.w600,
               fontSize: 13,
             ),
           ),
@@ -755,7 +755,7 @@ class WalletScreen extends ConsumerWidget {
                       'Refund requests',
                       style: TextStyle(
                         fontSize: 14,
-                        fontWeight: FontWeight.w700,
+                        fontWeight: FontWeight.w600,
                         color: AppColors.textPrimary,
                       ),
                     ),
@@ -866,7 +866,7 @@ class WalletScreen extends ConsumerWidget {
               style: const TextStyle(
                 color: Color(0xFF1E293B),
                 fontSize: 15,
-                fontWeight: FontWeight.w700,
+                fontWeight: FontWeight.w600,
               ),
             ),
             const SizedBox(height: 6),
@@ -911,7 +911,7 @@ class WalletScreen extends ConsumerWidget {
             SizedBox(width: 8),
             Text(
               'About KaamMilega Wallet',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
             ),
           ],
         ),
@@ -943,7 +943,7 @@ class WalletScreen extends ConsumerWidget {
             onPressed: () => Navigator.of(ctx).pop(),
             child: const Text(
               'Got it',
-              style: TextStyle(fontWeight: FontWeight.w700),
+              style: TextStyle(fontWeight: FontWeight.w600),
             ),
           ),
         ],
@@ -981,7 +981,7 @@ class WalletScreen extends ConsumerWidget {
                 'Make a Payment',
                 style: TextStyle(
                   fontSize: 18,
-                  fontWeight: FontWeight.w800,
+                  fontWeight: FontWeight.w700,
                   color: AppColors.textPrimary,
                 ),
               ),
@@ -1005,7 +1005,7 @@ class WalletScreen extends ConsumerWidget {
                 ),
                 title: const Text(
                   'Scan KaamMilega QR',
-                  style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
+                  style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
                 ),
                 subtitle: const Text(
                   'Scan candidate or expert payment QR code',
@@ -1032,7 +1032,7 @@ class WalletScreen extends ConsumerWidget {
                 ),
                 title: const Text(
                   'Pay to Phone / ID',
-                  style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
+                  style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
                 ),
                 subtitle: const Text(
                   'Send money directly to candidate phone',
@@ -1097,7 +1097,7 @@ class WalletScreen extends ConsumerWidget {
                     '$feature is coming soon',
                     style: const TextStyle(
                       fontSize: 16,
-                      fontWeight: FontWeight.w800,
+                      fontWeight: FontWeight.w700,
                       color: AppColors.textPrimary,
                     ),
                   ),
@@ -1128,7 +1128,7 @@ class WalletScreen extends ConsumerWidget {
                 ),
                 child: const Text(
                   'Understood',
-                  style: TextStyle(fontWeight: FontWeight.w700),
+                  style: TextStyle(fontWeight: FontWeight.w600),
                 ),
               ),
             ),

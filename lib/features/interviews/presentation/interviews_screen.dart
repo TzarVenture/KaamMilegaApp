@@ -22,7 +22,7 @@ class InterviewsScreen extends ConsumerWidget {
       appBar: AppBar(
         title: const Text(
           'Interview Schedule',
-          style: TextStyle(fontWeight: FontWeight.w800),
+          style: TextStyle(fontWeight: FontWeight.w700),
         ),
         backgroundColor: Colors.white,
         elevation: 0.5,
@@ -58,7 +58,7 @@ class InterviewsScreen extends ConsumerWidget {
                         'No Scheduled Interviews',
                         style: TextStyle(
                           fontSize: 18,
-                          fontWeight: FontWeight.w800,
+                          fontWeight: FontWeight.w700,
                           color: AppColors.textPrimary,
                         ),
                       ),
@@ -78,7 +78,7 @@ class InterviewsScreen extends ConsumerWidget {
                         icon: const Icon(Icons.work_outline_rounded, size: 18),
                         label: const Text(
                           'Explore Active Jobs',
-                          style: TextStyle(fontWeight: FontWeight.w800),
+                          style: TextStyle(fontWeight: FontWeight.w700),
                         ),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.primary,
@@ -181,7 +181,7 @@ class _InterviewCard extends StatelessWidget {
                   interview.companyName.toUpperCase(),
                   style: const TextStyle(
                     fontSize: 11,
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w700,
                     color: AppColors.textSecondary,
                     letterSpacing: 0.5,
                   ),
@@ -201,7 +201,7 @@ class _InterviewCard extends StatelessWidget {
                   interview.status.toUpperCase(),
                   style: TextStyle(
                     fontSize: 10,
-                    fontWeight: FontWeight.w900,
+                    fontWeight: FontWeight.w700,
                     color: statusColor,
                     letterSpacing: 0.5,
                   ),
@@ -216,7 +216,7 @@ class _InterviewCard extends StatelessWidget {
             interview.jobTitle,
             style: const TextStyle(
               fontSize: 16,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w700,
               color: AppColors.textPrimary,
             ),
           ),
@@ -252,7 +252,7 @@ class _InterviewCard extends StatelessWidget {
                         interview.formattedScheduleDate,
                         style: const TextStyle(
                           fontSize: 13,
-                          fontWeight: FontWeight.w800,
+                          fontWeight: FontWeight.w700,
                           color: AppColors.textPrimary,
                         ),
                       ),

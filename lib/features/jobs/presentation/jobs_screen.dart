@@ -387,7 +387,7 @@ class _JobsScreenState extends ConsumerState<JobsScreen> {
                               '(Change City)',
                               style: TextStyle(
                                 fontSize: 12,
-                                fontWeight: FontWeight.w800,
+                                fontWeight: FontWeight.w700,
                                 color: AppColors.primary,
                               ),
                             ),
@@ -439,7 +439,7 @@ class _JobsScreenState extends ConsumerState<JobsScreen> {
                             ref.read(jobsProvider.notifier).fetchJobs(),
                         child: const Text(
                           'Retry',
-                          style: TextStyle(fontWeight: FontWeight.w800),
+                          style: TextStyle(fontWeight: FontWeight.w700),
                         ),
                       ),
                     ],
@@ -493,7 +493,7 @@ class _JobsScreenState extends ConsumerState<JobsScreen> {
                           'Unable to load jobs',
                           style: TextStyle(
                             fontSize: 16,
-                            fontWeight: FontWeight.w800,
+                            fontWeight: FontWeight.w700,
                             color: AppColors.textPrimary,
                           ),
                         ),
@@ -524,7 +524,7 @@ class _JobsScreenState extends ConsumerState<JobsScreen> {
                           icon: const Icon(Icons.refresh_rounded, size: 18),
                           label: const Text(
                             'Retry Connection',
-                            style: TextStyle(fontWeight: FontWeight.w800),
+                            style: TextStyle(fontWeight: FontWeight.w700),
                           ),
                         ),
                       ],
@@ -564,7 +564,7 @@ class _JobsScreenState extends ConsumerState<JobsScreen> {
                           _filterSavedOnly ? 'No saved jobs' : 'No jobs found',
                           style: const TextStyle(
                             fontSize: 16,
-                            fontWeight: FontWeight.w800,
+                            fontWeight: FontWeight.w700,
                             color: AppColors.textPrimary,
                           ),
                         ),
@@ -678,7 +678,7 @@ class _JobsScreenState extends ConsumerState<JobsScreen> {
               overflow: TextOverflow.ellipsis,
               style: const TextStyle(
                 fontSize: 15,
-                fontWeight: FontWeight.w800,
+                fontWeight: FontWeight.w700,
                 color: AppColors.textPrimary,
               ),
             ),
@@ -769,7 +769,7 @@ class _ToolbarPill extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
                 fontSize: 12.5,
-                fontWeight: FontWeight.w700,
+                fontWeight: FontWeight.w600,
                 color: color,
               ),
             ),

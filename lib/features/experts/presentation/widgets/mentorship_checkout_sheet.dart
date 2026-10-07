@@ -134,7 +134,7 @@ class _MentorshipCheckoutSheetState
                     style: TextStyle(
                       fontSize: 12,
                       letterSpacing: 0.8,
-                      fontWeight: FontWeight.w800,
+                      fontWeight: FontWeight.w700,
                       color: AppColors.textPrimary,
                     ),
                   ),
@@ -223,7 +223,7 @@ class _Header extends StatelessWidget {
                   'Confirm & Checkout',
                   style: TextStyle(
                     fontSize: 17,
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w700,
                     color: AppColors.white,
                   ),
                 ),
@@ -294,7 +294,7 @@ class _SummaryCard extends StatelessWidget {
                           style: const TextStyle(
                             fontSize: 10.5,
                             letterSpacing: 0.4,
-                            fontWeight: FontWeight.w800,
+                            fontWeight: FontWeight.w700,
                             color: AppColors.primary,
                           ),
                         ),
@@ -308,7 +308,7 @@ class _SummaryCard extends StatelessWidget {
                       style: const TextStyle(
                         fontSize: 15.5,
                         height: 1.3,
-                        fontWeight: FontWeight.w800,
+                        fontWeight: FontWeight.w700,
                         color: AppColors.textPrimary,
                       ),
                     ),
@@ -321,7 +321,7 @@ class _SummaryCard extends StatelessWidget {
                             TextSpan(
                               text: mentor,
                               style: const TextStyle(
-                                fontWeight: FontWeight.w700,
+                                fontWeight: FontWeight.w600,
                                 color: AppColors.textPrimary,
                               ),
                             ),
@@ -347,7 +347,7 @@ class _SummaryCard extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 10.5,
                       letterSpacing: 0.4,
-                      fontWeight: FontWeight.w700,
+                      fontWeight: FontWeight.w600,
                       color: AppColors.textLight,
                     ),
                   ),
@@ -356,7 +356,7 @@ class _SummaryCard extends StatelessWidget {
                     _money(expert.price),
                     style: const TextStyle(
                       fontSize: 22,
-                      fontWeight: FontWeight.w800,
+                      fontWeight: FontWeight.w700,
                       color: AppColors.textPrimary,
                     ),
                   ),
@@ -503,7 +503,7 @@ class _MethodCard extends StatelessWidget {
                                   title,
                                   style: const TextStyle(
                                     fontSize: 15,
-                                    fontWeight: FontWeight.w800,
+                                    fontWeight: FontWeight.w700,
                                     color: AppColors.textPrimary,
                                   ),
                                 ),
@@ -521,7 +521,7 @@ class _MethodCard extends StatelessWidget {
                                     style: TextStyle(
                                       fontSize: 10,
                                       letterSpacing: 0.4,
-                                      fontWeight: FontWeight.w800,
+                                      fontWeight: FontWeight.w700,
                                       color: tagColor,
                                     ),
                                   ),
@@ -616,7 +616,7 @@ class _ShortBy extends StatelessWidget {
             icon: const Icon(Icons.open_in_new_rounded, size: 16),
             label: const Text(
               'Top Up Wallet',
-              style: TextStyle(fontWeight: FontWeight.w800),
+              style: TextStyle(fontWeight: FontWeight.w700),
             ),
           ),
         ],
@@ -648,7 +648,7 @@ class _EscrowNote extends StatelessWidget {
                 children: [
                   TextSpan(
                     text: 'KaamMilega Escrow Protection: ',
-                    style: TextStyle(fontWeight: FontWeight.w800),
+                    style: TextStyle(fontWeight: FontWeight.w700),
                   ),
                   TextSpan(
                     text:
@@ -722,7 +722,7 @@ class _Footer extends StatelessWidget {
             ),
             child: const Text(
               'Cancel',
-              style: TextStyle(fontWeight: FontWeight.w700),
+              style: TextStyle(fontWeight: FontWeight.w600),
             ),
           ),
           const SizedBox(width: 12),
@@ -753,7 +753,7 @@ class _Footer extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
                         fontSize: 15,
-                        fontWeight: FontWeight.w800,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
                   ),

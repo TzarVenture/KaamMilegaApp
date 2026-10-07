@@ -36,8 +36,9 @@ class AppTheme {
   static ThemeData lightTheme = ThemeData(
     useMaterial3: true,
 
-    // Brand typography: Poppins, with Noto Sans Devanagari for Hindi text.
-    fontFamily: AppFonts.primary,
+    // Inter for UI text (Poppins for large headings), Noto Sans
+    // Devanagari for Hindi text.
+    fontFamily: AppFonts.secondary,
     fontFamilyFallback: AppFonts.fallback,
 
     scaffoldBackgroundColor: AppColors.background,
@@ -274,7 +275,7 @@ class AppTheme {
       insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
       titleTextStyle: const TextStyle(
         fontSize: 18,
-        fontWeight: FontWeight.w800,
+        fontWeight: FontWeight.w700,
         color: AppColors.textPrimary,
         height: 1.3,
       ),

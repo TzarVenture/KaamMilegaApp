@@ -89,7 +89,7 @@ class _MainNavigationShellState extends ConsumerState<MainNavigationShell> {
                 'Quick Actions',
                 style: TextStyle(
                   fontSize: 18,
-                  fontWeight: FontWeight.w800,
+                  fontWeight: FontWeight.w700,
                   color: AppColors.textPrimary,
                 ),
               ),
@@ -108,7 +108,7 @@ class _MainNavigationShellState extends ConsumerState<MainNavigationShell> {
                 ),
                 title: const Text(
                   'Instant Work Request',
-                  style: TextStyle(fontWeight: FontWeight.w700),
+                  style: TextStyle(fontWeight: FontWeight.w600),
                 ),
                 subtitle: const Text('Get matched with workers in minutes'),
                 trailing: const Icon(Icons.chevron_right_rounded),
@@ -141,7 +141,7 @@ class _MainNavigationShellState extends ConsumerState<MainNavigationShell> {
                 ),
                 title: const Text(
                   'Browse Resources',
-                  style: TextStyle(fontWeight: FontWeight.w700),
+                  style: TextStyle(fontWeight: FontWeight.w600),
                 ),
                 subtitle: const Text('Access career guides and materials'),
                 trailing: const Icon(Icons.chevron_right_rounded),
@@ -165,7 +165,7 @@ class _MainNavigationShellState extends ConsumerState<MainNavigationShell> {
                 ),
                 title: const Text(
                   'Browse Live Events',
-                  style: TextStyle(fontWeight: FontWeight.w700),
+                  style: TextStyle(fontWeight: FontWeight.w600),
                 ),
                 subtitle: const Text('Join career webinars & hiring fairs'),
                 trailing: const Icon(Icons.chevron_right_rounded),

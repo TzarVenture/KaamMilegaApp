@@ -118,7 +118,7 @@ class ActiveGigCard extends ConsumerWidget {
                     'ACTIVE GIG',
                     style: TextStyle(
                       fontSize: 11,
-                      fontWeight: FontWeight.w800,
+                      fontWeight: FontWeight.w700,
                       letterSpacing: 0.6,
                       color: Colors.white,
                     ),
@@ -145,7 +145,7 @@ class ActiveGigCard extends ConsumerWidget {
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
                         fontSize: 11.5,
-                        fontWeight: FontWeight.w700,
+                        fontWeight: FontWeight.w600,
                         color: Colors.white,
                       ),
                     ),
@@ -158,7 +158,7 @@ class ActiveGigCard extends ConsumerWidget {
               gig.title,
               style: const TextStyle(
                 fontSize: 20,
-                fontWeight: FontWeight.w900,
+                fontWeight: FontWeight.w700,
                 color: Colors.white,
               ),
             ),
@@ -209,7 +209,7 @@ class ActiveGigCard extends ConsumerWidget {
                   gig.payLabel,
                   style: const TextStyle(
                     fontSize: 22,
-                    fontWeight: FontWeight.w900,
+                    fontWeight: FontWeight.w700,
                     color: AppColors.accentBright,
                   ),
                 ),
@@ -326,7 +326,7 @@ class ActiveGigCard extends ConsumerWidget {
                     elevation: 0,
                     textStyle: const TextStyle(
                       fontSize: 14.5,
-                      fontWeight: FontWeight.w800,
+                      fontWeight: FontWeight.w700,
                     ),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
@@ -418,7 +418,7 @@ class _GigAction extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
                   fontSize: 12,
-                  fontWeight: FontWeight.w700,
+                  fontWeight: FontWeight.w600,
                   color: Colors.white,
                 ),
               ),
@@ -530,7 +530,7 @@ class SpotGigsSection extends ConsumerWidget {
                     ),
                     style: TextStyle(
                       fontSize: 16,
-                      fontWeight: FontWeight.w900,
+                      fontWeight: FontWeight.w700,
                       color: AppColors.textPrimary,
                     ),
                   ),
@@ -623,7 +623,7 @@ class _LivePill extends StatelessWidget {
             'Live',
             style: TextStyle(
               fontSize: 11.5,
-              fontWeight: FontWeight.w700,
+              fontWeight: FontWeight.w600,
               color: AppColors.success,
             ),
           ),
@@ -702,7 +702,7 @@ class _SpotGigCard extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
                         fontSize: 15.5,
-                        fontWeight: FontWeight.w800,
+                        fontWeight: FontWeight.w700,
                         color: AppColors.textPrimary,
                       ),
                     ),
@@ -734,7 +734,7 @@ class _SpotGigCard extends StatelessWidget {
                     minutes <= 1 ? 'Closing' : '$minutes min left',
                     style: const TextStyle(
                       fontSize: 11,
-                      fontWeight: FontWeight.w800,
+                      fontWeight: FontWeight.w700,
                       color: Color(0xFFB45309), // dark amber on light amber
                     ),
                   ),
@@ -761,7 +761,7 @@ class _SpotGigCard extends StatelessWidget {
                   gig.payLabel,
                   style: const TextStyle(
                     fontSize: 13,
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w700,
                     color: AppColors.success,
                   ),
                 ),
@@ -857,7 +857,7 @@ class _SpotGigCard extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
                         fontSize: 14,
-                        fontWeight: FontWeight.w800,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
             ),
@@ -955,7 +955,7 @@ class GigEarningsCard extends ConsumerWidget {
                   'Your gig earnings',
                   style: TextStyle(
                     fontSize: 16,
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w700,
                     color: AppColors.textPrimary,
                   ),
                 ),
@@ -1036,7 +1036,7 @@ class _EarningTile extends StatelessWidget {
               formatInr(amount),
               style: const TextStyle(
                 fontSize: 22,
-                fontWeight: FontWeight.w900,
+                fontWeight: FontWeight.w700,
                 color: AppColors.textPrimary,
               ),
             ),
@@ -1097,7 +1097,7 @@ class _Notice extends StatelessWidget {
             textAlign: TextAlign.center,
             style: const TextStyle(
               fontSize: 14.5,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w700,
               color: AppColors.textPrimary,
             ),
           ),

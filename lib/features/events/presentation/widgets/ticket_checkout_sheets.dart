@@ -88,7 +88,7 @@ class _AttendeeDetailsSheetState extends State<AttendeeDetailsSheet> {
                   'Attendee details',
                   style: TextStyle(
                     fontSize: 18,
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w700,
                     color: AppColors.textPrimary,
                   ),
                 ),
@@ -176,7 +176,7 @@ class TicketPaymentMethodSheet extends StatelessWidget {
               'Pay ${event.priceLabel} for this ticket',
               style: const TextStyle(
                 fontSize: 17,
-                fontWeight: FontWeight.w800,
+                fontWeight: FontWeight.w700,
                 color: AppColors.textPrimary,
               ),
             ),
@@ -190,7 +190,7 @@ class TicketPaymentMethodSheet extends StatelessWidget {
               ),
               title: const Text(
                 'Pay from KaamMilega Wallet',
-                style: TextStyle(fontWeight: FontWeight.w700),
+                style: TextStyle(fontWeight: FontWeight.w600),
               ),
               subtitle: Text(
                 !walletAvailable
@@ -212,7 +212,7 @@ class TicketPaymentMethodSheet extends StatelessWidget {
               ),
               title: const Text(
                 'Pay online',
-                style: TextStyle(fontWeight: FontWeight.w700),
+                style: TextStyle(fontWeight: FontWeight.w600),
               ),
               subtitle: const Text('UPI, card or net banking via Razorpay'),
               onTap: () => Navigator.pop(context, TicketPaymentMethod.online),

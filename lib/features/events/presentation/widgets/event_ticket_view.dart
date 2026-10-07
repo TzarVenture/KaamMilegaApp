@@ -62,7 +62,7 @@ class EventTicketCard extends StatelessWidget {
           title,
           style: const TextStyle(
             fontSize: 18,
-            fontWeight: FontWeight.w800,
+            fontWeight: FontWeight.w700,
             color: AppColors.textPrimary,
           ),
         ),

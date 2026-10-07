@@ -504,7 +504,7 @@ class _Tag extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
                 fontSize: 12,
-                fontWeight: FontWeight.w700,
+                fontWeight: FontWeight.w600,
                 color: color,
               ),
             ),
@@ -591,7 +591,7 @@ class _MainCardState extends State<_MainCard> {
             style: const TextStyle(
               fontSize: 22,
               height: 1.25,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w700,
               color: AppColors.textPrimary,
             ),
           ),
@@ -604,7 +604,7 @@ class _MainCardState extends State<_MainCard> {
                   TextSpan(
                     text: e.organizer.trim(),
                     style: const TextStyle(
-                      fontWeight: FontWeight.w700,
+                      fontWeight: FontWeight.w600,
                       color: AppColors.textPrimary,
                     ),
                   ),
@@ -626,7 +626,7 @@ class _MainCardState extends State<_MainCard> {
               'About this event',
               style: TextStyle(
                 fontSize: 16,
-                fontWeight: FontWeight.w700,
+                fontWeight: FontWeight.w600,
                 color: AppColors.textPrimary,
               ),
             ),
@@ -702,7 +702,7 @@ class _PassCard extends StatelessWidget {
                   'Event pass',
                   style: TextStyle(
                     fontSize: 16,
-                    fontWeight: FontWeight.w700,
+                    fontWeight: FontWeight.w600,
                     color: AppColors.textPrimary,
                   ),
                 ),
@@ -830,7 +830,7 @@ class _MetaRow extends StatelessWidget {
                 style: const TextStyle(
                   fontSize: 11,
                   letterSpacing: 0.6,
-                  fontWeight: FontWeight.w700,
+                  fontWeight: FontWeight.w600,
                   color: AppColors.textSecondary,
                 ),
               ),
@@ -839,7 +839,7 @@ class _MetaRow extends StatelessWidget {
                 value,
                 style: const TextStyle(
                   fontSize: 15,
-                  fontWeight: FontWeight.w700,
+                  fontWeight: FontWeight.w600,
                   color: AppColors.textPrimary,
                 ),
               ),
@@ -895,7 +895,7 @@ class _MeetingRoomCard extends StatelessWidget {
                     'Live session meeting room',
                     style: TextStyle(
                       fontSize: 15,
-                      fontWeight: FontWeight.w700,
+                      fontWeight: FontWeight.w600,
                       color: AppColors.textPrimary,
                     ),
                   ),
@@ -949,7 +949,7 @@ class _MeetingRoomCard extends StatelessWidget {
                   'Live session room',
                   style: TextStyle(
                     fontSize: 15,
-                    fontWeight: FontWeight.w700,
+                    fontWeight: FontWeight.w600,
                     color: AppColors.textPrimary,
                   ),
                 ),
@@ -1047,7 +1047,7 @@ class _IncludesCard extends StatelessWidget {
             'What your pass includes',
             style: TextStyle(
               fontSize: 16,
-              fontWeight: FontWeight.w700,
+              fontWeight: FontWeight.w600,
               color: AppColors.textPrimary,
             ),
           ),
@@ -1086,7 +1086,7 @@ class _IncludesCard extends StatelessWidget {
                                     title,
                                     style: const TextStyle(
                                       fontSize: 14,
-                                      fontWeight: FontWeight.w700,
+                                      fontWeight: FontWeight.w600,
                                       color: AppColors.textPrimary,
                                     ),
                                   ),
@@ -1133,7 +1133,7 @@ class _ExpertCallout extends StatelessWidget {
             'Are you an experienced professional or expert?',
             style: TextStyle(
               fontSize: 15,
-              fontWeight: FontWeight.w700,
+              fontWeight: FontWeight.w600,
               color: AppColors.textPrimary,
             ),
           ),
@@ -1246,7 +1246,7 @@ class _BookingBar extends StatelessWidget {
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
                           fontSize: 16,
-                          fontWeight: FontWeight.w700,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
               ),

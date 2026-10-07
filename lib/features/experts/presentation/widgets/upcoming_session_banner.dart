@@ -110,7 +110,7 @@ class UpcomingSessionBanner extends ConsumerWidget {
                           live ? 'HAPPENING NOW' : 'UPCOMING CALL',
                           style: TextStyle(
                             fontSize: 10.5,
-                            fontWeight: FontWeight.w900,
+                            fontWeight: FontWeight.w700,
                             letterSpacing: 0.5,
                             color: live
                                 ? AppColors.success
@@ -125,7 +125,7 @@ class UpcomingSessionBanner extends ConsumerWidget {
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
                           fontSize: 15,
-                          fontWeight: FontWeight.w800,
+                          fontWeight: FontWeight.w700,
                           height: 1.25,
                           color: AppColors.textPrimary,
                         ),
@@ -139,7 +139,7 @@ class UpcomingSessionBanner extends ConsumerWidget {
                               TextSpan(
                                 text: mentor,
                                 style: const TextStyle(
-                                  fontWeight: FontWeight.w700,
+                                  fontWeight: FontWeight.w600,
                                   color: AppColors.textPrimary,
                                 ),
                               ),
@@ -183,7 +183,7 @@ class UpcomingSessionBanner extends ConsumerWidget {
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
                           fontSize: 14,
-                          fontWeight: FontWeight.w800,
+                          fontWeight: FontWeight.w700,
                         ),
                       ),
                     ),

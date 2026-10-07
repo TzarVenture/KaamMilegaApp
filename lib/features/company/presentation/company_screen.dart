@@ -63,7 +63,7 @@ class CompanyScreen extends ConsumerWidget {
           overflow: TextOverflow.ellipsis,
           style: const TextStyle(
             fontSize: 18,
-            fontWeight: FontWeight.w800,
+            fontWeight: FontWeight.w700,
             color: AppColors.textPrimary,
           ),
         ),
@@ -98,7 +98,7 @@ class CompanyScreen extends ConsumerWidget {
                             '${list.length} open ${list.length == 1 ? 'job' : 'jobs'}',
                             style: const TextStyle(
                               fontSize: 15,
-                              fontWeight: FontWeight.w800,
+                              fontWeight: FontWeight.w700,
                               color: AppColors.textPrimary,
                             ),
                           ),
@@ -185,7 +185,7 @@ class _CompanyHeader extends StatelessWidget {
                         company.name,
                         style: const TextStyle(
                           fontSize: 18,
-                          fontWeight: FontWeight.w800,
+                          fontWeight: FontWeight.w700,
                           color: AppColors.textPrimary,
                         ),
                       ),

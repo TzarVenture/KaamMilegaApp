@@ -49,7 +49,7 @@ class ProExpertHero extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
                       fontSize: 10.5,
-                      fontWeight: FontWeight.w800,
+                      fontWeight: FontWeight.w700,
                       letterSpacing: 0.8,
                       color: AppColors.accentBright,
                     ),
@@ -71,7 +71,7 @@ class ProExpertHero extends StatelessWidget {
             ),
             style: TextStyle(
               fontSize: 24,
-              fontWeight: FontWeight.w900,
+              fontWeight: FontWeight.w700,
               color: Colors.white,
               height: 1.22,
             ),
@@ -178,7 +178,7 @@ class ExpertPlanCard extends StatelessWidget {
                           plan.name,
                           style: const TextStyle(
                             fontSize: 17,
-                            fontWeight: FontWeight.w800,
+                            fontWeight: FontWeight.w700,
                             color: AppColors.textPrimary,
                             height: 1.25,
                           ),
@@ -226,7 +226,7 @@ class ExpertPlanCard extends StatelessWidget {
                     plan.priceLabel,
                     style: const TextStyle(
                       fontSize: 30,
-                      fontWeight: FontWeight.w900,
+                      fontWeight: FontWeight.w700,
                       color: AppColors.textPrimary,
                       height: 1.1,
                     ),
@@ -249,7 +249,7 @@ class ExpertPlanCard extends StatelessWidget {
                         '($perMonth/mo)',
                         style: const TextStyle(
                           fontSize: 13,
-                          fontWeight: FontWeight.w700,
+                          fontWeight: FontWeight.w600,
                           color: AppColors.success,
                         ),
                       ),
@@ -264,7 +264,7 @@ class ExpertPlanCard extends StatelessWidget {
                   "WHAT'S INCLUDED",
                   style: TextStyle(
                     fontSize: 11.5,
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w700,
                     letterSpacing: 0.8,
                     color: AppColors.textSecondary,
                   ),
@@ -400,7 +400,7 @@ class _UpgradeButton extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
                         fontSize: 15,
-                        fontWeight: FontWeight.w800,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
                   ),
@@ -432,7 +432,7 @@ class _BestValueBadge extends StatelessWidget {
         'BEST VALUE',
         style: TextStyle(
           fontSize: 11,
-          fontWeight: FontWeight.w800,
+          fontWeight: FontWeight.w700,
           letterSpacing: 0.8,
           color: AppColors.onAccent,
         ),
@@ -464,7 +464,7 @@ class _Pill extends StatelessWidget {
         label,
         style: TextStyle(
           fontSize: 11.5,
-          fontWeight: FontWeight.w700,
+          fontWeight: FontWeight.w600,
           color: color,
         ),
       ),
@@ -515,7 +515,7 @@ class ProExpertNotice extends StatelessWidget {
                   title,
                   style: const TextStyle(
                     fontSize: 14,
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w700,
                     color: AppColors.textPrimary,
                   ),
                 ),
@@ -575,7 +575,7 @@ class ExpertPlanPaymentSheet extends StatelessWidget {
               'Pay ${plan.priceLabel} for ${plan.name}',
               style: const TextStyle(
                 fontSize: 17,
-                fontWeight: FontWeight.w800,
+                fontWeight: FontWeight.w700,
                 color: AppColors.textPrimary,
               ),
             ),
@@ -589,7 +589,7 @@ class ExpertPlanPaymentSheet extends StatelessWidget {
               ),
               title: const Text(
                 'Pay from KaamMilega Wallet',
-                style: TextStyle(fontWeight: FontWeight.w700),
+                style: TextStyle(fontWeight: FontWeight.w600),
               ),
               subtitle: Text(
                 !walletAvailable
@@ -611,7 +611,7 @@ class ExpertPlanPaymentSheet extends StatelessWidget {
               ),
               title: const Text(
                 'Pay online',
-                style: TextStyle(fontWeight: FontWeight.w700),
+                style: TextStyle(fontWeight: FontWeight.w600),
               ),
               subtitle: const Text('UPI, card or net banking via Razorpay'),
               onTap: () =>

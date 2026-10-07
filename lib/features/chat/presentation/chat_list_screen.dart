@@ -374,7 +374,7 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen>
                   'Messages',
                   style: TextStyle(
                     fontSize: 24,
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w700,
                     color: AppColors.brandNavy,
                     letterSpacing: -0.3,
                   ),
@@ -662,7 +662,7 @@ class _SegmentButton extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: selected
-                            ? FontWeight.w700
+                            ? FontWeight.w600
                             : FontWeight.w600,
                         color: selected
                             ? AppColors.brandNavy
@@ -703,7 +703,7 @@ class _CountPill extends StatelessWidget {
         textAlign: TextAlign.center,
         style: const TextStyle(
           fontSize: 11,
-          fontWeight: FontWeight.w700,
+          fontWeight: FontWeight.w600,
           color: AppColors.white,
         ),
       ),
@@ -742,7 +742,7 @@ class _ChatAvatar extends StatelessWidget {
               trimmed.isNotEmpty ? trimmed[0].toUpperCase() : 'U',
               style: const TextStyle(
                 fontSize: 18,
-                fontWeight: FontWeight.w700,
+                fontWeight: FontWeight.w600,
                 color: AppColors.white,
               ),
             ),
@@ -837,8 +837,8 @@ class _ConversationTile extends StatelessWidget {
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: hasUnread
-                                  ? FontWeight.w800
-                                  : FontWeight.w700,
+                                  ? FontWeight.w700
+                                  : FontWeight.w600,
                               color: AppColors.textPrimary,
                             ),
                           ),
@@ -850,7 +850,7 @@ class _ConversationTile extends StatelessWidget {
                             style: TextStyle(
                               fontSize: 12,
                               fontWeight: hasUnread
-                                  ? FontWeight.w700
+                                  ? FontWeight.w600
                                   : FontWeight.w500,
                               color: hasUnread
                                   ? AppColors.blue
@@ -930,7 +930,7 @@ class _DeleteSwipeBackground extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
                 color: AppColors.white,
-                fontWeight: FontWeight.w700,
+                fontWeight: FontWeight.w600,
               ),
             ),
           ),
@@ -969,7 +969,7 @@ class _PersonTile extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
                       fontSize: 16,
-                      fontWeight: FontWeight.w700,
+                      fontWeight: FontWeight.w600,
                       color: AppColors.textPrimary,
                     ),
                   ),
@@ -1015,7 +1015,7 @@ class _SectionLabel extends StatelessWidget {
         text.toUpperCase(),
         style: const TextStyle(
           fontSize: 12,
-          fontWeight: FontWeight.w700,
+          fontWeight: FontWeight.w600,
           letterSpacing: 0.6,
           color: AppColors.textSecondary,
         ),
@@ -1052,7 +1052,7 @@ class _EmptyList extends StatelessWidget {
           textAlign: TextAlign.center,
           style: const TextStyle(
             fontSize: 16,
-            fontWeight: FontWeight.w700,
+            fontWeight: FontWeight.w600,
             color: AppColors.textPrimary,
           ),
         ),

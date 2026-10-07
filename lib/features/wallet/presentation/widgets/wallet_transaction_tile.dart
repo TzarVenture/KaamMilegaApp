@@ -130,7 +130,7 @@ class WalletTransactionTile extends ConsumerWidget {
                           '${credit ? '+' : '-'}${formatWalletAmount(txn.amount)}',
                           style: TextStyle(
                             fontSize: 15.5,
-                            fontWeight: FontWeight.w900,
+                            fontWeight: FontWeight.w700,
                             color: amountColor,
                           ),
                         ),
@@ -143,7 +143,7 @@ class WalletTransactionTile extends ConsumerWidget {
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
                         fontSize: 14.5,
-                        fontWeight: FontWeight.w800,
+                        fontWeight: FontWeight.w700,
                         height: 1.3,
                         color: AppColors.textPrimary,
                       ),
@@ -287,7 +287,7 @@ class _CategoryBadge extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
                 fontSize: 11.5,
-                fontWeight: FontWeight.w700,
+                fontWeight: FontWeight.w600,
                 color: style.color,
               ),
             ),
@@ -329,7 +329,7 @@ class _StatusPill extends StatelessWidget {
         status.label.toUpperCase(),
         style: TextStyle(
           fontSize: 10.5,
-          fontWeight: FontWeight.w800,
+          fontWeight: FontWeight.w700,
           letterSpacing: 0.4,
           color: fg,
         ),
@@ -421,7 +421,7 @@ class _Pill extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     fontSize: 11.5,
-                    fontWeight: FontWeight.w700,
+                    fontWeight: FontWeight.w600,
                     color: color,
                   ),
                 ),
@@ -507,7 +507,7 @@ class _TransactionDetails extends StatelessWidget {
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 30,
-                  fontWeight: FontWeight.w900,
+                  fontWeight: FontWeight.w700,
                   color: credit ? AppColors.success : AppColors.brandNavy,
                 ),
               ),
@@ -519,7 +519,7 @@ class _TransactionDetails extends StatelessWidget {
                 textAlign: TextAlign.center,
                 style: const TextStyle(
                   fontSize: 16,
-                  fontWeight: FontWeight.w800,
+                  fontWeight: FontWeight.w700,
                   color: AppColors.textPrimary,
                 ),
               ),
@@ -590,7 +590,7 @@ class _TransactionDetails extends StatelessWidget {
                   ),
                   child: const Text(
                     'Close',
-                    style: TextStyle(fontWeight: FontWeight.w700),
+                    style: TextStyle(fontWeight: FontWeight.w600),
                   ),
                 ),
               ),
