@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../features/cities/presentation/city_dropdown.dart';
 import '../../features/jobs/providers/jobs_provider.dart';
 import 'notification_bell_button.dart';
+import 'rotating_search_hint.dart';
 import '../../app/theme/app_colors.dart';
 
 /// Reusable top header for category screens matching KaamMilega design:
@@ -13,10 +14,21 @@ import '../../app/theme/app_colors.dart';
 /// - Location selector dropdown
 /// - Search input bar
 class CategoryTopHeader extends ConsumerWidget {
+  static const _hintStyle = TextStyle(
+    fontSize: 13,
+    color: Color(0xFF94A3B8),
+    fontWeight: FontWeight.w500,
+  );
+
   final GlobalKey<ScaffoldState> scaffoldKey;
   final Color themeColor;
   final String? customLogoTitle;
   final String searchHint;
+
+  /// When given, the empty search box shows "Search for 'Gigs'" (one of
+  /// these examples), with the example changing every few seconds; [searchHint] is then what
+  /// screen readers hear. Without it, [searchHint] is shown as is.
+  final List<String>? searchHintExamples;
   final TextEditingController searchController;
   final ValueChanged<String>? onSearchChanged;
   final VoidCallback? onSearchSubmitted;
@@ -32,6 +44,7 @@ class CategoryTopHeader extends ConsumerWidget {
     required this.themeColor,
     this.customLogoTitle,
     required this.searchHint,
+    this.searchHintExamples,
     required this.searchController,
     this.onSearchChanged,
     this.onSearchSubmitted,
@@ -45,6 +58,7 @@ class CategoryTopHeader extends ConsumerWidget {
     final currentCity = jobsState.filter.city.isNotEmpty
         ? jobsState.filter.city
         : 'Delhi, India';
+    final rotating = searchHintExamples?.isNotEmpty ?? false;
 
     return Container(
       color: Colors.white,
@@ -200,12 +214,15 @@ class CategoryTopHeader extends ConsumerWidget {
               onChanged: onSearchChanged,
               onSubmitted: (_) => onSearchSubmitted?.call(),
               decoration: InputDecoration(
-                hintText: searchHint,
-                hintStyle: const TextStyle(
-                  fontSize: 13,
-                  color: Color(0xFF94A3B8),
-                  fontWeight: FontWeight.w500,
-                ),
+                hintText: rotating ? null : searchHint,
+                hint: rotating
+                    ? RotatingSearchHint(
+                        semanticLabel: searchHint,
+                        examples: searchHintExamples!,
+                        style: _hintStyle,
+                      )
+                    : null,
+                hintStyle: _hintStyle,
                 prefixIcon: Icon(
                   Icons.search_rounded,
                   color: themeColor,

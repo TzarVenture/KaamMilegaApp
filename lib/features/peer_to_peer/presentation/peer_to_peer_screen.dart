@@ -163,6 +163,13 @@ class _PeerToPeerScreenState extends ConsumerState<PeerToPeerScreen>
               scaffoldKey: _scaffoldKey,
               themeColor: AppColors.moduleP2P,
               searchHint: 'Search network peers & workers...',
+              // People search matches names and company names.
+              searchHintExamples: const [
+                'People',
+                'Friends',
+                'Colleagues',
+                'Companies',
+              ],
               searchController: _searchController,
               onSearchChanged: _onSearchTyped,
               onSearchSubmitted: () => _searchUsers(_searchController.text),

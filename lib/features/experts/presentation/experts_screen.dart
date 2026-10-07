@@ -37,6 +37,13 @@ class _ExpertsScreenState extends ConsumerState<ExpertsScreen> {
     'Entrepreneurship',
   ];
 
+  /// "Search for 'Mentors'", then the categories above (search matches
+  /// mentor name, session title, description and category).
+  late final List<String> _searchExamples = [
+    'Mentors',
+    ..._categories.where((c) => c != 'All'),
+  ];
+
   @override
   void dispose() {
     _searchController.dispose();
@@ -65,6 +72,7 @@ class _ExpertsScreenState extends ConsumerState<ExpertsScreen> {
               scaffoldKey: _scaffoldKey,
               themeColor: AppColors.moduleExperts,
               searchHint: 'Search mentors by name, role or skill...',
+              searchHintExamples: _searchExamples,
               searchController: _searchController,
               onSearchChanged: (val) {
                 ref.read(expertProvider.notifier).setSearchQuery(val.trim());

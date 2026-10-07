@@ -37,6 +37,12 @@ class _SkillsMarketplaceScreenState
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(skillsProvider);
+    // "Search for 'Skills'", 'Courses', then the categories from the server.
+    final searchExamples = [
+      'Skills',
+      'Courses',
+      ...state.categories.where((c) => c != 'All').take(6),
+    ];
     final user = ref.watch(authProvider).user;
     final userSkills = user?.skills ?? [];
 
@@ -59,6 +65,7 @@ class _SkillsMarketplaceScreenState
               themeColor: AppColors.moduleSkills,
               searchHint:
                   'Search skills & courses (e.g. Flutter, Electrician)...',
+              searchHintExamples: searchExamples,
               searchController: _searchController,
               onSearchChanged: (val) {
                 ref.read(skillsProvider.notifier).search(val.trim());

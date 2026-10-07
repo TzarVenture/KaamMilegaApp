@@ -13,6 +13,7 @@ import '../../jobs/presentation/job_detail_screen.dart';
 import '../providers/instant_candidate_provider.dart';
 import '../providers/instant_milega_provider.dart';
 import '../providers/instant_work_provider.dart';
+import '../models/nearby_professional.dart';
 import '../providers/spot_gigs_provider.dart';
 import 'widgets/instant_availability_card.dart';
 import 'widgets/instant_location_bar.dart';
@@ -32,6 +33,14 @@ class _InstantWorkScreenState extends ConsumerState<InstantWorkScreen> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final TextEditingController _searchController = TextEditingController();
   final _workStartKey = GlobalKey();
+
+  /// Rotating search hint: gigs, then the InstantMilega trades (the same
+  /// list as the category chips, so they always match).
+  static final List<String> _searchExamples = [
+    'Gigs',
+    for (final c in InstantServiceCategory.values)
+      if (c.id != InstantServiceCategory.allId) c.label,
+  ];
 
   final List<String> _filters = [
     'All',
@@ -83,6 +92,8 @@ class _InstantWorkScreenState extends ConsumerState<InstantWorkScreen> {
               themeColor: AppColors.moduleInstantWork,
               customLogoTitle: 'Instantmilega™',
               searchHint: 'Search nearby gigs, delivery, helper...',
+              // "Search for 'Gigs'", then the InstantMilega trades.
+              searchHintExamples: _searchExamples,
               searchController: _searchController,
               onSearchChanged: (val) {
                 ref

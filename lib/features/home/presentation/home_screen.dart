@@ -21,6 +21,7 @@ import 'widgets/job_categories_section.dart';
 import 'widgets/job_shortcuts_sections.dart';
 import '../../../shared/widgets/fade_slide_in.dart';
 import '../../../shared/widgets/pressable_scale.dart';
+import '../../../shared/widgets/rotating_search_hint.dart';
 
 /// KaamMilega™ Home Screen
 /// Pixel-perfect implementation matching official design specification.
@@ -487,6 +488,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     _goToJobsTabWithQuery(query);
   }
 
+  static const _searchExamples = [
+    'Jobs',
+    'Companies',
+    'Locations',
+    'Electrician',
+    'Delivery jobs',
+    'Part-time work',
+  ];
+
   Widget _buildSearchBox() {
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
@@ -495,7 +505,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         textInputAction: TextInputAction.search,
         onSubmitted: _submitHomeSearch,
         decoration: InputDecoration(
-          hintText: 'Search jobs, companies or locations...',
+          // "Search for 'Jobs'", then 'Companies', ... (what this box
+          // finds: jobs by title, company or location).
+          hint: const RotatingSearchHint(
+            semanticLabel: 'Search jobs, companies or locations',
+            examples: _searchExamples,
+          ),
           filled: true,
           fillColor: Colors.white,
           isDense: true,

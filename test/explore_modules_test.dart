@@ -233,5 +233,44 @@ void main() {
         expect(find.byIcon(Icons.menu_rounded), findsOneWidget);
       },
     );
+
+    testWidgets('with examples: "Search for" stays, the example rotates', (
+      tester,
+    ) async {
+      final scaffoldKey = GlobalKey<ScaffoldState>();
+      final searchController = TextEditingController();
+      addTearDown(searchController.dispose);
+      await tester.pumpWidget(
+        ProviderScope(
+          child: MaterialApp(
+            home: Scaffold(
+              key: scaffoldKey,
+              body: CategoryTopHeader(
+                scaffoldKey: scaffoldKey,
+                themeColor: const Color(0xFFFF6B00),
+                searchHint: 'Search nearby gigs, delivery, helper...',
+                searchHintExamples: const ['Gigs', 'Electrician'],
+                searchController: searchController,
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      // The fixed hint is only for screen readers now.
+      expect(
+        find.text('Search nearby gigs, delivery, helper...'),
+        findsNothing,
+      );
+      expect(find.text('Search for '), findsOneWidget);
+      expect(find.text("'Gigs'"), findsOneWidget);
+      await tester.pump(const Duration(milliseconds: 2500));
+      await tester.pumpAndSettle();
+      expect(find.text("'Electrician'"), findsOneWidget);
+      expect(
+        find.bySemanticsLabel('Search nearby gigs, delivery, helper...'),
+        findsWidgets,
+      );
+    });
   });
 }

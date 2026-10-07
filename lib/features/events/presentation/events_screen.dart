@@ -161,6 +161,15 @@ class _EventsScreenState extends ConsumerState<EventsScreen> {
               scaffoldKey: _scaffoldKey,
               themeColor: AppColors.moduleEvents,
               searchHint: 'Search events, webinars & summits...',
+              // Search matches event title, organizer and category.
+              searchHintExamples: const [
+                'Events',
+                'Webinars',
+                'Workshops',
+                'Summits',
+                'Meetups',
+                'Job Fairs',
+              ],
               searchController: _searchController,
               onSearchChanged: _onSearchChanged,
               onSearchSubmitted: () {

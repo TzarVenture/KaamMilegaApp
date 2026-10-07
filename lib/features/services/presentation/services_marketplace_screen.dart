@@ -33,6 +33,12 @@ class _ServicesMarketplaceScreenState extends State<ServicesMarketplaceScreen> {
     'Delivery',
   ];
 
+  /// "Search for 'Services'", then the categories above.
+  late final List<String> _searchExamples = [
+    'Services',
+    ..._categories.where((c) => c != 'All'),
+  ];
+
   @override
   void dispose() {
     _searchController.dispose();
@@ -59,6 +65,7 @@ class _ServicesMarketplaceScreenState extends State<ServicesMarketplaceScreen> {
               scaffoldKey: _scaffoldKey,
               themeColor: AppColors.moduleServices,
               searchHint: 'Search services (e.g. AC service, electrician)...',
+              searchHintExamples: _searchExamples,
               searchController: _searchController,
               onSearchChanged: (val) {
                 setState(() {});
