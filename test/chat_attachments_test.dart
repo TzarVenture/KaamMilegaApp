@@ -12,6 +12,7 @@ import 'package:kaam_milega/features/chat/models/chat_message.dart';
 import 'package:kaam_milega/features/chat/models/conversation.dart';
 import 'package:kaam_milega/features/chat/presentation/chat_detail_screen.dart';
 import 'package:kaam_milega/features/chat/presentation/widgets/chat_attachments.dart';
+import 'package:kaam_milega/features/chat/presentation/widgets/chat_emoji_sheet.dart';
 import 'package:kaam_milega/features/chat/providers/chat_access_provider.dart';
 import 'package:kaam_milega/features/chat/repositories/chat_repository.dart';
 import 'package:kaam_milega/features/chat/services/chat_websocket_service.dart';
@@ -325,6 +326,36 @@ void main() {
       await tester.pumpAndSettle();
       final field = tester.widget<TextField>(find.byType(TextField));
       expect(field.controller!.text, 'Thanks \u{1F44D}');
+    });
+
+    test('emoji search finds by simple words', () {
+      expect(searchEmoji('thumbs'), contains('\u{1F44D}'));
+      expect(searchEmoji('than'), containsAll(['\u{1F917}', '\u{1F64F}']));
+      expect(searchEmoji('heart green'), ['\u{1F49A}']);
+      expect(searchEmoji('zzzz'), isEmpty);
+      expect(searchEmoji('  '), isEmpty);
+    });
+
+    testWidgets('emoji sheet: search, then Recent remembers it', (
+      tester,
+    ) async {
+      await _pump(tester, _Chats([]));
+      await tester.tap(find.byTooltip('Add emoji'));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byType(TextField).last, 'call');
+      await tester.pumpAndSettle();
+      expect(find.text('Smileys'), findsNothing); // results instead of tabs
+      await tester.tap(find.bySemanticsLabel('\u{1F4DE}'));
+      await tester.pumpAndSettle();
+      final field = tester.widget<TextField>(find.byType(TextField));
+      expect(field.controller!.text, '\u{1F4DE}');
+
+      await tester.tap(find.byTooltip('Add emoji'));
+      await tester.pumpAndSettle();
+      expect(find.text('Recent'), findsOneWidget);
+      await tester.enterText(find.byType(TextField).last, 'nothing-like-this');
+      await tester.pumpAndSettle();
+      expect(find.textContaining('No emoji found'), findsOneWidget);
     });
 
     testWidgets('received photo and file show in the bubbles', (tester) async {

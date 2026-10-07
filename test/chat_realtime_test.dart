@@ -2,9 +2,11 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:kaam_milega/app/theme/app_colors.dart';
 import 'package:kaam_milega/core/network/api_client.dart';
 import 'package:kaam_milega/core/storage/local_storage.dart';
 import 'package:kaam_milega/features/auth/models/user_profile.dart';
@@ -229,6 +231,51 @@ void main() {
       expect(chats.calls, ['delete message m3']);
       expect(find.text('text m3'), findsNothing);
       expect(find.text('This message was deleted'), findsOneWidget);
+      // A plain outlined note: not the blue bubble, no shadow, no tick.
+      final bubble = tester.widget<Container>(
+        find
+            .ancestor(
+              of: find.text('This message was deleted'),
+              matching: find.byType(Container),
+            )
+            .first,
+      );
+      final look = bubble.decoration! as BoxDecoration;
+      expect(look.color, isNot(AppColors.primary));
+      expect(look.border, isNotNull);
+      expect(look.boxShadow, isNull);
+      expect(find.byIcon(Icons.done_rounded), findsNothing); // m3's tick
+    });
+
+    testWidgets('long-press: Copy text puts the message on the clipboard', (
+      tester,
+    ) async {
+      String? copied;
+      tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+        SystemChannels.platform,
+        (call) async {
+          if (call.method == 'Clipboard.setData') {
+            copied = (call.arguments as Map)['text'] as String?;
+          }
+          return null;
+        },
+      );
+      addTearDown(
+        () => tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+          SystemChannels.platform,
+          null,
+        ),
+      );
+      await pump(tester);
+      // The other person's message: Copy only.
+      await tester.longPress(find.text('text m2'));
+      await tester.pumpAndSettle();
+      expect(find.text('Copy text'), findsOneWidget);
+      expect(find.text('Delete message'), findsNothing);
+      await tester.tap(find.text('Copy text'));
+      await tester.pumpAndSettle();
+      expect(copied, 'text m2');
+      expect(find.text('Message copied.'), findsOneWidget);
     });
 
     testWidgets("the other person's message cannot be deleted", (tester) async {

@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../app/theme/app_colors.dart';
@@ -204,24 +205,51 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
   }
 
   /// Long-press on the user's own message.
-  Future<void> _onMessageLongPress(ChatMessage message) async {
-    final delete = await showModalBottomSheet<bool>(
+  /// Long-press on a message: Copy text (any message with text) and, for
+  /// the user's own message, Delete.
+  Future<void> _onMessageLongPress(
+    ChatMessage message, {
+    required bool isMe,
+  }) async {
+    final canCopy = message.content.trim().isNotEmpty;
+    final action = await showModalBottomSheet<String>(
       context: context,
       builder: (context) => SafeArea(
-        child: ListTile(
-          leading: const Icon(
-            Icons.delete_outline_rounded,
-            color: AppColors.error,
-          ),
-          title: const Text(
-            'Delete message',
-            style: TextStyle(color: AppColors.error),
-          ),
-          onTap: () => Navigator.pop(context, true),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (canCopy)
+              ListTile(
+                leading: const Icon(
+                  Icons.copy_rounded,
+                  color: AppColors.textPrimary,
+                ),
+                title: const Text('Copy text'),
+                onTap: () => Navigator.pop(context, 'copy'),
+              ),
+            if (isMe)
+              ListTile(
+                leading: const Icon(
+                  Icons.delete_outline_rounded,
+                  color: AppColors.error,
+                ),
+                title: const Text(
+                  'Delete message',
+                  style: TextStyle(color: AppColors.error),
+                ),
+                onTap: () => Navigator.pop(context, 'delete'),
+              ),
+          ],
         ),
       ),
     );
-    if (delete != true || !mounted) return;
+    if (!mounted) return;
+    if (action == 'copy') {
+      await Clipboard.setData(ClipboardData(text: message.content));
+      if (mounted) _snack('Message copied.');
+      return;
+    }
+    if (action != 'delete') return;
     final ok = await _confirm(
       title: 'Delete message?',
       message:
@@ -775,10 +803,12 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
                             isMe: isMe,
                             author: isMe ? me : other,
                             showAvatar: showAvatar,
-                            // Only the sender can delete a message.
+                            // Copy any text; only the sender can delete.
                             onLongPress:
-                                isMe && msg.id.isNotEmpty && !msg.isDeleted
-                                ? () => _onMessageLongPress(msg)
+                                msg.id.isNotEmpty &&
+                                    !msg.isDeleted &&
+                                    (isMe || msg.content.trim().isNotEmpty)
+                                ? () => _onMessageLongPress(msg, isMe: isMe)
                                 : null,
                           ),
                         );
@@ -954,6 +984,14 @@ class _MessageRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // A deleted message is a plain outlined note for both people (no
+    // colour, no shadow, no read ticks), so it never looks like a message.
+    final deleted = message.isDeleted;
+    final timeColor = deleted
+        ? AppColors.textLight
+        : isMe
+        ? AppColors.white.withValues(alpha: 0.75)
+        : AppColors.textLight;
     final avatar = SizedBox(
       width: _avatarSize,
       child: showAvatar
@@ -968,55 +1006,55 @@ class _MessageRow extends StatelessWidget {
           maxWidth: MediaQuery.sizeOf(context).width * 0.72,
         ),
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          padding: EdgeInsets.symmetric(
+            horizontal: deleted ? 14 : 16,
+            vertical: deleted ? 8 : 10,
+          ),
           decoration: BoxDecoration(
-            color: message.isDeleted
-                ? (isMe
-                      ? AppColors.primary.withValues(alpha: 0.55)
-                      : AppColors.borderLight)
+            color: deleted
+                ? AppColors.white.withValues(alpha: 0.6)
                 : isMe
                 ? AppColors.primary
                 : AppColors.white,
+            border: deleted ? Border.all(color: AppColors.border) : null,
             borderRadius: BorderRadius.only(
               topLeft: const Radius.circular(18),
               topRight: const Radius.circular(18),
               bottomLeft: Radius.circular(isMe || !showAvatar ? 18 : 4),
               bottomRight: Radius.circular(!isMe || !showAvatar ? 18 : 4),
             ),
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.brandNavy.withValues(alpha: 0.03),
-                blurRadius: 6,
-                offset: const Offset(0, 2),
-              ),
-            ],
+            boxShadow: deleted
+                ? null
+                : [
+                    BoxShadow(
+                      color: AppColors.brandNavy.withValues(alpha: 0.03),
+                      blurRadius: 6,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
           ),
           child: Column(
             crossAxisAlignment: isMe
                 ? CrossAxisAlignment.end
                 : CrossAxisAlignment.start,
             children: [
-              if (message.isDeleted)
+              if (deleted)
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(
+                    const Icon(
                       Icons.block_rounded,
                       size: 14,
-                      color: isMe
-                          ? AppColors.white.withValues(alpha: 0.75)
-                          : AppColors.textSecondary,
+                      color: AppColors.textLight,
                     ),
                     const SizedBox(width: 6),
-                    Flexible(
+                    const Flexible(
                       child: Text(
                         'This message was deleted',
                         style: TextStyle(
-                          fontSize: 13.5,
+                          fontSize: 13,
                           fontStyle: FontStyle.italic,
-                          color: isMe
-                              ? AppColors.white.withValues(alpha: 0.85)
-                              : AppColors.textSecondary,
+                          color: AppColors.textSecondary,
                         ),
                       ),
                     ),
@@ -1048,16 +1086,11 @@ class _MessageRow extends StatelessWidget {
                 children: [
                   Text(
                     message.formattedTime,
-                    style: TextStyle(
-                      fontSize: 10,
-                      color: isMe
-                          ? AppColors.white.withValues(alpha: 0.75)
-                          : AppColors.textLight,
-                    ),
+                    style: TextStyle(fontSize: 10, color: timeColor),
                   ),
                   // Ticks on the user's own messages: one when sent, two
                   // when the other person has read it.
-                  if (isMe) ...[
+                  if (isMe && !deleted) ...[
                     const SizedBox(width: 4),
                     Icon(
                       message.isRead

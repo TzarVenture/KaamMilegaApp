@@ -9,6 +9,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:kaam_milega/core/network/api_client.dart';
 import 'package:kaam_milega/core/network/app_exception.dart';
+import 'package:kaam_milega/core/services/notification_sound.dart';
 import 'package:kaam_milega/core/storage/local_storage.dart';
 import 'package:kaam_milega/features/auth/models/user_profile.dart';
 import 'package:kaam_milega/features/auth/providers/auth_provider.dart';
@@ -772,9 +773,12 @@ void main() {
   });
 
   group('In-app banner', () {
+    var tones = 0;
+
     Future<({_Server server, StreamController<NotificationEvent> events})> pump(
       WidgetTester tester,
     ) async {
+      tones = 0;
       final events = StreamController<NotificationEvent>.broadcast();
       addTearDown(events.close);
       final server = _Server(_backend());
@@ -799,6 +803,7 @@ void main() {
               NotificationRepository(server.client()),
             ),
             notificationEventsProvider.overrideWith((ref) => events.stream),
+            notificationSoundProvider.overrideWithValue(() async => tones++),
           ],
           child: MaterialApp.router(
             routerConfig: router,
@@ -827,6 +832,7 @@ void main() {
       h.events.add(created(_item('n5', link: '/interviews')));
       await tester.pumpAndSettle();
       expect(find.text('Title n5'), findsOneWidget);
+      expect(tones, 0); // not a chat message: banner only
 
       await tester.tap(find.text('Title n5'));
       await tester.pumpAndSettle();
@@ -863,6 +869,7 @@ void main() {
       );
       await tester.pumpAndSettle();
       expect(find.text('Title c1'), findsNothing);
+      expect(tones, 0); // muted while chatting with them
 
       // Someone else: shown.
       h.events.add(
@@ -877,6 +884,7 @@ void main() {
       );
       await tester.pumpAndSettle();
       expect(find.text('Title c2'), findsOneWidget);
+      expect(tones, 1); // a message from someone else: one tone
       await tester.pump(const Duration(seconds: 6));
       await tester.pumpAndSettle();
     });

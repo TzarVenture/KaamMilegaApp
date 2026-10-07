@@ -1,3 +1,4 @@
+import AudioToolbox
 import Flutter
 import UIKit
 
@@ -12,5 +13,21 @@ import UIKit
 
   func didInitializeImplicitFlutterEngine(_ engineBridge: FlutterImplicitEngineBridge) {
     GeneratedPluginRegistrant.register(with: engineBridge.pluginRegistry)
+
+    // Short message tone for chat (system sound; follows the silent switch).
+    if let registrar = engineBridge.pluginRegistry.registrar(forPlugin: "KaamMilegaSound") {
+      let channel = FlutterMethodChannel(
+        name: "com.kaammilega.app/sound",
+        binaryMessenger: registrar.messenger()
+      )
+      channel.setMethodCallHandler { call, result in
+        if call.method == "playNotification" {
+          AudioServicesPlaySystemSound(1007)
+          result(nil)
+        } else {
+          result(FlutterMethodNotImplemented)
+        }
+      }
+    }
   }
 }

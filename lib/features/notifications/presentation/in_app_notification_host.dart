@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../app/theme/app_colors.dart';
+import '../../../core/services/notification_sound.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../chat/presentation/active_chat.dart';
 import '../../network/providers/network_provider.dart';
@@ -121,6 +122,11 @@ class _InAppNotificationHostState extends ConsumerState<InAppNotificationHost>
             .then((_) {}, onError: (_) {}),
       );
       return;
+    }
+    // A chat message from someone whose chat is not open: a short tone
+    // (as on the website). Muted while chatting with that person (above).
+    if (target is ChatTarget) {
+      unawaited(ref.read(notificationSoundProvider)());
     }
     _hideTimer?.cancel();
     setState(() => _current = item);
