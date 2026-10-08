@@ -9,8 +9,10 @@ import '../../../auth/providers/auth_provider.dart';
 import '../../../experts/providers/expert_dashboard_provider.dart';
 import '../../../../shared/widgets/notification_bell_button.dart';
 
-/// Unified Application Navigation Drawer matching the Home Screen design (Screenshot 1)
-/// Used consistently across Home, Jobs, Chats, Apply Expert, and Profile screens.
+/// App menu (end drawer) used on Home, Jobs, Chats, Profile and the
+/// category screens: a navy header with the brand and the user, then the
+/// menu in three groups (Browse, My activity, Account) and Sign out /
+/// Sign in pinned at the bottom.
 class ProfileDrawer extends ConsumerWidget {
   final void Function(int index)? onNavigateTab;
 
@@ -31,479 +33,528 @@ class ProfileDrawer extends ConsumerWidget {
         : (isAuth ? 'Candidate' : 'Guest User');
     final userRole = (isAuth && user!.headline.trim().isNotEmpty)
         ? user.headline.trim()
-        : (isAuth ? 'User' : 'Guest');
+        : (isAuth ? 'User' : 'Sign in to apply, chat and save jobs');
     final userAvatar = ApiConstants.resolveImageUrl(user?.profileImage ?? '');
     final hasAvatar =
         isAuth &&
         userAvatar.isNotEmpty &&
         (userAvatar.startsWith('http://') || userAvatar.startsWith('https://'));
 
+    /// Closes the drawer, then opens a Home tab (or its route when the
+    /// drawer is not on Home).
+    void goTab(int index, String route) {
+      Navigator.pop(context);
+      if (onNavigateTab != null) {
+        onNavigateTab!(index);
+      } else {
+        context.go(route);
+      }
+    }
+
+    void push(String route) {
+      Navigator.pop(context);
+      context.push(route);
+    }
+
+    void protected(String route, {String? message}) {
+      Navigator.pop(context);
+      if (message == null) {
+        AuthGuard.openProtected(context, route);
+      } else {
+        AuthGuard.openProtected(context, route, message: message);
+      }
+    }
+
     return Drawer(
-      backgroundColor: Colors.white,
-      width: (MediaQuery.of(context).size.width * 0.78).clamp(280.0, 340.0),
+      backgroundColor: AppColors.white,
+      width: (MediaQuery.sizeOf(context).width * 0.8).clamp(280.0, 340.0),
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.horizontal(left: Radius.circular(20)),
+        borderRadius: BorderRadius.horizontal(left: Radius.circular(24)),
       ),
-      child: SafeArea(
-        child: Column(
-          children: [
-            Expanded(
-              child: SingleChildScrollView(
-                physics: const BouncingScrollPhysics(),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // 1. Drawer Header (Logo + Search + Notif + Close X)
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(16, 12, 10, 12),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Expanded(
-                            child: GestureDetector(
-                              onTap: () {
-                                Navigator.pop(context);
-                                if (onNavigateTab != null) {
-                                  onNavigateTab!(0);
-                                } else {
-                                  context.go('/home');
-                                }
-                              },
-                              child: FittedBox(
-                                fit: BoxFit.scaleDown,
-                                alignment: Alignment.centerLeft,
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  children: [
-                                    Image.asset(
-                                      'assets/images/logo.png',
-                                      height: 26,
-                                      fit: BoxFit.contain,
-                                    ),
-                                    const SizedBox(width: 8),
-                                    Image.asset(
-                                      'assets/images/logo_text.png',
-                                      height: 16,
-                                      fit: BoxFit.contain,
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              IconButton(
-                                icon: const Icon(
-                                  Icons.search_rounded,
-                                  size: 22,
-                                  color: Color(0xFF334155),
-                                ),
-                                splashRadius: 20,
-                                padding: const EdgeInsets.all(6),
-                                constraints: const BoxConstraints(),
-                                onPressed: () {
-                                  Navigator.pop(context);
-                                  if (onNavigateTab != null) {
-                                    onNavigateTab!(1);
-                                  } else {
-                                    context.go('/jobs');
-                                  }
-                                },
-                              ),
-                              const SizedBox(width: 4),
-                              // Same bell button as the headers; closes the
-                              // drawer first.
-                              NotificationBellButton(
-                                color: const Color(0xFF334155),
-                                size: 22,
-                                onPressed: () {
-                                  Navigator.pop(context);
-                                  context.push('/notifications');
-                                },
-                              ),
-                              const SizedBox(width: 4),
-                              IconButton(
-                                icon: const Icon(
-                                  Icons.close_rounded,
-                                  size: 24,
-                                  color: Color(0xFF334155),
-                                ),
-                                splashRadius: 20,
-                                padding: const EdgeInsets.all(6),
-                                constraints: const BoxConstraints(),
-                                onPressed: () => Navigator.pop(context),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
+      clipBehavior: Clip.antiAlias,
+      child: Column(
+        children: [
+          _DrawerHeader(
+            userName: userName,
+            userRole: userRole,
+            avatarUrl: hasAvatar ? userAvatar : null,
+            isAuth: isAuth,
+            onLogo: () => goTab(0, '/home'),
+            onNotifications: () => push('/notifications'),
+            onProfile: () {
+              if (isAuth) {
+                goTab(4, '/profile');
+              } else {
+                push('/login');
+              }
+            },
+          ),
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.fromLTRB(0, 8, 0, 12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const _SectionLabel('Browse'),
+                  _DrawerIconTile(
+                    icon: Icons.home_outlined,
+                    title: 'Home',
+                    onTap: () => goTab(0, '/home'),
+                  ),
+                  _DrawerIconTile(
+                    icon: Icons.business_center_outlined,
+                    title: 'Jobs',
+                    onTap: () => goTab(1, '/jobs'),
+                  ),
+                  _DrawerIconTile(
+                    icon: Icons.people_outline_rounded,
+                    title: 'Network',
+                    onTap: () => protected('/network'),
+                  ),
+                  _DrawerIconTile(
+                    icon: Icons.calendar_today_outlined,
+                    title: 'Events',
+                    onTap: () => push('/events'),
+                  ),
+                  _DrawerIconTile(
+                    icon: Icons.menu_book_outlined,
+                    title: 'Mentors',
+                    onTap: () => push('/experts'),
+                  ),
+                  _DrawerIconTile(
+                    icon: Icons.chat_bubble_outline_rounded,
+                    title: 'Chat',
+                    onTap: () => goTab(3, '/chats'),
+                  ),
+                  _DrawerIconTile(
+                    icon: Icons.library_books_outlined,
+                    title: 'Resources',
+                    onTap: () => push('/feed'),
+                  ),
+                  _DrawerIconTile(
+                    icon: Icons.apps_rounded,
+                    title: 'Explore All Modules',
+                    onTap: () => push('/explore'),
+                  ),
 
-                    const Divider(
-                      height: 1,
-                      thickness: 1,
-                      color: Color(0xFFF1F5F9),
-                    ),
-
-                    // 2. User Profile Card
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
-                      child: Row(
-                        children: [
-                          // A photo that fails to load falls back to the
-                          // person icon instead of an empty circle.
-                          CircleAvatar(
-                            radius: 23,
-                            backgroundColor: AppColors.navy,
-                            foregroundImage: hasAvatar
-                                ? NetworkImage(userAvatar)
-                                : null,
-                            onForegroundImageError: hasAvatar
-                                ? (_, _) {}
-                                : null,
-                            child: const Icon(
-                              Icons.person_rounded,
-                              color: Colors.white,
-                              size: 26,
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  userName,
-                                  style: const TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w700,
-                                    color: AppColors.textPrimary,
-                                  ),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                                const SizedBox(height: 2),
-                                Text(
-                                  userRole,
-                                  style: const TextStyle(
-                                    fontSize: 12.5,
-                                    fontStyle: FontStyle.italic,
-                                    color: AppColors.textSecondary,
-                                  ),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ],
-                            ),
-                          ),
-                          OutlinedButton(
-                            onPressed: () {
-                              Navigator.pop(context);
-                              if (isAuth) {
-                                if (onNavigateTab != null) {
-                                  onNavigateTab!(4);
-                                } else {
-                                  context.push('/profile');
-                                }
-                              } else {
-                                context.push('/login');
-                              }
-                            },
-                            style: OutlinedButton.styleFrom(
-                              side: const BorderSide(
-                                color: AppColors.primary,
-                                width: 1.2,
-                              ),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                                vertical: 6,
-                              ),
-                              minimumSize: Size.zero,
-                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                            ),
-                            child: Text(
-                              isAuth ? 'Profile' : 'Sign In',
-                              style: const TextStyle(
-                                color: AppColors.primary,
-                                fontSize: 13,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    const Divider(
-                      height: 1,
-                      thickness: 1,
-                      color: Color(0xFFF1F5F9),
-                    ),
-                    const SizedBox(height: 6),
-
-                    // 3. Main Nav Items with Icons (Screenshot 1)
+                  const _SectionLabel('My activity'),
+                  _DrawerIconTile(
+                    icon: Icons.assignment_turned_in_outlined,
+                    title: 'Applied Jobs Status',
+                    onTap: () => protected('/my-applications'),
+                  ),
+                  _DrawerIconTile(
+                    icon: Icons.video_call_outlined,
+                    title: 'Interviews',
+                    onTap: () => protected('/interviews'),
+                  ),
+                  _DrawerIconTile(
+                    icon: Icons.co_present_outlined,
+                    title: 'My Sessions',
+                    onTap: () => protected('/my-sessions'),
+                  ),
+                  _DrawerIconTile(
+                    icon: Icons.confirmation_number_outlined,
+                    title: 'My Tickets',
+                    onTap: () => protected('/my-tickets'),
+                  ),
+                  // Only for Experts, like the website's Expert Portal
+                  if (ref.watch(isExpertProvider))
                     _DrawerIconTile(
-                      icon: Icons.home_outlined,
-                      title: 'Home',
-                      onTap: () {
+                      icon: Icons.dashboard_customize_outlined,
+                      title: 'Expert Dashboard',
+                      onTap: () => protected('/expert-dashboard'),
+                    ),
+                  _ApplyExpertDrawerCard(
+                    onTap: () => protected('/apply-expert'),
+                  ),
+
+                  const _SectionLabel('Account'),
+                  _DrawerIconTile(
+                    icon: Icons.account_balance_wallet_outlined,
+                    title: 'Digital Wallet & Ledger',
+                    onTap: () => protected(
+                      '/wallet',
+                      message: 'Please login to access your wallet.',
+                    ),
+                  ),
+                  _DrawerIconTile(
+                    icon: Icons.settings_outlined,
+                    title: 'Settings & Privacy',
+                    onTap: () => protected('/settings'),
+                  ),
+                  _DrawerIconTile(
+                    icon: Icons.help_outline_rounded,
+                    title: 'Help & FAQ',
+                    onTap: () => push('/help'),
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          // Sign out / Sign in, always in reach at the bottom.
+          const Divider(height: 1, thickness: 1, color: AppColors.borderLight),
+          SafeArea(
+            top: false,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 10, 16, 12),
+              child: isAuth
+                  ? _FooterButton(
+                      icon: Icons.logout_rounded,
+                      label: 'Sign Out',
+                      color: AppColors.error,
+                      onTap: () async {
                         Navigator.pop(context);
-                        if (onNavigateTab != null) {
-                          onNavigateTab!(0);
-                        } else {
+                        await ref.read(authProvider.notifier).logout();
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Signed out successfully.'),
+                              backgroundColor: AppColors.brandNavy,
+                            ),
+                          );
                           context.go('/home');
                         }
                       },
+                    )
+                  : _FooterButton(
+                      icon: Icons.login_rounded,
+                      label: 'Sign In / Create Account',
+                      color: AppColors.brandNavy,
+                      filled: true,
+                      onTap: () => push('/login'),
                     ),
-                    _DrawerIconTile(
-                      icon: Icons.people_outline_rounded,
-                      title: 'Network',
-                      onTap: () {
-                        Navigator.pop(context);
-                        AuthGuard.openProtected(context, '/network');
-                      },
-                    ),
-                    _DrawerIconTile(
-                      icon: Icons.calendar_today_outlined,
-                      title: 'Events',
-                      onTap: () {
-                        Navigator.pop(context);
-                        context.push('/events');
-                      },
-                    ),
-                    _DrawerIconTile(
-                      icon: Icons.business_center_outlined,
-                      title: 'Jobs',
-                      onTap: () {
-                        Navigator.pop(context);
-                        if (onNavigateTab != null) {
-                          onNavigateTab!(1);
-                        } else {
-                          context.go('/jobs');
-                        }
-                      },
-                    ),
-                    _DrawerIconTile(
-                      icon: Icons.menu_book_outlined,
-                      title: 'Mentors',
-                      onTap: () {
-                        Navigator.pop(context);
-                        context.push('/experts');
-                      },
-                    ),
-                    _DrawerIconTile(
-                      icon: Icons.chat_bubble_outline_rounded,
-                      title: 'Chat',
-                      onTap: () {
-                        Navigator.pop(context);
-                        if (onNavigateTab != null) {
-                          onNavigateTab!(3);
-                        } else {
-                          context.go('/chats');
-                        }
-                      },
-                    ),
-                    _DrawerIconTile(
-                      icon: Icons.library_books_outlined,
-                      title: 'Resources',
-                      onTap: () {
-                        Navigator.pop(context);
-                        context.push('/feed');
-                      },
-                    ),
-
-                    const SizedBox(height: 6),
-                    const Divider(
-                      height: 1,
-                      thickness: 1,
-                      color: Color(0xFFF1F5F9),
-                    ),
-                    const SizedBox(height: 6),
-
-                    // 4. Secondary Text Menu Items (Screenshot 1)
-                    _DrawerIconTile(
-                      icon: Icons.apps_rounded,
-                      title: 'Explore All Modules',
-                      onTap: () {
-                        Navigator.pop(context);
-                        context.push('/explore');
-                      },
-                    ),
-                    _DrawerIconTile(
-                      icon: Icons.account_balance_wallet_outlined,
-                      title: 'Digital Wallet & Ledger',
-                      onTap: () {
-                        Navigator.pop(context);
-                        AuthGuard.openProtected(
-                          context,
-                          '/wallet',
-                          message: 'Please login to access your wallet.',
-                        );
-                      },
-                    ),
-                    _DrawerIconTile(
-                      icon: Icons.settings_outlined,
-                      title: 'Setting & Privacy',
-                      onTap: () {
-                        Navigator.pop(context);
-                        AuthGuard.openProtected(context, '/settings');
-                      },
-                    ),
-                    _DrawerIconTile(
-                      icon: Icons.help_outline_rounded,
-                      title: 'Help & FAQ',
-                      onTap: () {
-                        Navigator.pop(context);
-                        context.push('/help');
-                      },
-                    ),
-                    _DrawerIconTile(
-                      icon: Icons.assignment_turned_in_outlined,
-                      title: 'Applied Jobs Status',
-                      onTap: () {
-                        Navigator.pop(context);
-                        AuthGuard.openProtected(context, '/my-applications');
-                      },
-                    ),
-                    _DrawerIconTile(
-                      icon: Icons.video_call_outlined,
-                      title: 'Interviews',
-                      onTap: () {
-                        Navigator.pop(context);
-                        AuthGuard.openProtected(context, '/interviews');
-                      },
-                    ),
-                    _DrawerIconTile(
-                      icon: Icons.co_present_outlined,
-                      title: 'My Sessions',
-                      onTap: () {
-                        Navigator.pop(context);
-                        AuthGuard.openProtected(context, '/my-sessions');
-                      },
-                    ),
-                    // Only for Experts, like the website's Expert Portal
-                    if (ref.watch(isExpertProvider))
-                      _DrawerIconTile(
-                        icon: Icons.dashboard_customize_outlined,
-                        title: 'Expert Dashboard',
-                        onTap: () {
-                          Navigator.pop(context);
-                          AuthGuard.openProtected(context, '/expert-dashboard');
-                        },
-                      ),
-                    _DrawerIconTile(
-                      icon: Icons.confirmation_number_outlined,
-                      title: 'My Tickets',
-                      onTap: () {
-                        Navigator.pop(context);
-                        AuthGuard.openProtected(context, '/my-tickets');
-                      },
-                    ),
-                    _ApplyExpertDrawerCard(
-                      onTap: () {
-                        Navigator.pop(context);
-                        AuthGuard.openProtected(context, '/apply-expert');
-                      },
-                    ),
-
-                    const SizedBox(height: 6),
-                    const Divider(
-                      height: 1,
-                      thickness: 1,
-                      color: Color(0xFFF1F5F9),
-                    ),
-                    const SizedBox(height: 6),
-
-                    // 5. Auth Sign Out / Sign In
-                    if (isAuth)
-                      _DrawerIconTile(
-                        icon: Icons.logout_rounded,
-                        title: 'Sign Out',
-                        textColor: AppColors.error,
-                        onTap: () async {
-                          Navigator.pop(context);
-                          await ref.read(authProvider.notifier).logout();
-                          if (context.mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Signed out successfully.'),
-                                backgroundColor: Color(0xFF1E293B),
-                              ),
-                            );
-                            context.go('/home');
-                          }
-                        },
-                      )
-                    else
-                      _DrawerIconTile(
-                        icon: Icons.login_rounded,
-                        title: 'Sign In / Create Account',
-                        textColor: AppColors.primary,
-                        onTap: () {
-                          Navigator.pop(context);
-                          context.push('/login');
-                        },
-                      ),
-
-                    const SizedBox(height: 16),
-                  ],
-                ),
-              ),
             ),
-          ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Navy header: brand, notifications and close, then the user with a Profile
+/// (or Sign In) button. Runs up under the status bar.
+class _DrawerHeader extends StatelessWidget {
+  const _DrawerHeader({
+    required this.userName,
+    required this.userRole,
+    required this.avatarUrl,
+    required this.isAuth,
+    required this.onLogo,
+    required this.onNotifications,
+    required this.onProfile,
+  });
+
+  final String userName;
+  final String userRole;
+  final String? avatarUrl;
+  final bool isAuth;
+  final VoidCallback onLogo;
+  final VoidCallback onNotifications;
+  final VoidCallback onProfile;
+
+  @override
+  Widget build(BuildContext context) {
+    final top = MediaQuery.paddingOf(context).top;
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.fromLTRB(16, top + 6, 6, 18),
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [AppColors.brandNavy, AppColors.navy],
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            height: 48,
+            child: Row(
+              children: [
+                Expanded(
+                  child: Semantics(
+                    button: true,
+                    label: 'KaamMilega. Go to Home',
+                    excludeSemantics: true,
+                    child: GestureDetector(
+                      onTap: onLogo,
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: Alignment.centerLeft,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                              width: 30,
+                              height: 30,
+                              padding: const EdgeInsets.all(3.5),
+                              decoration: BoxDecoration(
+                                color: AppColors.white,
+                                borderRadius: BorderRadius.circular(9),
+                              ),
+                              child: Image.asset(
+                                'assets/images/logo.png',
+                                fit: BoxFit.contain,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Image.asset(
+                              'assets/images/logo_text_on_dark.webp',
+                              height: 18,
+                              fit: BoxFit.contain,
+                              filterQuality: FilterQuality.medium,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                // Same bell as the headers; closes the drawer first.
+                NotificationBellButton(
+                  color: AppColors.white,
+                  size: 22,
+                  onPressed: onNotifications,
+                ),
+                IconButton(
+                  tooltip: 'Close menu',
+                  onPressed: () => Navigator.pop(context),
+                  icon: const Icon(
+                    Icons.close_rounded,
+                    color: AppColors.white,
+                    size: 24,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 14),
+          Padding(
+            padding: const EdgeInsets.only(right: 10),
+            child: Row(
+              children: [
+                // A photo that fails to load falls back to the person icon.
+                Container(
+                  padding: const EdgeInsets.all(2),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: AppColors.white.withValues(alpha: 0.85),
+                      width: 1.5,
+                    ),
+                  ),
+                  child: CircleAvatar(
+                    radius: 24,
+                    backgroundColor: AppColors.white.withValues(alpha: 0.15),
+                    foregroundImage: avatarUrl != null
+                        ? NetworkImage(avatarUrl!)
+                        : null,
+                    onForegroundImageError: avatarUrl != null
+                        ? (_, _) {}
+                        : null,
+                    child: const Icon(
+                      Icons.person_rounded,
+                      color: AppColors.white,
+                      size: 26,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        userName,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.white,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        userRole,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 12.5,
+                          height: 1.3,
+                          color: AppColors.white.withValues(alpha: 0.75),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Material(
+                  color: AppColors.white,
+                  shape: const StadiumBorder(),
+                  child: InkWell(
+                    customBorder: const StadiumBorder(),
+                    onTap: onProfile,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 8,
+                      ),
+                      child: Text(
+                        isAuth ? 'Profile' : 'Sign In',
+                        style: const TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.brandNavy,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Small grey group title ("BROWSE").
+class _SectionLabel extends StatelessWidget {
+  const _SectionLabel(this.text);
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(22, 14, 22, 6),
+      child: Text(
+        text.toUpperCase(),
+        style: const TextStyle(
+          fontSize: 11.5,
+          fontWeight: FontWeight.w600,
+          letterSpacing: 0.8,
+          color: AppColors.textSecondary,
         ),
       ),
     );
   }
 }
 
-/// One drawer row: a plain icon (no background box) and the title.
-/// Icons share one calm grey so the list reads as a simple menu; rows with
-/// a meaning colour (Sign Out red, Sign In navy) use it for the icon too.
+/// One menu row: the icon on a soft rounded tile, then the title. The
+/// press highlight is rounded and inset, like the rest of the app.
 class _DrawerIconTile extends StatelessWidget {
   final IconData icon;
   final String title;
   final VoidCallback onTap;
-  final Color textColor;
 
   const _DrawerIconTile({
     required this.icon,
     required this.title,
     required this.onTap,
-    this.textColor = AppColors.textPrimary,
   });
 
   @override
   Widget build(BuildContext context) {
-    final iconColor = textColor == AppColors.textPrimary
-        ? AppColors.textSecondary
-        : textColor;
-    return InkWell(
-      onTap: onTap,
-      child: ConstrainedBox(
-        // 48px tall rows: comfortable to tap
-        constraints: const BoxConstraints(minHeight: 48),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 1),
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(12),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: onTap,
+          child: ConstrainedBox(
+            // 48px tall rows: comfortable to tap
+            constraints: const BoxConstraints(minHeight: 48),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              child: Row(
+                children: [
+                  Container(
+                    width: 34,
+                    height: 34,
+                    decoration: BoxDecoration(
+                      color: AppColors.background,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Icon(icon, size: 19, color: AppColors.brandNavy),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Text(
+                      title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontSize: 14.5,
+                        fontWeight: FontWeight.w500,
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Full-width Sign Out (red outline) or Sign In (navy, filled) button.
+class _FooterButton extends StatelessWidget {
+  const _FooterButton({
+    required this.icon,
+    required this.label,
+    required this.color,
+    required this.onTap,
+    this.filled = false,
+  });
+
+  final IconData icon;
+  final String label;
+  final Color color;
+  final VoidCallback onTap;
+  final bool filled;
+
+  @override
+  Widget build(BuildContext context) {
+    final fg = filled ? AppColors.white : color;
+    return SizedBox(
+      width: double.infinity,
+      height: 46,
+      child: Material(
+        color: filled ? color : color.withValues(alpha: 0.06),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+          side: filled
+              ? BorderSide.none
+              : BorderSide(color: color.withValues(alpha: 0.35)),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: onTap,
           child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(icon, size: 22, color: iconColor),
-              const SizedBox(width: 18),
-              Expanded(
+              Icon(icon, size: 19, color: fg),
+              const SizedBox(width: 8),
+              Flexible(
                 child: Text(
-                  title,
+                  label,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w500,
-                    color: textColor,
+                    fontSize: 14.5,
+                    fontWeight: FontWeight.w600,
+                    color: fg,
                   ),
                 ),
               ),

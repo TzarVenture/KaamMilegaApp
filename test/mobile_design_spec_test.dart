@@ -166,19 +166,12 @@ void main() {
           ),
         ),
       );
-      double left() => tester
-          .widget<AnimatedPositioned>(find.byType(AnimatedPositioned))
-          .left!;
-      double barX() => tester
-          .getTopLeft(
-            find.descendant(
-              of: find.byType(AnimatedPositioned),
-              matching: find.byType(DecoratedBox),
-            ),
-          )
-          .dx;
+      double barX() =>
+          tester.getTopLeft(find.byKey(AppBottomNav.indicatorKey)).dx;
+      // The bar may first glide from the tab of the previous bar.
+      await tester.pumpAndSettle();
       // 5 equal slots of 80px: the 24px bar is centred in slot 0.
-      expect(left(), 28);
+      expect(barX(), 28);
 
       await tester.tap(find.text('Chats'));
       await tester.pump();

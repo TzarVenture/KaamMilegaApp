@@ -12,6 +12,9 @@ import '../../app/theme/mobile_design_spec.dart';
 class AppBottomNav {
   AppBottomNav._();
 
+  /// The sliding orange bar (for tests).
+  static const indicatorKey = ValueKey('bottom-nav-indicator');
+
   /// Bar height without the bottom safe area.
   static const double height = 64;
 
@@ -205,52 +208,70 @@ class AppBottomNavItem extends StatelessWidget {
   }
 }
 
-/// The orange bar above the active tab, sliding to the new tab when the
-/// selection changes. Sits where [AppBottomNavItem] keeps its space: the
-/// tab's column (indicator 3, gap 6, icon 24, gap 4, label) is centred in
-/// the bar.
-class _SlidingIndicator extends StatelessWidget {
+/// The orange bar above the active tab, gliding to the new tab when the
+/// selection changes. It remembers where it last was, so it also glides
+/// when a tab opens a new screen with its own bar (e.g. Home > Jobs from
+/// the menu, or a module page). Sits where [AppBottomNavItem] keeps its
+/// space: the tab's column (indicator 3, gap 6, icon 24, gap 4, label) is
+/// centred in the bar.
+class _SlidingIndicator extends StatefulWidget {
   const _SlidingIndicator({required this.index, required this.count});
 
   final int index;
   final int count;
 
+  @override
+  State<_SlidingIndicator> createState() => _SlidingIndicatorState();
+}
+
+class _SlidingIndicatorState extends State<_SlidingIndicator> {
+  /// Last tab position per bar size (all bars here have 5 slots).
+  static final Map<int, double> _lastPosition = {};
+
   static const double _width = 24;
   static const double _height = 3;
 
+  /// Where the bar starts on a newly built screen: the previous screen's
+  /// tab, or this tab when there is none.
+  late final double _start =
+      _lastPosition[widget.count] ?? widget.index.toDouble();
+
   @override
   Widget build(BuildContext context) {
+    _lastPosition[widget.count] = widget.index.toDouble();
     final label = MediaQuery.textScalerOf(context).scale(11) * 1.2;
     final column = _height + 6 + 24 + 4 + label;
     final top = ((AppBottomNav.height - column) / 2).clamp(
       0.0,
       AppBottomNav.height,
     );
-    final instant = MediaQuery.of(context).disableAnimations;
+    final instant = MediaQuery.disableAnimationsOf(context);
     return LayoutBuilder(
       builder: (context, constraints) {
-        final slot = constraints.maxWidth / count;
-        return Stack(
-          children: [
-            AnimatedPositioned(
-              duration: instant
-                  ? Duration.zero
-                  : const Duration(milliseconds: 300),
-              curve: Curves.easeOutCubic,
-              left: slot * index + (slot - _width) / 2,
-              top: top,
-              width: _width,
-              height: _height,
-              child: IgnorePointer(
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    color: AppColors.accent,
-                    borderRadius: BorderRadius.circular(2),
+        final slot = constraints.maxWidth / widget.count;
+        return TweenAnimationBuilder<double>(
+          tween: Tween(begin: _start, end: widget.index.toDouble()),
+          duration: instant ? Duration.zero : const Duration(milliseconds: 380),
+          curve: Curves.easeInOutCubic,
+          builder: (context, position, _) => Stack(
+            children: [
+              Positioned(
+                left: slot * position + (slot - _width) / 2,
+                top: top,
+                width: _width,
+                height: _height,
+                child: const IgnorePointer(
+                  child: DecoratedBox(
+                    key: AppBottomNav.indicatorKey,
+                    decoration: BoxDecoration(
+                      color: AppColors.accent,
+                      borderRadius: BorderRadius.all(Radius.circular(2)),
+                    ),
                   ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         );
       },
     );

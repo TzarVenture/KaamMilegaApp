@@ -206,13 +206,13 @@ class _MainNavigationShellState extends ConsumerState<MainNavigationShell> {
           _buildNavItem(
             index: 0,
             icon: Icons.home_outlined,
-            activeIcon: Icons.home_rounded,
+            activeIcon: Icons.home,
             label: 'Home',
           ),
           _buildNavItem(
             index: 1,
-            icon: Icons.work_outline_rounded,
-            activeIcon: Icons.work_rounded,
+            icon: Icons.work_outline,
+            activeIcon: Icons.work,
             label: 'Jobs',
           ),
           // Center (+): quick actions
@@ -246,15 +246,15 @@ class _MainNavigationShellState extends ConsumerState<MainNavigationShell> {
           // Badge: unread messages over all chats (GET /chats).
           _buildNavItem(
             index: 3,
-            icon: Icons.chat_bubble_outline_rounded,
-            activeIcon: Icons.chat_bubble_rounded,
+            icon: Icons.chat_bubble_outline,
+            activeIcon: Icons.chat_bubble,
             label: 'Chats',
             badgeCount: ref.watch(unreadChatMessagesProvider),
           ),
           _buildNavItem(
             index: 4,
-            icon: Icons.person_outline_rounded,
-            activeIcon: Icons.person_rounded,
+            icon: Icons.account_circle_outlined,
+            activeIcon: Icons.account_circle_rounded,
             label: 'Profile',
           ),
         ],

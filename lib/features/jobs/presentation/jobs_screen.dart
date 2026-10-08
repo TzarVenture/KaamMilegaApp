@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -22,6 +23,7 @@ import 'widgets/jobs_hero_card.dart';
 import 'widgets/pagination_bar.dart';
 import 'widgets/promo_banner.dart';
 import '../../../shared/widgets/fade_slide_in.dart';
+import '../../../shared/widgets/rotating_search_hint.dart';
 
 /// Main Jobs Screen matching https://kaammilega.com/jobs
 class JobsScreen extends ConsumerStatefulWidget {
@@ -38,7 +40,6 @@ class _JobsScreenState extends ConsumerState<JobsScreen> {
   final TextEditingController _searchController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   Timer? _debounceTimer;
-  bool _isSearchVisible = false;
   String _selectedSort = 'Newest First';
   bool _filterSavedOnly = false;
 
@@ -48,7 +49,6 @@ class _JobsScreenState extends ConsumerState<JobsScreen> {
     final currentSearch = ref.read(jobsProvider).filter.searchQuery;
     if (currentSearch.isNotEmpty) {
       _searchController.text = currentSearch;
-      _isSearchVisible = true;
     }
   }
 
@@ -139,9 +139,6 @@ class _JobsScreenState extends ConsumerState<JobsScreen> {
     ) {
       if (next == _searchController.text.trim()) return;
       _searchController.text = next;
-      if (next.isNotEmpty && !_isSearchVisible) {
-        setState(() => _isSearchVisible = true);
-      }
     });
     final jobsState = ref.watch(jobsProvider);
     final filter = jobsState.filter;
@@ -169,79 +166,68 @@ class _JobsScreenState extends ConsumerState<JobsScreen> {
       key: _scaffoldKey,
       backgroundColor: AppColors.background,
       endDrawer: ProfileDrawer(onNavigateTab: widget.onNavigateTab),
+      // Navy app bar flowing into the navy header below (as on Home).
       appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0.5,
+        backgroundColor: AppColors.brandNavy,
+        surfaceTintColor: AppColors.brandNavy,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        systemOverlayStyle: SystemUiOverlayStyle.light,
         automaticallyImplyLeading: false,
         titleSpacing: 16,
-        title: GestureDetector(
-          onTap: () {
-            if (widget.onNavigateTab != null) {
-              widget.onNavigateTab!(0);
-            } else {
-              context.go('/home');
-            }
-          },
-          child: FittedBox(
-            fit: BoxFit.scaleDown,
-            alignment: Alignment.centerLeft,
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Image.asset(
-                  'assets/images/logo.png',
-                  height: 30,
-                  fit: BoxFit.contain,
-                ),
-                const SizedBox(width: 8),
-                Image.asset(
-                  'assets/images/logo_text.png',
-                  height: 18,
-                  fit: BoxFit.contain,
-                ),
-              ],
+        title: Semantics(
+          button: true,
+          label: 'KaamMilega. Go to Home',
+          excludeSemantics: true,
+          child: GestureDetector(
+            onTap: () {
+              if (widget.onNavigateTab != null) {
+                widget.onNavigateTab!(0);
+              } else {
+                context.go('/home');
+              }
+            },
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerLeft,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 34,
+                    height: 34,
+                    padding: const EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                      color: AppColors.white,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Image.asset(
+                      'assets/images/logo.png',
+                      fit: BoxFit.contain,
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Image.asset(
+                    'assets/images/logo_text_on_dark.webp',
+                    height: 22,
+                    fit: BoxFit.contain,
+                    filterQuality: FilterQuality.medium,
+                  ),
+                ],
+              ),
             ),
           ),
         ),
         actions: [
-          // 1. Search Icon
-          IconButton(
-            icon: Icon(
-              _isSearchVisible
-                  ? Icons.search_off_rounded
-                  : Icons.search_rounded,
-              color: const Color(0xFF1E293B),
-              size: 22,
-            ),
-            splashRadius: 20,
-            tooltip: 'Search Jobs',
-            onPressed: () {
-              setState(() {
-                _isSearchVisible = !_isSearchVisible;
-                if (!_isSearchVisible && _searchController.text.isNotEmpty) {
-                  _searchController.clear();
-                  ref.read(jobsProvider.notifier).setSearchQuery('');
-                }
-              });
-            },
-          ),
-
-          // 2. Notification bell (shared button)
-          const NotificationBellButton(color: Color(0xFF1E293B)),
-
-          // 3. Hamburger Menu (Drawer)
+          const NotificationBellButton(color: AppColors.white),
           IconButton(
             icon: const Icon(
               Icons.menu_rounded,
-              color: Color(0xFF1E293B),
+              color: AppColors.white,
               size: 24,
             ),
-            splashRadius: 20,
             tooltip: 'Menu',
-            onPressed: () {
-              _scaffoldKey.currentState?.openEndDrawer();
-            },
+            onPressed: () => _scaffoldKey.currentState?.openEndDrawer(),
           ),
           const SizedBox(width: 6),
         ],
@@ -253,70 +239,8 @@ class _JobsScreenState extends ConsumerState<JobsScreen> {
         child: CustomScrollView(
           controller: _scrollController,
           slivers: [
-            // Expandable Sleek Search Bar (When search icon is clicked)
-            if (_isSearchVisible)
-              SliverToBoxAdapter(
-                child: FadeSlideIn(
-                  offsetY: 8,
-                  child: Container(
-                    color: Colors.white,
-                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
-                    child: TextField(
-                      controller: _searchController,
-                      autofocus: true,
-                      onChanged: _onSearchChanged,
-                      onSubmitted: (val) {
-                        _debounceTimer?.cancel();
-                        ref
-                            .read(jobsProvider.notifier)
-                            .setSearchQuery(val.trim());
-                      },
-                      decoration: InputDecoration(
-                        hintText: 'Search jobs, role, or company...',
-                        prefixIcon: const Icon(
-                          Icons.search_rounded,
-                          color: AppColors.primary,
-                        ),
-                        suffixIcon: _searchController.text.isNotEmpty
-                            ? IconButton(
-                                icon: const Icon(Icons.clear_rounded, size: 18),
-                                onPressed: () {
-                                  _debounceTimer?.cancel();
-                                  _searchController.clear();
-                                  ref
-                                      .read(jobsProvider.notifier)
-                                      .setSearchQuery('');
-                                },
-                              )
-                            : null,
-                        filled: true,
-                        fillColor: const Color(0xFFF1F5F9),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(16),
-                          borderSide: BorderSide.none,
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(16),
-                          borderSide: BorderSide.none,
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(16),
-                          borderSide: const BorderSide(
-                            color: AppColors.primary,
-                            width: 1.5,
-                          ),
-                        ),
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 12,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-
-            // Navy intro card (scrolls away; the toolbar below stays)
+            // Navy header with the search box (scrolls away; the toolbar
+            // below stays)
             SliverToBoxAdapter(
               child: JobsHeroCard(
                 // The total is shown only when it means "all open jobs"
@@ -329,6 +253,7 @@ class _JobsScreenState extends ConsumerState<JobsScreen> {
                     : jobsState.totalJobs,
                 savedCount: jobsState.savedJobIds.length,
                 onSavedJobs: () => context.push('/saved-jobs'),
+                search: _buildSearchBox(),
               ),
             ),
 
@@ -657,6 +582,79 @@ class _JobsScreenState extends ConsumerState<JobsScreen> {
 
   static String _jobCountLabel(int count) =>
       '$count ${count == 1 ? 'job' : 'jobs'}';
+
+  static const _searchExamples = ['Jobs', 'Roles', 'Companies', 'Locations'];
+
+  /// White search box in the navy header (jobs by title, description,
+  /// company or location; backend GET /jobs `search`).
+  Widget _buildSearchBox() {
+    final radius = BorderRadius.circular(14);
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        borderRadius: radius,
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.black.withValues(alpha: 0.18),
+            blurRadius: 14,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: TextField(
+        controller: _searchController,
+        onChanged: (v) {
+          setState(() {}); // shows / hides the clear button
+          _onSearchChanged(v);
+        },
+        textInputAction: TextInputAction.search,
+        onSubmitted: (val) {
+          _debounceTimer?.cancel();
+          ref.read(jobsProvider.notifier).setSearchQuery(val.trim());
+        },
+        decoration: InputDecoration(
+          // "Search for 'Jobs'", then 'Roles', 'Companies', ... (what this
+          // box finds: title, description, company or location).
+          hint: const RotatingSearchHint(
+            semanticLabel: 'Search jobs, role, company or location',
+            examples: _searchExamples,
+            style: TextStyle(fontSize: 14, color: AppColors.textSecondary),
+          ),
+          filled: true,
+          fillColor: AppColors.white,
+          isDense: true,
+          contentPadding: const EdgeInsets.symmetric(vertical: 14),
+          prefixIcon: const Icon(
+            Icons.search_rounded,
+            color: AppColors.brandNavy,
+          ),
+          suffixIcon: _searchController.text.isNotEmpty
+              ? IconButton(
+                  tooltip: 'Clear search',
+                  icon: const Icon(Icons.close_rounded, size: 18),
+                  onPressed: () {
+                    _debounceTimer?.cancel();
+                    _searchController.clear();
+                    setState(() {});
+                    ref.read(jobsProvider.notifier).setSearchQuery('');
+                  },
+                )
+              : null,
+          border: OutlineInputBorder(
+            borderRadius: radius,
+            borderSide: BorderSide.none,
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: radius,
+            borderSide: BorderSide.none,
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: radius,
+            borderSide: const BorderSide(color: AppColors.accent, width: 1.5),
+          ),
+        ),
+      ),
+    );
+  }
 
   /// One slim bar: "12 jobs", sort menu and Filters (with active count).
   Widget _buildToolbar({

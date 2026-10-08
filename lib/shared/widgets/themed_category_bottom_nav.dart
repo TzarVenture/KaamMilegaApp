@@ -150,14 +150,19 @@ class ThemedCategoryBottomNav extends ConsumerWidget {
     ref.watch(conversationsProvider);
 
     return AppBottomNav.frame(
+      // One orange bar glides between the tabs (not the centre button).
+      activeIndex: activeIndex >= 0 && activeIndex <= 4 && activeIndex != 2
+          ? activeIndex
+          : null,
       children: [
         // 1. HOME TAB
         AppBottomNavItem(
           icon: Icons.home_outlined,
-          activeIcon: Icons.home_rounded,
+          activeIcon: Icons.home,
           label: 'Home',
           selected: activeIndex == 0,
           legacyActiveColor: activeColor,
+          indicatorInBar: true,
           onTap: () => context.go('/home'),
         ),
 
@@ -167,6 +172,7 @@ class ThemedCategoryBottomNav extends ConsumerWidget {
           label: categoryLabel,
           selected: activeIndex == 1,
           legacyActiveColor: activeColor,
+          indicatorInBar: true,
           onTap: onCategoryTap ?? () {},
         ),
 
@@ -193,21 +199,23 @@ class ThemedCategoryBottomNav extends ConsumerWidget {
 
         // 4. CHATS TAB
         AppBottomNavItem(
-          icon: Icons.chat_bubble_outline_rounded,
-          activeIcon: Icons.chat_bubble_rounded,
+          icon: Icons.chat_bubble_outline,
+          activeIcon: Icons.chat_bubble,
           label: 'Chats',
           selected: activeIndex == 3,
           legacyActiveColor: activeColor,
+          indicatorInBar: true,
           onTap: () => context.go('/chats'),
         ),
 
         // 5. PROFILE TAB
         AppBottomNavItem(
-          icon: Icons.person_outline_rounded,
-          activeIcon: Icons.person_rounded,
+          icon: Icons.account_circle_outlined,
+          activeIcon: Icons.account_circle_rounded,
           label: 'Profile',
           selected: activeIndex == 4,
           legacyActiveColor: activeColor,
+          indicatorInBar: true,
           onTap: () => context.go('/profile'),
         ),
       ],

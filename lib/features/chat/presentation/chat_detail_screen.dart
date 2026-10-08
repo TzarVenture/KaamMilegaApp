@@ -488,9 +488,6 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
     final wsStatus =
         ref.watch(webSocketStatusStreamProvider).value ??
         ref.watch(chatWebSocketServiceProvider).status;
-    // Small photos next to the messages (initial when there is no photo).
-    final me =
-        currentUser ?? const UserProfile(id: '', mobile: '', name: 'You');
     final looked = ref.watch(userLookupProvider(widget.receiverId)).value;
     // Name, photo and online status of the other person, as sent by
     // GET /chats for this conversation (nothing made up when missing).
@@ -785,12 +782,12 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
                         final index = chatNotifier.hasOlder ? i - 1 : i;
                         final msg = messages[index];
                         final isMe = msg.senderId == currentUserId;
-                        // One photo per run of messages from the same
-                        // person, next to the last bubble of the run.
+                        // The last bubble of a run of messages from the
+                        // same person gets the tail corner and more space.
                         final next = index + 1 < messages.length
                             ? messages[index + 1]
                             : null;
-                        final showAvatar =
+                        final lastInRun =
                             next == null || next.senderId != msg.senderId;
 
                         // Only the newest message eases in (sent or
@@ -801,8 +798,7 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
                           child: _MessageRow(
                             message: msg,
                             isMe: isMe,
-                            author: isMe ? me : other,
-                            showAvatar: showAvatar,
+                            lastInRun: lastInRun,
                             // Copy any text; only the sender can delete.
                             onLongPress:
                                 msg.id.isNotEmpty &&
@@ -963,24 +959,23 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
   }
 }
 
-/// A message bubble with the author's small round photo beside it: the
-/// other person on the left, the signed-in user on the right.
+/// A message bubble: the other person's on the left, the signed-in
+/// user's on the right. No profile photos beside the bubbles (a one-to-one
+/// chat already shows who it is with in the header).
 class _MessageRow extends StatelessWidget {
   const _MessageRow({
     required this.message,
     required this.isMe,
-    required this.author,
-    required this.showAvatar,
+    required this.lastInRun,
     this.onLongPress,
   });
 
   final ChatMessage message;
   final bool isMe;
-  final UserProfile author;
-  final bool showAvatar;
-  final VoidCallback? onLongPress;
 
-  static const double _avatarSize = 28;
+  /// Last bubble of a run from the same person: tail corner, more space.
+  final bool lastInRun;
+  final VoidCallback? onLongPress;
 
   @override
   Widget build(BuildContext context) {
@@ -992,14 +987,6 @@ class _MessageRow extends StatelessWidget {
         : isMe
         ? AppColors.white.withValues(alpha: 0.75)
         : AppColors.textLight;
-    final avatar = SizedBox(
-      width: _avatarSize,
-      child: showAvatar
-          ? ExcludeSemantics(
-              child: PersonAvatar(user: author, size: _avatarSize),
-            )
-          : null,
-    );
     final bubble = Flexible(
       child: ConstrainedBox(
         constraints: BoxConstraints(
@@ -1020,8 +1007,8 @@ class _MessageRow extends StatelessWidget {
             borderRadius: BorderRadius.only(
               topLeft: const Radius.circular(18),
               topRight: const Radius.circular(18),
-              bottomLeft: Radius.circular(isMe || !showAvatar ? 18 : 4),
-              bottomRight: Radius.circular(!isMe || !showAvatar ? 18 : 4),
+              bottomLeft: Radius.circular(isMe || !lastInRun ? 18 : 4),
+              bottomRight: Radius.circular(!isMe || !lastInRun ? 18 : 4),
             ),
             boxShadow: deleted
                 ? null
@@ -1112,7 +1099,7 @@ class _MessageRow extends StatelessWidget {
     );
 
     return Padding(
-      padding: EdgeInsets.only(bottom: showAvatar ? 12 : 4),
+      padding: EdgeInsets.only(bottom: lastInRun ? 12 : 4),
       child: GestureDetector(
         onLongPress: onLongPress,
         behavior: HitTestBehavior.opaque,
@@ -1121,9 +1108,7 @@ class _MessageRow extends StatelessWidget {
               ? MainAxisAlignment.end
               : MainAxisAlignment.start,
           crossAxisAlignment: CrossAxisAlignment.end,
-          children: isMe
-              ? [bubble, const SizedBox(width: 8), avatar]
-              : [avatar, const SizedBox(width: 8), bubble],
+          children: [bubble],
         ),
       ),
     );

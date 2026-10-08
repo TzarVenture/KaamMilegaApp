@@ -158,7 +158,7 @@ void main() {
       expect(find.text('Chat'), findsOneWidget);
       expect(find.text('Resources'), findsOneWidget);
       expect(find.text('Digital Wallet & Ledger'), findsOneWidget);
-      expect(find.text('Setting & Privacy'), findsOneWidget);
+      expect(find.text('Settings & Privacy'), findsOneWidget);
       expect(find.text('Applied Jobs Status'), findsOneWidget);
       expect(find.text('Interviews'), findsOneWidget);
       expect(find.text('Apply to be an Expert'), findsOneWidget);
@@ -223,7 +223,7 @@ void main() {
               widget is Image &&
               widget.image is AssetImage &&
               (widget.image as AssetImage).assetName ==
-                  'assets/images/logo_text.png',
+                  'assets/images/logo_text_on_dark.webp',
         );
         expect(logoTextFinder, findsOneWidget);
 
