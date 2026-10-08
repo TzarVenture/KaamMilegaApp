@@ -158,7 +158,8 @@ void main() {
     tester,
   ) async {
     await _pump(tester, const HomeGreeting());
-    expect(find.text('Good evening, Riya'), findsOneWidget);
+    expect(find.text('Good evening,'), findsOneWidget);
+    expect(find.text('Riya'), findsOneWidget);
   });
 
   testWidgets('guest: no name', (tester) async {

@@ -24,9 +24,10 @@ String greetingFor(DateTime time) {
   return 'Good evening';
 }
 
-/// "Good evening, Dev" (first name) for a signed-in user, "Good evening"
-/// for guests, with one line under it. White text: sits on the navy Home
-/// header.
+/// "Good evening," with the first name large on its own line (so the
+/// whole name shows; a very long one shrinks to fit) for a signed-in
+/// user, "Good evening" for guests, then one line under it. White text:
+/// sits on the navy Home header.
 class HomeGreeting extends ConsumerWidget {
   const HomeGreeting({super.key});
 
@@ -42,16 +43,31 @@ class HomeGreeting extends ConsumerWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
-        Text(
-          first.isEmpty ? hello : '$hello, $first',
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: const TextStyle(
-            fontFamily: AppFonts.primary,
-            fontSize: 21,
-            height: 1.2,
-            fontWeight: FontWeight.w700,
-            color: AppColors.white,
+        if (first.isNotEmpty) ...[
+          Text(
+            '$hello,',
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              fontSize: 14,
+              color: AppColors.white.withValues(alpha: 0.8),
+            ),
+          ),
+          const SizedBox(height: 1),
+        ],
+        FittedBox(
+          fit: BoxFit.scaleDown,
+          alignment: Alignment.centerLeft,
+          child: Text(
+            first.isEmpty ? hello : first,
+            maxLines: 1,
+            style: const TextStyle(
+              fontFamily: AppFonts.primary,
+              fontSize: 22,
+              height: 1.2,
+              fontWeight: FontWeight.w700,
+              color: AppColors.white,
+            ),
           ),
         ),
         const SizedBox(height: 3),
