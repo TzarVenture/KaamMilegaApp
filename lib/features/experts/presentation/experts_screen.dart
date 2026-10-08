@@ -64,13 +64,17 @@ class _ExpertsScreenState extends ConsumerState<ExpertsScreen> {
         categoryLabel: 'Experts',
         categoryIcon: Icons.person_search_rounded,
       ),
+      // The coloured header runs up under the status bar.
       body: SafeArea(
+        top: false,
         child: Column(
           children: [
             CategoryTopHeader(
               showSearchIcon: false, // search bar below is enough
               scaffoldKey: _scaffoldKey,
               themeColor: AppColors.moduleExperts,
+              title: 'Experts',
+              subtitle: 'Book 1-on-1 time with mentors.',
               searchHint: 'Search mentors by name, role or skill...',
               searchHintExamples: _searchExamples,
               searchController: _searchController,

@@ -57,13 +57,17 @@ class _ServicesMarketplaceScreenState extends State<ServicesMarketplaceScreen> {
         categoryLabel: 'Services',
         categoryIcon: Icons.home_repair_service_rounded,
       ),
+      // The coloured header runs up under the status bar.
       body: SafeArea(
+        top: false,
         child: Column(
           children: [
             CategoryTopHeader(
               showSearchIcon: false, // search bar below is enough
               scaffoldKey: _scaffoldKey,
               themeColor: AppColors.moduleServices,
+              title: 'Services',
+              subtitle: 'Find help for home and work.',
               searchHint: 'Search services (e.g. AC service, electrician)...',
               searchHintExamples: _searchExamples,
               searchController: _searchController,

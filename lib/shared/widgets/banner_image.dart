@@ -15,6 +15,7 @@ class BannerImage extends StatelessWidget {
     required this.semanticLabel,
     this.onTap,
     this.maxWidth = 720,
+    this.borderRadius = 0,
   });
 
   /// Asset path, for example `assets/images/events_hero.webp`.
@@ -28,6 +29,9 @@ class BannerImage extends StatelessWidget {
   final String semanticLabel;
   final VoidCallback? onTap;
   final double maxWidth;
+
+  /// Rounds the picture's corners (for pictures drawn edge to edge).
+  final double borderRadius;
 
   @override
   Widget build(BuildContext context) {
@@ -50,13 +54,16 @@ class BannerImage extends StatelessWidget {
             return Center(
               child: SizedBox(
                 width: width,
-                child: AspectRatio(
-                  aspectRatio: pixelWidth / pixelHeight,
-                  child: Image.asset(
-                    asset,
-                    fit: BoxFit.fill,
-                    cacheWidth: decodeWidth,
-                    filterQuality: FilterQuality.medium,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(borderRadius),
+                  child: AspectRatio(
+                    aspectRatio: pixelWidth / pixelHeight,
+                    child: Image.asset(
+                      asset,
+                      fit: BoxFit.fill,
+                      cacheWidth: decodeWidth,
+                      filterQuality: FilterQuality.medium,
+                    ),
                   ),
                 ),
               ),

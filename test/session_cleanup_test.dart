@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kaam_milega/app/theme/app_theme.dart';
+import 'package:kaam_milega/core/constants/api_constants.dart';
 import 'package:kaam_milega/core/network/api_client.dart';
+import 'package:kaam_milega/core/network/app_exception.dart';
 import 'package:kaam_milega/core/storage/local_storage.dart';
 import 'package:kaam_milega/features/applications/models/application.dart';
 import 'package:kaam_milega/features/applications/repositories/application_repository.dart';
@@ -88,6 +90,10 @@ class _FakeJobs extends JobRepository {
 }
 
 class _Mock401Adapter implements HttpClientAdapter {
+  _Mock401Adapter([this.body = '{"error": "Unauthorized"}']);
+
+  final String body;
+
   @override
   Future<ResponseBody> fetch(
     RequestOptions options,
@@ -95,7 +101,7 @@ class _Mock401Adapter implements HttpClientAdapter {
     Future<void>? cancelFuture,
   ) async {
     return ResponseBody.fromString(
-      '{"error": "Unauthorized"}',
+      body,
       401,
       headers: {
         Headers.contentTypeHeader: [Headers.jsonContentType],
@@ -297,5 +303,42 @@ void main() {
     } catch (_) {}
 
     expect(callbackInvoked, isTrue);
+  });
+
+  test('wrong password: 401 from login is not a session expiry', () async {
+    await LocalStorage.saveToken('old-token');
+    var callbackInvoked = false;
+    final dio = Dio(BaseOptions(baseUrl: 'https://example.invalid/api'));
+    dio.httpClientAdapter = _Mock401Adapter(
+      '{"error": "invalid email or password"}',
+    );
+    final client = ApiClient(
+      dio: dio,
+      onUnauthenticated: () => callbackInvoked = true,
+    );
+
+    Object? caught;
+    try {
+      await client.post(
+        ApiConstants.loginPassword,
+        data: {'email': 'a@b.com', 'password': 'wrong'},
+      );
+    } catch (e) {
+      caught = e;
+    }
+
+    expect(callbackInvoked, isFalse);
+    expect(LocalStorage.getToken(), 'old-token');
+    expect(caught, isA<AppAuthException>());
+    expect(
+      AuthNotifier.passwordLoginErrorMessage(caught!),
+      'Incorrect email or password. Please try again.',
+    );
+  });
+
+  test('credential requests are recognised by path', () {
+    expect(ApiClient.isCredentialRequest('/auth/login/password'), isTrue);
+    expect(ApiClient.isCredentialRequest('/auth/otp/verify'), isTrue);
+    expect(ApiClient.isCredentialRequest('/user/profile'), isFalse);
   });
 }

@@ -55,10 +55,18 @@ class ApiClient {
           return handler.next(response);
         },
         onError: (DioException error, handler) async {
-          // Handle 401 Unauthorized / Token Expiration
-          if (error.response?.statusCode == 401) {
-            await LocalStorage.clearSession();
-            onUnauthenticated?.call();
+          // 401 on a signed-in request: the session has expired. A 401
+          // from a sign-in request (e.g. a wrong password) is only that
+          // request's answer and must reach the screen as it is.
+          if (error.response?.statusCode == 401 &&
+              !isCredentialRequest(error.requestOptions.path)) {
+            try {
+              await LocalStorage.clearSession();
+              onUnauthenticated?.call();
+            } catch (e) {
+              // Never let session cleanup replace the server's answer.
+              debugPrint('[ApiClient] Session cleanup failed: $e');
+            }
           }
 
           // If network connection failure or timeout, update connectivity service
@@ -74,6 +82,23 @@ class ApiClient {
   }
 
   Dio get dio => _dio;
+
+  /// Sign-in requests sent before there is a session (login, OTP, sign-up,
+  /// password reset). Their 401 means wrong credentials, not an expired
+  /// session.
+  @visibleForTesting
+  static bool isCredentialRequest(String path) {
+    const paths = {
+      ApiConstants.sendOtp,
+      ApiConstants.verifyOtp,
+      ApiConstants.loginPassword,
+      ApiConstants.registerPassword,
+      ApiConstants.forgotPassword,
+      ApiConstants.resetPassword,
+    };
+    final clean = path.split('?').first;
+    return paths.any(clean.endsWith);
+  }
 
   /// Translates raw DioException or system error into structured AppException
   AppException _handleError(dynamic error) {

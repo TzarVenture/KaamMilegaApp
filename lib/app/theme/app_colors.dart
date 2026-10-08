@@ -75,6 +75,18 @@ class AppColors {
   static const Color moduleP2PLight = Color(0xFFE7F5F3);
   static const Color moduleEventsLight = Color(0xFFFEF5E7);
 
+  // Category screen headers: gradient from a deep shade (white text stays
+  // readable) to the service colour. Services and Events end one step
+  // deeper than their service colour for the same reason.
+  static const Color moduleInstantWorkDeep = Color(0xFFC2410C);
+  static const Color moduleSkillsDeep = Color(0xFF166534);
+  static const Color moduleExpertsDeep = Color(0xFF4C1D95);
+  static const Color moduleServicesDeep = Color(0xFF991B1B);
+  static const Color moduleServicesEnd = Color(0xFFDC2626);
+  static const Color moduleP2PDeep = Color(0xFF115E59);
+  static const Color moduleEventsDeep = Color(0xFF92400E);
+  static const Color moduleEventsEnd = Color(0xFFD97706);
+
   // -------------------------------------------------------------------
   // 4. HIGHLIGHTS & BADGES
   // -------------------------------------------------------------------

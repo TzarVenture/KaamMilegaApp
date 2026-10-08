@@ -153,13 +153,17 @@ class _EventsScreenState extends ConsumerState<EventsScreen> {
         categoryLabel: 'Events',
         categoryIcon: Icons.event_available_rounded,
       ),
+      // The coloured header runs up under the status bar.
       body: SafeArea(
+        top: false,
         child: Column(
           children: [
             CategoryTopHeader(
               showSearchIcon: false, // search bar below is enough
               scaffoldKey: _scaffoldKey,
               themeColor: AppColors.moduleEvents,
+              title: 'Events & community',
+              subtitle: 'Webinars, workshops and meetups.',
               searchHint: 'Search events, webinars & summits...',
               // Search matches event title, organizer and category.
               searchHintExamples: const [

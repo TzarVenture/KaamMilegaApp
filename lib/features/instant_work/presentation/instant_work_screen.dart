@@ -82,7 +82,9 @@ class _InstantWorkScreenState extends ConsumerState<InstantWorkScreen> {
         categoryLabel: 'Instant',
         categoryIcon: Icons.bolt_rounded,
       ),
+      // The coloured header runs up under the status bar.
       body: SafeArea(
+        top: false,
         child: Column(
           children: [
             // Top Header (Logo + Search/Notification/Drawer + Location + Search Bar)
@@ -90,7 +92,8 @@ class _InstantWorkScreenState extends ConsumerState<InstantWorkScreen> {
               showSearchIcon: false, // search bar below is enough
               scaffoldKey: _scaffoldKey,
               themeColor: AppColors.moduleInstantWork,
-              customLogoTitle: 'Instantmilega™',
+              title: 'Instant work',
+              subtitle: 'Quick gigs and helpers near you.',
               searchHint: 'Search nearby gigs, delivery, helper...',
               // "Search for 'Gigs'", then the InstantMilega trades.
               searchHintExamples: _searchExamples,

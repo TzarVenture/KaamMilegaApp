@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../app/theme/app_colors.dart';
-import '../../../app/theme/app_text_styles.dart';
 import '../../../shared/widgets/auth_prompt_dialog.dart';
 import '../../../shared/widgets/shimmer_loading.dart';
 import '../../../shared/widgets/voice_search_button.dart';
@@ -453,33 +452,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 ),
               ),
               const SizedBox(width: 10),
-              Semantics(
-                label: 'KaamMilega',
-                excludeSemantics: true,
-                child: Text.rich(
-                  const TextSpan(
-                    children: [
-                      TextSpan(
-                        text: 'Kaammi',
-                        style: TextStyle(color: AppColors.white),
-                      ),
-                      TextSpan(
-                        text: 'lega',
-                        style: TextStyle(color: AppColors.accentBright),
-                      ),
-                      TextSpan(
-                        text: '™',
-                        style: TextStyle(color: AppColors.white, fontSize: 10),
-                      ),
-                    ],
-                  ),
-                  style: const TextStyle(
-                    fontFamily: AppFonts.primary,
-                    fontSize: 21,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: -0.3,
-                  ),
-                ),
+              // Brand wordmark artwork (white and orange for the navy bar).
+              Image.asset(
+                'assets/images/logo_text_on_dark.webp',
+                height: 22,
+                fit: BoxFit.contain,
+                filterQuality: FilterQuality.medium,
+                semanticLabel: 'KaamMilega',
               ),
             ],
           ),

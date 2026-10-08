@@ -125,12 +125,16 @@ class _ExploreScreenState extends State<ExploreScreen> {
         categoryLabel: 'Explore',
         categoryIcon: Icons.explore_rounded,
       ),
+      // The coloured header runs up under the status bar.
       body: SafeArea(
+        top: false,
         child: Column(
           children: [
             CategoryTopHeader(
               scaffoldKey: _scaffoldKey,
               themeColor: AppColors.primary,
+              title: 'Explore',
+              subtitle: 'Everything on KaamMilega in one place.',
               searchHint: 'Search all 7 KaamMilega modules...',
               searchController: _searchController,
               onSearchChanged: (val) => setState(() => _query = val.trim()),

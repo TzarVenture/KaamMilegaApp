@@ -155,13 +155,17 @@ class _PeerToPeerScreenState extends ConsumerState<PeerToPeerScreen>
         categoryLabel: 'Network',
         categoryIcon: Icons.people_rounded,
       ),
+      // The coloured header runs up under the status bar.
       body: SafeArea(
+        top: false,
         child: Column(
           children: [
             CategoryTopHeader(
               showSearchIcon: false, // search bar below is enough
               scaffoldKey: _scaffoldKey,
               themeColor: AppColors.moduleP2P,
+              title: 'Network',
+              subtitle: 'Connect with people in your field.',
               searchHint: 'Search network peers & workers...',
               // People search matches names and company names.
               searchHintExamples: const [
@@ -393,7 +397,9 @@ class _PeerToPeerScreenState extends ConsumerState<PeerToPeerScreen>
     return BannerImage(
       asset: 'assets/images/p2p_hero.webp',
       pixelWidth: 1080,
-      pixelHeight: 721,
+      pixelHeight: 730,
+      // Rounded like the other module banners.
+      borderRadius: 16,
       semanticLabel: 'Connect. Share. Collaborate. Grow together. Connect now',
       onTap: _scrollToPeople,
     );

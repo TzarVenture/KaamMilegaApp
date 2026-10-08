@@ -56,13 +56,17 @@ class _SkillsMarketplaceScreenState
         categoryLabel: 'Skills',
         categoryIcon: Icons.school_rounded,
       ),
+      // The coloured header runs up under the status bar.
       body: SafeArea(
+        top: false,
         child: Column(
           children: [
             CategoryTopHeader(
               showSearchIcon: false, // search bar below is enough
               scaffoldKey: _scaffoldKey,
               themeColor: AppColors.moduleSkills,
+              title: 'Skills',
+              subtitle: 'Courses and skills to grow your work.',
               searchHint:
                   'Search skills & courses (e.g. Flutter, Electrician)...',
               searchHintExamples: searchExamples,
