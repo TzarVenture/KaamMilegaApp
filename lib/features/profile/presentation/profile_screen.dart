@@ -7069,6 +7069,16 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+                          // Profile link and language, right under the
+                          // profile header (as on the website's sidebar):
+                          // the link is what people share first.
+                          FadeSlideIn(
+                            index: 1,
+                            child: _buildPublicProfileAndLanguageCard(user),
+                          ),
+
+                          const SizedBox(height: 16),
+
                           // 2. Twin Cards: Open To Work & Providing Services (media_1789560057886.png)
                           FadeSlideIn(
                             index: 1,
@@ -7573,11 +7583,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
                           // 16. Wallet Credits Card
                           _buildWalletCreditsCard(user),
-
-                          const SizedBox(height: 16),
-
-                          // 17. Public Profile & Language Settings Card (media_1789974076369.png)
-                          _buildPublicProfileAndLanguageCard(user),
 
                           const SizedBox(height: 16),
 
