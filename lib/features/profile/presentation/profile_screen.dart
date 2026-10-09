@@ -5054,34 +5054,50 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           ),
           const SizedBox(height: 16),
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Flexible(
+              const Expanded(
                 child: Text(
-                  'SUGGESTED STEPS TO REACH 100%:',
+                  'NEXT STEPS TO REACH 100%',
                   style: TextStyle(
                     fontSize: 11,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.textLight,
-                    letterSpacing: 0.5,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textSecondary,
+                    letterSpacing: 0.6,
                   ),
                 ),
               ),
-              InkWell(
-                onTap: () {
-                  setState(() {
-                    _showCompletenessDetails = !_showCompletenessDetails;
-                  });
-                },
-                child: Text(
-                  _showCompletenessDetails
-                      ? 'Hide Details ^'
-                      : 'Show Details v',
-                  style: const TextStyle(
-                    fontSize: 11.5,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.blue,
-                  ),
+              // "Show details" with an arrow that turns when opened.
+              TextButton(
+                onPressed: () => setState(
+                  () => _showCompletenessDetails = !_showCompletenessDetails,
+                ),
+                style: TextButton.styleFrom(
+                  foregroundColor: AppColors.blue,
+                  padding: const EdgeInsets.fromLTRB(10, 4, 4, 4),
+                  minimumSize: const Size(0, 36),
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      _showCompletenessDetails
+                          ? 'Hide details'
+                          : 'Show details',
+                      style: const TextStyle(
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    AnimatedRotation(
+                      turns: _showCompletenessDetails ? 0.5 : 0,
+                      duration: const Duration(milliseconds: 200),
+                      child: const Icon(
+                        Icons.keyboard_arrow_down_rounded,
+                        size: 20,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],
@@ -5093,37 +5109,41 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             children: [
               if (!hasExp)
                 _buildCompletenessChip(
-                  'Add Work Experience +',
+                  'Add work experience',
                   _openAddExperienceDialog,
                 ),
               if (!hasPhoto)
                 _buildCompletenessChip(
-                  'Add Profile Photo +',
+                  'Add profile photo',
                   _showAddProfilePhotoModal,
                 ),
               if (!hasEdu)
                 _buildCompletenessChip(
-                  'Add Education +',
+                  'Add education',
                   _openAddEducationDialog,
                 ),
               if (!hasSkills)
                 _buildCompletenessChip(
-                  'Add Skills (3+) +',
+                  // Skills count once there are 3 (as in ProfileStrength).
+                  user.skills.isEmpty
+                      ? 'Add 3 skills'
+                      : 'Add ${3 - user.skills.length} more '
+                            '${3 - user.skills.length == 1 ? 'skill' : 'skills'}',
                   _openAddSkillDialog,
                 ),
               if (!hasAbout)
                 _buildCompletenessChip(
-                  'Add About Summary +',
+                  'Add about summary',
                   () => _showEditAboutDialog(user),
                 ),
               if (!hasHeadline)
                 _buildCompletenessChip(
-                  'Add Headline & Location +',
+                  'Add headline & location',
                   () => _openEditProfileDialog(user),
                 ),
               if (!hasEmail)
                 _buildCompletenessChip(
-                  'Add Email Verification +',
+                  'Verify your email',
                   () => _showEmailOtpDialog(user.email),
                 ),
             ],
@@ -5203,22 +5223,39 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   }
 
   Widget _buildCompletenessChip(String label, VoidCallback onTap) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(16),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-        decoration: BoxDecoration(
-          color: AppColors.primaryLight,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppColors.primaryLightBorder),
-        ),
-        child: Text(
-          label,
-          style: const TextStyle(
-            color: AppColors.blue,
-            fontSize: 11.5,
-            fontWeight: FontWeight.w600,
+    // Light-blue pill with a small plus icon in front of the step.
+    return Material(
+      color: AppColors.primaryLight,
+      shape: const StadiumBorder(
+        side: BorderSide(color: AppColors.primaryLightBorder),
+      ),
+      child: InkWell(
+        onTap: onTap,
+        customBorder: const StadiumBorder(),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(10, 8, 14, 8),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(
+                Icons.add_circle_outline_rounded,
+                size: 16,
+                color: AppColors.blue,
+              ),
+              const SizedBox(width: 6),
+              Flexible(
+                child: Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: AppColors.blue,
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       ),
