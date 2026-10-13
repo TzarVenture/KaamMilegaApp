@@ -2,13 +2,16 @@ import 'package:flutter/material.dart';
 
 import '../../../../app/theme/app_colors.dart';
 import '../../models/job.dart';
+import '../job_links.dart';
 import '../../../../shared/widgets/pressable_scale.dart';
 
 /// Compact job card for lists (Jobs tab, Saved Jobs, company page).
 ///
 /// Shows only real job data: title, company and city, the full salary
 /// range (short form, so it is never cut off), job type, experience,
-/// openings and when it was posted. Actions: call, chat and apply.
+/// openings, "KM Verified Employer" when the server marks the employer as
+/// verified ([isVerifiedEmployer]), and when it was posted. Actions: call,
+/// chat and apply.
 class JobCard extends StatelessWidget {
   final Job job;
   final VoidCallback onTap;
@@ -19,6 +22,14 @@ class JobCard extends StatelessWidget {
   final bool isApplied;
   final bool isSaved;
   final VoidCallback? onBookmarkToggle;
+
+  /// The employer is verified by the KaamMilega team (from the server;
+  /// see `verifiedEmployerIdsProvider`). Off by default.
+  final bool isVerifiedEmployer;
+
+  /// Makes the chips (type, experience, openings, KM Verified) tappable;
+  /// see [openJobLink]. Plain chips when null.
+  final ValueChanged<JobCardLink>? onLinkTap;
 
   const JobCard({
     super.key,
@@ -31,7 +42,14 @@ class JobCard extends StatelessWidget {
     this.isApplied = false,
     this.isSaved = false,
     this.onBookmarkToggle,
+    this.isVerifiedEmployer = false,
+    this.onLinkTap,
   });
+
+  VoidCallback? _link(JobCardLink link) {
+    final tap = onLinkTap;
+    return tap == null ? null : () => tap(link);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -122,19 +140,36 @@ class JobCard extends StatelessWidget {
 
                   const SizedBox(height: 10),
 
-                  // Job type, experience, openings, posted
+                  // Job type, experience, openings, KM Verified, posted
                   Wrap(
                     spacing: 6,
                     runSpacing: 6,
                     crossAxisAlignment: WrapCrossAlignment.center,
                     children: [
                       if (job.jobType.trim().isNotEmpty)
-                        _Tag(label: job.jobType.trim()),
-                      _Tag(label: job.formattedExperience),
+                        _Tag(
+                          icon: Icons.work_outline_rounded,
+                          label: job.jobType.trim(),
+                          hint: 'Show more ${job.jobType.trim()} jobs',
+                          onTap: _link(JobCardLink.jobType),
+                        ),
                       _Tag(
+                        icon: Icons.schedule_rounded,
+                        label: job.formattedExperience,
+                        hint: 'Show jobs for this experience',
+                        onTap: _link(JobCardLink.experience),
+                      ),
+                      _Tag(
+                        icon: Icons.people_outline_rounded,
                         label:
                             '${job.vacancies} ${job.vacancies == 1 ? 'opening' : 'openings'}',
+                        hint: 'Show people like you for this role',
+                        onTap: _link(JobCardLink.openings),
                       ),
+                      if (isVerifiedEmployer)
+                        _VerifiedEmployerTag(
+                          onTap: _link(JobCardLink.verifiedEmployer),
+                        ),
                       if (posted.isNotEmpty)
                         Padding(
                           padding: const EdgeInsets.only(left: 2),
@@ -301,25 +336,127 @@ class _SalaryLine extends StatelessWidget {
   }
 }
 
+/// Small grey chip with an icon (job type, experience, openings). Same
+/// height as the KM Verified chip so the row lines up on every phone.
 class _Tag extends StatelessWidget {
-  const _Tag({required this.label});
+  const _Tag({
+    required this.icon,
+    required this.label,
+    this.hint = '',
+    this.onTap,
+  });
 
+  final IconData icon;
   final String label;
+  final String hint;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: AppColors.background,
-        borderRadius: BorderRadius.circular(8),
+    return _Chip(
+      onTap: onTap,
+      hint: hint,
+      background: AppColors.background,
+      border: AppColors.border,
+      icon: icon,
+      iconColor: AppColors.textSecondary,
+      label: label,
+      labelStyle: const TextStyle(
+        fontSize: 11.5,
+        fontWeight: FontWeight.w600,
+        color: AppColors.textSecondary,
       ),
-      child: Text(
-        label,
-        style: const TextStyle(
+    );
+  }
+}
+
+/// "KM Verified Employer": light-blue chip with a verified tick, as on the
+/// website. Shown only for employers the server marks as verified.
+class _VerifiedEmployerTag extends StatelessWidget {
+  const _VerifiedEmployerTag({this.onTap});
+
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      label: 'KaamMilega verified employer',
+      child: _Chip(
+        onTap: onTap,
+        hint: 'Open the company page',
+        background: AppColors.primaryLight,
+        border: AppColors.primaryLightBorder,
+        icon: Icons.verified_rounded,
+        iconColor: AppColors.blue,
+        label: 'KM Verified Employer',
+        labelStyle: const TextStyle(
           fontSize: 11.5,
-          fontWeight: FontWeight.w600,
-          color: AppColors.textSecondary,
+          fontWeight: FontWeight.w700,
+          color: AppColors.blue,
+        ),
+      ),
+    );
+  }
+}
+
+class _Chip extends StatelessWidget {
+  const _Chip({
+    this.onTap,
+    this.hint = '',
+    required this.background,
+    required this.border,
+    required this.icon,
+    required this.iconColor,
+    required this.label,
+    required this.labelStyle,
+  });
+
+  final Color background;
+  final Color border;
+  final IconData icon;
+  final Color iconColor;
+  final String label;
+  final TextStyle labelStyle;
+  final VoidCallback? onTap;
+  final String hint;
+
+  @override
+  Widget build(BuildContext context) {
+    // Ink (not Container) so the tap ripple shows on the chip colour.
+    final chip = Ink(
+      padding: const EdgeInsets.fromLTRB(7, 4, 9, 4),
+      decoration: BoxDecoration(
+        color: background,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: border),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 13, color: iconColor),
+          const SizedBox(width: 4),
+          Flexible(
+            child: Text(
+              label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: labelStyle,
+            ),
+          ),
+        ],
+      ),
+    );
+    final tap = onTap;
+    if (tap == null) return chip;
+    return Semantics(
+      button: true,
+      hint: hint.isEmpty ? null : hint,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: tap,
+          borderRadius: BorderRadius.circular(8),
+          child: chip,
         ),
       ),
     );

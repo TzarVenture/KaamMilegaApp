@@ -161,7 +161,7 @@ void main() {
       expect(find.text('MOBILE DEVELOPER'), findsOneWidget);
       expect(find.text('Similar skills'), findsOneWidget);
       expect(find.text('Chat'), findsNWidgets(3));
-      expect(find.text('SHOW ALL MEMBERS'), findsOneWidget);
+      expect(find.text('SEE ALL PEOPLE LIKE YOU'), findsOneWidget);
     });
 
     testWidgets('no members: the card is hidden', (tester) async {

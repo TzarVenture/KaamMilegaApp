@@ -1,6 +1,6 @@
 # KaamMilega — Flutter App & Backend API Integration Status
 
-> **Last verified:** **6 October 2026**, against the `KaamMilega` monorepo `main` @ **`807fe02`** (`km-backend/`, read-only; the backend is developed separately and is not edited from this repository). App: branch `main` @ `6824103`.
+> **Last verified:** **13 October 2026**, against the `KaamMilega` monorepo `main` @ **`b86e973`** (`km-backend/`, read-only; the backend is developed separately and is not edited from this repository). App: `main` @ `9578c5c` + uncommitted 10–13 Oct work.
 > Field-level details: [API_CONTRACT.md](API_CONTRACT.md). Backend bugs with IDs: [KNOWN_ISSUES.md § API/Backend Issues](KNOWN_ISSUES.md#apibackend-issues).
 >
 > The Flutter app talks to the Go backend (`km-backend`) at `ApiConstants.baseUrl` (`https://api.kaammilega.com/api`). All paths below are relative to `/api`. Every path used by the app is declared in `lib/core/constants/api_constants.dart`.
@@ -43,11 +43,11 @@
 | Apply as Expert | `POST /user/apply-expert` | Apply as Expert |
 | Pro Expert subscription | `GET /subscriptions/expert/plans`, `GET /subscriptions/expert/my`, create-order → Razorpay → verify, or wallet-checkout | Apply as Expert → Pro Expert plans |
 | Saved jobs | toggle `POST /user/bookmark/:jobId`; each saved job `GET /jobs/:id` | Jobs, Saved Jobs |
-| Other user's profile | `GET /user/:id` | Member profile, chat names & photos |
+| Other user's profile | `GET /user/:id` | Member profile, chat names & photos, job page "Meet the recruiter" |
 | Search people / suggestions | `GET /user/search?q=`, `GET /community/users`, `GET /experts` | Peer-to-Peer, People You May Know, Home |
 | File upload | `POST /files/upload` | Profile photo, cover, resume, apply-sheet resume, chat attachments |
-| Jobs list / detail | `GET /jobs`, `GET /jobs/:id` | Home, Jobs, Job Detail |
-| Top companies | `GET /companies/top` | Home → featured companies |
+| Jobs list / detail | `GET /jobs` (incl. `job_types`, `experience_max`, `recruiter_id`), `GET /jobs/:id` | Home, Jobs, Job Detail, related-jobs pages (job-card chips), company page |
+| Top companies | `GET /companies/top` | Home → featured companies; `verified` → KM Verified Employer badge |
 | Cities | `GET /cities` | City selector, filters |
 | Apply to a job | `POST /applications` (with `resume_url` when a resume was uploaded) | Apply sheet |
 | Already applied? | `GET /applications/check/:jobId` | Job Detail |
@@ -73,6 +73,8 @@
 | Expert's hours when booking | `GET /mentorships/expert/:expert_id/availability` | Expert detail → available times |
 | Help & FAQ | `GET /questions?page&limit` (`{data: [...]}`) | Drawer → Help & FAQ |
 | Skills catalog | `GET /skills`, `GET /skills/categories` | Skills Marketplace |
+| Chat block / report | `GET /chats/users/:id/block-status`, `POST /chats/users/:id/block`, `POST /chats/users/:id/unblock`, `POST /chats/:id/report` | Chat ⋮ menu |
+| Experts on a job page | `GET /experts` | Job Detail → Experts who can help |
 
 ---
 
@@ -85,6 +87,8 @@
 | `POST /instant-work/pass/order`, `POST /instant-work/pass/verify` | InstantPass by Razorpay — app flow built 30 Sep, switched off (`InstantPassTerms.onlinePaymentLive`) until the backend double debit B-12 is fixed. |
 | `POST/GET /auth/logout` | Clears the website cookie; app logout is local. |
 | `GET /settings/me`, `GET /platform/stats`, `GET /platform/live-activity` | Not needed by the app so far. |
+| `GET /courses`, `GET /courses/:id`, `POST /courses/:id/view` (new, `b86e973`) | Courses / resources — the app's Resources page still says coming soon; can be connected next. |
+| `GET /applications/job/:jobId` | Recruiter list of applicants — **not used on purpose**: it has no owner check (B-29). |
 | Recruiter/admin routes (`/instant-work/dispatch`, `/recruiter/*`, `/jobs/:id/close`, `/admin/*`) | Out of scope — the app is for candidates and gig workers. |
 
 ---
@@ -95,7 +99,10 @@
 | :--- | :--- |
 | `GET /user/:id` registered before `GET /user/bookmarks` / `GET /user/settings` → **500** (B-01) | Reads `bookmarked_jobs` and `settings` from `GET /user/profile`. |
 | No `resume` field on the user profile | Resume link kept on the device and attached to each application (`resume_url`). |
-| Recruiter phone numbers not shared on normal jobs | "Call" says coming soon and points to Chat. |
+| Jobs have no recruiter contact number (B-32) | "Call" opens a sheet "Phone number not shared" with Chat. |
+| `GET /user/:id` returns mobile and email to any signed-in user (B-30) | App shows public fields only; never dials the login mobile. |
+| `GET /applications/job/:jobId` readable by anyone signed in (B-29) | Not used; "People like you" uses public members instead. |
+| Jobs have no verified flag (B-34) | Badge from `GET /companies/top?limit=50` `verified`. |
 | `POST /wallet/topup/verify` credits the client-sent `amount` (B-02) | App sends the server order amount. |
 | `POST /mentorships/book-wallet` charges ₹100 when price is ₹0 (B-03) | ₹0 sessions booked with `POST /mentorships/book`. |
 | `/community/users`, `/experts`, `/user/viewers` return private fields (B-04, B-08) | App shows public fields only; backend should strip the rest. |
@@ -119,9 +126,9 @@
 | Home ₹99 Access banner | — | "Coming soon, you have not been charged" (InstantPass itself is live, see §2) |
 | Nearby professionals (Instant Milega) | — | "Coming soon" section |
 | Services marketplace | `/services` | "Services Marketplace is coming soon" |
-| Feed / resources | `/posts`, `/feed` | "Career resources are coming soon" |
+| Posts / community feed | — (no route exists; `ApiConstants.posts`/`feed` are unused placeholders) | Posts UI on local DEMO data in debug builds; release says "Posts are coming soon" (B-31) |
+| Recruiter contact number on jobs | — | Call sheet → Chat (B-32) |
 | Push notifications (FCM) | — | Not implemented (in-app notifications only) |
-| Chat block / report | — | Not implemented |
 | Bank verification / automatic payouts | — | Withdrawals are requests processed by the team |
 
 ---

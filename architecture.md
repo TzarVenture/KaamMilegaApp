@@ -3,14 +3,14 @@
 > **IMPORTANT:**
 > This document describes the current implementation and must be updated after significant architectural or feature changes.
 >
-> **Last updated:** **6 October 2026** — branch `main` @ `6824103` (5 Oct). Backend re-checked @ `807fe02`. What changed 1–6 Oct: [KNOWN_ISSUES.md § Work 1–6 Oct](KNOWN_ISSUES.md#work-16-oct-2026); 26–30 Sep: [§ Work 26–30 Sep](KNOWN_ISSUES.md#work-2630-sep-2026).
+> **Last updated:** **13 October 2026** — app `main` @ `9578c5c` (9 Oct) **plus uncommitted work of 10–13 Oct** (the owner commits) · backend monorepo `main` @ `b86e973` (read-only). What changed 7–13 Oct: [KNOWN_ISSUES.md § Work 7–13 Oct](KNOWN_ISSUES.md#work-713-oct-2026); 1–6 Oct: [§ Work 1–6 Oct](KNOWN_ISSUES.md#work-16-oct-2026).
 > **Last full audit:** 25 September 2026, branch `feat/ui-ux-polish`, HEAD `eaf5dc8`.
 > **History:** 25 September 2026 fix Batches 1–7. Summary of changes: [KNOWN_ISSUES.md § Fix batches](KNOWN_ISSUES.md#fix-batches-25-sep-2026).
 > **Backend checked (read-only):** `TzarVenture/KaamMilega` → `km-backend`, `main` @ `b5a2956` (audit) and `51c8e10` (25 Sep, for Batch 7 contracts).
 > **Rule:** SOURCE CODE > this document. Verify before relying on any detail.
 
 Related docs: [AI_QUICK_START.md](AI_QUICK_START.md) · [CLAUDE.md](CLAUDE.md) · [FEATURE_STATUS.md](FEATURE_STATUS.md) · [API_CONTRACT.md](API_CONTRACT.md) · [KNOWN_ISSUES.md](KNOWN_ISSUES.md)
-Also refreshed 30 Sep: `API_INTEGRATION_STATUS.md` (endpoint overview), `flutter_app_feature_tracker.md/.csv` (Google-Sheet tracker; feature IDs reused in FEATURE_STATUS.md).
+Also refreshed 13 Oct (all docs). Earlier, 30 Sep: `API_INTEGRATION_STATUS.md` (endpoint overview), `flutter_app_feature_tracker.md/.csv` (Google-Sheet tracker; feature IDs reused in FEATURE_STATUS.md).
 
 ---
 
@@ -167,6 +167,11 @@ Files: `lib/main.dart`, `lib/app/app.dart`, `lib/app/router.dart`, `lib/features
 | `/complete-profile` (`AuthGuard.completeProfilePath`) | `CompleteProfileScreen` | — | signed-in accounts not registered yet (forced by guard) |
 | `/home`, `/jobs`, `/chats`, `/profile` | `MainNavigationShell` | — | guest + user |
 | `/jobs/:id` | `JobDetailScreen` | `id`; extra `Job?` (initial data) | guest + user |
+| `/related-jobs` | `RelatedJobsScreen` (from job-card chips) | query `type` (job type) or `exp` (max years) + `label` | guest + user |
+| `/similar-people/:jobId` | `JobPeopleScreen` ("People like you" for a job) | `jobId`; extra `Job?` | guest + user (profiles need login) |
+| `/posts` | `PostsScreen` (Feed / My posts) | — | guest + user (posting, reacting, commenting need login) |
+| `/posts/new` | `PostComposerScreen` | pops with the created `Post` | protected |
+| `/posts/:id` | `PostDetailScreen` (comments) | `id`; `?comment=1` focuses the comment box | guest + user |
 | `/saved-jobs` | `SavedJobsScreen` | — | guest + user |
 | `/my-applications` | `MyApplicationsScreen` | — | protected |
 | `/applications/:id` | `ApplicationDetailScreen` | `id` = application id **or job id** (matched either way) | protected |
@@ -191,7 +196,7 @@ Files: `lib/main.dart`, `lib/app/app.dart`, `lib/app/router.dart`, `lib/features
 | `/peer-to-peer` | `PeerToPeerScreen` | — | protected |
 | `/feed` | `FeedScreen` | — | guest + user |
 | `/notifications` | `NotificationsScreen` (bell in every header and the drawer: `NotificationBellButton`) | — | guest + user (guests make no API call) |
-| `/company/:id` | `CompanyScreen` | `id` (ignored by screen) | no in-app link; shows "Coming Soon" |
+| `/company/:id` | `CompanyScreen` (header + open jobs) | `id` recruiter id; extra `TopCompany?` | guest + user (Home featured companies, KM Verified chip, job page "View company") |
 
 ## 9. State Management
 
@@ -356,9 +361,11 @@ Data source codes: **REAL** backend · **LOCAL** device · **HC** hard-coded con
 | My Booked Sessions | `experts/presentation/my_sessions_screen.dart` (filter chips, escrow card, status badges, payment labels, `RateSessionSheet`), `widgets/upcoming_session_banner.dart` (`UpcomingSessionBanner.nextCall`) | `myBookingsProvider` | `GET /mentorships/bookings/my`, `POST /mentorships/bookings/:id/review` | `BookingItem` | REAL | Implemented |
 | Services marketplace | `services/presentation/services_marketplace_screen.dart` | none | none | — | HC "coming soon" | UI only |
 | Events + tickets | `events/presentation/{events,event_detail,my_tickets}_screen.dart`, `widgets/{ticket_checkout_sheets,event_ticket_view,event_pricing_filter}.dart` | `eventsProvider`, `event_ticket_provider.dart` | `GET /events`, `POST /events/:id/register`, create-order / verify-payment / wallet-checkout, `GET /events/my/tickets` | `EventItem`, `EventTicket`, `EventParticipant` | REAL + FALLBACK labels | Implemented (attendee list: `widgets/event_attendees.dart`) |
-| Feed / resources | `feed/presentation/feed_screen.dart` | none | none | — | HC "coming soon" | Pending (backend) |
+| Feed / resources | `feed/presentation/feed_screen.dart` | none | none (backend now has `/courses`, not connected) | — | HC "coming soon" | Pending (Flutter) |
+| Posts (community) | `posts/presentation/{posts_screen,post_composer_screen,post_detail_screen,posts_access}.dart`, `widgets/{post_card,post_images,post_attachment,post_basics}.dart`; entry: + sheet "Create a Post" (`openPostComposer`), drawer "Posts" | `postsFeedProvider` (family by `PostsScope`), `postDetailProvider`, `postCommentsProvider`, `postActionsProvider` (optimistic reactions with rollback, create, delete own), `postImagePickerProvider`, `postPdfPickerProvider` | `PostsRepository` interface; only `DemoPostsRepository` (in-memory) exists; `postsRepositoryProvider` returns null when `kPostsDemoMode` is off (release) | `Post`, `PostAuthor`, `PostImage`, `PostAttachment`, `PostComment`, `PostReaction` | MOCK (DEMO, local) — no backend API (B-31) | UI built; backend pending |
+| Related jobs / People like you / recruiter / experts on job page | `jobs/presentation/{related_jobs_screen,job_people_screen,job_links}.dart`, `widgets/{job_recruiter_card,job_experts_card,people_like_you_card}.dart` | `relatedJobsProvider` (family by `(jobType, maxExperience)`), `networkSuggestionsProvider`, `memberProfileProvider`, `allExpertsProvider` | `GET /jobs`, `GET /community/users`, `GET /user/:id`, `GET /experts` | `Job`, `UserProfile` | REAL | Implemented (13 Oct) |
 | Explore | `explore/presentation/explore_screen.dart` | none | none | inline `_modules` | HC navigation hub | Implemented |
-| Company page | `company/presentation/company_screen.dart` | none | none | — | — | "Coming Soon", unreachable |
+| Company page | `company/presentation/company_screen.dart` | `companyJobsProvider`, `verifiedEmployerIdsProvider` | `GET /jobs?recruiter_id=`, `GET /companies/top` | `Job`, `TopCompany` | REAL | Implemented |
 | Wallet | `wallet/presentation/*.dart`, `widgets/wallet_transaction_tile.dart`, `refund_request_sheet.dart` | `walletProvider`, `myWalletDisputesProvider` | `/wallet/*` incl. `/wallet/disputes`, `/wallet/my/disputes` | `WalletSummary`, `WalletTransaction`, `WalletDispute`, `PaymentOrder` | REAL + CACHED (`km_cache_wallet`) | Balance/tx/top-up/withdraw/disputes implemented; transfer pending (backend) |
 | Payments | `core/payments/razorpay_checkout.dart` | `walletProvider.addMoney`, `expert_detail_screen.dart` | create-order → Razorpay → verify | `RazorpayResult` | REAL (server-verified) | Implemented (test mode verification pending) |
 | Notifications | `notifications/presentation/notifications_screen.dart`, `in_app_notification_host.dart`, `widgets/notification_visuals.dart`, `models/notification_target.dart` (website link → app screen), `shared/widgets/notification_bell_button.dart` | `notificationsProvider`, `unreadCountsProvider`, `unreadNotificationsCountProvider` | `NotificationRepository` → `/notifications*`; `NotificationSocketService` → `/ws/notifications` | `NotificationItem` | REAL | Implemented (5 Oct; in-app only, no push) |
@@ -449,7 +456,8 @@ All in SharedPreferences via `LocalStorage` (`core/storage/local_storage.dart`).
 | Storage | `lib/core/storage/local_storage.dart` |
 | Auth + profile logic | `lib/features/auth/providers/auth_provider.dart`, `repositories/auth_repository.dart`, `models/user_profile.dart` |
 | Auth UI | `lib/features/auth/presentation/*.dart` (incl. `complete_profile_screen.dart`) |
-| Jobs | `lib/features/jobs/{models,providers,repositories,presentation}/…` |
+| Jobs | `lib/features/jobs/{models,providers,repositories,presentation}/…` (chip links: `presentation/job_links.dart`) |
+| Posts | `lib/features/posts/{models,repositories,providers,presentation}/…` (demo switch `kPostsDemoMode` in `repositories/posts_repository.dart`) |
 | Applications / interviews | `lib/features/applications/…`, `lib/features/interviews/…` |
 | Profile UI | `lib/features/profile/presentation/profile_screen.dart`, `settings_screen.dart`, `widgets/profile_drawer.dart`, `widgets/open_to_sheets.dart`, `providers/profile_jobs_provider.dart` |
 | Chat | `lib/features/chat/{models,providers,repositories,services,presentation}/…`, `lib/core/network/live_socket.dart` |
@@ -472,7 +480,8 @@ All in SharedPreferences via `LocalStorage` (`core/storage/local_storage.dart`).
 | Session / 401 / logout | `core/network/api_client.dart`, `core/storage/local_storage.dart`, `AuthNotifier.checkAuthStatus/logout`, `app/auth_guard.dart` |
 | Add / change an API request | `core/constants/api_constants.dart` → the feature repository → backend `internal/features/<name>/{api,controller,domain}.go` → [API_CONTRACT.md](API_CONTRACT.md) |
 | Error texts / HTTP mapping | `core/network/api_client.dart` `_handleError`, `core/network/app_exception.dart` |
-| Job UI | `jobs/presentation/jobs_screen.dart`, `widgets/job_card.dart`, `job_detail_screen.dart`, `home/presentation/home_screen.dart` |
+| Job UI | `jobs/presentation/jobs_screen.dart`, `widgets/job_card.dart` (chips), `job_links.dart` (where chips go, Call sheet), `widgets/filter_modal.dart`, `job_detail_screen.dart`, `home/presentation/home_screen.dart` |
+| Posts | `posts/repositories/posts_repository.dart` (interface + demo switch), `posts/providers/posts_provider.dart`, `posts/presentation/*` — connect a real API by adding a repository and returning it from `postsRepositoryProvider` |
 | Job model / filters | `jobs/models/job.dart`, `job_filter.dart` (`toQueryParams`), `jobs_response.dart`, cache map in `jobs_provider.dart` `fetchJobs` |
 | Navigation / new screen | `app/router.dart` (routes), `app/auth_guard.dart` (`_protectedRoots`), `main_navigation_shell.dart` (tabs) |
 | Chat | `core/network/live_socket.dart`, `chat/services/chat_websocket_service.dart`, `chat/providers/{chat_provider,chat_access_provider}.dart`, `chat/repositories/chat_repository.dart`, `chat/presentation/*` (attachments: `widgets/chat_attachments.dart`) |

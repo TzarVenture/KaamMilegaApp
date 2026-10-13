@@ -40,6 +40,7 @@ class AuthGuard {
     '/settings',
     '/wallet',
     '/peer-to-peer', // people search + connections (account-only APIs)
+    '/posts/new', // create a post (viewing posts stays open)
   ];
 
   /// Screens used to sign in. Always open.

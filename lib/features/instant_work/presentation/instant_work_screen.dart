@@ -92,7 +92,7 @@ class _InstantWorkScreenState extends ConsumerState<InstantWorkScreen> {
               showSearchIcon: false, // search bar below is enough
               scaffoldKey: _scaffoldKey,
               themeColor: AppColors.moduleInstantWork,
-              title: 'Instant work',
+              title: 'Instant Milega',
               subtitle: 'Quick gigs and helpers near you.',
               searchHint: 'Search nearby gigs, delivery, helper...',
               // "Search for 'Gigs'", then the InstantMilega trades.

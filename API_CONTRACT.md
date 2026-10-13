@@ -1,11 +1,12 @@
 # KaamMilega Flutter — API Contract
 
-> **Last updated:** 6 October 2026 (see "Re-checked 6 October" below) · **first audit:** 25 September 2026
+> **Last updated:** 13 October 2026 (see "Re-checked 13 October" below) · **first audit:** 25 September 2026
 > **Verified against:** Flutter code (branch `feat/ui-ux-polish` @ `eaf5dc8` + uncommitted changes) and `km-backend` `main` @ `b5a2956` (`internal/features/<name>/{api,controller,domain,service}.go`), read-only.
 > **Updated:** 25 September 2026 after fix Batches 1–7 — new/changed calls re-verified on `KaamMilega` monorepo `main` @ `51c8e10` (`km-backend/`).
 > **Re-checked:** 26 September 2026 — backend `main` still @ `51c8e10`. Changes since `b5a2956` (aa366a7, c829a60): booking review endpoint (integrated), expert subscription (§9b, not integrated), wallet category `subscription`.
 > **Re-checked 30 September 2026** against monorepo `main` @ **`5e57311`** (changes since `51c8e10`: paid event tickets + attendees, wallet disputes, Instant Milega `/instant-work/*`, profile analytics/viewers, cookie auth + `/auth/logout`, Brevo e-mails). New sections: §8 tickets, §9b (now integrated), §11b disputes, §15 Instant Milega. App: `feat/map-location-integration` @ `0fa522f` + uncommitted.
 > **Re-checked 6 October 2026** against monorepo `main` @ **`807fe02`** (changes since `5e57311`: notifications API + socket, chat read/typing/delete/attachments/`otherUser`/`unread_count`, chat hub with several sockets per user, `GET /network/sent`, expert reviews, notifications created by applications/events/instant work/interviews/mentorship/network/wallet). App: `main` @ `6824103`. Updated: §3, §6, §7, §9, §12, §14.
+> **Re-checked 13 October 2026** against monorepo `main` @ **`b86e973`** (changes since `807fe02`: chat block / report (§7, integrated 6 Oct), courses `/courses*` (new, not integrated). Newly used by the app: `GET /jobs` with `job_types` / `experience_max` for the related-jobs pages, `GET /user/:id` for the job page recruiter card, `GET /experts` on the job page. Still no posts / feed / reactions / comments routes (KNOWN_ISSUES B-31). New backend issues B-29…B-34.
 > **Base URL:** `https://api.kaammilega.com/api` (`ApiConstants.baseUrl`). Paths below omit `/api`.
 > **Rule:** Only verified fields are listed. Anything else: **"Not verified — do not assume."** Re-check `domain.go` + `api.go` before adding or changing a call; the backend changes often.
 
@@ -145,7 +146,9 @@ Most profile mutations return the **full updated `User`**; the app parses it wit
 - **Request (query):** `page`, `limit` (default 10), `search`, `city_ids` (comma list; ObjectIDs **or city names**), `job_types`, `genders`, `education` (comma lists), `salary_min`, `salary_max`, `experience_min`, `experience_max` (backend also accepts singular aliases). App sends via `JobFilter.toQueryParams` (`jobs/models/job_filter.dart`).
 - **Response:** `{jobs:[Job], total, page, limit}`; with `recruiter_id` query → bare `[Job]` (app handles both).
 - **Job fields:** `id, recruiter_id, title, description, company, city_id, city_name, location, salary_min, salary_max, job_type, status, requirements[], we_offer[], gender, education, experience_min, experience_max, created_at, updated_at, applicant_count`.
-- **Flutter:** `JobRepository.getJobs` ← `jobsProvider`, `instantWorkProvider`, `profileJobsProvider` → `jobs_screen.dart`, `home_screen.dart`, `instant_work_screen.dart`, `profile_screen.dart`
+- **Flutter:** `JobRepository.getJobs` ← `jobsProvider`, `instantWorkProvider`, `profileJobsProvider`, `relatedJobsProvider` (13 Oct: `job_types=<type>` or `experience_max=<n>` from the job-card chips) → `jobs_screen.dart`, `home_screen.dart`, `instant_work_screen.dart`, `profile_screen.dart`, `related_jobs_screen.dart`
+- **Backend filter meaning (verified):** `experience_max=n` → jobs whose `experience_min ≤ n`; `experience_min=n` → jobs whose `experience_max ≥ n`; `job_types` → case-insensitive regex on `job_type`.
+- **No contact number** on `Job` (B-32) and **no verified flag** (B-34).
 - **Errors:** 500 text · **Status:** Active
 
 ### GET `/jobs/:id`
@@ -210,6 +213,10 @@ Errors: 401, 500 with `error`. GET errors are rethrown (Batch 5). **Status:** Ac
 ### DELETE `/chats/messages/:id` · DELETE `/chats/:id/messages` · DELETE `/chats/:id`
 - Delete one message for everyone / clear all messages / delete the conversation (shared records — removed for **both** people, B-23). Server sends `MESSAGE_DELETED`, `CHAT_CLEARED`, `CONVERSATION_DELETED`. Any participant can delete any message (B-22).
 - **Flutter:** `ChatRepository.deleteMessage` (own messages only, optimistic, restored on failure), `clearChat`, `deleteConversation` ← chat screen menu and long-press; `deleteConversation` also from the Messages list (swipe left / long-press) · **Status:** Active
+
+### Block / report (F59) — Active since 6 Oct
+- `GET /chats/users/:id/block-status` → `{is_blocked_by_me, is_blocked_by_other}` · `POST /chats/users/:id/block` · `POST /chats/users/:id/unblock` · `POST /chats/:id/report` `{reason, description, block_user}`.
+- **Flutter:** `ChatRepository` block / unblock / report ← `chatBlockProvider`, `chat_report_sheet.dart`, chat ⋮ menu. Admin routes `/admin/chat-reports*` are out of scope.
 
 ### WebSocket `GET /api/ws/chats?token=JWT`
 - **Auth:** JWT in the query string (or website cookie). Invalid token: the server closes with no reason.
@@ -333,13 +340,13 @@ Added in backend `c829a60` (F75 "Pro Expert"). **Integrated** (`0fa522f`): `Expe
 
 ## 13. Declared in `ApiConstants` but not used
 
-`userBookmarks`, `userSettings` (GET), `posts`, `feed` (no backend routes), `adminCompanies` (admin route, out of scope), `mentorship` (duplicate).
+`userBookmarks`, `userSettings` (GET), `posts`, `feed` (no backend routes — keep unused until real routes exist, KNOWN_ISSUES L-08 / B-31), `adminCompanies` (admin route, out of scope), `mentorship` (duplicate).
 
 ## 14. Backend endpoints relevant to mobile, not integrated
 
-`GET /settings/me`, `PUT /settings/me`, `GET /events/:id/ticket`, `POST /instant-work/pass/order` + `/pass/verify` (§15, built but switched off), `POST/GET /auth/logout`, `GET /companies`, `GET /network/sent`, `GET /mentorships/:id/reviews`, `GET /platform/stats`, `GET /platform/live-activity`, `GET /files/download/:id`. Response shapes of these were **not verified** in this audit unless stated above.
+`GET /settings/me`, `PUT /settings/me`, `GET /events/:id/ticket`, `POST /instant-work/pass/order` + `/pass/verify` (§15, built but switched off), `POST/GET /auth/logout`, `GET /companies`, `GET /network/sent`, `GET /mentorships/:id/reviews`, `GET /platform/stats`, `GET /platform/live-activity`, `GET /files/download/:id`, `GET /courses`, `GET /courses/:id`, `POST /courses/:id/view` (new in `b86e973`). Response shapes of these were **not verified** in this audit unless stated above.
 
-Out of mobile scope (do not integrate without an explicit request): `/admin/*`, `POST/PATCH/DELETE /jobs`, `/jobs/my`, `/applications/job/:jobId`, `/applications/recruiter/all`, `PATCH /applications/:id/status`, `POST /interviews`, mentorship expert management routes, `/cities` mutations, `/skills` mutations, `/sms/send`, `POST /settings/:key`.
+Out of mobile scope (do not integrate without an explicit request): `/admin/*`, `POST/PATCH/DELETE /jobs`, `/jobs/my`, `/applications/job/:jobId` (also has no owner check — B-29; never use it for candidates), `/applications/recruiter/all`, `PATCH /applications/:id/status`, `POST /interviews`, mentorship expert management routes, `/cities` mutations, `/skills` mutations, `/sms/send`, `POST /settings/:key`.
 
 ## 15. Instant Milega — gig worker (`instant_work/api.go`, Required, backend `fb1c62e`)
 

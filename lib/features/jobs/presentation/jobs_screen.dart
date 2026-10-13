@@ -12,12 +12,14 @@ import '../../applications/repositories/application_repository.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../chat/presentation/open_chat.dart';
 import '../../cities/presentation/city_dropdown.dart';
+import '../../company/providers/company_provider.dart';
 import '../../../shared/widgets/notification_bell_button.dart';
 import '../../profile/presentation/widgets/profile_drawer.dart';
 import '../models/job.dart';
 import '../providers/jobs_provider.dart';
 import '../../../shared/widgets/network_state_view.dart';
 import 'widgets/filter_modal.dart';
+import 'job_links.dart';
 import 'widgets/job_card.dart';
 import 'widgets/jobs_hero_card.dart';
 import 'widgets/pagination_bar.dart';
@@ -92,15 +94,8 @@ class _JobsScreenState extends ConsumerState<JobsScreen> {
   /// Recruiter phone numbers are not shared by the backend yet, so there is
   /// no real number to dial. (Previously this dialled a placeholder number
   /// and showed a made-up helpline.)
-  void _handleCall() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text(
-          'Calling recruiters is coming soon. Please use Chat to contact the recruiter.',
-        ),
-      ),
-    );
-  }
+  void _handleCall(Job job) =>
+      showRecruiterCallSheet(context, onChat: () => _handleChat(job));
 
   /// Open a real chat with the job's recruiter
   void _handleChat(Job job) {
@@ -144,6 +139,10 @@ class _JobsScreenState extends ConsumerState<JobsScreen> {
     final filter = jobsState.filter;
     final activeFilters = filter.activeFilterCount;
     final myApplicationsAsync = ref.watch(myApplicationsProvider);
+    // Employers verified by the KaamMilega team (server data; none while
+    // loading or if the list cannot be loaded).
+    final verifiedEmployers =
+        ref.watch(verifiedEmployerIdsProvider).value ?? const <String>{};
     final appliedJobIds =
         myApplicationsAsync.value?.map((a) => a.jobId).toSet() ?? {};
 
@@ -540,6 +539,9 @@ class _JobsScreenState extends ConsumerState<JobsScreen> {
                       job: job,
                       isApplied: appliedJobIds.contains(job.id),
                       isSaved: jobsState.savedJobIds.contains(job.id),
+                      isVerifiedEmployer:
+                          job.recruiterId.isNotEmpty &&
+                          verifiedEmployers.contains(job.recruiterId),
                       onBookmarkToggle: () =>
                           ref.read(jobsProvider.notifier).toggleSaveJob(job.id),
                       onTap: () => context.push('/jobs/${job.id}', extra: job),
@@ -548,7 +550,8 @@ class _JobsScreenState extends ConsumerState<JobsScreen> {
                       onApply: () =>
                           context.push('/jobs/${job.id}', extra: job),
                       onChat: () => _handleChat(job),
-                      onCall: _handleCall,
+                      onCall: () => _handleCall(job),
+                      onLinkTap: (link) => openJobLink(context, job, link),
                     ),
                   );
                 }, childCount: displayedJobs.length),

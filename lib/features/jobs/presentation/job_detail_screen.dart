@@ -14,6 +14,10 @@ import '../../profile/presentation/widgets/profile_drawer.dart';
 import '../models/job.dart';
 import '../providers/jobs_provider.dart';
 import '../repositories/job_repository.dart';
+import 'job_links.dart';
+import 'widgets/job_experts_card.dart';
+import 'widgets/job_recruiter_card.dart';
+import 'widgets/people_like_you_card.dart';
 import '../../../shared/widgets/fade_slide_in.dart';
 import '../../../shared/widgets/pressable_scale.dart';
 
@@ -144,15 +148,7 @@ class _JobDetailScreenState extends ConsumerState<JobDetailScreen> {
 
   /// Recruiter phone numbers are not shared by the backend yet.
   /// (Previously this dialled a placeholder number / made-up helpline.)
-  void _callHR() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text(
-          'Calling recruiters is coming soon. Please use Chat to contact the recruiter.',
-        ),
-      ),
-    );
-  }
+  void _callHR() => showRecruiterCallSheet(context, onChat: _chatWithHR);
 
   void _chatWithHR() {
     if (!ref.read(authProvider).isAuthenticated) {
@@ -540,53 +536,16 @@ class _JobDetailScreenState extends ConsumerState<JobDetailScreen> {
 
                   const SizedBox(height: 16),
 
-                  // 4. Contact Person / Recruiter
-                  _SectionCard(
-                    title: 'Contact Person',
-                    child: Row(
-                      children: [
-                        Container(
-                          width: 48,
-                          height: 48,
-                          decoration: BoxDecoration(
-                            color: AppColors.primaryLight,
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(
-                            Icons.person_outline_rounded,
-                            color: AppColors.primary,
-                            size: 26,
-                          ),
-                        ),
-                        const SizedBox(width: 14),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                '${job.company} HR Desk',
-                                style: const TextStyle(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w700,
-                                  color: AppColors.textPrimary,
-                                ),
-                              ),
-                              const SizedBox(height: 2),
-                              const Text(
-                                'HIRING MANAGER • DIRECT RECRUITER',
-                                style: TextStyle(
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.w700,
-                                  color: AppColors.textLight,
-                                  letterSpacing: 0.5,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+                  // 4. Recruiter (real profile), people like you, experts
+                  JobRecruiterCard(job: job, onMessage: _chatWithHR),
+
+                  const SizedBox(height: 16),
+
+                  PeopleLikeYouCard(job: job),
+
+                  const SizedBox(height: 16),
+
+                  JobExpertsCard(job: job),
 
                   const SizedBox(height: 16),
 

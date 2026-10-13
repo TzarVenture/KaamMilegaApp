@@ -112,6 +112,11 @@ class ProfileDrawer extends ConsumerWidget {
                     onTap: () => protected('/network'),
                   ),
                   _DrawerIconTile(
+                    icon: Icons.dynamic_feed_outlined,
+                    title: 'Posts',
+                    onTap: () => push('/posts'),
+                  ),
+                  _DrawerIconTile(
                     icon: Icons.calendar_today_outlined,
                     title: 'Events',
                     onTap: () => push('/events'),

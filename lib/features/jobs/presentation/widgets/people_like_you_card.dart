@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../../app/auth_guard.dart';
 import '../../../../app/theme/app_colors.dart';
@@ -82,17 +83,14 @@ class PeopleLikeYouCard extends ConsumerWidget {
         if (people.isEmpty) return const SizedBox.shrink();
         return _Frame(
           footer: TextButton(
-            onPressed: () => AuthGuard.openProtected(
-              context,
-              '/peer-to-peer',
-              message: 'Please log in to find and connect with people.',
-            ),
+            onPressed: () =>
+                context.push('/similar-people/${job.id}', extra: job),
             style: TextButton.styleFrom(
               foregroundColor: AppColors.primary,
               minimumSize: const Size.fromHeight(44),
             ),
             child: const Text(
-              'SHOW ALL MEMBERS',
+              'SEE ALL PEOPLE LIKE YOU',
               style: TextStyle(
                 fontSize: 12.5,
                 letterSpacing: 0.6,
@@ -107,7 +105,7 @@ class PeopleLikeYouCard extends ConsumerWidget {
                   padding: EdgeInsets.symmetric(vertical: 14),
                   child: Divider(height: 1, color: AppColors.borderLight),
                 ),
-              _PersonRow(person: people[i]),
+              PersonLikeYouRow(person: people[i]),
             ],
           ],
         );
@@ -221,8 +219,8 @@ class _Frame extends StatelessWidget {
   }
 }
 
-class _PersonRow extends ConsumerWidget {
-  const _PersonRow({required this.person});
+class PersonLikeYouRow extends ConsumerWidget {
+  const PersonLikeYouRow({super.key, required this.person});
 
   final PersonLikeYou person;
 

@@ -1,6 +1,7 @@
 # KaamMilega Flutter — Known Issues
 
-> **Last updated:** **6 October 2026** · app branch `main` @ `6824103` (5 Oct; all work up to the Home layout change is committed) · backend `KaamMilega` monorepo `main` @ `807fe02` (read-only). New since 30 Sep: [§ Work 1–6 Oct](#work-16-oct-2026), backend issues **B-22 … B-28**, updates on M-08, B-05, B-11, B-12.
+> **Last updated:** **13 October 2026** · app `main` @ `9578c5c` (9 Oct) **plus uncommitted work of 10–13 Oct** (the owner commits) · backend monorepo `main` @ `b86e973` (read-only). New since 6 Oct: [§ Work 7–13 Oct](#work-713-oct-2026), backend issues **B-29 … B-34**, Flutter **L-08, L-09**, Gradle out-of-memory note.
+> Previous update: 6 October 2026 · `main` @ `6824103` · backend `807fe02`.
 > Previous update: 30 September 2026 · `feat/map-location-integration` @ `0fa522f` · backend `5e57311`.
 > Previous audit: 25 September 2026 · `feat/ui-ux-polish` @ `eaf5dc8` · backend `b5a2956`.
 > **History:** 25 September 2026 fix Batches 1–7 (Flutter only; backend read-only, re-checked on `KaamMilega` monorepo `main` @ `51c8e10`). Each issue below carries an **Update** line with its current state. Fix summary: [§ Fix batches](#fix-batches-25-sep-2026).
@@ -156,6 +157,9 @@
 
 ---
 
+- **L-08 — Unused placeholder endpoints.** `ApiConstants.posts = '/posts'` and `feed = '/feed'` name routes the backend does not have (B-31). Nothing calls them; do not wire them up until the real routes exist. Open.
+- **L-09 — Posts demo switch.** `kPostsDemoMode` (`posts/repositories/posts_repository.dart`) shows local demo posts in debug/profile builds by default (owner's request, 13 Oct); release builds never show them. Remove the demo repository and switch when the posts API exists (B-31). Open (intended for now).
+
 ## UI/UX Issues
 - Open: M-01 (filters), M-05 (profile URL), M-11 (old Open To text), L-01, L-02, L-06, L-07. Fixed: H-01, H-06.
 
@@ -195,6 +199,12 @@ Backend-side issues (report to backend developer; **do not fix from this repo**)
 | B-26 | Pro Expert: other gaps | wallet checkout saves the active subscription **before** the debit (a failed debit leaves a free active plan); the `expert` role is never removed when the plan expires; no renewal/reminder; perks (Pro badge, featured placement, priority ranking, WhatsApp support, certificate) are not used anywhere in the backend | app shows only what `GET /subscriptions/expert/my` returns |
 | B-27 | Missing payment notifications | no notification for the payer of a mentorship session (only the expert gets "New Mentorship Session Booked"), for Pro Expert purchases, or for refund requests / decisions | none; the app shows whatever the backend sends |
 | B-28 | Chat photo preview text | `chat/service.go` uses "Photo" as the last-message preview only when `attachment_type == "image"`; the app sends the file's MIME type (`image/jpeg`), so photos preview as the file name | cosmetic; align on one value with the backend developer |
+| B-29 | **Any signed-in user can read any job's applicants** | `GET /applications/job/:jobId` (`application/controller.go` `GetJobApplications`) ignores the caller (`_ = userID`): no recruiter / owner check, returns the applications with candidate details | app never calls it; "People like you" uses public members instead. Backend: allow only the job's recruiter (and admins) |
+| B-30 | `GET /user/:id` returns private fields | `GetOtherUserProfile` returns the full user record (mobile, email, …) to any signed-in user unless visibility is `private` | app shows public fields only and never dials the login mobile. Backend: return a public profile shape |
+| B-31 | No posts / feed API | no post, feed, reaction or comment routes in `km-backend` @ `b86e973`; the website feed (`km-frontend/src/components/feed/*`) keeps posts in the browser (localStorage) | app Posts UI runs on local DEMO data in debug builds only; release shows "coming soon". Needed: create/list/get/delete post (author only), feed paging, my posts, reactions (type list, my reaction, counts), comments (list/add), images/PDF linked to a post (upload exists: `POST /files/upload`) |
+| B-32 | Jobs have no recruiter contact number | `job/domain.go` `Job` has no phone field; recruiters cannot share one when posting | Call opens "Phone number not shared" → Chat. Needed: optional `contact_phone` on jobs (recruiter opt-in); then Call can open the dialer |
+| B-33 | `GET /community/users` returns only 12 members, no paging or skill search | `GetCommunityUsers` → `FindUsers(Limit: 12)`; `GET /user/search` matches name/email/mobile/company only | "People like you" shows at most 12, ranked in the app |
+| B-34 | No verified flag on jobs | `Job` has no verified field; only `GET /companies/top` returns `verified` (from the recruiter's `verification_status`) | app reads the top 50 companies; employers outside them get no badge (website shows the badge on every job) |
 
 ## Authentication Issues
 - M-10 (token storage) — open. C-01, H-03, H-04, H-05 fixed.
@@ -219,7 +229,7 @@ Backend-side issues (report to backend developer; **do not fix from this repo**)
 | 7 | M-06: 7a edit/delete education & experience, 7b remove skill, 7c My Sessions, 7d Open To sheets, 7e profile viewers | 7a–7c fixed ·  7d implemented, awaiting verification · 7e blocked (B-08), implemented 26–30 Sep |
 | — | Test-run fixes | App-wide provider retry policy (M-12) |
 
-Not addressed yet (Flutter): M-01, M-02, M-03, M-05, M-07, M-09, M-10, M-11, L-01…L-07. Backend-owned: B-01…B-28.
+Not addressed yet (Flutter): M-01, M-02, M-03, M-05, M-07, M-09, M-10, M-11, L-01…L-09. Backend-owned: B-01…B-34.
 
 ## Work 26–30 Sep 2026
 
@@ -260,6 +270,25 @@ All committed on `main` (`166242e` 1 Oct, `3caaca2` 3 Oct, `6824103` 5 Oct) unle
 | 6 Oct | Analysis only | Payment notifications (B-27) and Pro Expert subscription (B-25, B-26) checked against backend `807fe02`; no code changed | — |
 | 6 Oct | Docs | All `.md` files refreshed | uncommitted |
 
+## Work 7–13 Oct 2026
+
+7–9 Oct committed on `main` (`ceda59e` … `9578c5c`); 10–13 Oct **uncommitted** (the owner commits).
+
+| Date | Area | What was done | Where |
+|---|---|---|---|
+| 6 Oct | Chat / Experts | Chat block / unblock and report (`/chats/users/:id/block*`, `/chats/:id/report`); mentorship checkout sheets; expert page updates | `ceda59e` |
+| 7 Oct | Chat / platform | Notification sound, emoji sheet updates | `dd4a9de` |
+| 7–8 Oct | Look | Rotating search hints; coloured category headers with logo, title and city (7 module screens); Inter text font, Poppins headings; brand wordmark logos; new Peer-to-Peer image (rounded); Home welcome (first name never cut off) | `21ef509`, `9ca3f0a`, `3642ca1`, `4519266` |
+| 8 Oct | Login | Wrong password no longer shows "session expired / something went wrong": a 401 on login / OTP / register / reset is not treated as session expiry | `3642ca1` (`api_client.dart`) |
+| 8–9 Oct | Nav / Jobs / Profile | Bottom bar icons and sliding orange indicator; Jobs navy header with always-visible search; side menu redesign; chat bubbles without avatars; profile completeness and chips | `7ee17e2`, `7bd36dd`, `9578c5c` |
+| 12 Oct | Jobs | KM Verified Employer badge (server-verified employers only) | uncommitted |
+| 13 Oct | Posts | Posts section on local DEMO data (feed, My posts, composer with photos and 1 PDF, reactions, comments, delete own post); + sheet "Create a Post"; drawer "Posts"; DEMO labels removed at the owner's request (data still local only, debug builds only) | uncommitted (`lib/features/posts/`) |
+| 13 Oct | Instant Milega | Header title "Instant Milega" | uncommitted |
+| 13 Oct | Jobs | Job-card chips (icons, tappable) → related jobs / People like you / company page; job page Meet the recruiter + Experts who can help; Call sheet → Chat; gender icons; filter sheet redesign with Instant Milega card on top | uncommitted |
+| 13 Oct | Chat | ⋮ options menu restyled (white card under the bar, icon badges, red delete) | uncommitted |
+| 13 Oct | Analysis | Backend `b86e973` checked: no posts API (B-31), job applicants open to any signed-in user (B-29), `/user/:id` private fields (B-30), no job contact number (B-32), community list capped at 12 (B-33), no job verified flag (B-34); new `/courses` API not used yet | — |
+| 13 Oct | Docs | All `.md` files refreshed | uncommitted |
+
 ## Verification log
 | When | `dart format` | `flutter analyze` | `flutter test` | Phone |
 |---|---|---|---|---|
@@ -272,11 +301,19 @@ All committed on `main` (`166242e` 1 Oct, `3caaca2` 3 Oct, `6824103` 5 Oct) unle
 | After chat attachments (5 Oct, 16:26) | 4 files formatted | **No issues found** | +130 −1 shown (`received photo and file show in the bubbles`; test rewritten) | Chrome run by owner |
 | After connection-only messaging (5 Oct, 17:10) | 3 files formatted | **No issues found** | **+498 −1** (`chat_access_test` found two "Retry" texts; fixed in the test) | — |
 | After Home layout (5 Oct) | not reported | not reported | not reported | owner checked screenshots |
+| After KM Verified badge (12 Oct) | build dir crash (use `dart format lib test`) | 0 issues | badge semantics test failed → assertion removed | — |
+| Full run (13 Oct, 12:4x) | done | **No issues found** | **+567 −5** (Posts tests: 800×600 test screen too small — fixed with a taller test view) | — |
+| Posts focused (13 Oct) | done | no issues | first run: compiler out of memory (laptop RAM); later runs passed | owner viewed on phone |
+| Job links / people like you / job card (13 Oct, 15:49) | 11 files formatted | 1 warning (`!` not needed) — fixed | **+22, all passed** | — |
+| Filter + call (13 Oct, 16:23) | 0 changed | **No issues found** | 2 failed (filter sheet ink assertion — sheet fixed; Gender off-screen — test scrolls) — **re-run pending** | owner sent screenshots |
+| Filter redesign + chat menu (13 Oct) | not run | not run | not run | — |
 
 ## Build/Environment Issues
 - **Release signing:** `android/app/build.gradle.kts` release build uses `signingConfigs.getByName("debug")`. iOS signing team not configured (per project notes; not re-verified in Xcode).
 - **Base URL is a compile-time constant** (`ApiConstants.baseUrl`), no dev/staging flavour.
-- **Working tree (6 Oct):** branch `main` @ `6824103`, clean except these doc updates (the owner commits and pushes).
+- **Working tree (13 Oct):** branch `main` @ `9578c5c` + uncommitted 10–13 Oct work (Posts, job links, filter, chat menu, docs). The owner commits and pushes.
+- **Gradle out of memory (12 Oct):** four `hs_err_pid*.log` + `replay_pid*.log` files = the Gradle daemon crashed with "insufficient memory for the Java Runtime". `android/gradle.properties` sets `-Xmx8G -XX:MaxMetaspaceSize=4G` (too much for this laptop with other apps open). Suggested: `-Xmx4G -XX:MaxMetaspaceSize=1G -XX:ReservedCodeCacheSize=256m` (not changed yet — owner's decision). The log files are safe to delete (`*.log` is git-ignored). `flutter test` once failed the same way ("Dart compiler exited unexpectedly / Out of memory").
+- **SDK:** the new laptop needs Flutter with Dart ≥ 3.13.3 (`pubspec.yaml`); 3.13.5 in use on 13 Oct.
 - **Verification:** `dart format` / `flutter analyze` / `flutter test` are run by the owner on Windows (see Verification log). Not verified yet: Android/iOS release builds, Razorpay TEST mode, phone testing of Batches 1–7.
 - Platform folders `web/`, `windows/`, `macos/`, `linux/` exist, but `razorpay_flutter` supports Android/iOS only; other platforms are untested.
 
@@ -289,4 +326,5 @@ All committed on `main` (`166242e` 1 Oct, `3caaca2` 3 Oct, `6824103` 5 Oct) unle
 - **D-02 — `flutter_app_feature_tracker.md`** + `.csv` refreshed 30 Sep; FEATURE_STATUS.md stays the detailed source.
 - **D-03 — Fixed 30 Sep** (`README.md` now describes the project and links the docs).
 - Fixed 29 Sep: `chat_websocket_service.dart` backoff comment (service rewritten).
+- **D-05 — Fixed 13 Oct:** all `.md` files refreshed for 6–13 Oct work and backend `b86e973`. `flutter_app_feature_tracker.csv` not regenerated.
 - **D-04 — Fixed 6 Oct:** all `.md` files refreshed for 1–6 Oct work and backend `807fe02`. `flutter_app_feature_tracker.csv` (Google Sheets import) was not regenerated; the `.md` tracker is current.

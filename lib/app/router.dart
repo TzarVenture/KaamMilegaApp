@@ -25,6 +25,8 @@ import '../features/experts/presentation/my_sessions_screen.dart';
 import '../features/interviews/presentation/interviews_screen.dart';
 import '../features/jobs/models/job.dart';
 import '../features/jobs/presentation/job_detail_screen.dart';
+import '../features/jobs/presentation/job_people_screen.dart';
+import '../features/jobs/presentation/related_jobs_screen.dart';
 import '../features/jobs/presentation/saved_jobs_screen.dart';
 import '../features/navigation/presentation/main_navigation_shell.dart';
 import '../features/network/presentation/member_profile_screen.dart';
@@ -33,6 +35,9 @@ import '../features/profile/presentation/settings_screen.dart';
 import '../features/splash/presentation/splash_screen.dart';
 
 import '../features/feed/presentation/feed_screen.dart';
+import '../features/posts/presentation/post_composer_screen.dart';
+import '../features/posts/presentation/post_detail_screen.dart';
+import '../features/posts/presentation/posts_screen.dart';
 import '../features/network/presentation/network_screen.dart';
 import '../features/notifications/presentation/notifications_screen.dart';
 import '../features/wallet/presentation/wallet_add_money_screen.dart';
@@ -121,6 +126,25 @@ class AppRouter {
       name: 'feed',
       builder: (context, state) => const FeedScreen(),
     ),
+    // Posts (community feed). '/posts/new' needs a login (AuthGuard).
+    GoRoute(
+      path: '/posts',
+      name: 'posts',
+      builder: (context, state) => const PostsScreen(),
+    ),
+    GoRoute(
+      path: '/posts/new',
+      name: 'post_new',
+      builder: (context, state) => const PostComposerScreen(),
+    ),
+    GoRoute(
+      path: '/posts/:id',
+      name: 'post_detail',
+      builder: (context, state) => PostDetailScreen(
+        postId: state.pathParameters['id'] ?? '',
+        focusComment: state.uri.queryParameters['comment'] == '1',
+      ),
+    ),
     GoRoute(
       path: '/jobs',
       name: 'jobs',
@@ -197,6 +221,27 @@ class AppRouter {
         final job = state.extra is Job ? state.extra as Job : null;
         return JobDetailScreen(jobId: id, initialJob: job);
       },
+    ),
+    // Pages behind the job-card chips (public; profiles inside need login).
+    GoRoute(
+      path: '/related-jobs',
+      name: 'related_jobs',
+      builder: (context, state) {
+        final q = state.uri.queryParameters;
+        return RelatedJobsScreen(
+          jobType: q['type'] ?? '',
+          maxExperience: int.tryParse(q['exp'] ?? ''),
+          experienceLabel: q['label'] ?? '',
+        );
+      },
+    ),
+    GoRoute(
+      path: '/similar-people/:jobId',
+      name: 'similar_people',
+      builder: (context, state) => JobPeopleScreen(
+        jobId: state.pathParameters['jobId'] ?? '',
+        initialJob: state.extra is Job ? state.extra as Job : null,
+      ),
     ),
     GoRoute(
       path: '/saved-jobs',

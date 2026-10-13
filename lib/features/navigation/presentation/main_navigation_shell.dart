@@ -10,6 +10,7 @@ import '../../chat/presentation/chat_list_screen.dart';
 import '../../home/presentation/home_screen.dart';
 import '../../jobs/presentation/jobs_screen.dart';
 import '../../jobs/providers/jobs_provider.dart';
+import '../../posts/presentation/posts_access.dart';
 import '../../chat/providers/chat_provider.dart';
 import '../../profile/presentation/profile_screen.dart';
 
@@ -64,11 +65,13 @@ class _MainNavigationShellState extends ConsumerState<MainNavigationShell> {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
+      // Four actions: allow the sheet to grow (and scroll on short phones).
+      isScrollControlled: true,
       builder: (ctx) => Material(
         color: Colors.white,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
         clipBehavior: Clip.antiAlias,
-        child: Padding(
+        child: SingleChildScrollView(
           padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -94,6 +97,31 @@ class _MainNavigationShellState extends ConsumerState<MainNavigationShell> {
                 ),
               ),
               const SizedBox(height: 16),
+              // Guests get the Login Required popup (openPostComposer).
+              ListTile(
+                leading: Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: AppColors.moduleSkillsLight,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(
+                    Icons.edit_note_rounded,
+                    color: AppColors.moduleSkills,
+                  ),
+                ),
+                title: const Text(
+                  'Create a Post',
+                  style: TextStyle(fontWeight: FontWeight.w600),
+                ),
+                subtitle: const Text('Share an update with the community'),
+                trailing: const Icon(Icons.chevron_right_rounded),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  openPostComposer(context, ref);
+                },
+              ),
+              const Divider(height: 1),
               ListTile(
                 leading: Container(
                   padding: const EdgeInsets.all(10),

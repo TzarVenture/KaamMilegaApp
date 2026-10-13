@@ -51,6 +51,14 @@ final featuredExpertsProvider = FutureProvider<List<UserProfile>>((ref) async {
   return experts.where((u) => u.id.isNotEmpty && u.id != me).take(10).toList();
 });
 
+/// Every expert (GET /experts, public), never the signed-in user. Used to
+/// suggest experts on a job page; kept for the app session.
+final allExpertsProvider = FutureProvider<List<UserProfile>>((ref) async {
+  final me = ref.watch(sessionUserIdProvider);
+  final experts = await ref.watch(networkRepositoryProvider).getExperts();
+  return experts.where((u) => u.id.isNotEmpty && u.id != me).toList();
+});
+
 /// Provider for list of candidate's active connection user IDs
 /// (Rebuilt on logout / account switch; no request without a session.)
 /// Who viewed the signed-in user's profile (profile Analytics).

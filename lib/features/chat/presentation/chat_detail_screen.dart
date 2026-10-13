@@ -592,6 +592,19 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
                 Icons.more_vert_rounded,
                 color: AppColors.textPrimary,
               ),
+              // Clean white card that opens just below the bar.
+              position: PopupMenuPosition.under,
+              offset: const Offset(-8, 4),
+              color: AppColors.white,
+              surfaceTintColor: Colors.transparent,
+              elevation: 10,
+              shadowColor: AppColors.brandNavy.withValues(alpha: 0.25),
+              constraints: const BoxConstraints(minWidth: 230),
+              menuPadding: const EdgeInsets.symmetric(vertical: 6),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+                side: const BorderSide(color: AppColors.borderLight),
+              ),
               onSelected: (value) => switch (value) {
                 'block' => _block(name),
                 'unblock' => _unblock(name),
@@ -603,6 +616,7 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
                 if (block.blockedByMe)
                   const PopupMenuItem(
                     value: 'unblock',
+                    height: 48,
                     child: _MenuRow(
                       icon: Icons.lock_open_rounded,
                       text: 'Unblock user',
@@ -611,6 +625,7 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
                 else
                   const PopupMenuItem(
                     value: 'block',
+                    height: 48,
                     child: _MenuRow(
                       icon: Icons.block_rounded,
                       text: 'Block user',
@@ -619,14 +634,16 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
                 if (hasServerChat) ...[
                   const PopupMenuItem(
                     value: 'report',
+                    height: 48,
                     child: _MenuRow(
                       icon: Icons.flag_outlined,
                       text: 'Report conversation',
                     ),
                   ),
-                  const PopupMenuDivider(),
+                  const PopupMenuDivider(height: 9),
                   const PopupMenuItem(
                     value: 'clear',
+                    height: 48,
                     child: _MenuRow(
                       icon: Icons.cleaning_services_outlined,
                       text: 'Clear chat',
@@ -634,6 +651,7 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
                   ),
                   const PopupMenuItem(
                     value: 'delete',
+                    height: 48,
                     child: _MenuRow(
                       icon: Icons.delete_outline_rounded,
                       text: 'Delete conversation',
@@ -1208,6 +1226,8 @@ class _ComposerIcon extends StatelessWidget {
 /// Shown instead of the message box when the other person is not a
 /// recruiter and not a connection yet.
 /// Icon and label in the chat options menu.
+/// One chat menu option: icon in a soft tinted circle, then the label.
+/// [color] marks a destructive option (red).
 class _MenuRow extends StatelessWidget {
   const _MenuRow({required this.icon, required this.text, this.color});
 
@@ -1217,13 +1237,37 @@ class _MenuRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final danger = color != null;
     final c = color ?? AppColors.textPrimary;
     return Row(
       children: [
-        Icon(icon, size: 20, color: c),
+        Container(
+          width: 32,
+          height: 32,
+          decoration: BoxDecoration(
+            color: danger
+                ? AppColors.error.withValues(alpha: 0.08)
+                : AppColors.background,
+            shape: BoxShape.circle,
+          ),
+          child: Icon(
+            icon,
+            size: 18,
+            color: danger ? c : AppColors.textSecondary,
+          ),
+        ),
         const SizedBox(width: 12),
         Flexible(
-          child: Text(text, style: TextStyle(color: c)),
+          child: Text(
+            text,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              color: c,
+              fontSize: 14.5,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
         ),
       ],
     );

@@ -1,7 +1,7 @@
 # KaamMilega™ — Mobile Application Feature Tracking (Candidate & Gig Workers)
 
 > **Exact Google Sheets Format**: Mirrored to your 8-column tracking schema (`Seq #`, `Feature ID`, `Feature Name`, `Module / Phase`, `Milestone & Sprint`, `Current Status`, `Branch / PR Reference`, `Live Progress & Developer Notes`).
-> **Last updated**: **2026-10-06**, checked against the app code (branch `main` @ `6824103`, all work committed) and backend `main` @ `807fe02`. Rows changed 1–6 Oct carry the commit where the work lives. Older rows still name the branch/commit of their last change.
+> **Last updated**: **2026-10-13**, checked against the app code (`main` @ `9578c5c` + uncommitted 10–13 Oct work) and backend `main` @ `b86e973`. Rows changed 6–13 Oct say so in the notes. Older rows still name the branch/commit of their last change.
 > **For the detailed, file-level status use [FEATURE_STATUS.md](FEATURE_STATUS.md)** (this tracker mirrors the Google Sheet).
 > **Files Available**:
 > - [flutter_app_feature_tracker.csv](flutter_app_feature_tracker.csv) *(Google Sheets: File → Import → Upload)*
@@ -12,10 +12,10 @@
 
 | Status Category | Feature Count | Description |
 | :--- | :---: | :--- |
-| 🟢 **Fully Implemented** | **49** | Auth (OTP, email, reset, new-user sign-up, session expiry), Profile (info, education/experience/skills edit & delete, photo, resume, projects, strength bar), Jobs (search + voice, hero card, filters, detail, apply, bookmarks), Applications, Interviews, Experts (apply + Pro Expert plans, directory, free & paid booking, ratings & reviews, Expert Dashboard), Pro Expert subscription, Connections, People You May Know, Real-time chat (conversation list + unread badges, attachments), Events (list, register, paid tickets, attendee list), Wallet (balances, add money, history, refunds & disputes), Mentorship checkout, Emails, Instant Milega availability toggle, Settings, Guest mode |
-| 🟡 **Partially Implemented** | **8** | Android & iOS release (signing), Withdrawals (manual payouts), Services browse, ₹99 pass / InstantPass (wallet only), GPS location (no background tracking), Spot-gig dispatch (list, no dispatch card) |
+| 🟢 **Fully Implemented** | **50** | Chat block / report, Auth (OTP, email, reset, new-user sign-up, session expiry), Profile (info, education/experience/skills edit & delete, photo, resume, projects, strength bar), Jobs (search + voice, hero card, filters, detail, apply, bookmarks), Applications, Interviews, Experts (apply + Pro Expert plans, directory, free & paid booking, ratings & reviews, Expert Dashboard), Pro Expert subscription, Connections, People You May Know, Real-time chat (conversation list + unread badges, attachments), Events (list, register, paid tickets, attendee list), Wallet (balances, add money, history, refunds & disputes), Mentorship checkout, Emails, Instant Milega availability toggle, Settings, Guest mode |
+| 🟡 **Partially Implemented** | **11** | Community feed UI on local demo data (posts, photos/PDF, reactions, comments — no backend API), Android & iOS release (signing), Withdrawals (manual payouts), Services browse, ₹99 pass / InstantPass (wallet only), GPS location (no background tracking), Spot-gig dispatch (list, no dispatch card) |
 | ⏳ **Pending Implementation** | **1** | FCM push notifications (in-app notifications are live since 5 Oct) |
-| 🚀 **Upcoming / Not Started** | **14** | KYC, Skill certifications, Services booking / quotes / tracking, Community feed (3), Chat block/report, WebRTC audio & video, AI assistant, Refer & Earn, Offers |
+| 🚀 **Upcoming / Not Started** | **10** | KYC, Skill certifications, Services booking / quotes / tracking, Community feed backend (hashtags, shares), WebRTC audio & video, AI assistant, Refer & Earn, Offers |
 | **Total Tracked Mobile Features** | **72** | **Milestones 1 to 5 (Candidate & Gig Workers Exclusive)** |
 
 ---
@@ -106,12 +106,12 @@
 | **59** | **F48** | Services - Book Local Handyman / Technician | Services Market | M4 - Week 4 | `Upcoming` | `fix/backend-alignment-wallet-payments (a30fa29)` | Not built in the app (coming soon state only). Waiting on backend: service booking API. |
 | **60** | **F49** | Services - Provider Profile & Service Quotes | Services Market | M4 - Week 4 | `Upcoming` | `fix/backend-alignment-wallet-payments (a30fa29)` | Not built in the app (coming soon state only). Waiting on backend: provider profile and quotes API. |
 | **61** | **F50** | Services - Real-Time Provider GPS Tracking on Map | Services Market | M4 - Week 4 | `Upcoming` | `main` | Not started. Waiting on backend: provider location tracking. |
-| **62** | **F51** | Social Feed - Professional Community Discussion Feed | Social & Chat | M4 - Week 4 | `Upcoming` | `fix/backend-alignment-wallet-payments (a30fa29)` | Feed shows a coming soon placeholder (no fake posts). Waiting on backend: community feed API. |
-| **63** | **F52** | Social Feed - Post Multimedia Sharing (Images/Videos) | Social & Chat | M4 - Week 4 | `Upcoming` | `main` | Not started. Depends on F51 feed API. |
-| **64** | **F53** | Social Feed - Hashtags, Likes, Comments & Shares | Social & Chat | M4 - Week 4 | `Upcoming` | `main` | Not started. Depends on F51 feed API. |
+| **62** | **F51** | Social Feed - Professional Community Discussion Feed | Social & Chat | M4 - Week 4 | `Partially Implemented` | `main` (uncommitted, 13 Oct) | Posts screen (Feed / My posts, refresh, paging, create, delete own post) built on **local demo data** in debug builds only; release shows "coming soon". Waiting on backend: posts / feed API does not exist (KNOWN_ISSUES B-31). |
+| **63** | **F52** | Social Feed - Post Multimedia Sharing (Images/Videos) | Social & Chat | M4 - Week 4 | `Partially Implemented` | `main` (uncommitted, 13 Oct) | Up to 4 photos + 1 PDF per post, full-screen photo viewer — demo only, nothing uploaded until a posts API exists. No video. |
+| **64** | **F53** | Social Feed - Hashtags, Likes, Comments & Shares | Social & Chat | M4 - Week 4 | `Partially Implemented` | `main` (uncommitted, 13 Oct) | 5 reactions + comments on demo data; no hashtags or share (no backend). |
 | **65** | **F55** | Networking - People You May Know / Suggested Connections | Social & Chat | M4 - Week 4 | `Fully Implemented` | `main` | People You May Know from GET /community/users (public member list, not personalised): 2-column cards with cover, photo, headline or skills, city, Connect and Message. |
 | **66** | **F58** | Real-Time Chat - Media & Document Attachment Sharing | Social & Chat | M4 - Week 4 | `Fully Implemented` | `main (6824103)` | 5 Oct: photo, camera and document (PDF/DOC/DOCX/TXT) attachments up to 10 MB — preview before sending, uploaded with POST /files/upload, sent with attachment_* fields; photos open full screen, files open in the phone viewer; emoji sheet in the composer. |
-| **67** | **F59** | Real-Time Chat - Block User & Report Conversation | Social & Chat | M4 - Week 4 | `Upcoming` | `fix/backend-alignment-wallet-payments (a30fa29)` | Not built in the app (no block/report actions). Waiting on backend: block and report API. |
+| **67** | **F59** | Real-Time Chat - Block User & Report Conversation | Social & Chat | M4 - Week 4 | `Fully Implemented` | `main (ceda59e)` | Block / unblock, report with reason and "also block" (`/chats/users/:id/block*`, `/chats/:id/report`). Menu restyled 13 Oct. |
 | **68** | **F64** | Events - Attendee List Modal (Clickable Join Count) | Events & Community | M4 - Week 4 | `Fully Implemented` | `main (166242e)` | Event page shows "N attending" with photos; See all opens a searchable list; tap opens the member profile. Uses GET /events/:id/attendees (public fields only). |
 
 ---

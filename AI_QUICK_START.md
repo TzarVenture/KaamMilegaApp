@@ -1,13 +1,13 @@
 # KaamMilega AI Quick Start
 
-> **Last updated: 6 October 2026** · app branch `main` @ `6824103` (5 Oct, all work committed) · backend monorepo `main` @ `807fe02` (read-only). Source code wins over docs.
-> Last test run (5 Oct): `flutter analyze` no issues, `flutter test` +498 −1 (test-only failure, fixed). The 5 Oct Home layout change has not been re-run. Phone testing of the 26 Sep – 5 Oct work is **pending** — [KNOWN_ISSUES.md § Verification log](KNOWN_ISSUES.md#verification-log).
+> **Last updated: 13 October 2026** · app `main` @ `9578c5c` (9 Oct) **plus uncommitted work of 10–13 Oct** (the owner commits) · backend monorepo `main` @ `b86e973` (read-only). Source code wins over docs.
+> Last test runs (13 Oct): full `flutter test` +567 −5 (Posts tests needed a taller test screen — fixed); later focused runs all passed; `flutter analyze` no issues. Not re-run yet: Jobs filter redesign and chat options menu (13 Oct). Phone testing is **pending** — [KNOWN_ISSUES.md § Verification log](KNOWN_ISSUES.md#verification-log).
 
-## Status at a glance (6 Oct 2026)
-- **Done:** auth + guest mode; jobs (search, voice search, filters, city dropdown, hero card, apply with resume, saved, People Like You); applications; interviews; profile (all sections, analytics, profile viewers, Open To cards); network + People You May Know + member profiles; **real-time chat** (Messages list, unread badge, read ticks, typing, delete message / clear / delete chat, photo & file attachments, emoji, recruiter-or-connection messaging rule); **in-app notifications** (list, categories, live socket, top banner, bell everywhere); experts (booking inside the Expert's hours, paid sessions, Pro Expert plans, My Booked Sessions, upcoming-call banner, ratings & reviews, **Expert Dashboard**); events (register, paid tickets, My Tickets, attendee list); Help & FAQ; Instant Milega (availability, InstantPass via wallet, Spot Gigs, active gig); wallet (balances, history, add money, withdraw request, refunds & disputes); settings; offline handling; Mobile Design Spec theme; Home layout (5 Oct).
-- **Waiting for checks:** test run after the 5 Oct Home layout change; phone test of chat, notifications and attachments; Razorpay TEST-mode runs (top-up, sessions, Pro Expert, event tickets).
+## Status at a glance (13 Oct 2026)
+- **Done:** auth + guest mode; jobs (search, voice search, filters, city dropdown, hero card, apply with resume, saved, People Like You); applications; interviews; profile (all sections, analytics, profile viewers, Open To cards); network + People You May Know + member profiles; **real-time chat** (Messages list, unread badge, read ticks, typing, delete message / clear / delete chat, photo & file attachments, emoji, recruiter-or-connection messaging rule); **in-app notifications** (list, categories, live socket, top banner, bell everywhere); experts (booking inside the Expert's hours, paid sessions, Pro Expert plans, My Booked Sessions, upcoming-call banner, ratings & reviews, **Expert Dashboard**); events (register, paid tickets, My Tickets, attendee list); Help & FAQ; Instant Milega (availability, InstantPass via wallet, Spot Gigs, active gig); wallet (balances, history, add money, withdraw request, refunds & disputes); settings; offline handling; Mobile Design Spec theme; Home layout (5 Oct). **New 6–13 Oct:** chat block / report; brand look (Inter text font, Poppins headings, brand wordmark logos, coloured category headers with rotating search hints); redesigned Home cards, side menu, Jobs header, bottom bar (sliding indicator); KM Verified Employer badge; tappable job-card chips → related jobs / People like you / company page; job page Meet the recruiter + Experts who can help; Jobs filter redesign with Instant Milega card; Call sheet (no number shared → Chat); **Posts** (feed, composer with photos + PDF, reactions, comments, delete own post) on local DEMO data only.
+- **Waiting for checks:** test run of the 13 Oct filter redesign and chat menu; phone test of chat, notifications and attachments; Razorpay TEST-mode runs (top-up, sessions, Pro Expert, event tickets).
 - **Pending (app work):** InstantPass by Razorpay (built, switched off until B-12), Home ₹99 banner decision, old Instant Work filter chips (M-01), fallback labels/cities (M-02/M-03), profile link `/in/` vs `/profile/` (M-05), jobs cache per filter (M-09), secure token storage (M-10), Android release signing, iOS signing.
-- **Pending (backend first):** wallet transfer, feed, services marketplace, resume field, push (FCM), chat block/report, bank verification / automatic payouts, nearby professionals API, plus backend bugs B-01…B-28 — most urgent B-25 (Pro Expert plan not tied to the payment), B-12 (InstantPass double charge), B-14 (secrets in git), B-24 (messaging rule only in the app), B-27 (missing payment notifications).
+- **Pending (backend first):** posts / feed API (B-31), recruiter contact number on jobs (B-32), wallet transfer, services marketplace, resume field, push (FCM), chat block/report, bank verification / automatic payouts, nearby professionals API, plus backend bugs B-01…B-28 — most urgent **B-29 (any logged-in user can read any job's applicants)**, B-25 (Pro Expert plan not tied to the payment), B-12 (InstantPass double charge), B-14 (secrets in git), B-24 (messaging rule only in the app), B-27 (missing payment notifications).
 - **Open decisions:** rename "Instant UPI" → "UPI" on withdraw screen (offered, not confirmed); messaging gig posters who are not recruiters (now needs a connection).
 - Details: [FEATURE_STATUS.md](FEATURE_STATUS.md) (per feature) · [KNOWN_ISSUES.md](KNOWN_ISSUES.md) (bugs + work logs) · [flutter_app_feature_tracker.md](flutter_app_feature_tracker.md) (sheet view).
 
@@ -92,19 +92,24 @@ All paths in `api_constants.dart`, called through `ApiClient` from repositories.
 | Instant Milega: availability, InstantPass (wallet), Spot Gigs, active gig | Implemented (map removed; nearby professionals coming soon) |
 | Skills marketplace | Implemented |
 | Wallet balance / history / add money / withdraw / refunds & disputes | Implemented (no real payout or refund made in testing) |
-| Wallet transfer, feed, services, company pages, push notifications | Coming soon (backend missing) |
+| Posts / community feed `/posts` (feed, My posts, composer with photos + 1 PDF, reactions, comments, delete own post) | UI built 13 Oct on **local DEMO data** (debug builds only; release shows "coming soon") — backend has no posts API (B-31) |
+| Job-card chips → related jobs `/related-jobs`, People like you `/similar-people/:jobId`, company page | Implemented (13 Oct) |
+| Job page: Meet the recruiter (real profile, Message, Connect), Experts who can help | Implemented (13 Oct) |
+| KM Verified Employer badge (only employers the server marks verified) | Implemented (12–13 Oct) |
+| Chat block / report | Implemented (6 Oct) |
+| Wallet transfer, services, push notifications | Coming soon (backend missing) |
 Full matrix: [FEATURE_STATUS.md](FEATURE_STATUS.md).
 
 ## Real vs hardcoded data
 - **Real backend:** jobs, applications, interviews, profile, analytics, viewers, network, community members, chat (+ attachments), notifications, events + tickets + attendees, experts + subscriptions + reviews + dashboard, FAQ, Instant Milega, skills, wallet + disputes, top companies.
 - **Local device:** guest bookmarks, resume URL, old phone-only Open To text (read only), offline caches (jobs, applications — offline only, wallet, user). Gig availability is now real (`/instant-work/availability`).
 - **Hard-coded content:** home and module banners, job categories / shortcuts, ₹99 benefits, explore modules, services categories, chat emoji list, "coming soon" screens.
-- **Mock:** none known (removed in Batch 3; `CompanyScreen` now "Coming Soon").
+- **Mock / demo:** Posts use local in-memory DEMO data (`DemoPostsRepository`, fictional people) in debug/profile builds only — switch `kPostsDemoMode` in `posts/repositories/posts_repository.dart`; never sent to the backend, never in release builds. Nothing else is mocked.
 - **Website-confirmed constants:** Open To job types (`Full-time, Part-time, Contract, Freelance, Hourly`), visibility (`all`/`recruiters`), currency `INR`.
 - **Fallback:** hard-coded 10 cities on `/cities` failure; default expert rating 5.0 / labels; event/interview/application placeholder labels.
 
 ## Known important issues
-See [KNOWN_ISSUES.md](KNOWN_ISSUES.md) — open (Flutter): H-02 remainder, M-01…M-03, M-05, M-07, M-09…M-11, L-01…L-07. Backend: B-01…B-28 — most important: B-25/B-26 Pro Expert payment and plan gaps, B-12 InstantPass / spot-gig money bugs, B-14 secrets committed in `docker-compose.yml`, B-24 messaging rule not enforced, B-22/B-23 chat deletes, B-27 missing payment notifications, B-08/B-04 private fields in public lists.
+See [KNOWN_ISSUES.md](KNOWN_ISSUES.md) — open (Flutter): H-02 remainder, M-01…M-03, M-05, M-07, M-09…M-11, L-01…L-09. Backend: B-01…B-34 — most important: B-29 job applicants readable by anyone signed in, B-30 `GET /user/:id` returns mobile and email, B-25/B-26 Pro Expert payment and plan gaps, B-12 InstantPass / spot-gig money bugs, B-14 secrets committed in `docker-compose.yml`, B-24 messaging rule not enforced, B-22/B-23 chat deletes, B-27 missing payment notifications, B-08/B-04 private fields in public lists.
 
 ## Pending work
 Summary above ("Status at a glance"); full list in [FEATURE_STATUS.md](FEATURE_STATUS.md) § Summary ("Pending Work" column separates Flutter / Backend / Nowhere).

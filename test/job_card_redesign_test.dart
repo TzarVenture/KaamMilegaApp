@@ -1,8 +1,28 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kaam_milega/app/theme/app_theme.dart';
+import 'package:kaam_milega/core/network/api_client.dart';
+import 'package:kaam_milega/features/company/models/top_company.dart';
+import 'package:kaam_milega/features/company/providers/company_provider.dart';
+import 'package:kaam_milega/features/company/repositories/company_repository.dart';
 import 'package:kaam_milega/features/jobs/models/job.dart';
 import 'package:kaam_milega/features/jobs/presentation/widgets/job_card.dart';
+
+class _Companies extends CompanyRepository {
+  _Companies() : super(ApiClient());
+
+  int? askedLimit;
+
+  @override
+  Future<List<TopCompany>> getTopCompanies({int limit = 10}) async {
+    askedLimit = limit;
+    return const [
+      TopCompany(id: 'r-verified', name: 'Acme', verified: true),
+      TopCompany(id: 'r-pending', name: 'Beta'),
+    ];
+  }
+}
 
 Job _job(Map<String, dynamic> extra) => Job.fromJson({
   'id': 'j1',
@@ -70,6 +90,7 @@ void main() {
       Size screen = const Size(390, 844),
       double textScale = 1,
       bool applied = false,
+      bool verified = false,
     }) async {
       tester.view.physicalSize = screen;
       tester.view.devicePixelRatio = 1;
@@ -87,6 +108,7 @@ void main() {
                 child: JobCard(
                   job: job,
                   isApplied: applied,
+                  isVerifiedEmployer: verified,
                   onTap: () {},
                   onApply: () {},
                   onChat: () {},
@@ -116,6 +138,16 @@ void main() {
       expect(find.text('HIRING NOW'), findsNothing);
     });
 
+    testWidgets('KM Verified Employer only when the server says so', (
+      tester,
+    ) async {
+      await pump(tester, _job({}));
+      expect(find.text('KM Verified Employer'), findsNothing);
+
+      await pump(tester, _job({}), verified: true);
+      expect(find.text('KM Verified Employer'), findsOneWidget);
+    });
+
     testWidgets('applied state replaces the Apply button', (tester) async {
       await pump(tester, _job({}), applied: true);
       expect(find.text('Applied'), findsOneWidget);
@@ -130,8 +162,21 @@ void main() {
         _job({'title': 'SENIOR WAREHOUSE OPERATIONS AND LOGISTICS MANAGER'}),
         screen: const Size(320, 700),
         textScale: 1.3,
+        verified: true,
       );
       expect(tester.takeException(), isNull);
     });
+  });
+
+  test('verified employer ids come only from verified companies', () async {
+    final companies = _Companies();
+    final container = ProviderContainer(
+      overrides: [companyRepositoryProvider.overrideWithValue(companies)],
+    );
+    addTearDown(container.dispose);
+
+    final ids = await container.read(verifiedEmployerIdsProvider.future);
+    expect(ids, {'r-verified'});
+    expect(companies.askedLimit, 50);
   });
 }

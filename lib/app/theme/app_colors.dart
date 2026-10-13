@@ -132,6 +132,12 @@ class AppColors {
   static const Color hotRoseBg = accentLight;
   static const Color hotRoseBorder = Color(0xFFFFEDD5);
 
+  // Gender markers (Jobs filter): blue for male, pink for female.
+  static const Color genderMale = Color(0xFF2563EB);
+  static const Color genderMaleBg = Color(0xFFDBEAFE);
+  static const Color genderFemale = Color(0xFFDB2777);
+  static const Color genderFemaleBg = Color(0xFFFCE7F3);
+
   static const Color success = Color(0xFF16A34A);
   static const Color successLight = Color(0xFFDCFCE7);
 
