@@ -88,12 +88,18 @@ class RelatedJobsScreen extends ConsumerWidget {
             SliverAppBar(
               pinned: true,
               backgroundColor: AppColors.brandNavy,
+              // The app theme colours app bar icons navy; white on this navy bar.
+              iconTheme: const IconThemeData(color: AppColors.white),
+              actionsIconTheme: const IconThemeData(color: AppColors.white),
               surfaceTintColor: AppColors.brandNavy,
               foregroundColor: AppColors.white,
               systemOverlayStyle: SystemUiOverlayStyle.light,
               leading: IconButton(
                 tooltip: 'Back',
-                icon: const Icon(Icons.arrow_back_rounded),
+                icon: const Icon(
+                  Icons.arrow_back_rounded,
+                  color: AppColors.white,
+                ),
                 onPressed: () =>
                     context.canPop() ? context.pop() : context.go('/jobs'),
               ),

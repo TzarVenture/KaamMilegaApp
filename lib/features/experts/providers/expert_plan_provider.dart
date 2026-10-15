@@ -15,14 +15,23 @@ final expertPlansProvider = FutureProvider.autoDispose<List<ExpertPlan>>(
   (ref) => ref.watch(expertRepositoryProvider).getExpertPlans(),
 );
 
-/// The signed-in user's Pro Expert plan; no request without a session.
-final myExpertSubscriptionProvider =
-    FutureProvider.autoDispose<ExpertSubscriptionStatus>((ref) {
-      if (ref.watch(sessionUserIdProvider) == null) {
-        return ExpertSubscriptionStatus.none;
-      }
-      return ref.watch(expertRepositoryProvider).getMyExpertSubscription();
-    });
+/// The signed-in user's Pro Expert plan (the Expert Pass); no request
+/// without a session. Kept for the session (the drawer and the Expert
+/// Portal screens read it) and reloaded on sign-in, sign-out and purchase.
+final myExpertSubscriptionProvider = FutureProvider<ExpertSubscriptionStatus>((
+  ref,
+) {
+  if (ref.watch(sessionUserIdProvider) == null) {
+    return ExpertSubscriptionStatus.none;
+  }
+  return ref.watch(expertRepositoryProvider).getMyExpertSubscription();
+});
+
+/// True only while the server says the Expert Pass is active. The Expert
+/// Portal (Create Event, My Courses, Manage Mentorships) is shown only then.
+final hasExpertPassProvider = Provider<bool>(
+  (ref) => ref.watch(myExpertSubscriptionProvider).value?.isActive ?? false,
+);
 
 /// Opens the payment screen; [RazorpayCheckout.pay] in the app, replaced in
 /// tests so no real checkout is ever opened.

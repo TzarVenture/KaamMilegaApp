@@ -10,8 +10,9 @@ import '../models/expert_offering.dart';
 import '../repositories/expert_repository.dart';
 
 /// True when the signed-in user has the "expert" role (given by the server
-/// after Expert approval or a Pro Expert plan). The Expert Dashboard is
-/// shown only then, like the website's "Expert Portal" menu.
+/// after Expert approval or a Pro Expert plan). The Expert Portal itself
+/// (drawer, Mentor Dashboard, Create Event, My Courses) needs an active
+/// Expert Pass instead: see `hasExpertPassProvider`.
 final isExpertProvider = Provider<bool>((ref) {
   return ref.watch(
     authProvider.select(

@@ -338,13 +338,41 @@ Added in backend `c829a60` (F75 "Pro Expert"). **Integrated** (`0fa522f`): `Expe
 - Created by the backend for: applications, interviews, events (incl. ticket confirmed), Instant Milega (pass activated, gig claimed / completed / payout), mentorship (expert gets "booked"; status changes), network (request / accepted), wallet (top-up credited, withdrawal requested), chat messages. `link` is a website path; the app maps it in `notification_target.dart`.
 - **Flutter:** `NotificationRepository` ← `notificationsProvider` (+ `notificationCategoryProvider`, `notificationUnreadOnlyProvider`), `unreadCountsProvider` / `unreadNotificationsCountProvider` ← `notifications_screen.dart`, `NotificationBellButton`; socket `NotificationSocketService` (`LiveSocket`) ← `InAppNotificationHost`. In-app only — no push (FCM) on either side. · **Status:** Active
 
+## 12b. Resources / courses (`course/api.go`) — **Active since 14 Oct**
+
+### GET `/courses`
+- **Auth:** Public · **Query:** `page`, `limit` (1–100, default 10), `search` (regex on title, description, expert name, category — app escapes it, B-39), `category`, `expert_id`
+- **Response:** `{data: [Course], total, page, limit, total_pages}`; only `is_published` courses, newest first. **Course:** `id, title, description, youtube_url, youtube_video_id, thumbnail_url, duration, category, expert_id, expert_name, expert_avatar?, views, is_published, created_at, updated_at?`
+- **Flutter:** `CourseRepository.getCourses` ← `coursesProvider` ← `resources_screen.dart`
+
+### POST `/courses/:id/view`
+- **Auth:** Public (token read if present) · **Response:** `{message, views}` — new total; the uploader's own view is not counted (returns the unchanged total). No other limit (B-38).
+- **Flutter:** `CourseRepository.recordView` ← `CoursesNotifier.recordView` (optimistic +1 except uploader, server value wins, restored on failure)
+
+### Expert routes (JWT) — **Active since 14 Oct** (Expert Portal "My Courses")
+- `GET /courses/my?page&limit` → same page shape as `GET /courses` (the caller's courses).
+- `POST /courses` `{title, youtube_url, duration, category, description}` → 201 `Course`. Server: title required and at most 10 words, description at most 50 words, YouTube watch / youtu.be / shorts / embed link required (stored as a clean watch URL + thumbnail), empty duration → "30 Min", empty category → "General". Errors 400 `{error}`.
+- `PUT /courses/:id` `{title, duration, category, description}` → `Course`; uploader only (400 otherwise). Empty fields are kept except `description`, which is always replaced. A changed `youtube_url` is applied only if valid (silently ignored otherwise); the app, like the website, does not send it.
+- `DELETE /courses/:id` → `{message}`; 400 "course not found or unauthorized".
+- None of these checks the `expert` role or the Expert Pass (B-40).
+- **Flutter:** `CourseRepository.getMyCourses / createCourse / updateCourse / deleteCourse` ← `MyCoursesNotifier` ← `my_courses_screen.dart`, `course_form_screen.dart`
+
+## 12c. Expert Portal: create event (`event/api.go`) — **Active since 14 Oct**
+
+### POST `/events` (JWT)
+- **Body (website form):** `{title, organizer, description, date: "yyyy-MM-dd", time: "HH:mm", location, image_url?}`; `image_url` is the link from `POST /files/upload` (multipart `file`, public) → `{url}`.
+- **Response:** the saved `Event`. The server binds the whole `Event` struct, validates nothing, stores no creator and has no route to list / edit / delete one's events (B-41). Any signed-in user may call it (B-40).
+- **Flutter:** `EventRepository.createEvent` ← `EventCreator` (`create_event_provider.dart`) ← `create_event_screen.dart`
+
+Not used: `GET /courses/:id` (list has all fields).
+
 ## 13. Declared in `ApiConstants` but not used
 
 `userBookmarks`, `userSettings` (GET), `posts`, `feed` (no backend routes — keep unused until real routes exist, KNOWN_ISSUES L-08 / B-31), `adminCompanies` (admin route, out of scope), `mentorship` (duplicate).
 
 ## 14. Backend endpoints relevant to mobile, not integrated
 
-`GET /settings/me`, `PUT /settings/me`, `GET /events/:id/ticket`, `POST /instant-work/pass/order` + `/pass/verify` (§15, built but switched off), `POST/GET /auth/logout`, `GET /companies`, `GET /network/sent`, `GET /mentorships/:id/reviews`, `GET /platform/stats`, `GET /platform/live-activity`, `GET /files/download/:id`, `GET /courses`, `GET /courses/:id`, `POST /courses/:id/view` (new in `b86e973`). Response shapes of these were **not verified** in this audit unless stated above.
+`GET /settings/me`, `PUT /settings/me`, `GET /events/:id/ticket`, `POST /instant-work/pass/order` + `/pass/verify` (§15, built but switched off), `POST/GET /auth/logout`, `GET /companies`, `GET /network/sent`, `GET /mentorships/:id/reviews`, `GET /platform/stats`, `GET /platform/live-activity`, `GET /files/download/:id`. Response shapes of these were **not verified** in this audit unless stated above.
 
 Out of mobile scope (do not integrate without an explicit request): `/admin/*`, `POST/PATCH/DELETE /jobs`, `/jobs/my`, `/applications/job/:jobId` (also has no owner check — B-29; never use it for candidates), `/applications/recruiter/all`, `PATCH /applications/:id/status`, `POST /interviews`, mentorship expert management routes, `/cities` mutations, `/skills` mutations, `/sms/send`, `POST /settings/:key`.
 
@@ -361,7 +389,14 @@ Out of mobile scope (do not integrate without an explicit request): `/admin/*`, 
 | GET `/instant-work/candidate/active-job` | — | `InstantJob` or none | `getActiveGig` ← `ActiveGigCard` |
 | PUT `/instant-work/jobs/:id/complete` | — | job | `completeGig` |
 
-`/pass/order` (response `amount` is in **paise**, `pass_inr` in rupees) and `/pass/verify` `{razorpay_order_id, razorpay_payment_id, razorpay_signature}` are integrated (`createPassOrder`, `verifyPassPayment`, `InstantCandidateNotifier.buyPassOnline` / `retryPassActivation`) but **switched off** by `InstantPassTerms.onlinePaymentLive = false` until the double debit (B-12) is fixed; recruiter routes (`/recruiter/radar`, `/dispatch`, `/recruiter/active-job`, `/jobs/:id/close`) are out of scope. Status: **Active (29 Sep)**. Backend issues: B-12.
+`/pass/order` (response `amount` is in **paise**, `pass_inr` in rupees) and `/pass/verify` `{razorpay_order_id, razorpay_payment_id, razorpay_signature}` are integrated (`createPassOrder`, `verifyPassPayment`, `InstantCandidateNotifier.buyPassOnline` / `retryPassActivation`) but **switched off** by `InstantPassTerms.onlinePaymentLive = false` until the double debit (B-12) is fixed. Status: **Active (29 Sep)**. Backend issues: B-12.
+
+### Hire routes (JWT, any signed-in user, no pass) — **Active since 15 Oct** (Instant Milega → Hire)
+- `GET /instant-work/recruiter/radar?lat&lng&radius_km(5)&skill` → `[{id, user_id, name, avatar, active_skill, hourly_rate, rating, total_gigs, location{coordinates[lng,lat]}, distance_meters, distance_km, is_masked}]`: workers with `is_free_now`, quota left and a ping in the last 30 min, max 30; pins moved 100-180 m. `rating` / `total_gigs` are server defaults for new workers (B-45) and are not shown. Skill: case-insensitive exact match on the worker's trade.
+- `POST /instant-work/dispatch` `{skill, lat, lng, address, radius_km, pay_rate, rate_type: hourly|flat, duration_hours, required_workers, notes}` → 201 `InstantJob` (status `DISPATCHING`, `expires_at` = now + 3 min). No validation; errors are 500. Only one worker can claim a job, so the app sends `required_workers: 1`.
+- `GET /instant-work/recruiter/active-job` → latest own job in `DISPATCHING | ACCEPTED | IN_PROGRESS | COMPLETED`, or `null`; includes `candidate_name`, `candidate_mobile` once claimed. Expired jobs stay `DISPATCHING` (B-44).
+- Not used: `PUT /instant-work/jobs/:id/close` (credits the worker without charging the hirer, B-42).
+- **Flutter:** `InstantHireRepository` (`findWorkers`, `postRequest`, `getActiveRequest`) ← `RadarNearbyProfessionalsRepository` / `InstantHireActions` / `activeHireRequestProvider` ← `instant_hire_widgets.dart`, `hire_request_screen.dart`.
 
 ## Known Mismatches
 

@@ -75,6 +75,11 @@
 | Skills catalog | `GET /skills`, `GET /skills/categories` | Skills Marketplace |
 | Chat block / report | `GET /chats/users/:id/block-status`, `POST /chats/users/:id/block`, `POST /chats/users/:id/unblock`, `POST /chats/:id/report` | Chat ⋮ menu |
 | Experts on a job page | `GET /experts` | Job Detail → Experts who can help |
+| Resources (learning videos) | `GET /courses?page&limit&search`, `POST /courses/:id/view` | Resources page (`/feed`) |
+| Instant Milega Hire | `GET /instant-work/recruiter/radar?lat&lng&radius_km&skill`, `POST /instant-work/dispatch`, `GET /instant-work/recruiter/active-job` | Instant Milega → Hire |
+| Expert Portal: pass check | `GET /subscriptions/expert/my` (`is_active`) | Drawer Expert Portal, portal pages |
+| Expert Portal: Create Event | `POST /files/upload` (banner), `POST /events` | `/expert/create-event` |
+| Expert Portal: My Courses | `GET /courses/my?page&limit`, `POST /courses`, `PUT /courses/:id`, `DELETE /courses/:id` | `/expert/courses` |
 
 ---
 
@@ -87,7 +92,6 @@
 | `POST /instant-work/pass/order`, `POST /instant-work/pass/verify` | InstantPass by Razorpay — app flow built 30 Sep, switched off (`InstantPassTerms.onlinePaymentLive`) until the backend double debit B-12 is fixed. |
 | `POST/GET /auth/logout` | Clears the website cookie; app logout is local. |
 | `GET /settings/me`, `GET /platform/stats`, `GET /platform/live-activity` | Not needed by the app so far. |
-| `GET /courses`, `GET /courses/:id`, `POST /courses/:id/view` (new, `b86e973`) | Courses / resources — the app's Resources page still says coming soon; can be connected next. |
 | `GET /applications/job/:jobId` | Recruiter list of applicants — **not used on purpose**: it has no owner check (B-29). |
 | Recruiter/admin routes (`/instant-work/dispatch`, `/recruiter/*`, `/jobs/:id/close`, `/admin/*`) | Out of scope — the app is for candidates and gig workers. |
 

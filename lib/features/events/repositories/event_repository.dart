@@ -106,6 +106,42 @@ class EventRepository {
     return event;
   }
 
+  /// Expert Portal: POST /events with the website's "Create New Event"
+  /// fields. [date] is "yyyy-MM-dd" and [time] "HH:mm", as the website
+  /// sends them. The event is free (the form has no price or seat limit).
+  /// Returns the event the server saved.
+  Future<EventItem> createEvent({
+    required String title,
+    required String organizer,
+    required String description,
+    required String date,
+    required String time,
+    required String location,
+    String imageUrl = '',
+  }) async {
+    final response = await _client.post(
+      ApiConstants.events,
+      data: {
+        'title': title,
+        'organizer': organizer,
+        'description': description,
+        'date': date,
+        'time': time,
+        'location': location,
+        if (imageUrl.isNotEmpty) 'image_url': imageUrl,
+      },
+    );
+    final json = response.data;
+    if (json is! Map<String, dynamic>) {
+      throw const AppServerException('Unexpected event response.');
+    }
+    final event = EventItem.fromJson(json);
+    if (event.id.isEmpty) {
+      throw const AppServerException('Unexpected event response.');
+    }
+    return event;
+  }
+
   /// Register candidate for a specific event
   Future<bool> registerForEvent(String eventId) async {
     final response = await _client.post(

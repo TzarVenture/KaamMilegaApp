@@ -6,7 +6,7 @@ import '../../../../app/auth_guard.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../core/constants/api_constants.dart';
 import '../../../auth/providers/auth_provider.dart';
-import '../../../experts/providers/expert_dashboard_provider.dart';
+import '../../../experts/providers/expert_plan_provider.dart';
 import '../../../../shared/widgets/notification_bell_button.dart';
 
 /// App menu (end drawer) used on Home, Jobs, Chats, Profile and the
@@ -27,6 +27,9 @@ class ProfileDrawer extends ConsumerWidget {
     final authState = ref.watch(authProvider);
     final isAuth = authState.isAuthenticated && authState.user != null;
     final user = authState.user;
+    final expertPass = isAuth
+        ? ref.watch(myExpertSubscriptionProvider).value
+        : null;
 
     final userName = (isAuth && user!.name.trim().isNotEmpty)
         ? user.name.trim()
@@ -163,16 +166,35 @@ class ProfileDrawer extends ConsumerWidget {
                     title: 'My Tickets',
                     onTap: () => protected('/my-tickets'),
                   ),
-                  // Only for Experts, like the website's Expert Portal
-                  if (ref.watch(isExpertProvider))
+                  // Expert Portal: only while the Expert Pass is active
+                  // (website: Expert Portal menu). Otherwise the offer to
+                  // become an Expert.
+                  if (expertPass != null && expertPass.isActive) ...[
+                    const _SectionLabel('Expert Portal'),
+                    _ExpertPassCard(
+                      planName: expertPass.planName,
+                      daysLabel: expertPass.daysRemainingLabel,
+                      onTap: () => protected('/apply-expert'),
+                    ),
                     _DrawerIconTile(
-                      icon: Icons.dashboard_customize_outlined,
-                      title: 'Expert Dashboard',
+                      icon: Icons.event_available_outlined,
+                      title: 'Create Event',
+                      onTap: () => protected('/expert/create-event'),
+                    ),
+                    _DrawerIconTile(
+                      icon: Icons.video_library_outlined,
+                      title: 'My Courses',
+                      onTap: () => protected('/expert/courses'),
+                    ),
+                    _DrawerIconTile(
+                      icon: Icons.supervisor_account_outlined,
+                      title: 'Manage Mentorships',
                       onTap: () => protected('/expert-dashboard'),
                     ),
-                  _ApplyExpertDrawerCard(
-                    onTap: () => protected('/apply-expert'),
-                  ),
+                  ] else
+                    _ApplyExpertDrawerCard(
+                      onTap: () => protected('/apply-expert'),
+                    ),
 
                   const _SectionLabel('Account'),
                   _DrawerIconTile(
@@ -564,6 +586,124 @@ class _FooterButton extends StatelessWidget {
                 ),
               ),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Active Expert Pass: plan name and days left on a green-to-navy card
+/// (website: "Active subscription" banner). Opens the plans page.
+class _ExpertPassCard extends StatelessWidget {
+  const _ExpertPassCard({
+    required this.planName,
+    required this.daysLabel,
+    required this.onTap,
+  });
+
+  final String planName;
+  final String daysLabel;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(14, 2, 14, 6),
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(16),
+        clipBehavior: Clip.antiAlias,
+        child: Ink(
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              begin: Alignment.centerLeft,
+              end: Alignment.centerRight,
+              colors: [AppColors.success, AppColors.brandNavy],
+            ),
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.brandNavy.withValues(alpha: 0.18),
+                blurRadius: 12,
+                offset: const Offset(0, 5),
+              ),
+            ],
+          ),
+          child: InkWell(
+            onTap: onTap,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(12, 12, 10, 12),
+              child: Row(
+                children: [
+                  Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Icon(
+                      Icons.workspace_premium_rounded,
+                      size: 22,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 7,
+                            vertical: 2,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: const Text(
+                            'ACTIVE PASS',
+                            style: TextStyle(
+                              fontSize: 9.5,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: 0.6,
+                              color: AppColors.success,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          planName,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            fontSize: 14.5,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white,
+                          ),
+                        ),
+                        Text(
+                          daysLabel,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.white.withValues(alpha: 0.85),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const Icon(
+                    Icons.chevron_right_rounded,
+                    color: Colors.white,
+                    size: 22,
+                  ),
+                ],
+              ),
+            ),
           ),
         ),
       ),

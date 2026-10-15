@@ -131,6 +131,14 @@ class ApiConstants {
   static const String instantActiveJob =
       '/instant-work/candidate/active-job'; // GET (null = none)
   static const String instantJobs = '/instant-work/jobs/'; // PUT :id/complete
+
+  // InstantMilega for people hiring (login required; no pass needed)
+  static const String instantRadar =
+      '/instant-work/recruiter/radar'; // GET ?lat&lng&radius_km&skill
+  static const String instantDispatch =
+      '/instant-work/dispatch'; // POST spot job, open for 3 minutes
+  static const String instantHirerActiveJob =
+      '/instant-work/recruiter/active-job'; // GET (null = none)
   // Profile analytics
   static const String userViewers = '/user/viewers'; // GET who viewed me
   static const String userImpressions =
@@ -175,6 +183,14 @@ class ApiConstants {
   // --- Feed & Posts Endpoints ---
   static const String posts = '/posts';
   static const String feed = '/feed';
+
+  // --- Resources (learning videos, km-backend `course`) ---
+  static const String courses = '/courses'; // GET ?page&limit&search (public)
+  static String courseView(String courseId) =>
+      '/courses/$courseId/view'; // POST, returns {views} (public)
+  static const String myCourses = '/courses/my'; // GET ?page&limit (Expert)
+  static String course(String courseId) =>
+      '/courses/$courseId'; // PUT / DELETE (uploader only)
 
   // --- Help ---
   static const String faqQuestions = '/questions'; // GET (public FAQ)

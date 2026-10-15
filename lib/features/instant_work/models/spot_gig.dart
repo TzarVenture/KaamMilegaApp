@@ -45,6 +45,10 @@ class SpotGig {
   final DateTime? expiresAt;
   final ({double lat, double lng})? location;
 
+  /// The worker who claimed it (seen by the person who posted it).
+  final String candidateName;
+  final String candidateMobile;
+
   const SpotGig({
     required this.id,
     this.recruiterId = '',
@@ -62,6 +66,8 @@ class SpotGig {
     this.distanceKm,
     this.expiresAt,
     this.location,
+    this.candidateName = '',
+    this.candidateMobile = '',
   });
 
   factory SpotGig.fromJson(Map<String, dynamic> json) {
@@ -103,6 +109,8 @@ class SpotGig {
           ? null
           : DateTime.tryParse(json['expires_at'].toString())?.toLocal(),
       location: location,
+      candidateName: json['candidate_name']?.toString().trim() ?? '',
+      candidateMobile: json['candidate_mobile']?.toString().trim() ?? '',
     );
   }
 
@@ -145,6 +153,15 @@ class SpotGig {
     final left = end.difference(now).inSeconds;
     if (left <= 0) return 0;
     return (left / 60).ceil();
+  }
+
+  /// Still open for workers but past its claim window (the server keeps
+  /// the status "DISPATCHING" after the window ends).
+  bool isExpiredAt(DateTime now) {
+    final end = expiresAt;
+    return status == SpotGigStatus.dispatching &&
+        end != null &&
+        !end.isAfter(now);
   }
 
   /// The worker can still mark it done.

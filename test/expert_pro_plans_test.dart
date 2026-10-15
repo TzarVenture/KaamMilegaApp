@@ -184,7 +184,7 @@ ProviderContainer _container(ApiClient client, ExpertPlanPaymentLauncher pay) {
 }
 
 Future<void> _pumpScreen(WidgetTester tester, List<Override> overrides) async {
-  tester.view.physicalSize = const Size(1080, 9000);
+  tester.view.physicalSize = const Size(1080, 12000);
   tester.view.devicePixelRatio = 3;
   addTearDown(tester.view.reset);
   await tester.pumpWidget(
@@ -413,9 +413,21 @@ void main() {
         find.text('Available after your current plan ends'),
         findsOneWidget,
       );
-      final buttons = tester.widgetList<ElevatedButton>(
-        find.byType(ElevatedButton),
+      // The only active button opens the Mentor Dashboard (website: "Manage
+      // Mentorship Dashboard"); every purchase button is disabled.
+      // (`ElevatedButton.icon` may be a subclass, so match by `is`.)
+      final elevated = find.byWidgetPredicate((w) => w is ElevatedButton);
+      final dashboard = find.ancestor(
+        of: find.text('Manage Mentorship Dashboard'),
+        matching: elevated,
       );
+      expect(dashboard, findsOneWidget);
+      final dashboardButton = tester.widget<ElevatedButton>(dashboard);
+      expect(dashboardButton.onPressed, isNotNull);
+      final buttons = tester
+          .widgetList<ElevatedButton>(elevated)
+          .where((b) => !identical(b, dashboardButton));
+      expect(buttons, isNotEmpty);
       expect(buttons.every((b) => b.onPressed == null), isTrue);
     });
 

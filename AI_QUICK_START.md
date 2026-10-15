@@ -92,6 +92,8 @@ All paths in `api_constants.dart`, called through `ApiClient` from repositories.
 | Instant Milega: availability, InstantPass (wallet), Spot Gigs, active gig | Implemented (map removed; nearby professionals coming soon) |
 | Skills marketplace | Implemented |
 | Wallet balance / history / add money / withdraw / refunds & disputes | Implemented (no real payout or refund made in testing) |
+| Resources `/feed`: learning videos from `GET /courses` with search, paging and view counts (`POST /courses/:id/view`) | Implemented (14 Oct) |
+| Expert Portal (drawer, only while the Expert Pass is active): Create Event `/expert/create-event`, My Courses `/expert/courses`, Manage Mentorships `/expert-dashboard`; gate = `hasExpertPassProvider` / `ExpertPassGate` | Implemented (14 Oct) |
 | Posts / community feed `/posts` (feed, My posts, composer with photos + 1 PDF, reactions, comments, delete own post) | UI built 13 Oct on **local DEMO data** (debug builds only; release shows "coming soon") — backend has no posts API (B-31) |
 | Job-card chips → related jobs `/related-jobs`, People like you `/similar-people/:jobId`, company page | Implemented (13 Oct) |
 | Job page: Meet the recruiter (real profile, Message, Connect), Experts who can help | Implemented (13 Oct) |

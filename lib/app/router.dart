@@ -19,6 +19,7 @@ import '../features/company/models/top_company.dart';
 import '../features/company/presentation/company_screen.dart';
 import '../features/events/presentation/events_screen.dart';
 import '../features/events/presentation/my_tickets_screen.dart';
+import '../features/events/presentation/create_event_screen.dart';
 import '../features/experts/presentation/apply_expert_screen.dart';
 import '../features/experts/presentation/expert_dashboard_screen.dart';
 import '../features/experts/presentation/my_sessions_screen.dart';
@@ -34,7 +35,8 @@ import '../features/help/presentation/help_screen.dart';
 import '../features/profile/presentation/settings_screen.dart';
 import '../features/splash/presentation/splash_screen.dart';
 
-import '../features/feed/presentation/feed_screen.dart';
+import '../features/resources/presentation/my_courses_screen.dart';
+import '../features/resources/presentation/resources_screen.dart';
 import '../features/posts/presentation/post_composer_screen.dart';
 import '../features/posts/presentation/post_detail_screen.dart';
 import '../features/posts/presentation/posts_screen.dart';
@@ -124,7 +126,7 @@ class AppRouter {
     GoRoute(
       path: '/feed',
       name: 'feed',
-      builder: (context, state) => const FeedScreen(),
+      builder: (context, state) => const ResourcesScreen(),
     ),
     // Posts (community feed). '/posts/new' needs a login (AuthGuard).
     GoRoute(
@@ -270,6 +272,17 @@ class AppRouter {
       path: '/expert-dashboard',
       name: 'expert_dashboard',
       builder: (context, state) => const ExpertDashboardScreen(),
+    ),
+    // Expert Portal (needs the Expert Pass; each screen checks it)
+    GoRoute(
+      path: '/expert/create-event',
+      name: 'expert_create_event',
+      builder: (context, state) => const CreateEventScreen(),
+    ),
+    GoRoute(
+      path: '/expert/courses',
+      name: 'expert_courses',
+      builder: (context, state) => const MyCoursesScreen(),
     ),
     GoRoute(
       path: '/interviews',

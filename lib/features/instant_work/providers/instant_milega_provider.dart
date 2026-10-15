@@ -26,6 +26,9 @@ enum ProfessionalsStatus {
   /// The backend has no nearby-professionals API yet.
   backendPending,
 
+  /// A guest: workers near you need a login.
+  signInRequired,
+
   /// The API answered with no professionals.
   empty,
   loaded,
@@ -96,6 +99,10 @@ class InstantMilegaNotifier extends Notifier<InstantMilegaState> {
   int _locateRun = 0;
   int _loadRun = 0;
 
+  /// Nearby workers are loaded only once a screen shows them (Hire mode),
+  /// so Work mode makes no hiring request.
+  bool _professionalsWanted = false;
+
   @override
   InstantMilegaState build() => const InstantMilegaState();
 
@@ -111,7 +118,7 @@ class InstantMilegaNotifier extends Notifier<InstantMilegaState> {
           locationStatus: LocationStatus.ready,
           location: location,
         );
-        await loadProfessionals();
+        if (_professionalsWanted) await loadProfessionals();
       case LocationFailed(:final reason):
         state = state.copyWith(
           locationStatus: switch (reason) {
@@ -160,6 +167,13 @@ class InstantMilegaNotifier extends Notifier<InstantMilegaState> {
         professionals: result,
         clearSelection: true,
       );
+    } on NearbyProfessionalsSignInRequired {
+      if (!ref.mounted || run != _loadRun) return;
+      state = state.copyWith(
+        professionalsStatus: ProfessionalsStatus.signInRequired,
+        professionals: const [],
+        clearSelection: true,
+      );
     } on NearbyProfessionalsNotAvailable {
       if (!ref.mounted || run != _loadRun) return;
       state = state.copyWith(
@@ -175,6 +189,17 @@ class InstantMilegaNotifier extends Notifier<InstantMilegaState> {
         error: e,
         clearSelection: true,
       );
+    }
+  }
+
+  /// Called when nearby workers come on screen: loads them once the
+  /// location is known (now, or as soon as it is found).
+  void showProfessionals() {
+    _professionalsWanted = true;
+    if (state.locationStatus == LocationStatus.ready &&
+        (state.professionalsStatus == ProfessionalsStatus.waitingForLocation ||
+            state.professionalsStatus == ProfessionalsStatus.signInRequired)) {
+      loadProfessionals();
     }
   }
 

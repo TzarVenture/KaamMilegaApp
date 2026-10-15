@@ -32,6 +32,8 @@ dependencies:
   qr_flutter: ^4.1.0
   # Live chat & notification sockets (works on Android, iOS and web)
   web_socket_channel: ^3.0.3
+  # Resources: play course videos inside the app (YouTube embedded player)
+  youtube_player_iframe: ^6.0.2
 
 dev_dependencies:
   flutter_test:

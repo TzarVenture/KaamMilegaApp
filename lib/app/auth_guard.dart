@@ -32,6 +32,7 @@ class AuthGuard {
     '/interviews',
     '/my-sessions', // booked mentorship sessions
     '/expert-dashboard', // Expert: bookings with me, my sessions, hours
+    '/expert', // Expert Portal: create event, my courses
     '/my-tickets', // event tickets
     '/members', // other members' profiles (GET /user/:id needs a login)
     '/profile-viewers', // who viewed my profile (GET /user/viewers)

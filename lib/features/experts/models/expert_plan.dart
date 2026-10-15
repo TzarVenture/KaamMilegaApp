@@ -104,6 +104,17 @@ class ExpertSubscriptionStatus {
     );
   }
 
+  /// Plan name as the server's plan list names it.
+  String get planName => switch (planType) {
+    'monthly' => 'Monthly Pro Expert',
+    'yearly' => 'Annual Pro Expert',
+    _ => 'Pro Expert',
+  };
+
+  /// "29 days remaining", "1 day remaining".
+  String get daysRemainingLabel =>
+      daysRemaining == 1 ? '1 day remaining' : '$daysRemaining days remaining';
+
   /// "12 Aug 2027", or empty when the server sent no end date.
   String get expiresLabel =>
       expiresAt == null ? '' : DateFormat('d MMM yyyy').format(expiresAt!);

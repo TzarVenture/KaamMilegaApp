@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../models/nearby_professional.dart';
+import 'instant_hire_repository.dart';
 
 /// What the UI asks for: professionals near [location].
 @immutable
@@ -32,6 +33,15 @@ class NearbyProfessionalsNotAvailable implements Exception {
   String toString() => 'Nearby professionals are not available yet.';
 }
 
+/// Nearby workers need a login (the hiring radar is a signed-in API).
+/// The UI asks the guest to sign in; no request is made.
+class NearbyProfessionalsSignInRequired implements Exception {
+  const NearbyProfessionalsSignInRequired();
+
+  @override
+  String toString() => 'Sign in to see workers near you.';
+}
+
 /// Source of nearby professionals for Instant Milega.
 ///
 /// When km-backend adds the endpoint, implement this with the app's
@@ -42,8 +52,9 @@ abstract interface class NearbyProfessionalsRepository {
   Future<List<NearbyProfessional>> findNearby(NearbyProfessionalsQuery query);
 }
 
-/// Used until the backend API exists: makes no request and returns no
-/// invented data.
+/// Makes no request and returns no invented data. Not used in the app
+/// any more (workers come from the hiring radar); kept for builds without
+/// that API.
 class PendingNearbyProfessionalsRepository
     implements NearbyProfessionalsRepository {
   const PendingNearbyProfessionalsRepository();
@@ -56,7 +67,8 @@ class PendingNearbyProfessionalsRepository
   }
 }
 
+/// Workers who are online near the user (GET /instant-work/recruiter/radar).
 final nearbyProfessionalsRepositoryProvider =
     Provider<NearbyProfessionalsRepository>(
-      (ref) => const PendingNearbyProfessionalsRepository(),
+      RadarNearbyProfessionalsRepository.new,
     );

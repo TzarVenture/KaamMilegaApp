@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../../app/theme/app_colors.dart';
 import '../../../../shared/widgets/network_state_view.dart';
 import '../../../../shared/widgets/shimmer_loading.dart';
+import '../../../auth/providers/auth_provider.dart';
 import '../../models/nearby_professional.dart';
 import '../../providers/instant_milega_provider.dart';
 
@@ -11,11 +13,33 @@ import '../../providers/instant_milega_provider.dart';
 ///
 /// Every state is distinct: waiting for location, loading, backend not
 /// ready yet, no professionals, request failed, and real results.
-class NearbyProfessionalsSection extends ConsumerWidget {
+class NearbyProfessionalsSection extends ConsumerStatefulWidget {
   const NearbyProfessionalsSection({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<NearbyProfessionalsSection> createState() =>
+      _NearbyProfessionalsSectionState();
+}
+
+class _NearbyProfessionalsSectionState
+    extends ConsumerState<NearbyProfessionalsSection> {
+  @override
+  void initState() {
+    super.initState();
+    // Workers are loaded only while this section is on screen.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) ref.read(instantMilegaProvider.notifier).showProfessionals();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // Signing in (or out) changes who may see nearby workers.
+    ref.listen(sessionUserIdProvider, (prev, next) {
+      if (prev != next) {
+        ref.read(instantMilegaProvider.notifier).loadProfessionals();
+      }
+    });
     final state = ref.watch(instantMilegaProvider);
     final notifier = ref.read(instantMilegaProvider.notifier);
     final selected = state.selectedProfessional;
@@ -24,7 +48,7 @@ class NearbyProfessionalsSection extends ConsumerWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         const Text(
-          'Nearby Professionals',
+          'Workers free near you',
           style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w600,
@@ -75,12 +99,16 @@ class NearbyProfessionalsSection extends ConsumerWidget {
           ProfessionalCard(professional: selected, highlighted: true),
           const SizedBox(height: 12),
         ],
-        _content(state, notifier),
+        _content(context, state, notifier),
       ],
     );
   }
 
-  Widget _content(InstantMilegaState state, InstantMilegaNotifier notifier) {
+  Widget _content(
+    BuildContext context,
+    InstantMilegaState state,
+    InstantMilegaNotifier notifier,
+  ) {
     if (state.locationStatus == LocationStatus.locating) {
       return const ShimmerLoadingList(count: 2, itemHeight: 84);
     }
@@ -100,6 +128,14 @@ class NearbyProfessionalsSection extends ConsumerWidget {
           message:
               'Nearby professionals will appear here once services are '
               'available.',
+        );
+      case ProfessionalsStatus.signInRequired:
+        return _InfoCard(
+          icon: Icons.lock_outline_rounded,
+          title: 'Sign in to see workers near you',
+          message: 'Workers who are free now appear here after you sign in.',
+          actionLabel: 'Sign in',
+          onAction: () => context.push('/login'),
         );
       case ProfessionalsStatus.empty:
         return const _InfoCard(

@@ -13,22 +13,35 @@ import '../../wallet/providers/wallet_provider.dart';
 import '../models/booking.dart';
 import '../models/expert_offering.dart';
 import '../providers/expert_dashboard_provider.dart';
+import '../providers/expert_plan_provider.dart';
 import '../repositories/expert_repository.dart';
 import 'widgets/expert_offering_sheet.dart';
+import 'widgets/expert_pass_gate.dart';
 import 'widgets/weekly_hours_editor.dart';
 
-/// Expert Dashboard (website: "Mentor Dashboard" in the Expert Portal):
-/// sessions booked with me, my session offers and my weekly hours.
-/// Only for users with the "expert" role.
-class ExpertDashboardScreen extends ConsumerStatefulWidget {
+/// Mentor Dashboard ("Manage Mentorships" in the Expert Portal): sessions
+/// booked with me, my session offers and my weekly hours, with my earnings
+/// on top. Only while the Expert Pass is active.
+class ExpertDashboardScreen extends StatelessWidget {
   const ExpertDashboardScreen({super.key});
 
   @override
-  ConsumerState<ExpertDashboardScreen> createState() =>
-      _ExpertDashboardScreenState();
+  Widget build(BuildContext context) {
+    return const ExpertPassGate(
+      title: 'Mentor Dashboard',
+      child: _MentorDashboard(),
+    );
+  }
 }
 
-class _ExpertDashboardScreenState extends ConsumerState<ExpertDashboardScreen> {
+class _MentorDashboard extends ConsumerStatefulWidget {
+  const _MentorDashboard();
+
+  @override
+  ConsumerState<_MentorDashboard> createState() => _MentorDashboardState();
+}
+
+class _MentorDashboardState extends ConsumerState<_MentorDashboard> {
   @override
   void initState() {
     super.initState();
@@ -40,72 +53,216 @@ class _ExpertDashboardScreenState extends ConsumerState<ExpertDashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final isExpert = ref.watch(isExpertProvider);
-    if (!isExpert) {
-      return Scaffold(
-        appBar: AppBar(title: const Text('Expert Dashboard')),
-        body: const _NotExpertYet(),
-      );
-    }
+    final bookings = ref.watch(expertBookingsProvider).value?.length;
+    final offerings = ref.watch(myOfferingsProvider).value?.length;
+    final pass = ref.watch(myExpertSubscriptionProvider).value;
+
     return DefaultTabController(
       length: 3,
       child: Scaffold(
         backgroundColor: AppColors.background,
         appBar: AppBar(
-          title: const Text('Expert Dashboard'),
-          bottom: const TabBar(
-            labelColor: AppColors.brandNavy,
-            unselectedLabelColor: AppColors.textSecondary,
-            indicatorColor: AppColors.brandNavy,
-            labelStyle: TextStyle(fontSize: 13.5, fontWeight: FontWeight.w700),
-            tabs: [
-              Tab(text: 'Bookings'),
-              Tab(text: 'My Sessions'),
-              Tab(text: 'Hours'),
-            ],
+          backgroundColor: AppColors.brandNavy,
+          foregroundColor: AppColors.white,
+          surfaceTintColor: Colors.transparent,
+          elevation: 0,
+          systemOverlayStyle: SystemUiOverlayStyle.light,
+          // The app theme colours app bar icons navy; on this navy bar the
+          // back arrow must be white. Opened directly (no page behind),
+          // it goes Home instead.
+          iconTheme: const IconThemeData(color: AppColors.white),
+          actionsIconTheme: const IconThemeData(color: AppColors.white),
+          leading: IconButton(
+            tooltip: 'Back',
+            icon: const Icon(Icons.arrow_back_rounded, color: AppColors.white),
+            onPressed: () {
+              if (Navigator.of(context).canPop()) {
+                Navigator.of(context).pop();
+              } else {
+                context.go('/home');
+              }
+            },
+          ),
+          title: const Text(
+            'Mentor Dashboard',
+            style: TextStyle(
+              color: AppColors.white,
+              fontWeight: FontWeight.w800,
+            ),
           ),
         ),
-        body: const TabBarView(
-          children: [_BookingsTab(), _OfferingsTab(), WeeklyHoursEditor()],
+        body: Column(
+          children: [
+            _DashboardHeader(
+              planLabel: pass == null
+                  ? null
+                  : '${pass.planName} · ${pass.daysRemainingLabel}',
+            ),
+            Material(
+              color: AppColors.background,
+              child: TabBar(
+                isScrollable: true,
+                tabAlignment: TabAlignment.start,
+                padding: const EdgeInsets.fromLTRB(8, 6, 8, 0),
+                labelColor: AppColors.brandNavy,
+                unselectedLabelColor: AppColors.textSecondary,
+                indicatorColor: AppColors.accent,
+                indicatorWeight: 3,
+                indicatorSize: TabBarIndicatorSize.label,
+                dividerColor: AppColors.borderLight,
+                labelStyle: const TextStyle(
+                  fontSize: 13.5,
+                  fontWeight: FontWeight.w700,
+                ),
+                unselectedLabelStyle: const TextStyle(
+                  fontSize: 13.5,
+                  fontWeight: FontWeight.w600,
+                ),
+                tabs: [
+                  _CountTab(
+                    icon: Icons.person_outline_rounded,
+                    label: 'Booked Sessions',
+                    count: bookings,
+                  ),
+                  _CountTab(
+                    icon: Icons.co_present_outlined,
+                    label: 'My Sessions',
+                    count: offerings,
+                  ),
+                  const _CountTab(
+                    icon: Icons.calendar_month_outlined,
+                    label: 'Availability Hours',
+                  ),
+                ],
+              ),
+            ),
+            const Expanded(
+              child: TabBarView(
+                children: [
+                  _BookingsTab(),
+                  _OfferingsTab(),
+                  WeeklyHoursEditor(),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );
   }
 }
 
-class _NotExpertYet extends StatelessWidget {
-  const _NotExpertYet();
+/// Tab with an icon, its title and a small count badge (website style).
+class _CountTab extends StatelessWidget {
+  const _CountTab({required this.icon, required this.label, this.count});
+
+  final IconData icon;
+  final String label;
+  final int? count;
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(
-              Icons.workspace_premium_outlined,
-              size: 44,
-              color: AppColors.moduleExperts,
-            ),
-            const SizedBox(height: 12),
-            const Text(
-              'Only KaamMilega Experts can use this dashboard',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w700,
-                color: AppColors.textPrimary,
+    final n = count;
+    return Tab(
+      height: 44,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 17),
+          const SizedBox(width: 6),
+          Text(label),
+          if (n != null) ...[
+            const SizedBox(width: 6),
+            Container(
+              constraints: const BoxConstraints(minWidth: 20),
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+              decoration: BoxDecoration(
+                color: AppColors.primaryLight,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Text(
+                '$n',
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w800,
+                  color: AppColors.brandNavy,
+                ),
               ),
             ),
-            const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: () => context.push('/apply-expert'),
-              child: const Text('Become an Expert'),
-            ),
           ],
-        ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Navy header under the app bar: the active pass, a short line and the
+/// earnings card.
+class _DashboardHeader extends StatelessWidget {
+  const _DashboardHeader({required this.planLabel});
+
+  final String? planLabel;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      decoration: const BoxDecoration(
+        color: AppColors.brandNavy,
+        borderRadius: BorderRadius.vertical(bottom: Radius.circular(24)),
+      ),
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (planLabel != null)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+              decoration: BoxDecoration(
+                color: AppColors.success.withValues(alpha: 0.18),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: AppColors.success.withValues(alpha: 0.5),
+                ),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(
+                    Icons.verified_rounded,
+                    size: 14,
+                    color: AppColors.successLight,
+                  ),
+                  const SizedBox(width: 5),
+                  Flexible(
+                    child: Text(
+                      planLabel!,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontSize: 11.5,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.white,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          const SizedBox(height: 8),
+          Text(
+            'Manage booked 1-on-1 sessions, release completed escrow '
+            'earnings and track payouts.',
+            style: TextStyle(
+              fontSize: 13,
+              height: 1.4,
+              color: Colors.white.withValues(alpha: 0.8),
+            ),
+          ),
+          const SizedBox(height: 14),
+          const _EarningsCard(),
+        ],
       ),
     );
   }
@@ -130,7 +287,6 @@ class _BookingsTab extends ConsumerWidget {
         loading: () => const ShimmerLoadingList(count: 3, itemHeight: 150),
         error: (e, _) => ListView(
           children: [
-            const _EarningsCard(),
             SizedBox(
               height: 360,
               child: NetworkStateView.fromError(
@@ -151,7 +307,6 @@ class _BookingsTab extends ConsumerWidget {
           return ListView(
             padding: const EdgeInsets.fromLTRB(16, 14, 16, 32),
             children: [
-              const _EarningsCard(),
               if (bookings.isEmpty)
                 const _EmptyState(
                   icon: Icons.event_available_outlined,
@@ -180,8 +335,8 @@ class _BookingsTab extends ConsumerWidget {
   }
 }
 
-/// Withdrawable earnings and money held for booked sessions, from the
-/// server's wallet balances.
+/// Withdrawable earnings and money held in escrow for booked sessions, from
+/// the server's wallet balances, with "Wallet & Payouts".
 class _EarningsCard extends ConsumerWidget {
   const _EarningsCard();
 
@@ -197,44 +352,59 @@ class _EarningsCard extends ConsumerWidget {
           ).format(v);
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
       decoration: BoxDecoration(
-        color: AppColors.brandNavy,
+        color: Colors.white.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.14)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Row(
-            children: [
-              Expanded(
-                child: _Figure(
-                  label: 'Withdrawable earnings',
-                  value: money(summary?.withdrawableBalance),
+          IntrinsicHeight(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Expanded(
+                  child: _Figure(
+                    label: 'Withdrawable earnings',
+                    value: money(summary?.withdrawableBalance),
+                    color: AppColors.successLight,
+                  ),
                 ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _Figure(
-                  label: 'Held for booked sessions',
-                  value: money(summary?.lockedBalance),
+                VerticalDivider(
+                  width: 24,
+                  color: Colors.white.withValues(alpha: 0.18),
                 ),
-              ),
-            ],
+                Expanded(
+                  child: _Figure(
+                    label: 'In escrow (held)',
+                    value: money(summary?.lockedBalance),
+                    color: AppColors.white,
+                  ),
+                ),
+              ],
+            ),
           ),
           const SizedBox(height: 12),
-          OutlinedButton.icon(
-            onPressed: () => context.push('/wallet'),
-            style: OutlinedButton.styleFrom(
-              foregroundColor: Colors.white,
-              side: const BorderSide(color: Colors.white54),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
+          SizedBox(
+            height: 44,
+            child: ElevatedButton.icon(
+              onPressed: () => context.push('/wallet'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.white,
+                foregroundColor: AppColors.brandNavy,
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              icon: const Icon(Icons.account_balance_wallet_outlined, size: 18),
+              label: const Text(
+                'Wallet & Payouts',
+                style: TextStyle(fontWeight: FontWeight.w700),
               ),
             ),
-            icon: const Icon(Icons.account_balance_wallet_outlined, size: 18),
-            label: const Text('Wallet and payouts'),
           ),
         ],
       ),
@@ -243,20 +413,31 @@ class _EarningsCard extends ConsumerWidget {
 }
 
 class _Figure extends StatelessWidget {
-  const _Figure({required this.label, required this.value});
+  const _Figure({
+    required this.label,
+    required this.value,
+    required this.color,
+  });
 
   final String label;
   final String value;
+  final Color color;
 
   @override
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Text(
-          label,
+          label.toUpperCase(),
           maxLines: 2,
-          style: const TextStyle(fontSize: 11.5, color: Colors.white70),
+          style: TextStyle(
+            fontSize: 10.5,
+            fontWeight: FontWeight.w700,
+            letterSpacing: 0.4,
+            color: Colors.white.withValues(alpha: 0.7),
+          ),
         ),
         const SizedBox(height: 4),
         FittedBox(
@@ -264,10 +445,10 @@ class _Figure extends StatelessWidget {
           alignment: Alignment.centerLeft,
           child: Text(
             value,
-            style: const TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.w700,
-              color: Colors.white,
+            style: TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.w800,
+              color: color,
             ),
           ),
         ),

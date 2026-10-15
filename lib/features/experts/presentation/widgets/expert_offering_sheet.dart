@@ -173,10 +173,10 @@ class _ExpertOfferingSheetState extends ConsumerState<ExpertOfferingSheet> {
               runSpacing: 8,
               children: [
                 for (final c in categories)
-                  ChoiceChip(
-                    label: Text(c),
+                  _OptionChip(
+                    label: c,
                     selected: _category == c,
-                    onSelected: (_) => setState(() => _category = c),
+                    onSelected: () => setState(() => _category = c),
                   ),
               ],
             ),
@@ -187,10 +187,10 @@ class _ExpertOfferingSheetState extends ConsumerState<ExpertOfferingSheet> {
               runSpacing: 8,
               children: [
                 for (final d in durations)
-                  ChoiceChip(
-                    label: Text('$d min'),
+                  _OptionChip(
+                    label: '$d min',
                     selected: _duration == d,
-                    onSelected: (_) => setState(() => _duration = d),
+                    onSelected: () => setState(() => _duration = d),
                   ),
               ],
             ),
@@ -198,8 +198,26 @@ class _ExpertOfferingSheetState extends ConsumerState<ExpertOfferingSheet> {
             const _Label('Price'),
             SwitchListTile(
               contentPadding: EdgeInsets.zero,
-              title: const Text('Free session'),
+              title: const Text(
+                'Free session',
+                style: TextStyle(
+                  fontSize: 14.5,
+                  fontWeight: FontWeight.w500,
+                  color: AppColors.textPrimary,
+                ),
+              ),
               value: _free,
+              // Clear colours in both states (the off state was almost
+              // invisible on white).
+              activeThumbColor: AppColors.white,
+              activeTrackColor: AppColors.brandNavy,
+              inactiveThumbColor: AppColors.textSecondary,
+              inactiveTrackColor: AppColors.borderLight,
+              trackOutlineColor: WidgetStateProperty.resolveWith(
+                (s) => s.contains(WidgetState.selected)
+                    ? AppColors.brandNavy
+                    : AppColors.border,
+              ),
               onChanged: (v) => setState(() => _free = v),
             ),
             if (!_free)
@@ -264,6 +282,41 @@ class _Label extends StatelessWidget {
           fontWeight: FontWeight.w700,
           color: AppColors.textPrimary,
         ),
+      ),
+    );
+  }
+}
+
+/// Category / duration choice with readable text in both states (navy
+/// with white text when chosen, white with dark text otherwise).
+class _OptionChip extends StatelessWidget {
+  const _OptionChip({
+    required this.label,
+    required this.selected,
+    required this.onSelected,
+  });
+
+  final String label;
+  final bool selected;
+  final VoidCallback onSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    return ChoiceChip(
+      label: Text(label),
+      selected: selected,
+      onSelected: (_) => onSelected(),
+      showCheckmark: true,
+      checkmarkColor: AppColors.white,
+      selectedColor: AppColors.brandNavy,
+      backgroundColor: AppColors.white,
+      side: BorderSide(
+        color: selected ? AppColors.brandNavy : AppColors.border,
+      ),
+      labelStyle: TextStyle(
+        fontSize: 13.5,
+        fontWeight: FontWeight.w600,
+        color: selected ? AppColors.white : AppColors.textPrimary,
       ),
     );
   }

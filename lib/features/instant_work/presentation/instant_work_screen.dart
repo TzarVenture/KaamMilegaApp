@@ -18,7 +18,8 @@ import '../providers/spot_gigs_provider.dart';
 import 'widgets/instant_availability_card.dart';
 import 'widgets/instant_location_bar.dart';
 import 'widgets/spot_gigs_widgets.dart';
-import 'widgets/nearby_professionals_section.dart';
+import '../providers/instant_hire_provider.dart';
+import 'widgets/instant_hire_widgets.dart';
 import '../../../shared/widgets/fade_slide_in.dart';
 import '../../../app/theme/app_colors.dart';
 
@@ -71,6 +72,7 @@ class _InstantWorkScreenState extends ConsumerState<InstantWorkScreen> {
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(instantWorkProvider);
+    final mode = ref.watch(instantModeProvider);
 
     return Scaffold(
       key: _scaffoldKey,
@@ -113,139 +115,153 @@ class _InstantWorkScreenState extends ConsumerState<InstantWorkScreen> {
             Expanded(
               child: RefreshIndicator(
                 color: AppColors.moduleInstantWork,
-                onRefresh: () => Future.wait([
-                  ref.read(instantWorkProvider.notifier).loadGigs(),
-                  ref.read(instantMilegaProvider.notifier).loadProfessionals(),
-                  ref.read(instantCandidateProvider.notifier).load(),
-                  ref.read(spotGigsProvider.notifier).refreshAll(),
-                ]),
+                onRefresh: () => mode == InstantMode.hire
+                    ? Future.wait([
+                        ref
+                            .read(instantMilegaProvider.notifier)
+                            .loadProfessionals(),
+                        ref.refresh(activeHireRequestProvider.future),
+                      ])
+                    : Future.wait([
+                        ref.read(instantWorkProvider.notifier).loadGigs(),
+                        ref.read(instantCandidateProvider.notifier).load(),
+                        ref.read(spotGigsProvider.notifier).refreshAll(),
+                      ]),
                 child: ListView(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 16,
                     vertical: 14,
                   ),
                   children: [
-                    // Hero banner image, right below the search bar
-                    _buildHeroBanner(),
+                    // Hire | Work: what the user wants to do right now
+                    const InstantModeToggle(),
 
-                    const SizedBox(height: 14),
+                    const SizedBox(height: 16),
 
-                    // Location status (needed for gigs; no map)
-                    const InstantLocationBar(),
+                    if (mode == InstantMode.hire) ...[
+                      const InstantLocationBar(),
+                      const SizedBox(height: 14),
+                      const InstantHireSection(),
+                      const SizedBox(height: 24),
+                    ] else ...[
+                      // Hero banner image, right below the search bar
+                      _buildHeroBanner(),
 
-                    const SizedBox(height: 14),
+                      const SizedBox(height: 14),
 
-                    // Go online (InstantPass) card, as on the website
-                    const InstantAvailabilityCard(),
+                      // Location status (needed for gigs; no map)
+                      const InstantLocationBar(),
 
-                    const SizedBox(height: 18),
+                      const SizedBox(height: 14),
 
-                    // Claimed spot gig (call, chat, directions, complete)
-                    const ActiveGigCard(),
+                      // Go online (InstantPass) card, as on the website
+                      const InstantAvailabilityCard(),
 
-                    // Live open spot gigs for the primary trade
-                    const SpotGigsSection(),
+                      const SizedBox(height: 18),
 
-                    const SizedBox(height: 18),
+                      // Claimed spot gig (call, chat, directions, complete)
+                      const ActiveGigCard(),
 
-                    // Gig pay credited to the wallet
-                    const GigEarningsCard(),
+                      // Live open spot gigs for the primary trade
+                      const SpotGigsSection(),
 
-                    const SizedBox(height: 18),
+                      const SizedBox(height: 18),
 
-                    // 0. Nearby professionals (backend-pending until the
-                    // nearby-professionals API exists)
-                    const NearbyProfessionalsSection(),
+                      // Gig pay credited to the wallet
+                      const GigEarningsCard(),
 
-                    const SizedBox(height: 18),
+                      const SizedBox(height: 18),
 
-                    // 2. Quick Filter Chips
-                    SizedBox(
-                      height: 38,
-                      child: ListView.separated(
-                        scrollDirection: Axis.horizontal,
-                        itemCount: _filters.length,
-                        separatorBuilder: (context, index) =>
-                            const SizedBox(width: 8),
-                        itemBuilder: (context, index) {
-                          final f = _filters[index];
-                          final isSelected = state.activeFilter == f;
-                          return InkWell(
-                            onTap: () => ref
-                                .read(instantWorkProvider.notifier)
-                                .setFilter(f),
-                            borderRadius: BorderRadius.circular(10),
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 14,
-                                vertical: 8,
-                              ),
-                              decoration: BoxDecoration(
-                                color: isSelected
-                                    ? AppColors.moduleInstantWork
-                                    : Colors.white,
-                                borderRadius: BorderRadius.circular(10),
-                                border: Border.all(
+                      // 2. Quick Filter Chips
+                      SizedBox(
+                        height: 38,
+                        child: ListView.separated(
+                          scrollDirection: Axis.horizontal,
+                          itemCount: _filters.length,
+                          separatorBuilder: (context, index) =>
+                              const SizedBox(width: 8),
+                          itemBuilder: (context, index) {
+                            final f = _filters[index];
+                            final isSelected = state.activeFilter == f;
+                            return InkWell(
+                              onTap: () => ref
+                                  .read(instantWorkProvider.notifier)
+                                  .setFilter(f),
+                              borderRadius: BorderRadius.circular(10),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 14,
+                                  vertical: 8,
+                                ),
+                                decoration: BoxDecoration(
                                   color: isSelected
                                       ? AppColors.moduleInstantWork
-                                      : const Color(0xFFCBD5E1),
+                                      : Colors.white,
+                                  borderRadius: BorderRadius.circular(10),
+                                  border: Border.all(
+                                    color: isSelected
+                                        ? AppColors.moduleInstantWork
+                                        : const Color(0xFFCBD5E1),
+                                  ),
+                                ),
+                                child: Text(
+                                  f,
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                    color: isSelected
+                                        ? Colors.white
+                                        : const Color(0xFF334155),
+                                  ),
                                 ),
                               ),
-                              child: Text(
-                                f,
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w600,
-                                  color: isSelected
-                                      ? Colors.white
-                                      : const Color(0xFF334155),
-                                ),
-                              ),
-                            ),
-                          );
-                        },
+                            );
+                          },
+                        ),
                       ),
-                    ),
 
-                    const SizedBox(height: 18),
+                      const SizedBox(height: 18),
 
-                    // 4. Section Header
-                    Row(
-                      key: _workStartKey,
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Flexible(
-                          child: Text(
-                            'Available Work Near You',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w700,
-                              color: AppColors.textPrimary,
+                      // 4. Section Header
+                      Row(
+                        key: _workStartKey,
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Flexible(
+                            child: Text(
+                              'Available Work Near You',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.textPrimary,
+                              ),
                             ),
                           ),
-                        ),
-                        Text(
-                          '${state.gigs.length} Gigs',
-                          style: const TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                            color: AppColors.textSecondary,
+                          Text(
+                            '${state.gigs.length} Gigs',
+                            style: const TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.textSecondary,
+                            ),
                           ),
+                        ],
+                      ),
+
+                      const SizedBox(height: 12),
+
+                      // 5. Work Cards / Empty State
+                      if (state.isLoading)
+                        const ShimmerLoadingList(count: 3, itemHeight: 120)
+                      else if (state.gigs.isEmpty)
+                        _buildEmptyState()
+                      else
+                        ...state.gigs.map(
+                          (job) => _buildWorkCard(context, job),
                         ),
-                      ],
-                    ),
 
-                    const SizedBox(height: 12),
-
-                    // 5. Work Cards / Empty State
-                    if (state.isLoading)
-                      const ShimmerLoadingList(count: 3, itemHeight: 120)
-                    else if (state.gigs.isEmpty)
-                      _buildEmptyState()
-                    else
-                      ...state.gigs.map((job) => _buildWorkCard(context, job)),
-
-                    const SizedBox(height: 24),
+                      const SizedBox(height: 24),
+                    ],
                   ],
                 ),
               ),

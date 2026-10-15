@@ -8,7 +8,10 @@ import 'package:kaam_milega/core/storage/local_storage.dart';
 import 'package:kaam_milega/features/auth/models/user_profile.dart';
 import 'package:kaam_milega/features/auth/providers/auth_provider.dart';
 import 'package:kaam_milega/features/experts/models/expert_offering.dart';
+import 'package:kaam_milega/features/experts/models/expert_plan.dart';
 import 'package:kaam_milega/features/experts/presentation/expert_dashboard_screen.dart';
+import 'package:kaam_milega/features/experts/presentation/widgets/weekly_hours_editor.dart';
+import 'package:kaam_milega/features/experts/providers/expert_plan_provider.dart';
 import 'package:kaam_milega/features/experts/repositories/expert_repository.dart';
 import 'package:kaam_milega/features/wallet/models/wallet_summary.dart';
 import 'package:kaam_milega/features/wallet/providers/wallet_provider.dart';
@@ -89,6 +92,16 @@ List<Override> _overrides(ApiClient client, {bool expert = true}) => [
   authProvider.overrideWith(() => _Auth(expert: expert)),
   walletProvider.overrideWith(_Wallet.new),
   expertRepositoryProvider.overrideWithValue(ExpertRepository(client)),
+  // The Mentor Dashboard needs an active Expert Pass.
+  myExpertSubscriptionProvider.overrideWith(
+    (ref) async => expert
+        ? const ExpertSubscriptionStatus(
+            isActive: true,
+            planType: 'monthly',
+            daysRemaining: 29,
+          )
+        : ExpertSubscriptionStatus.none,
+  ),
 ];
 
 Future<void> _pump(WidgetTester tester, List<Override> overrides) async {
@@ -233,16 +246,43 @@ void main() {
   });
 
   group('Screen', () {
-    testWidgets('not an Expert: no dashboard, offer to become one', (
+    testWidgets('no Expert Pass: no dashboard, offer the plans', (
       tester,
     ) async {
       final f = _fakeClient((o) => throw StateError('no request expected'));
       await _pump(tester, _overrides(f.client, expert: false));
+      expect(find.text('Expert Portal only'), findsOneWidget);
+      expect(find.text('View Expert Pass plans'), findsOneWidget);
+      expect(f.sent, isEmpty);
+    });
+
+    testWidgets('header: pass, earnings and tabs with counts', (tester) async {
+      final f = _fakeClient((o) {
+        if (o.path == '/mentorships/bookings/expert') return _ok(o, []);
+        if (o.path == '/mentorships/expert/my') return _ok(o, []);
+        throw StateError('unexpected ${o.method} ${o.path}');
+      });
+      await _pump(tester, _overrides(f.client));
+
+      expect(find.text('Mentor Dashboard'), findsOneWidget);
+      // White back arrow on the navy bar
+      final back = tester.widget<Icon>(
+        find.descendant(
+          of: find.byTooltip('Back'),
+          matching: find.byIcon(Icons.arrow_back_rounded),
+        ),
+      );
+      expect(back.color, Colors.white);
       expect(
-        find.text('Only KaamMilega Experts can use this dashboard'),
+        find.text('Monthly Pro Expert \u00b7 29 days remaining'),
         findsOneWidget,
       );
-      expect(f.sent, isEmpty);
+      expect(find.text('\u20b91,200'), findsOneWidget);
+      expect(find.text('\u20b9500'), findsOneWidget);
+      expect(find.text('Wallet & Payouts'), findsOneWidget);
+      expect(find.text('Booked Sessions'), findsOneWidget);
+      expect(find.text('Availability Hours'), findsOneWidget);
+      expect(find.text('0'), findsNWidgets(2)); // both counts
     });
 
     testWidgets('confirm a new booking; completing waits for the session', (
@@ -264,6 +304,7 @@ void main() {
             ),
           ]);
         }
+        if (o.path == '/mentorships/expert/my') return _ok(o, []);
         if (o.method == 'PATCH') return _ok(o, {'message': 'ok'});
         throw StateError('unexpected ${o.method} ${o.path}');
       });
@@ -304,6 +345,7 @@ void main() {
             ),
           ]);
         }
+        if (o.path == '/mentorships/expert/my') return _ok(o, []);
         if (o.method == 'PATCH') return _ok(o, {'message': 'ok'});
         throw StateError('unexpected ${o.method} ${o.path}');
       });
@@ -331,11 +373,27 @@ void main() {
       });
       await _pump(tester, _overrides(f.client));
 
-      await tester.tap(find.text('Hours'));
+      // The tab bar scrolls sideways; bring the last tab into view first.
+      await tester.ensureVisible(find.text('Availability Hours'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Availability Hours'));
       await tester.pumpAndSettle();
       expect(find.text('Monday'), findsOneWidget);
 
       await tester.tap(find.byType(Switch).first); // Monday
+      await tester.pumpAndSettle();
+      // The new dashboard header leaves less room; scroll to the button.
+      // (The list builds lazily, so the button may not exist until scrolled.)
+      await tester.scrollUntilVisible(
+        find.text('Save hours'),
+        200,
+        scrollable: find
+            .descendant(
+              of: find.byType(WeeklyHoursEditor),
+              matching: find.byType(Scrollable),
+            )
+            .first,
+      );
       await tester.pumpAndSettle();
       await tester.tap(find.text('Save hours'));
       await tester.pumpAndSettle();

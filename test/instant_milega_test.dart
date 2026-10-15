@@ -61,6 +61,11 @@ class _Repo implements NearbyProfessionalsRepository {
   }
 }
 
+class _Guest extends AuthNotifier {
+  @override
+  AuthState build() => const AuthState(isGuest: true);
+}
+
 /// Opens the location the way InstantWorkScreen does (after first frame).
 class _Host extends ConsumerStatefulWidget {
   const _Host();
@@ -94,6 +99,8 @@ Widget _app(LocationService location, NearbyProfessionalsRepository repo) {
     overrides: [
       locationServiceProvider.overrideWithValue(location),
       nearbyProfessionalsRepositoryProvider.overrideWithValue(repo),
+      // The section listens to the session; keep it a fixed guest here.
+      authProvider.overrideWith(_Guest.new),
     ],
     child: MaterialApp(theme: AppTheme.lightTheme, home: const _Host()),
   );

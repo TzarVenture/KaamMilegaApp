@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../app/theme/app_colors.dart';
 import '../../../shared/widgets/app_dialog.dart';
@@ -89,7 +90,8 @@ class _ApplyExpertScreenState extends ConsumerState<ApplyExpertScreen> {
       case ExpertPlanOutcome.success:
         await _showNotice(
           'Welcome, Pro Expert',
-          '${result.message}\n\nYour ${plan.name} plan is active. You can now '
+          '${result.message}\n\nYour ${plan.name} plan is active. Your Expert '
+              'Portal is now in the menu: create events, publish courses and '
               'host paid 1-on-1 mentorship calls.',
         );
         break;
@@ -241,6 +243,23 @@ class _ApplyExpertScreenState extends ConsumerState<ApplyExpertScreen> {
             background: AppColors.successLight,
             title: 'You are a Pro Expert',
             message: 'Your plan is active: ${parts.join(', ')}.',
+          ),
+          const SizedBox(height: 12),
+          // Website: "Manage Mentorship Dashboard" on the active plan banner
+          SizedBox(
+            height: 48,
+            child: ElevatedButton.icon(
+              onPressed: () => context.push('/expert-dashboard'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.brandNavy,
+                foregroundColor: AppColors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
+                ),
+              ),
+              icon: const Icon(Icons.arrow_forward_rounded, size: 18),
+              label: const Text('Manage Mentorship Dashboard'),
+            ),
           ),
           const SizedBox(height: 20),
         ];
