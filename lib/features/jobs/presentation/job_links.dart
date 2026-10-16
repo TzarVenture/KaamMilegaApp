@@ -26,6 +26,8 @@ void openJobLink(BuildContext context, Job job, JobCardLink link) {
         Uri(
           path: '/related-jobs',
           queryParameters: {
+            // The job's range, e.g. 2-5: jobs that overlap it are listed
+            'min': '${job.experienceMin < 0 ? 0 : job.experienceMin}',
             'exp': '${job.experienceMax < 0 ? 0 : job.experienceMax}',
             'label': job.formattedExperience,
           },

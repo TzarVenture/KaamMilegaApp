@@ -4,9 +4,15 @@ import '../models/job.dart';
 import '../models/job_filter.dart';
 import '../repositories/job_repository.dart';
 
-/// What a "related jobs" page lists: one job type, or jobs open to someone
-/// with up to [maxExperience] years.
-typedef RelatedJobsQuery = ({String jobType, int? maxExperience});
+/// What a "related jobs" page lists: one job type, or jobs whose
+/// experience range overlaps [minExperience]-[maxExperience] years (a
+/// "2-5 Yrs" chip lists jobs that accept someone with 2 to 5 years, not
+/// 0-1 year jobs).
+typedef RelatedJobsQuery = ({
+  String jobType,
+  int? minExperience,
+  int? maxExperience,
+});
 
 class RelatedJobsState {
   const RelatedJobsState({
@@ -46,6 +52,7 @@ class RelatedJobsNotifier extends Notifier<RelatedJobsState> {
   JobFilter _filter(int page) => JobFilter(
     jobTypes: query.jobType.isEmpty ? const [] : [query.jobType],
     experience: query.maxExperience == null ? 'all' : '${query.maxExperience}',
+    experienceMin: query.minExperience,
     page: page,
     limit: pageSize,
   );

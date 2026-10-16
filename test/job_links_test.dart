@@ -195,6 +195,53 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('"2-5 Yrs" page asks for jobs that overlap 2 to 5 years', (
+    tester,
+  ) async {
+    _phone(tester);
+    final api = _client(
+      (o) => {
+        'jobs': [
+          {
+            'id': 'a',
+            'title': 'Flutter developer',
+            'job_type': 'Full-time',
+            'experience_min': 2,
+            'experience_max': 5,
+          },
+        ],
+        'total': 1,
+        'page': 1,
+        'limit': 10,
+      },
+    );
+    await tester.pumpWidget(
+      ProviderScope(
+        retry: (_, _) => null,
+        overrides: [
+          authProvider.overrideWith(_Guest.new),
+          apiClientProvider.overrideWithValue(api.client),
+          verifiedEmployerIdsProvider.overrideWith((ref) async => <String>{}),
+        ],
+        child: const MaterialApp(
+          home: RelatedJobsScreen(
+            minExperience: 2,
+            maxExperience: 5,
+            experienceLabel: '2-5 Yrs',
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Jobs for 2-5 Yrs'), findsOneWidget);
+    final q = api.sent.firstWhere((o) => o.path.endsWith('/jobs'));
+    // Job's max >= 2 and job's min <= 5: a 0-1 year job is not listed.
+    expect(q.queryParameters['experience_min'], 2);
+    expect(q.queryParameters['experience_max'], 5);
+    expect(q.queryParameters.containsKey('job_types'), isFalse);
+  });
+
   group('recruiter card', () {
     Future<void> pump(
       WidgetTester tester, {

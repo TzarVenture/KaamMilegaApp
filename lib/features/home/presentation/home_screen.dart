@@ -16,6 +16,7 @@ import '../../jobs/models/job_filter.dart';
 import '../../jobs/providers/jobs_provider.dart';
 import '../../../shared/widgets/notification_bell_button.dart';
 import '../../profile/presentation/widgets/profile_drawer.dart';
+import 'widgets/pulsing_quick_icon.dart';
 import 'widgets/connect_like_you_section.dart';
 import 'widgets/home_section_header.dart';
 import 'widgets/home_welcome.dart';
@@ -318,7 +319,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     FadeSlideIn(index: 1, child: _buildInstantMilegaBanner()),
                     const SizedBox(height: _sectionGap),
 
-                    // Shortcuts to the app's areas (Jobs, Instant Work, ...)
+                    // Shortcuts to the app's areas (Jobs, Instant Milega, ...)
                     FadeSlideIn(index: 2, child: _buildQuickActionIcons()),
                     const SizedBox(height: _sectionGap),
 
@@ -798,11 +799,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         'onTap': () => _goToJobsTabWithQuery(''),
       },
       {
-        'label': 'Instant Work',
+        'label': 'Instant Milega',
         'icon': Icons.bolt_rounded,
         'bg': AppColors.accentLight,
         'color': AppColors.accent,
         'onTap': () => context.push('/instant-work'),
+        // Glow + a few ripples when Home opens, to draw the eye
+        'highlight': true,
       },
       {
         'label': 'Skills',
@@ -835,6 +838,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     ];
 
     return _HorizontalStrip(
+      // The Instant Work glow and ripples must not be cut off.
+      clipContent: false,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         spacing: 18,
@@ -844,18 +849,25 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           final bg = item['bg'] as Color;
           final color = item['color'] as Color;
           final onTap = item['onTap'] as VoidCallback;
+          final highlight = item['highlight'] == true;
 
           return GestureDetector(
             onTap: onTap,
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Container(
-                  width: 46,
-                  height: 46,
-                  decoration: BoxDecoration(color: bg, shape: BoxShape.circle),
-                  child: Icon(icon, color: color, size: 22),
-                ),
+                if (highlight)
+                  PulsingQuickIcon(icon: icon, color: color, background: bg)
+                else
+                  Container(
+                    width: 46,
+                    height: 46,
+                    decoration: BoxDecoration(
+                      color: bg,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(icon, color: color, size: 22),
+                  ),
                 const SizedBox(height: 6),
                 Text(
                   label,
@@ -1612,9 +1624,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 /// A row that spreads its items across the screen like before, and
 /// scrolls sideways when they do not fit (small phones, large text).
 class _HorizontalStrip extends StatelessWidget {
-  const _HorizontalStrip({required this.child});
+  const _HorizontalStrip({required this.child, this.clipContent = true});
 
   final Widget child;
+
+  /// False lets glows and ripples draw past the strip's edges.
+  final bool clipContent;
 
   static const double _sidePadding = 16;
 
@@ -1623,6 +1638,7 @@ class _HorizontalStrip extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) => SingleChildScrollView(
         scrollDirection: Axis.horizontal,
+        clipBehavior: clipContent ? Clip.hardEdge : Clip.none,
         padding: const EdgeInsets.symmetric(horizontal: _sidePadding),
         child: ConstrainedBox(
           // At least the screen width, so items stay spread out when they fit

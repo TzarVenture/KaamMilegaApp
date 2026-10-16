@@ -222,10 +222,15 @@ class _MainNavigationShellState extends ConsumerState<MainNavigationShell> {
       const ProfileScreen(),
     ];
 
+    final shown = _currentIndex == 2 ? 0 : _currentIndex;
     return Scaffold(
       body: IndexedStack(
-        index: _currentIndex == 2 ? 0 : _currentIndex,
-        children: screens,
+        index: shown,
+        // Hidden tabs keep their state but pause their animations.
+        children: [
+          for (var i = 0; i < screens.length; i++)
+            TickerMode(enabled: i == shown, child: screens[i]),
+        ],
       ),
       bottomNavigationBar: AppBottomNav.frame(
         // One orange bar slides between the tabs (not the centre button).

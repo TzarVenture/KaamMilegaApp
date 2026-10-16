@@ -24,16 +24,21 @@ class RelatedJobsScreen extends ConsumerWidget {
   const RelatedJobsScreen({
     super.key,
     this.jobType = '',
+    this.minExperience,
     this.maxExperience,
     this.experienceLabel = '',
   });
 
   final String jobType;
+  final int? minExperience;
   final int? maxExperience;
   final String experienceLabel;
 
-  RelatedJobsQuery get _query =>
-      (jobType: jobType, maxExperience: maxExperience);
+  RelatedJobsQuery get _query => (
+    jobType: jobType,
+    minExperience: minExperience,
+    maxExperience: maxExperience,
+  );
 
   String get _title {
     if (jobType.isNotEmpty) return '$jobType jobs';

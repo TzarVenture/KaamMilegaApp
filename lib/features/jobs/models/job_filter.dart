@@ -7,6 +7,11 @@ class JobFilter {
   final String experience; // 'all', '0', '1', '4', '5', '30'
   final List<String> genders; // 'Male', 'Female'
   final List<String> qualification; // '10th Pass', '12th Pass', etc.
+
+  /// Jobs that also accept at least this many years (server
+  /// `experience_min`: job's maximum ≥ n). Used with [experience] to match
+  /// a range such as "2-5 Yrs". Not part of the filter sheet.
+  final int? experienceMin;
   final int page;
   final int limit;
 
@@ -18,6 +23,7 @@ class JobFilter {
     this.experience = 'all',
     this.genders = const [],
     this.qualification = const [],
+    this.experienceMin,
     this.page = 1,
     this.limit = 10,
   });
@@ -58,6 +64,7 @@ class JobFilter {
       experience: experience ?? this.experience,
       genders: genders ?? this.genders,
       qualification: qualification ?? this.qualification,
+      experienceMin: experienceMin,
       page: page ?? this.page,
       limit: limit ?? this.limit,
     );
@@ -85,6 +92,11 @@ class JobFilter {
 
     if (experience != 'all') {
       params['experience_max'] = int.tryParse(experience) ?? 0;
+    }
+
+    final minYears = experienceMin;
+    if (minYears != null && minYears > 0) {
+      params['experience_min'] = minYears;
     }
 
     if (genders.isNotEmpty) {

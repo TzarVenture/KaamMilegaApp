@@ -46,6 +46,10 @@ class CategoryTopHeader extends ConsumerWidget {
   /// (they already have the search bar below).
   final bool showSearchIcon;
 
+  /// The module's own logo in place of the KaamMilega logo (e.g. the
+  /// Instant Milega brand). Null = KaamMilega logo.
+  final Widget? brand;
+
   const CategoryTopHeader({
     super.key,
     required this.scaffoldKey,
@@ -59,6 +63,7 @@ class CategoryTopHeader extends ConsumerWidget {
     this.onSearchSubmitted,
     this.onSearchIconTap,
     this.showSearchIcon = true,
+    this.brand,
   });
 
   /// Header colours per module: gradient start (deep, for white text) and
@@ -130,7 +135,9 @@ class CategoryTopHeader extends ConsumerWidget {
               child: Row(
                 children: [
                   Expanded(
-                    child: _Brand(onNavy: !_palettes.containsKey(themeColor)),
+                    child:
+                        brand ??
+                        _Brand(onNavy: !_palettes.containsKey(themeColor)),
                   ),
                   const SizedBox(width: 8),
                   if (showSearchIcon)

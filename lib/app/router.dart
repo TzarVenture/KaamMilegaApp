@@ -232,6 +232,7 @@ class AppRouter {
         final q = state.uri.queryParameters;
         return RelatedJobsScreen(
           jobType: q['type'] ?? '',
+          minExperience: int.tryParse(q['min'] ?? ''),
           maxExperience: int.tryParse(q['exp'] ?? ''),
           experienceLabel: q['label'] ?? '',
         );

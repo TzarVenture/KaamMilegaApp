@@ -20,6 +20,7 @@ import 'widgets/instant_location_bar.dart';
 import 'widgets/spot_gigs_widgets.dart';
 import '../providers/instant_hire_provider.dart';
 import 'widgets/instant_hire_widgets.dart';
+import 'widgets/instant_milega_brand.dart';
 import '../../../shared/widgets/fade_slide_in.dart';
 import '../../../app/theme/app_colors.dart';
 
@@ -94,8 +95,15 @@ class _InstantWorkScreenState extends ConsumerState<InstantWorkScreen> {
               showSearchIcon: false, // search bar below is enough
               scaffoldKey: _scaffoldKey,
               themeColor: AppColors.moduleInstantWork,
-              title: 'Instant Milega',
-              subtitle: 'Quick gigs and helpers near you.',
+              // Instant Milega's own logo on the module's orange header
+              brand: const InstantMilegaBrand(),
+              // The heading follows the Hire / Work switch
+              title: mode == InstantMode.hire
+                  ? 'Workers near you'
+                  : 'Gigs near you',
+              subtitle: mode == InstantMode.hire
+                  ? 'Hire help for a quick job in minutes.'
+                  : 'Find quick paid work in minutes.',
               searchHint: 'Search nearby gigs, delivery, helper...',
               // "Search for 'Gigs'", then the InstantMilega trades.
               searchHintExamples: _searchExamples,
